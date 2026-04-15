@@ -16,7 +16,7 @@ argument-hint: 'path/to/plan.md'
 If the plan has sub-plans, also read:
 - `~/.copilot/dreamers/refs/sub-plan-loop.md`
 
-2. **Invoke Bolt** to set up the feature branch per `git-workflow.md` (checkout main, pull, cut `feat/d<N>-<name>`, wipe agent workspaces). Do not proceed until Bolt confirms.
+2. **Invoke Bolt** to set up the feature branch per `git-workflow.md` (detect default branch, checkout and pull it, cut `feat/d<N>-<name>` from it, wipe agent workspaces). Do not proceed until Bolt confirms.
 3. **Do not write or edit code yourself.** All implementation must go through the agents below.
 
 ---
