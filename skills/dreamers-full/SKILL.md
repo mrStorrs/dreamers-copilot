@@ -39,7 +39,7 @@ Do not proceed to Phase 2 (implementation) until the user explicitly approves th
    - `~/.copilot/dreamers/refs/close-out.md`
    - `~/.copilot/dreamers/refs/agent-recovery.md`
    - If the plan has sub-plans, also read: `~/.copilot/dreamers/refs/sub-plan-loop.md`
-2. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "background")`, then immediately `read_agent(wait: true)` per `git-workflow.md` (checkout main, pull, cut `feat/d<N>-<name>`, wipe agent workspaces). Do not proceed until Bolt confirms.
+2. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "background")`, then immediately `read_agent(wait: true)` per `git-workflow.md` (detect default branch, checkout and pull it, cut `feat/d<N>-<name>` from it, wipe agent workspaces). Do not proceed until Bolt confirms.
 3. **Do not write or edit production files yourself.** Never use `create`, `edit`, or `powershell` to modify source code. All implementation must go through the `task` tool.
 
 ---

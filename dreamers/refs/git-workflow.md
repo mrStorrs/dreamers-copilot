@@ -1,13 +1,19 @@
 # Git Workflow (mandatory)
 
-Every milestone uses a feature branch + PR — never work directly on main.
+Every milestone uses a feature branch + PR — never work directly on the default branch.
 
 ## Startup verification (do this FIRST)
-1. `git fetch origin && git log origin/main --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/main` is the authoritative record of what is actually shipped.
+1. Detect the repo's default branch:
+   ```bash
+   DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+   [ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
+   ```
+   Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
+2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
 ## Branch setup (before invoking Forge)
-1. `git checkout main && git pull origin main` — never build off a stale local main.
-2. Cut `feat/d<N>-<name>` from main.
+1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
+2. Cut `feat/d<N>-<name>` from `$DEFAULT_BRANCH`.
 3. Review all persistent workspace files across agents (`assumptions.md`, `decisions.md`, `questions.md`, `links.md`) — prune stale/resolved entries.
 4. Wipe all live files across **all** agents — every file in this list must be reset to "No active work / No pending items":
    - `forge/status.md`, and any `forge/implementation*.md`
@@ -18,7 +24,7 @@ Every milestone uses a feature branch + PR — never work directly on main.
 5. **Clean up prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
    - **Merged:** delete all plan files for that feature from `.dreamers/plans/`. The PR description is the lasting record.
    - **Not merged:** leave plan files in place.
-6. No init commit — Forge's first commit is the first thing in the PR diff.
+6. No init commit — Bolt's first commit for the milestone is the first thing in the PR diff.
 
 ## Push discipline (non-negotiable)
 `git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between sub-plans, or at any other point in the pipeline.
@@ -37,7 +43,7 @@ One commit per sub-plan keeps each sub-plan's contribution atomic. Fix rounds (S
 Nothing in `.dreamers/` is committed — all workspace files are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-Forge works directly on the feature branch. Worktrees caused Sentinel/Probe to read stale main-branch code.
+Forge works directly on the feature branch. Worktrees caused Sentinel/Probe to read stale default-branch code.
 
 ## Git history is the archive
 No separate archive directories. `git log` and PR diffs are the record.

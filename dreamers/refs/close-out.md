@@ -7,7 +7,7 @@ Run this when all Sentinel passes clear and Probe passes.
 Invoke **Bolt** (Haiku subagent) for the mechanical PR steps. Pass Bolt:
 1. Branch name to push: `git push -u origin <branch-name>`
 2. PR title and body (use template at `~/.copilot/dreamers/templates/pr-description.md` — prepare the content before invoking Bolt)
-3. Base branch (usually `main`)
+3. Base branch (the repo's default branch — detected during branch setup per `git-workflow.md`)
 4. If the original task referenced a GitHub issue number or URL, include it so Bolt can close it: `gh issue close <number> --comment "Resolved in <PR URL>"`
 
 Bolt reports back: PR URL, issue closed (if applicable). User reviews the diff and merges.
