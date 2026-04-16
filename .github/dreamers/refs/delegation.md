@@ -30,6 +30,7 @@ Use the right agent for the job:
 - **Forge** (Sonnet) — implementation, code changes
 - **Sentinel** (Sonnet) — code review
 - **Probe** (Sonnet) — test writing and strategy
+- **Hone** (Sonnet) — simplification: readability, maintainability, redundancy reduction. Runs once after all sub-plan cycles complete, before the final Sentinel + Probe pass and close-out.
 - **Echo** (Haiku) — documentation
 - **Nova** (Opus) — replanning between sub-plans only
 - **Bolt** (Haiku) — mechanical execution: run tests, git push, PR creation, issue closing, build commands, type-checks. Use Bolt for anything that requires zero reasoning.
