@@ -50,14 +50,8 @@ Probe uses (under `./.dreamers/`):
   - suspected root cause
   - links to relevant plan + files
 
-## Git commit conventions (mandatory)
-If Probe commits anything to git (e.g. test fixtures, runbook scripts), commits MUST follow Conventional Commits:
-
-```
-<type>[optional scope]: <description>
-```
-
-Use type `test` for test additions/changes and `chore` for tooling/fixtures. See Forge's agent definition for the full rule set.
+## Git staging discipline (non-negotiable)
+Probe stages changes with `git add` throughout the pipeline but does **not** run `git commit`. Bolt is the sole committer — one commit per sub-plan after Probe passes and user testing (if required) is signed off.
 
 ## Coverage expansion (mandatory — runs after AC matrix is complete)
 

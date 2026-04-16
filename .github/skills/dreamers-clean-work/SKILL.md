@@ -11,7 +11,7 @@ Follow the Dreamers Kernel and output discipline from `copilot-instructions.md`.
 $ARGUMENTS
 
 **Step 1 — Improvements audit**
-Read `.dreamers/atlas/improvements.md` (repo-local). For each open item:
+Read `.dreamers/improvements.md` (repo-local). For each open item:
 - Decide: action now, defer with a reason, or close as no longer relevant.
 - If actionable as a direct text edit to an agent file or ref (meta work): make the edit now.
 - If it requires Forge or a full pipeline: defer it — add a note with why and which skill to use.

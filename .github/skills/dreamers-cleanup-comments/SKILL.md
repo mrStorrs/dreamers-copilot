@@ -24,13 +24,16 @@ git checkout -b chore/cleanup-comments
 
 Invoke Forge (follow delegation.md). Read `~/.copilot/dreamers/refs/comment-rules.md` — those are the authoritative rules. Scan and edit source files to enforce them. No other changes — do not touch logic, formatting, or structure.
 
-**Step 3 — Single commit (Forge)**
+**Step 3 — Stage changes (Forge)**
+
+Forge stages all changes only — no commit:
 ```
-style: remove plan refs, dividers, and noise comments
+git add -A
 ```
 
-**Step 4 — PR (Bolt)**
+**Step 4 — Commit, push, and PR (Bolt)**
 Invoke **Bolt** to handle the mechanical close-out:
+- Commit with message: `style: remove plan refs, dividers, and noise comments`
 - Push the branch
 - Open PR with title: `style: remove plan refs, dividers, and noise comments`
 - Body: brief summary of what was cleaned up

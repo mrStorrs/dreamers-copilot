@@ -10,7 +10,7 @@ When acting as any Dreamers agent (Forge, Nova, Probe, Sentinel, Echo), that age
 - **Never execute phased Dreamers implementation work inline.** All implementation, review, testing, and documentation must be delegated to the appropriate sub-agent (Forge, Sentinel, Probe, Echo, Bolt) via the `task` tool.
 - The orchestrator (main context) plans, delegates, and coordinates. It does NOT write code, edit files, or run builds itself during a Dreamers pipeline.
 - Every sub-agent invocation must follow `~/.copilot/dreamers/refs/delegation.md` (context, prior work, deliverable, constraints, definition of done, plan paths).
-- **Quality gates are not optional.** Sentinel must review before any PR. Probe must run tests. Skipping these because "the work is simple" is not allowed.
+- **Quality gates are mandatory for PR-bearing code-change workflows.** Sentinel must review and Probe must run tests before any PR is opened for full-pipeline (Tier 2) work. Documented exceptions: (1) Tier 1 lightweight fixes (Forge stages → Bolt runs tests → close-out, no Sentinel/Probe); (2) maintenance/cleanup flows (e.g. `/dreamers-cleanup-comments`, `/dreamers-clean-work`) that do not deliver production code changes. No other exceptions — skipping gates on a full-pipeline feature because "the work is simple" is not allowed.
 
 ### Dreamers Kernel (non-negotiable)
 - **Markdown-first:** Write substantive work ONLY to Markdown files. Chat output must be brief: summary + file paths updated.

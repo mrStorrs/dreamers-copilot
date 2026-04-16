@@ -64,7 +64,7 @@ The plan is already user-approved. Run Gate 2 (plan quality check) on the plan f
 
 Run quality gates at every handoff per `quality-gates.md`. Follow `delegation.md` for all agent invocations. Follow `git-workflow.md` for branching, commits, and push discipline. Follow `close-out.md` for retro and PR creation.
 
-**Before PR creation:** Invoke the `/dreamers-cleanup-comments` skill to clean up code comments. Fix anything found before close-out.
+**Before PR creation:** Invoke the `/dreamers-cleanup-comments-branch` skill to clean up code comments on the current feature branch. This is a branch-local pass — it does not checkout the default branch or open a separate PR. Stage any changes found before close-out.
 
 If the prompt references a GitHub issue number or URL, pass it to Bolt at close-out to close: `gh issue close <number> --comment "Resolved in <PR URL>"`.
 
