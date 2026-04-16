@@ -34,7 +34,7 @@ Follow the Dreamers Kernel and output discipline from `copilot-instructions.md`.
 
 Route: Forge → Bolt (run tests) → Close-out
 
-After Forge commits the fix, invoke **Bolt** to run the project's test suite. If tests pass, proceed to close-out (Bolt handles push + PR). Skip Probe and Sentinel — this is a simple fix.
+After Forge stages the fix (`git add`), invoke **Bolt** to run the project's test suite. If tests pass, proceed to close-out (Bolt commits and handles push + PR). Skip Probe and Sentinel — this is a simple fix.
 
 ---
 

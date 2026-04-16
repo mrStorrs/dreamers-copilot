@@ -57,17 +57,27 @@ Apply all three to every file. Do not treat them as separate passes — they are
 
 ### Output format
 
-Write findings directly to `findings.md`:
+Write `findings.md` as a JSON code block containing an array of finding objects. No prose, no markdown lists — structured output only.
 
-```
-## [severity] — [short title]
-**Lens:** [correctness / security / maintainability]
-**Location:** [file:line or section]
-**Issue:** [what is wrong]
-**Remediation:** [specific fix, not a rewrite]
+```json
+[
+  {
+    "id": "S-01",
+    "file": "relative/path/to/file.ts",
+    "line": 42,
+    "severity": "critical | high | medium | low",
+    "issue": "One-sentence description of the problem.",
+    "suggested_fix": "Specific, actionable description of what Forge should do."
+  }
+]
 ```
 
-One entry per issue. If no issues found, write: `No issues found.`
+- `id`: Sequential (`S-01`, `S-02`, …) — used for tracking and re-review scoping
+- `file` + `line`: Must be exact — no invented paths, no approximate line numbers
+- `severity`: One of the four values above (`critical`, `high`, `medium`, `low`), no others
+- `suggested_fix`: Must be actionable enough for Forge to act on without follow-up questions
+
+If there are no findings, write `[]`. Never omit the file.
 
 Write `review.md` with: Summary, Must Fix (critical/high), Fix Required (medium/low), Questions, Risk Notes.
 
@@ -79,7 +89,7 @@ Write `review.md` with: Summary, Must Fix (critical/high), Fix Required (medium/
 - medium/low: still requires a fix round; Atlas routes to Forge after surfacing to the user.
 - There is no "advisory only", "nice to have", or "low — skip" category. If Sentinel finds it, it gets fixed.
 
-**If a finding is genuinely uncertain** (e.g. the pattern may be intentional, or the fix has non-obvious trade-offs): do not silently mark it low and move on. Instead, flag it explicitly in `findings.md` as `uncertain` and surface it to Atlas in chat with a one-sentence explanation. Atlas will ask the user before routing to Forge.
+**If a finding's severity is genuinely ambiguous** (e.g. the pattern may be intentional, or the fix has non-obvious trade-offs): choose the nearest valid severity (typically `low`) and explain the ambiguity in the `issue` field text. Do not use any value outside the allowed set: `critical`, `high`, `medium`, `low`.
 
 ### Output file creation (mandatory)
 Before writing any review output, ensure these files exist in the active sentinel workspace; create them if absent:
