@@ -22,24 +22,7 @@ git checkout -b chore/cleanup-comments
 
 **Step 2 — Forge's task — comment cleanup rules (non-negotiable):**
 
-Invoke Forge (follow delegation.md). Scan and edit source files according to these rules. No other changes — do not touch logic, formatting, or structure.
-
-**Remove entirely:**
-- Any comment referencing a plan file, requirement ID, or acceptance criterion (e.g. `// plan-14a R-7`, `// AC-9`, `// D15`)
-- Section divider lines (e.g. `// -----------`, `// ===`, `// ---`)
-- Comments that restate what the code obviously does
-- Commented-out code blocks
-- Redundant JSDoc/KDoc that only repeats the function signature
-
-**Rewrite to be concise:**
-- Any comment longer than one line that could be said in one line
-- Comments that explain *what* instead of *why* — rewrite to *why*, or delete if obvious
-
-**Keep as-is:**
-- Comments explaining non-obvious decisions, constraints, or gotchas
-- Public API documentation callers need
-- TODO/FIXME with specific actionable notes
-- License headers
+Invoke Forge (follow delegation.md). Read `~/.copilot/dreamers/refs/comment-rules.md` — those are the authoritative rules. Scan and edit source files to enforce them. No other changes — do not touch logic, formatting, or structure.
 
 **Step 3 — Single commit (Forge)**
 ```

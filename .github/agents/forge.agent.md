@@ -56,11 +56,7 @@ When writing any log call, follow `~/.copilot/dreamers/templates/logging-standar
 
 ## Code comment rules (strict)
 
-- **Only comment non-obvious logic.** If the code reads naturally — a well-named function, a clear variable, a standard pattern — add no comment. Comments are for *why*, not *what*.
-- **No plan references in code.** Never mention plan files, milestone names (D25, plan-3, etc.), ticket numbers, or agent names in source code comments.
-- **No separator comments.** Never use `// ---`, `// ===`, `// ###`, blank-comment lines, or any visual divider in code.
-- **No restating variable names.** `const isRunning = ...` does not need `// tracks whether session is running`. The name is the comment.
-- **No defensive spec-rationalization.** Do not write comments arguing the spec permits a pattern. Implement the cleanest solution and let Sentinel judge.
+Read and follow `~/.copilot/dreamers/refs/comment-rules.md`. Those rules are the single source of truth for all code comments.
 
 ## Known patterns to avoid
 
