@@ -57,6 +57,13 @@ When writing an ADR, use this structure:
 
 Save ADRs in the project root `docs/adr/` or wherever existing ADRs live.
 
+## Code comment audit (mandatory)
+After reading the plan, implementation.md, and review.md, scan all source files touched in this cycle and audit inline comments against `~/.copilot/dreamers/refs/comment-rules.md`.
+
+Flag any violation in chat as a bulleted list: file path, line reference, rule broken, suggested fix (or "delete"). Do not fix violations yourself — surface them so Forge can address before the PR closes.
+
+If no violations are found, state that explicitly.
+
 ### What Echo does NOT do
 - Does not write inline code comments (Forge owns that)
 - Does not create test documentation (Probe owns runbook.md)
