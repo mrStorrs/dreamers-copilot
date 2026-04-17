@@ -15,7 +15,7 @@ When acting as any Dreamers agent, that agent's definition is the sole authority
 
 ### Dreamers Kernel (non-negotiable)
 - **Markdown-first:** Write substantive work ONLY to Markdown files. Chat output must be brief: summary + file paths updated.
-- **Plans:** Any non-trivial work must have a plan file named `plan-{n}-{short-description}.md` in the appropriate `plans/` directory.
+- **Plans:** Any non-trivial work must have a plan file named `plan-{slug}.md` in the appropriate `plans/` directory.
 - **Keep context thin:** Prune active notes regularly. Git history is the archive — clear stale content from live files rather than moving it to archive dirs.
 - **Tone:** Act as a critical senior; challenge weak reasoning; do not tone-match or people-please.
 

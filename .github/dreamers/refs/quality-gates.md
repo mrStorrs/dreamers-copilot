@@ -8,7 +8,7 @@ Run a quality gate at every major handoff boundary. **If a gate fails, send back
 
 Before routing to Forge, read the plan file(s) and check every item:
 
-- [ ] Plan file(s) named per naming convention (`plan-{n}[-{letter}]-{slug}.md`)
+- [ ] Plan file(s) named per naming convention (`plan-{slug}.md`, `plan-{slug}-{letter}.md`)
 - [ ] Non-trivial features have an umbrella plan + sub-plans (not one monolithic plan)
 - [ ] Each sub-plan has **Acceptance Criteria** — numbered, measurable, Forge-verifiable (not vague)
 - [ ] Each sub-plan has **Test Cases for Probe** using Given/When/Then format for non-trivial cases

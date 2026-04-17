@@ -33,7 +33,7 @@ Every constraint in CLAUDE.md files is binding. CLAUDE.md overrides any default 
 
 **Decision outputs (exactly one):**
 - **"No change — proceed":** prior sub-plan matches assumptions; the next sub-plan is valid as written.
-- **"Updated plan — proceed":** write an updated `plan-{n}{letter}.md` (or revise the existing draft) reflecting the actual state, then hand off to Forge.
+- **"Updated plan — proceed":** write an updated `plan-{slug}-{letter}.md` (or revise the existing draft) reflecting the actual state, then hand off to Forge.
 - **"Architectural divergence — escalate":** surface the conflict in chat; do not proceed to Forge until resolved with the user.
 
 **Re-verify the full remaining plan, not just the next sub-plan.** A landed sub-plan can invalidate assumptions two steps ahead. Update all downstream sub-plan files that are now stale.

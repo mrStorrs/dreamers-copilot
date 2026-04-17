@@ -13,7 +13,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 
 ## Branch setup (before invoking Forge)
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
-2. Cut `feat/d<N>-<name>` from `$DEFAULT_BRANCH`.
+2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Review all persistent workspace files across agents (`assumptions.md`, `decisions.md`, `questions.md`, `links.md`) — prune stale/resolved entries.
 4. Wipe all live files across **all** agents — every file in this list must be reset to "No active work / No pending items":
    - `forge/status.md`, and any `forge/implementation*.md`
@@ -33,9 +33,9 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 - Bolt makes exactly **one** commit per sub-plan, immediately after Probe passes and user testing (if required) is signed off.
 - Forge and Probe stage their changes with `git add` throughout the pipeline but do **not** run `git commit`.
 - Commit message format (Conventional Commits, imperative mood, under 72 chars):
-  - `feat(D<N>): <sub-plan-name>` — standard sub-plan
-  - `feat!(D<N>): <sub-plan-name>` + `BREAKING CHANGE:` footer — if the sub-plan introduces a breaking change
-- Reference the plan file in the commit body: `Plan: plan-3-add-auth`.
+  - `feat: <sub-plan-name>` — standard sub-plan
+  - `feat!: <sub-plan-name>` + `BREAKING CHANGE:` footer — if the sub-plan introduces a breaking change
+- Reference the plan file in the commit body: `Plan: plan-add-auth-a`.
 
 One commit per sub-plan keeps each sub-plan's contribution atomic. Fix rounds (Sentinel → Forge) are staging work, not separate commits.
 

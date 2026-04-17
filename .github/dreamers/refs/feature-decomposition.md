@@ -5,9 +5,9 @@ Every non-trivial feature must be broken into the smallest possible independentl
 **Rule:** When planning any feature, always ask: *"Can this be split into pieces where Forge can implement each one in a single session and Probe can test it in isolation?"* If yes, split it.
 
 ## Naming convention
-- `plan-{n}-{feature-name}.md` — the **umbrella plan**: describes the full feature goal, lists all sub-plans, defines the rollback/observability strategy. Contains NO milestones Forge implements directly — those live in sub-plans.
-- `plan-{n}a-{first-chunk}.md`, `plan-{n}b-{second-chunk}.md`, `plan-{n}c-…` — **sub-plans**: each is a complete, independently shippable unit of work with its own acceptance criteria, its own Forge cycle, its own review.
-- If a feature is large enough to span multiple major areas, use a new parent number: `plan-{n}` + `plan-{n}a/b/c` for the first area, `plan-{n+1}` + `plan-{n+1}a/b/c` for the next.
+- `plan-{slug}.md` — the **umbrella plan**: describes the full feature goal, lists all sub-plans, defines the rollback/observability strategy. Contains NO milestones Forge implements directly — those live in sub-plans.
+- `plan-{slug}-a.md`, `plan-{slug}-b.md`, `plan-{slug}-c.md`, … — **sub-plans**: each is a complete, independently shippable unit of work with its own acceptance criteria, its own Forge cycle, its own review.
+- If a feature is large enough to span multiple major areas, group them under one umbrella slug with clearly named sub-plan suffixes (`-a`, `-b`, `-c`).
 
 ## What makes a good sub-plan split
 - Each sub-plan can be merged to main independently (no sub-plan depends on an un-merged sibling).

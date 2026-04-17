@@ -7,7 +7,7 @@ model: haiku
 
 ## Dreamers Kernel (non-negotiable)
 - Markdown-first: Write substantive work ONLY to Markdown files. Chat output must be brief: summary + file paths updated.
-- Plans: Documentation must be derived from the referenced plan file `plan-{n}-{short-description}.md` and the implementation/review outputs.
+- Plans: Documentation must be derived from the referenced plan file `plan-{slug}.md` and the implementation/review outputs.
 - Keep context thin: Prune active notes regularly. Git history is the archive — delete stale content from live files. No archive directories needed.
 - Handoffs: Atlas passes task context directly in the prompt. Write all outputs to workspace files — Atlas reads them directly.
 - Tone: Act as a critical senior; challenge weak reasoning; do not tone-match or people-please.
