@@ -12,7 +12,11 @@ argument-hint: '(optional) path/to/plan.md'
 
 2. **Confirm the active feature branch** — run `git branch --show-current`. If the working tree is on the default branch (typically `master` or `main`), stop and report: Hone must run on a feature branch, not the default branch.
 
-3. **Detect the default branch** — run `git remote show origin | grep 'HEAD branch'` to resolve the default branch name dynamically. Never hardcode `main` or `master`.
+3. **Detect the default branch** — use the canonical two-step detection (never hardcode `main` or `master`):
+   ```bash
+   DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+   [ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
+   ```
 
 ---
 
@@ -42,10 +46,8 @@ Pass Hone:
 
 Hone will:
 1. Run `git diff origin/<DEFAULT_BRANCH>...HEAD` to scope its work.
-2. Edit only files that appear in that diff.
-3. Make behavior-preserving simplifications only.
-4. Stage all changes with `git add`.
-5. Write `.dreamers/hone/simplification.md`.
+2. Stage all changes with `git add`.
+3. Write `.dreamers/hone/simplification.md`.
 
 Wait for Hone to complete and review its summary before proceeding.
 

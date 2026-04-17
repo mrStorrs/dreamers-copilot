@@ -64,7 +64,7 @@ The plan is already user-approved. Run Gate 2 (plan quality check) on the plan f
 
 Run quality gates at every handoff per `quality-gates.md`. Follow `delegation.md` for all agent invocations. Follow `git-workflow.md` for branching, commits, and push discipline. Follow `close-out.md` for retro and PR creation.
 
-**Before PR creation:** Invoke the `dreamers-simplify` skill. The skill runs Hone on the full feature-branch diff vs the default branch after all sub-plan cycles complete, then runs a final Sentinel + Probe validation pass internally before signaling completion — do not invoke Sentinel or Probe separately after the skill completes.
+**Before PR creation:** Invoke the `dreamers-simplify` skill — it runs Hone on the full feature-branch diff (not just the latest sub-plan), then a final Sentinel + Probe pass internally. Do not invoke Sentinel or Probe separately after the skill completes.
 
 If the prompt references a GitHub issue number or URL, pass it to Bolt at close-out to close: `gh issue close <number> --comment "Resolved in <PR URL>"`.
 

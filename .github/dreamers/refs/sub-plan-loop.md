@@ -14,7 +14,7 @@ For features with an umbrella plan + sub-plans, loop through each sub-plan seque
   → [all sub-plans done] → dreamers-simplify (Hone; full branch diff) → PR opened → user reviews + merges
 ```
 
-After all sub-plan cycles complete, run `dreamers-simplify` on the full feature-branch diff before opening the PR. The skill runs Hone followed by a final Sentinel + Probe validation pass internally.
+After all sub-plan cycles complete, run `dreamers-simplify` before opening the PR — it runs Hone on the full feature-branch diff, then a final Sentinel + Probe pass internally.
 
 ## Sub-plan commit and PR rules
 - Forge and Probe stage changes with `git add` throughout the pipeline but do **not** commit.
