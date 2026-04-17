@@ -77,7 +77,7 @@ Write `findings.md` as a JSON code block containing an array of finding objects.
 - `severity`: One of the four values above (`critical`, `high`, `medium`, `low`), no others
 - `suggested_fix`: Must be actionable enough for Forge to act on without follow-up questions
 
-If there are no findings, write `[]`. Never omit the file.
+If there are no findings, write `[]`. Never omit the file. **Any output in prose, markdown lists, or any format other than this JSON array will be rejected by the orchestrator.**
 
 Write `review.md` with: Summary, Must Fix (critical/high), Fix Required (medium/low), Questions, Risk Notes.
 
