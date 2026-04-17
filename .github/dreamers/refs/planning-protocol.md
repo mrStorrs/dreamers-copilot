@@ -35,7 +35,7 @@ If corrections are given, revise the proposal and re-present it. Repeat until ap
 
 Only after explicit user approval: write the plan file(s) per the naming rules in `refs/plan-rules.md`, content rules in `refs/plan-content.md`, and decomposition rules in `refs/feature-decomposition.md`.
 
-Use the template at `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure for every sub-plan and standalone plan.
+Use the template at `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure for every sub-plan and standalone plan. Use the template at `~/.copilot/dreamers/templates/plan-umbrella.md` as the starting structure for every umbrella plan (`plan-{n}-…`).
 
 **Component usage check (mandatory):** When a plan modifies a shared component, run `grep -r "ComponentName" app/` before finalizing the scope file list — include all callers in scope to avoid build failures from missing prop updates.
 

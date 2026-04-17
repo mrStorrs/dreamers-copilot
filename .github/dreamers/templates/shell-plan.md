@@ -1,6 +1,6 @@
 # Plan: {{MILESTONE_NAME}}
 
-**Status:** Shell — awaiting Nova refinement via `/dreamers-full`
+**Status:** Shell — ready for planning via `/dreamers-plan`
 **Milestone:** {{N}} of {{TOTAL}}
 **Project:** {{PROJECT_NAME}}
 
@@ -20,13 +20,13 @@
 
 ## Out of scope
 
-{{What this milestone deliberately does NOT do. Prevents scope creep and gives Nova clear boundaries.}}
+{{What this milestone deliberately does NOT do. Prevents scope creep and gives the planner clear boundaries.}}
 
 ---
 
 ## Rough acceptance criteria
 
-{{3–5 bullets. Measurable outcomes — not implementation steps. Nova will refine these into full testability contracts.}}
+{{3–5 bullets. Measurable outcomes — not implementation steps. The planning phase will refine these into full testability contracts.}}
 
 - [ ]
 - [ ]
@@ -46,6 +46,6 @@
 
 ---
 
-## Notes for Nova
+## Open questions / risks
 
-{{Known risks, open design questions, or decisions to flag. If none, write "None."}}
+{{Known risks, open design questions, or decisions to flag during planning. If none, write "None."}}

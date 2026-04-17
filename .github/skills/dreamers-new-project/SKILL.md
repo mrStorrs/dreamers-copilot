@@ -82,7 +82,7 @@ After writing all plans, list them in chat with file paths and one-line summarie
 
 ## Phase 6 — Review loop
 
-Ask the user: **"Review the milestone breakdown above. Tell me if you want to split, merge, reorder, or rescope any milestone. When you're satisfied, call `/dreamers-full` on whichever milestone you want to start with."**
+Ask the user: **"Review the milestone breakdown above. Tell me if you want to split, merge, reorder, or rescope any milestone. When you're satisfied, run `/dreamers-plan` on whichever milestone you want to start with to produce a full implementation plan. Once the plan is approved, run `/dreamers-implement` to build it (or `/dreamers-full` to plan and implement in one session)."**
 
 If the user requests changes: update the affected plan files, re-list all plans, and ask again. Repeat until the user signs off.
 

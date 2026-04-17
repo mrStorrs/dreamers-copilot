@@ -1,22 +1,20 @@
 # Plan N[letter] — [Short Description]
 
-**Owner:** Nova
+**Owner:** [Owner]
 **Date:** YYYY-MM-DD
 **Scope:** repo-local
+**Parent:** [plan-N-short-name.md](plan-N-short-name.md)
+**Depends-on:** [plan-Na-prior-sub-plan.md](plan-Na-prior-sub-plan.md) *(or "none")*
 **Status:** Draft
 **Branch:** feat/d<N>-<name>
+**User-testing-required:** yes/no
+**Links:** *(list any key refs or related files, or omit if none)*
 
 ---
 
 ## Summary
 
 [1-2 sentences: what this sub-plan delivers and why it is needed]
-
----
-
-## Problem / Motivation
-
-[Why this is needed — the gap or pain being addressed]
 
 ---
 
