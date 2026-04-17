@@ -67,7 +67,6 @@ Include regression analysis from Probe — not just "fixed", but "here is why te
 
 ## Rules for both tiers
 
-- If the change touches `mobile/` runtime files, distribute a Firebase preview build before opening the PR per the project CLAUDE.md Distribution section.
 - If the prompt references a GitHub issue number or URL, close that issue once the PR is created: `gh issue close <number> --comment "Resolved in <PR URL>"`.
 - Follow git-workflow.md for branching, commits, and push discipline.
 

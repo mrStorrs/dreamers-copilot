@@ -11,9 +11,10 @@ $ARGUMENTS
 
 **Step 1 — Identify changed files**
 
-Determine which files have been changed on the current branch relative to the default branch:
+Fetch the latest remote refs, then determine which files have been changed on the current branch relative to the default branch:
 
 ```bash
+git fetch origin 2>/dev/null || true
 DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
 [ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
 git diff --name-only "origin/$DEFAULT_BRANCH"...HEAD
