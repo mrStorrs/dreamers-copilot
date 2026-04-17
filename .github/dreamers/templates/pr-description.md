@@ -36,4 +36,4 @@ Release X.Y.Z (build N) distributed to alpha group — available in Firebase App
 
 ---
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+🤖 Generated with GitHub Copilot

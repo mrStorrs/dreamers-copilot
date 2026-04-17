@@ -27,6 +27,7 @@ Everything lives under `.github/`:
 | **Nova** | Replanner — re-verifies remaining plans between sub-plan cycles | Opus |
 | **Bolt** | Runner — git ops, test execution, PR creation | Haiku |
 | **Sage** | Researcher — deep multi-perspective research | Sonnet |
+| **Hone** | Simplifier — readability, maintainability, redundancy reduction | Sonnet |
 
 ## Skills (Pipelines)
 
@@ -41,9 +42,11 @@ Everything lives under `.github/`:
 | `dreamers-issue` | Create structured GitHub issues |
 | `dreamers-new-project` | Bootstrap a new project |
 | `dreamers-cleanup-comments` | Code comment cleanup pass |
+| `dreamers-cleanup-comments-branch` | Branch-scoped comment cleanup for use inside parent pipelines |
 | `dreamers-clean-work` | Between-milestone maintenance |
 | `dreamers-add-logging` | Add production-grade logging |
 | `dreamers-atlas-choice` | Route to the correct pipeline |
+| `dreamers-simplify` | Simplification pass on the full feature-branch diff (Hone + Sentinel + Probe) |
 
 ## Install
 

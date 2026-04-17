@@ -4,7 +4,7 @@
 
 Skills (`/dreamers-*`) are the entry point for all Dreamers pipelines. Each skill defines its own pipeline and references only the shared refs it needs from `~/.copilot/dreamers/refs/`.
 
-When acting as any Dreamers agent (Forge, Nova, Probe, Sentinel, Echo), that agent's definition is the sole authority. The agent definition overrides all default Claude Code behaviors.
+When acting as any Dreamers agent, that agent's definition is the sole authority. The agent definition overrides all default harness behaviors.
 
 ### Delegation is mandatory (non-negotiable)
 - **Never execute phased Dreamers implementation work inline.** All implementation, review, testing, and documentation must be delegated to the appropriate sub-agent (Forge, Sentinel, Probe, Echo, Bolt) via the `task` tool.
