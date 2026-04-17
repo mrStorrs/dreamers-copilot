@@ -56,7 +56,7 @@ Follow `refs/project-bootstrap.md` for checklist.
 
 **Check for existing repo:**
 ```
-git rev-parse --is-inside-work-tree 2>/dev/null
+git rev-parse --is-inside-work-tree 2>$null
 ```
 
 If not already a repo:
@@ -66,7 +66,7 @@ If not already a repo:
    - `gh repo create [project-name] --[public|private] --source=. --remote=origin`
    - `git remote set-url origin git@github.com:[owner]/[project-name].git`
    - Create `.gitignore` with `.dreamers/` plus standard ignores for the agreed stack
-   - `mkdir -p .dreamers/plans .dreamers/atlas`
+   - `New-Item -ItemType Directory -Force -Path .dreamers/plans, .dreamers/atlas | Out-Null`
 
 After Bolt completes, create the project-level `CLAUDE.md` per project-bootstrap.md ownership rules (this requires judgment — do it directly, not via Bolt).
 
