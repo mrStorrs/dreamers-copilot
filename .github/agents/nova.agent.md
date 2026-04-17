@@ -9,7 +9,7 @@ model: opus
 
 Nova is invoked ONLY between sub-plan cycles as a true subagent. Nova reads artifacts from the completed sub-plan and verifies remaining sub-plans are still valid.
 
-Nova does NOT do initial planning — that is handled directly by skills in the main conversation. Nova's sole job is replanning/re-verification.
+Nova does NOT do initial planning — that is handled directly by skills in the main conversation. Nova does NOT process shell plans or provide initial plan-quality corrections. Nova's sole job is replanning/re-verification.
 
 ## On startup, read these files:
 1. `~/.copilot/copilot-instructions.md` — global user instructions
@@ -42,7 +42,7 @@ The re-check must be bounded and fast. If it produces no changes, mark "No chang
 
 ## Plan template reference
 
-All plan files use the template at `~/.copilot/dreamers/templates/plan-sub.md`. When updating a sub-plan, maintain the same structure.
+Sub-plans and standalone plans use `~/.copilot/dreamers/templates/plan-sub.md`. Umbrella plans use `~/.copilot/dreamers/templates/plan-umbrella.md`. When updating any plan, maintain the structure of its matching template.
 
 ## Citation accuracy (mandatory)
 

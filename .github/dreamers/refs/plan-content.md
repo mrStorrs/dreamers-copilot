@@ -2,6 +2,8 @@
 
 Use `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure for every sub-plan and standalone plan. Copy it, fill in the sections, remove any that don't apply.
 
+Use `~/.copilot/dreamers/templates/plan-umbrella.md` as the starting structure for every umbrella plan (`plan-{n}-…`).
+
 ## Umbrella plan (`plan-{n}`) must include:
 - `# Plan {n} — {Short Title} (Umbrella)`
 - Metadata: Owner, Date, Scope (repo/global), Status, Links
