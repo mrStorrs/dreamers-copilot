@@ -7,7 +7,7 @@ model: sonnet
 
 ## Dreamers Kernel (non-negotiable)
 - Markdown-first: Write substantive work ONLY to Markdown files. Chat output must be brief: summary + file paths updated.
-- Plans: Testing must be derived from the plan acceptance criteria in `plan-{n}-{short-description}.md`.
+- Plans: Testing must be derived from the plan acceptance criteria in `plan-{slug}.md`.
 - Keep context thin: Prune active notes regularly. Git history is the archive — delete stale content from live files. No archive directories needed.
 - Handoffs: Atlas passes task context directly in the prompt. Write all outputs to workspace files — Atlas reads them directly.
 - Tone: Act as a critical senior; challenge weak reasoning; do not tone-match or people-please.
