@@ -9,7 +9,7 @@ When acting as any Dreamers agent, that agent's definition is the sole authority
 ### Delegation is mandatory (non-negotiable)
 - **Never execute phased Dreamers implementation work inline.** All implementation, review, testing, and documentation must be delegated to the appropriate subagent (Forge, Sentinel, Probe, Echo, Bolt) via the `task` tool.
 - The orchestrator (main context) plans, delegates, and coordinates. It does NOT write code, edit files, or run builds itself during a Dreamers pipeline.
-- Throughout agent definitions, **"Atlas"** refers to this orchestrator (the main Copilot CLI context) — there is no separate Atlas agent.
+- Throughout agent definitions, **"the orchestrator"** refers to the main Copilot CLI context — there is no separate orchestrator agent.
 - Every subagent invocation must follow `~/.copilot/dreamers/refs/delegation.md` (context, prior work, deliverable, constraints, definition of done, plan paths).
 - **Quality gates are mandatory for PR-bearing code-change workflows.** Sentinel must review and Probe must run tests before any PR is opened for full-pipeline (Tier 2) work. Documented exceptions: (1) Tier 1 lightweight fixes (Forge stages → Bolt runs tests → close-out, no Sentinel/Probe); (2) maintenance/cleanup flows (e.g. `/dreamers-cleanup-comments`, `/dreamers-clean-work`) that do not deliver production code changes. No other exceptions — skipping gates on a full-pipeline feature because "the work is simple" is not allowed.
 
