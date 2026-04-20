@@ -21,7 +21,7 @@ Run the full requirements conversation directly with the user:
 
 - **Phase 1 — Hash it out:** Use the `ask_user` tool to ask clarifying questions. Ask one question at a time — do not bundle. One round only.
 - **Phase Gate — User Input Audit:** Before presenting the proposal, review the full conversation. Verify every suggestion, correction, preference, and constraint the user expressed is explicitly addressed. If anything is missing, incorporate it now.
-- **Phase 2 — Approval gate:** Present the proposal block from `planning-protocol.md` in chat, then call `ask_user` with choices `["Approved", "Corrections needed"]`. If corrections, revise and re-present. Loop until approved.
+- **Phase 2 — Approval gate:** Present the proposal block from `planning-protocol.md` in chat, then call `ask_user` with choice `["Approved"]` and allow inline freeform corrections in that same interaction. Treat any non-approval freeform response as corrections, revise and re-present the proposal, and loop until the user explicitly approves.
 - **Phase 3 — Write plan files** to `.dreamers/plans/` per `plan-rules.md`, `plan-content.md`, and `feature-decomposition.md`. Use `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure.
 
 Do not proceed to Phase 2 (implementation) until the user explicitly approves the plan.
