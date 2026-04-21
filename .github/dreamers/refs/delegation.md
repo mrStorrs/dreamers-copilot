@@ -10,11 +10,10 @@ Each Agent tool invocation must include in the prompt:
 
 ## MANDATORY — Agent mode
 
-**All agents MUST be invoked with `mode: "background"` + `wait: true` via `read_agent`.**
+**All agents MUST be invoked with `mode: "sync"`.**
 
-- Fire the agent with `mode: "background"`
-- Immediately call `read_agent(agent_id, wait: true)` to block until it completes
-- Read only the summary the agent returns — substantive output goes to markdown files, not the orchestrator's context window
+- Fire the agent with `task(mode: "sync")` — it blocks until the agent completes and returns the summary inline
+- Substantive output goes to markdown files, not the orchestrator's context window — the summary is all the orchestrator needs
 - Gate on the result before firing the next agent — never fire two agents in parallel in the pipeline
 
 This keeps the orchestrator's context window lean (summaries only) while maintaining strict sequential, gated handoffs.
