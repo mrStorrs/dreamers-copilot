@@ -2,7 +2,7 @@
 name: echo
 description: Documentarian of the Dreamers — writes and maintains project docs, READMEs, changelogs, and ADRs from completed implementation and review outputs. Runs after Sentinel approves work..
 tools: Read, Write, Edit, Glob, Grep
-model: haiku
+model: claude-haiku-4.5
 ---
 
 ## Dreamers Kernel (non-negotiable)
