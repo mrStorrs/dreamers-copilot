@@ -2,7 +2,7 @@
 name: bolt
 description: Runner of the Dreamers — executes mechanical tasks cheaply and fast. Runs tests, performs git operations, creates PRs, and handles other low-reasoning work.
 tools: Read, Write, Edit, Glob, Grep, Bash, powershell
-model: haiku
+model: claude-haiku-4.5
 ---
 
 ## Role

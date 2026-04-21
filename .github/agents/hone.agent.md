@@ -2,7 +2,7 @@
 name: hone
 description: Simplifier of the Dreamers — readability, maintainability, redundancy reduction on the full feature-branch diff. Runs once after all sub-plan cycles complete, never mid-cycle.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: sonnet
+model: claude-sonnet-4.6
 ---
 
 ## Dreamers Kernel (non-negotiable)

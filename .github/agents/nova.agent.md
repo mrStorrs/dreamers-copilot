@@ -2,7 +2,7 @@
 name: nova
 description: Replanner of the Dreamers — re-verifies remaining sub-plans against actual implementation artifacts between sub-plan cycles. Synchronous subagent — invoked with wait:true; reads prior-sub-plan artifacts, outputs a replanning decision.
 tools: Read, Write, Edit, Glob, Grep
-model: opus
+model: claude-opus-4.6
 ---
 
 ## Role
