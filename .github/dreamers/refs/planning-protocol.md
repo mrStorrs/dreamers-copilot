@@ -37,7 +37,7 @@ Only after explicit user approval: write the plan file(s) per the naming rules i
 
 Use the template at `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure for every sub-plan and standalone plan. Use the template at `~/.copilot/dreamers/templates/plan-umbrella.md` as the starting structure for every umbrella plan (`plan-{slug}.md`).
 
-**Component usage check (mandatory):** When a plan modifies a shared component, run `grep -r "ComponentName" .` (substitute the project's actual source root from `CLAUDE.md`) before finalizing the scope file list — include all callers in scope to avoid build failures from missing prop updates.
+**Component usage check (mandatory):** When a plan modifies a shared component, run `grep -r "ComponentName" .` (substitute the project's actual source root from `.github/copilot-instructions.md`) before finalizing the scope file list — include all callers in scope to avoid build failures from missing prop updates.
 
 ## Output discipline during planning
 

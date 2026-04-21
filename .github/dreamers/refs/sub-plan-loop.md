@@ -30,4 +30,4 @@ After each sub-plan's pipeline completes (Forge + Sentinel + Probe all pass), in
 ## User testing pause rule
 Check the completed sub-plan's `User testing required` field:
 - `no` — commit immediately, invoke Nova re-verify, continue without pausing.
-- `yes` — distribute a build per the project's distribution method (check the project-level `CLAUDE.md` Distribution section), notify the user, and **pause the pipeline**. Do not invoke Nova or start the next sub-plan until the user explicitly gives the go-ahead.
+- `yes` — distribute a build per the project's distribution method (check the project-level `.github/copilot-instructions.md` Distribution section), notify the user, and **pause the pipeline**. Do not invoke Nova or start the next sub-plan until the user explicitly gives the go-ahead.
