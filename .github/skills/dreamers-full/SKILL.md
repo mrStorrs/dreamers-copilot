@@ -39,7 +39,7 @@ Do not proceed to Phase 2 (implementation) until the user explicitly approves th
    - `~/.copilot/dreamers/refs/close-out.md`
    - `~/.copilot/dreamers/refs/agent-recovery.md`
    - If the plan has sub-plans, also read: `~/.copilot/dreamers/refs/sub-plan-loop.md`
-2. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "background")`, then immediately `read_agent(wait: true)` per `git-workflow.md` (detect default branch, checkout and pull it, cut `feat/d<N>-<name>` from it, wipe agent workspaces). Do not proceed until Bolt confirms.
+2. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "sync")` per `git-workflow.md` (detect default branch, checkout and pull it, cut `feat/d<N>-<name>` from it, wipe agent workspaces). Do not proceed until Bolt confirms.
 3. **Do not write or edit production files yourself.** Never use `create`, `edit`, or `powershell` to modify source code. All implementation must go through the `task` tool.
 
 ---
@@ -49,9 +49,9 @@ The plan is already user-approved. Run Gate 2 (plan quality check) on the plan f
 **Single plan route:** Forge → Sentinel → Probe → `dreamers-simplify` (Hone + final Sentinel + Probe; runs inside skill) → Close-out (Bolt handles push + PR)
 **Sub-plan route:** Loop per sub-plan (see `sub-plan-loop.md`), then `dreamers-simplify` (Hone + final Sentinel + Probe; runs inside skill) → Close-out (Bolt handles push + PR)
 
-### Agent delegation (all via `task` tool, `mode: "background"` + `read_agent(wait: true)`)
+### Agent delegation (all via `task` tool, `mode: "sync"`)
 
-> **NEVER fire the next agent before the current one completes and is reviewed.** Always `read_agent(wait: true)` immediately after `task(mode: "background")`. Agents write substantive output to markdown files — the orchestrator only receives the summary, keeping context lean.
+> **NEVER fire the next agent before the current one completes and is reviewed.** Use `task(mode: "sync")` — it blocks until the agent finishes and returns its summary inline. Agents write substantive output to markdown files — the orchestrator only receives the summary, keeping context lean.
 
 | Agent type | When to use |
 |---|---|

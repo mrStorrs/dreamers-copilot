@@ -36,7 +36,7 @@ If a plan file path is provided in `$ARGUMENTS`, pass it to Hone as plan context
 
 ### Step 1 — Delegate to Hone
 
-Invoke Hone as a background subagent (`mode: "background"` + `read_agent(wait: true)`).
+Invoke Hone via `task(mode: "sync")`.
 
 Pass Hone:
 - Repo path (current working directory)
@@ -53,7 +53,7 @@ Wait for Hone to complete and review its summary before proceeding.
 
 ### Step 2 — Sentinel validation pass
 
-Invoke Sentinel as a background subagent (`mode: "background"` + `read_agent(wait: true)`).
+Invoke Sentinel via `task(mode: "sync")`.
 
 Pass Sentinel:
 - Path to `.dreamers/hone/simplification.md` (list of files Hone edited)
@@ -64,7 +64,7 @@ Wait for Sentinel to complete. If Sentinel blocks (critical/high findings), rout
 
 ### Step 3 — Probe validation pass
 
-Invoke Probe as a background subagent (`mode: "background"` + `read_agent(wait: true)`).
+Invoke Probe via `task(mode: "sync")`.
 
 Pass Probe:
 - Path to `.dreamers/hone/simplification.md`
