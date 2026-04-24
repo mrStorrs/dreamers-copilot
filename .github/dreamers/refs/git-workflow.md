@@ -26,8 +26,16 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    - **Not merged:** leave plan files in place.
 6. No init commit — Bolt's first commit for the milestone is the first thing in the PR diff.
 
+## Commit discipline (non-negotiable)
+1. **Commit at end of each sub-plan** — after Probe passes (and user sign-off if required).
+2. **Commit before PR creation** — a final commit capturing any last changes before opening the PR.
+3. **No auto-commit after PR is created** — if changes are made after `gh pr create`, do NOT commit automatically. Ask the user first.
+
 ## Push discipline (non-negotiable)
 `git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between sub-plans, or at any other point in the pipeline.
+
+## Post-PR push discipline
+If the user approves a post-PR commit, push with `git push` (no force). The PR will update automatically.
 
 ## Commit structure (one commit per sub-plan)
 - Bolt makes exactly **one** commit per sub-plan, immediately after Probe passes and user testing (if required) is signed off.

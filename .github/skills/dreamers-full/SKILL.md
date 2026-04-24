@@ -46,8 +46,8 @@ Do not proceed to Phase 2 (implementation) until the user explicitly approves th
 
 The plan is already user-approved. Run Gate 2 (plan quality check) on the plan files, then orchestrate:
 
-**Single plan route:** Forge → Sentinel → Probe → `dreamers-simplify` (Hone + final Sentinel + Probe; runs inside skill) → Close-out (Bolt handles push + PR)
-**Sub-plan route:** Loop per sub-plan (see `sub-plan-loop.md`), then `dreamers-simplify` (Hone + final Sentinel + Probe; runs inside skill) → Close-out (Bolt handles push + PR)
+**Single plan route:** Forge → Sentinel → Probe → `dreamers-simplify` (Hone + final Sentinel + Probe; runs inside skill) → Echo → Close-out (Bolt handles push + PR)
+**Sub-plan route:** Loop per sub-plan (see `sub-plan-loop.md`), then `dreamers-simplify` (Hone + final Sentinel + Probe; runs inside skill) → Echo → Close-out (Bolt handles push + PR)
 
 ### Agent delegation (all via `task` tool, `mode: "sync"`)
 
@@ -64,7 +64,7 @@ The plan is already user-approved. Run Gate 2 (plan quality check) on the plan f
 
 Run quality gates at every handoff per `quality-gates.md`. Follow `delegation.md` for all agent invocations. Follow `git-workflow.md` for branching, commits, and push discipline. Follow `close-out.md` for retro and PR creation.
 
-**Before PR creation:** Invoke the `dreamers-simplify` skill — it runs Hone on the full feature-branch diff (not just the latest sub-plan), then a final Sentinel + Probe pass internally. Do not invoke Sentinel or Probe separately after the skill completes.
+**Before PR creation:** Invoke the `dreamers-simplify` skill — it runs Hone on the full feature-branch diff (not just the latest sub-plan), then a final Sentinel + Probe pass internally. Do not invoke Sentinel or Probe separately after the skill completes. Then invoke Echo to update project docs before proceeding to close-out.
 
 If the prompt references a GitHub issue number or URL, pass it to Bolt at close-out to close: `gh issue close <number> --comment "Resolved in <PR URL>"`.
 
