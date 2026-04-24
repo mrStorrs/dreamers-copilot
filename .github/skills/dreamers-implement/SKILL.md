@@ -31,12 +31,12 @@ The prompt must include a path to the existing plan file. If no plan file path i
 
 **User Input Audit (before Gate 2):** Review the entire conversation thread. For every suggestion, correction, preference, or constraint the user expressed, confirm it is explicitly addressed in the plan file. If anything is missing, update the plan to incorporate it before proceeding. Do not skip this step.
 
-**Single plan route:** Forge → Sentinel → Probe → `dreamers-simplify` → Close-out (Bolt handles push + PR)
-**Sub-plan route:** Loop per sub-plan (see sub-plan-loop.md), then `dreamers-simplify` → Close-out (Bolt handles push + PR)
+**Single plan route:** Forge → Sentinel → Probe → `dreamers-simplify` → Echo → Close-out (Bolt handles push + PR)
+**Sub-plan route:** Loop per sub-plan (see sub-plan-loop.md), then `dreamers-simplify` → Echo → Close-out (Bolt handles push + PR)
 
 Run Gate 2 (plan quality check) first. Run quality gates at every handoff boundary. Follow delegation.md for all agent invocations (use Bolt for mechanical tasks like test runs, git push, PR creation, issue closing). Follow git-workflow.md for branching, commits, and push discipline. Follow close-out.md for retro and PR creation.
 
-**Before PR creation:** Invoke the `dreamers-simplify` skill — it runs Hone on the full feature-branch diff (not just the latest sub-plan), then a final Sentinel + Probe pass internally. Do not invoke Sentinel or Probe separately after the skill completes.
+**Before PR creation:** Invoke the `dreamers-simplify` skill — it runs Hone on the full feature-branch diff (not just the latest sub-plan), then a final Sentinel + Probe pass internally. Do not invoke Sentinel or Probe separately after the skill completes. Then invoke Echo to update project docs before proceeding to close-out.
 
 If the prompt references a GitHub issue number or URL, pass it to Bolt at close-out to close: `gh issue close <number> --comment "Resolved in <PR URL>"`.
 

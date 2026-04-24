@@ -2,6 +2,20 @@
 
 Run this when all Sentinel passes clear and Probe passes.
 
+## Echo (documentation update)
+
+Before final commit, invoke **Echo** (Haiku subagent) to update project documentation:
+- Pass Echo the plan file path, `forge/implementation.md`, and any relevant context
+- Echo updates the project-level `CLAUDE.md` (Echo-owned sections only) and any other docs that need updates based on what was shipped
+- Echo logs all doc changes to `.dreamers/echo/docs-log.md`
+
+## Final commit (before PR)
+
+Before opening the PR, create a final commit capturing any remaining changes (including Echo's doc updates):
+1. `git status` — check for uncommitted changes
+2. If changes exist, commit with message: `docs: final cleanup before PR` (or appropriate message)
+3. If no changes, skip — do not create empty commits
+
 ## PR creation (delegate to Bolt)
 
 Invoke **Bolt** (Haiku subagent) for the mechanical PR steps. Pass Bolt:
@@ -11,6 +25,13 @@ Invoke **Bolt** (Haiku subagent) for the mechanical PR steps. Pass Bolt:
 4. If the original task referenced a GitHub issue number or URL, include it so Bolt can close it: `gh issue close <number> --comment "Resolved in <PR URL>"`
 
 Bolt reports back: PR URL, issue closed (if applicable). User reviews the diff and merges.
+
+## Post-PR changes (no auto-commit)
+
+If any changes are made after the PR is created (e.g., addressing review comments, fixes):
+1. **Do NOT auto-commit.** Ask the user: "I have changes ready. Should I commit and push these to the PR?"
+2. Only commit and push after explicit user approval.
+3. Use commit message: `fix: address PR feedback` (or appropriate message)
 
 ## Retrospective (run before opening PR)
 
