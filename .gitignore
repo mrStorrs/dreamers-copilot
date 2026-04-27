@@ -1,0 +1,5 @@
+# Dreamers workspace (repo-local)
+.dreamers/
+
+# JetBrains IDE
+.idea/
