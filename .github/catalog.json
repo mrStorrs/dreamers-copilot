@@ -285,19 +285,6 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-simplify/SKILL.md"
-    },
-    {
-      "type": "instruction",
-      "slug": "copilot-instructions-dreamers",
-      "name": "copilot-instructions.dreamers",
-      "description": "Top-level Copilot instruction file that wires the Dreamers system into a project.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "instructions"
-      ],
-      "path": ".github/copilot-instructions.dreamers.md"
     }
   ],
   "collections": [
@@ -402,10 +389,6 @@
         {
           "type": "skill",
           "slug": "dreamers-simplify"
-        },
-        {
-          "type": "instruction",
-          "slug": "copilot-instructions-dreamers"
         },
         {
           "type": "folder",

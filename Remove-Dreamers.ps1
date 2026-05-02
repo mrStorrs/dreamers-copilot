@@ -104,31 +104,9 @@ if (-not $DryRun -and (Test-Path (Join-Path $CopilotHome "dreamers"))) {
     }
 }
 
-# copilot-instructions.md (strip Dreamers section by markers)
-Write-Host "[copilot-instructions]" -ForegroundColor Cyan
-$targetInstructions = Join-Path $CopilotHome "copilot-instructions.md"
-$startMarker = "<!-- DREAMERS-START"
-$endMarker = "<!-- DREAMERS-END -->"
-
-if (Test-Path $targetInstructions) {
-    $existing = Get-Content $targetInstructions -Raw
-    if ($existing -match [regex]::Escape($startMarker)) {
-        $pattern = "(?s)\r?\n?$([regex]::Escape($startMarker)).*?$([regex]::Escape($endMarker))\r?\n?"
-        if ($DryRun) {
-            Write-Host "  WOULD STRIP: Dreamers section from copilot-instructions.md" -ForegroundColor Yellow
-        } else {
-            $cleaned = [regex]::Replace($existing, $pattern, "`n")
-            $cleaned = $cleaned.TrimEnd() + "`n"
-            Set-Content $targetInstructions $cleaned -NoNewline
-            Write-Host "  STRIPPED: Dreamers section from copilot-instructions.md" -ForegroundColor Red
-        }
-        $total++
-    } else {
-        Write-Host "  SKIP: no Dreamers markers found in copilot-instructions.md" -ForegroundColor DarkGray
-    }
-} else {
-    Write-Host "  SKIP: copilot-instructions.md not found" -ForegroundColor DarkGray
-}
+# Instructions
+Write-Host "[instructions]" -ForegroundColor Cyan
+$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "instructions") -TargetDir (Join-Path $CopilotHome "instructions") -Label "instructions"
 
 $action = if ($DryRun) { "Would remove" } else { "Removed" }
 Write-Host "`n$action $total file(s).`n" -ForegroundColor Cyan

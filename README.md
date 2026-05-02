@@ -60,18 +60,9 @@ Options:
 - `-Force` — overwrite existing files without prompting
 - `-CopilotHome "D:\custom\.copilot"` — install to a custom location
 
-The installer manages your `copilot-instructions.md` safely:
-- **New install:** creates the file with the Dreamers section
-- **Existing file:** appends a marked Dreamers section (your personal instructions are never touched)
-- **Re-install/update:** replaces only the marked section between `DREAMERS-START` / `DREAMERS-END` markers
-
 ### Instruction files
 
-Instruction files (`.github/instructions/`) are repo-local — Copilot auto-injects them when working on matching files. Copy them into each project that uses Dreamers:
-
-```powershell
-Copy-Item -Recurse .github\instructions\ <your-project>\.github\instructions\
-```
+Instruction files in `.github/instructions/` (including the Dreamers kernel `dreamers.instructions.md`) are auto-loaded by Copilot CLI. The installer copies them to `~/.copilot/instructions/` for global use; a project-scoped loader can drop the same files into a target repo's `.github/instructions/` instead. Either way, your personal `~/.copilot/copilot-instructions.md` is never touched.
 
 ## Uninstall
 
@@ -85,7 +76,7 @@ Options:
 - `-DryRun` — preview what would be removed without deleting
 - `-CopilotHome "D:\custom\.copilot"` — target a custom location
 
-The uninstaller strips only the marked Dreamers section from `copilot-instructions.md` — your personal instructions remain intact.
+The uninstaller removes only files the installer placed (agents, skills, refs, templates, and the Dreamers instruction files in `~/.copilot/instructions/`). Your personal `copilot-instructions.md` is never touched.
 
 ## Project setup
 

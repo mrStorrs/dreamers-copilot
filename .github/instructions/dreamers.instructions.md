@@ -1,4 +1,6 @@
-<!-- DREAMERS-START — managed by Install-Dreamers.ps1, do not edit manually -->
+---
+applyTo: "**"
+---
 
 ## Dreamers System
 
@@ -34,5 +36,3 @@ When acting as any Dreamers agent, that agent's definition is the sole authority
 **Also include when relevant:** proactive observations, recommendations with reasoning, focused questions, follow-up flags.
 **At end-of-cycle only:** top 1–3 improvement suggestions (one sentence each).
 Do not pad output or over-explain. But do not suppress opinions, observations, or questions in the name of brevity.
-
-<!-- DREAMERS-END -->

@@ -92,49 +92,8 @@ $total += Copy-Files -From (Join-Path $Source "dreamers" "refs") -To (Join-Path 
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
 $total += Copy-Files -From (Join-Path $Source "dreamers" "templates") -To (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
 
-# copilot-instructions.md (marker-based merge)
-Write-Host "[copilot-instructions]" -ForegroundColor Cyan
-$dreamersFragment = Join-Path $Source "copilot-instructions.dreamers.md"
-$targetInstructions = Join-Path $CopilotHome "copilot-instructions.md"
-$startMarker = "<!-- DREAMERS-START"
-$endMarker = "<!-- DREAMERS-END -->"
-
-if (Test-Path $dreamersFragment) {
-    $newContent = Get-Content $dreamersFragment -Raw
-
-    if (Test-Path $targetInstructions) {
-        $existing = Get-Content $targetInstructions -Raw
-        $pattern = "(?s)$([regex]::Escape($startMarker)).*?$([regex]::Escape($endMarker))\r?\n?"
-
-        if ($existing -match [regex]::Escape($startMarker)) {
-            # Markers exist — replace the managed section
-            $merged = [regex]::Replace($existing, $pattern, $newContent)
-            Set-Content $targetInstructions $merged -NoNewline
-            Write-Host "  UPDATED: Dreamers section replaced in copilot-instructions.md" -ForegroundColor Green
-        } else {
-            # No markers — file exists but has no managed section
-            # Append the marked section; warn about possible manual Dreamers content
-            $merged = $existing.TrimEnd() + "`n`n" + $newContent
-            Set-Content $targetInstructions $merged -NoNewline
-            Write-Host "  APPENDED: Dreamers section added to copilot-instructions.md" -ForegroundColor Green
-            if ($existing -match "## Dreamers System") {
-                Write-Host ""
-                Write-Host "  WARNING: Your copilot-instructions.md appears to contain an older" -ForegroundColor Yellow
-                Write-Host "  unmarked Dreamers section. Remove the duplicate manually — the new" -ForegroundColor Yellow
-                Write-Host "  managed section is between DREAMERS-START / DREAMERS-END markers." -ForegroundColor Yellow
-            }
-        }
-    } else {
-        # No file at all — create fresh with just the managed section
-        $header = "# Global Instructions`n`n"
-        Set-Content $targetInstructions ($header + $newContent) -NoNewline
-        Write-Host "  CREATED: copilot-instructions.md with Dreamers section" -ForegroundColor Green
-    }
-    $total++
-} else {
-    Write-Warning "copilot-instructions.dreamers.md not found, skipping"
-}
+# Instructions (auto-loaded by Copilot CLI from ~/.copilot/instructions/*.instructions.md)
+Write-Host "[instructions]" -ForegroundColor Cyan
+$total += Copy-Files -From (Join-Path $Source "instructions") -To (Join-Path $CopilotHome "instructions") -Label "instructions"
 
 Write-Host "`nInstalled $($total) file(s).`n" -ForegroundColor Cyan
-Write-Host "Instruction files (.github/instructions/) are repo-local — copy them"
-Write-Host "into each project's .github/instructions/ directory as needed.`n"
