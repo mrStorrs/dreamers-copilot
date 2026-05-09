@@ -109,16 +109,9 @@ Read `~/.copilot/dreamers/templates/logging-standards.md`. For every file contai
 
 ### Code comment review (mandatory)
 
-For every file changed (including test files — tests are in scope), audit comments against `~/.copilot/dreamers/refs/comment-rules.md`. Flag every violation as a **low** severity finding. Specifically check for:
+For every changed file (including test files — tests are in scope), audit comments against `~/.copilot/dreamers/refs/comment-rules.md`. Every violation is a **low** severity finding — no exceptions.
 
-- **Comments that restate the code** — `// increment counter` above `counter++`, `// tracks whether session is running` above `const isRunning = ...`, or `// verifies user is rejected` above an assertion that already says exactly that. Comments are for *why*, not *what*. Flag and require removal.
-- **Plan/milestone/ticket/AC references in source comments** — any mention of plan files (`plan-3-...`), milestone names (D25, M4), ticket numbers, AC numbers (`// AC-3`, `describe('AC-7: ...')`), or agent names (Forge, Sentinel, Probe) inside code or test files. Flag and require removal.
-- **Separator comments** — `// ---`, `// ===`, `// ###`, `// --- setup ---`, `// arrange/act/assert`, blank `//` lines, or any visual divider. Flag and require removal.
-- **Defensive spec-rationalization** — comments arguing the spec permits a pattern (e.g. `// per plan §4.2 this is allowed`). Implementation should be clean enough to stand without justification. Flag and require removal.
-- **WHAT comments instead of WHY** — comments explaining what the code does step-by-step rather than why a non-obvious choice was made. Flag and require removal.
-- **Commented-out code** — including disabled test bodies. Use the runner's skip mechanism (`it.skip`, `xit`) for tests; delete dead code otherwise. Flag and require removal.
-
-For each violation, the finding's `suggested_fix` must be specific: "Remove comment on line N" or "Replace comment on line N with a WHY-only comment explaining [the actual non-obvious reason], or delete it entirely."
+The `suggested_fix` must be specific: "Remove comment on line N" or "Replace comment on line N with a WHY-only comment explaining [the actual non-obvious reason], or delete it entirely."
 
 ### Review checklist (derived from Nova's plan template)
 Cross-check these plan sections against the actual implementation:
