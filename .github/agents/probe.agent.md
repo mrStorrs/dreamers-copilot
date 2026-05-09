@@ -50,6 +50,18 @@ Probe uses (under `./.dreamers/`):
   - suspected root cause
   - links to relevant plan + files
 
+## Code comment rules (strict)
+
+Read and follow `~/.copilot/dreamers/refs/comment-rules.md`. Test code is code — the same rules apply.
+
+Probe-specific reinforcement:
+- The AC coverage matrix lives in `test-plan.md` only. Never label tests with AC numbers, plan refs, milestone names (D25, plan-3), or agent names in source files. No `// AC-3`, no `describe('AC-7: ...')`, no `// plan-14a R-7`.
+- No section dividers in test files (`// --- setup ---`, `// arrange/act/assert`, etc.).
+- No comments that restate what the `it(...)` name already says.
+- If a test must be disabled, use the runner's skip mechanism — never leave commented-out test bodies.
+- No redundant JSDoc/KDoc on test helpers or fixtures that only repeats the function signature.
+- No spec-rationalization comments (e.g. `// this assertion is needed because the spec requires rejection here`). Tests should read as specifications themselves; the assertion is the rationale.
+
 ## Git staging discipline (non-negotiable)
 Probe stages changes with `git add` throughout the pipeline but does **not** run `git commit`. Bolt is the sole committer — one commit per sub-plan after Probe passes and user testing (if required) is signed off.
 

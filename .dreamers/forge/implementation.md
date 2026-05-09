@@ -1,48 +1,46 @@
 # Implementation
 
-## Summary
-- Updated the `dreamers-full` approval gate documentation to keep a one-click `Approved` path while allowing inline corrections in the same `ask_user` interaction.
-- Replaced remaining orchestrator-role `Atlas` references in the scoped committed `.github` agent/instruction files with `orchestrator` wording.
-- Recorded branch provenance, validation, and limitations for this docs-only cleanup.
+## Why
 
-## Files Read for Context
-- `C:\Users\chq-cjs\.copilot\copilot-instructions.md`
-- `C:\projects-gh\dreamers-copilot\.dreamers\plans\plan-dreamers-full-approval-orchestrator-cleanup.md`
-- `C:\projects-gh\dreamers-copilot\.github\skills\dreamers-full\SKILL.md`
-- `C:\projects-gh\dreamers-copilot\.github\copilot-instructions.dreamers.md`
-- `C:\projects-gh\dreamers-copilot\.github\agents\echo.agent.md`
-- `C:\projects-gh\dreamers-copilot\.github\agents\forge.agent.md`
-- `C:\projects-gh\dreamers-copilot\.github\agents\probe.agent.md`
-- `C:\projects-gh\dreamers-copilot\.github\agents\sage.agent.md`
-- `C:\projects-gh\dreamers-copilot\.github\agents\sentinel.agent.md`
-- `C:\projects-gh\dreamers-copilot\.dreamers\forge\status.md`
+Probe was leaking AC labels (`// AC-3:`), section dividers, and what-restating comments into test files because neither the global nor repo-local Probe definition contained comment rules. Repo-local Sentinel had no "Code comment review" block, so violations were never flagged at review time.
 
 ## Files Changed
-- `.github/skills/dreamers-full/SKILL.md` — rewrote the approval gate to use one explicit approval option plus inline correction text in the same `ask_user` interaction.
-- `.github/copilot-instructions.dreamers.md` — clarified that the main Copilot CLI context is the orchestrator.
-- `.github/agents/echo.agent.md` — replaced orchestrator-role `Atlas` wording with `orchestrator` wording.
-- `.github/agents/forge.agent.md` — replaced orchestrator-role `Atlas` wording with `orchestrator` wording.
-- `.github/agents/probe.agent.md` — replaced orchestrator-role `Atlas` wording with `orchestrator` wording.
-- `.github/agents/sage.agent.md` — replaced orchestrator-role `Atlas` wording with `orchestrator` wording.
-- `.github/agents/sentinel.agent.md` — replaced orchestrator-role `Atlas` wording with `orchestrator` wording.
-- `.dreamers/forge/implementation.md` — documented the work, validation, and branch provenance.
 
-## Why
-- The documented approval loop added an unnecessary second correction round-trip.
-- The committed Dreamers docs still used mixed `Atlas`/`orchestrator` naming for the same Copilot CLI role.
+| File | Location | Reason |
+|------|----------|--------|
+| `C:\Users\cjsto\.claude\agents\probe.md` | Global (outside repo) | Added `## Code comment rules (strict)` section, inlined (mirrors Forge's global structure), inserted before `## Git commit conventions (mandatory)` |
+| `.github/agents/probe.agent.md` | Repo-local | Added `## Code comment rules (strict)` section referencing `comment-rules.md`, with Probe-specific reinforcement, inserted before `## Git staging discipline (non-negotiable)` |
+| `.github/agents/sentinel.agent.md` | Repo-local | (a) Added `### Code comment review (mandatory)` section after `### Logging review (mandatory)` and before `### Review checklist`; (b) Appended code-comments line to the Review checklist |
 
-## Branch Provenance
-- This feature branch was based on local `master` by user-approved fallback because no `origin` remote was configured.
+## Files Read for Context
+
+- `C:\Users\cjsto\.claude\agents\probe.md`
+- `.github/agents/probe.agent.md`
+- `.github/agents/sentinel.agent.md`
 
 ## How to Run
-- No runtime steps. This is a documentation/instruction-only change.
 
-## How to Test
-- Verify `.github/skills/dreamers-full/SKILL.md` documents `ask_user` with explicit `Approved` choice plus inline freeform corrections handled in the same interaction.
-- Verify the scoped committed `.github` files no longer contain whole-word `Atlas` references for the orchestrator role.
-- Confirm the surrounding handoff/routing wording still states that the orchestrator passes prompts, reads workspace outputs, and routes follow-up work.
-- No `CLAUDE.md` was present in or above the repo root, so there was no project-specific type-check command to run; this docs-only change has no applicable build step.
+Not applicable — markdown-only agent config.
+
+## How to Test (Verification)
+
+Re-read each of the three files and confirm:
+
+1. **Global probe.md** — `## Code comment rules (strict)` block appears between the end of `## Probe role responsibilities (Tester)` and `## Git commit conventions (mandatory)`.
+2. **Repo-local probe.agent.md** — `## Code comment rules (strict)` block appears between the end of `## Probe role responsibilities (Tester)` and `## Git staging discipline (non-negotiable)`.
+3. **Repo-local sentinel.agent.md** — `### Code comment review (mandatory)` block appears after `### Logging review (mandatory)` and before `### Review checklist`; the Review checklist ends with the "Code comments" bullet.
+
+## Git Status
+
+Two files staged: `.github/agents/probe.agent.md`, `.github/agents/sentinel.agent.md`. The global file edit (`C:\Users\cjsto\.claude\agents\probe.md`) is outside the repo and is not tracked by git.
 
 ## Known Limitations / Follow-ups
-- `hone.agent.md` was listed in the request but does not exist under `.github/agents/`, so no change was possible there.
-- Local `.dreamers/` artifacts that still mention `Atlas` remain intentionally untouched because the approved scope limited the terminology sweep to committed `.github` files.
+
+None. No deferred AC items — this task had no acceptance criteria beyond the three structural edits.
+
+## Sentinel Finding Fixes (S-01, S-02)
+
+Applied after initial review:
+
+- **S-01** (`sentinel.agent.md` line 130): Changed `below` to `above` in the Review checklist "Code comments" bullet — the "Code comment review" section sits above the checklist, not below it.
+- **S-02** (`probe.agent.md` after line 61): Added two missing prohibition bullets to the "Code comment rules (strict)" Probe-specific reinforcement list: (1) no redundant JSDoc/KDoc on test helpers/fixtures; (2) no spec-rationalization comments in tests.
