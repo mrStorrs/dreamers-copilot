@@ -107,6 +107,12 @@ Sentinel's DoD is not met if either file is missing after review completes.
 
 Read `~/.copilot/dreamers/templates/logging-standards.md`. For every file containing log calls, check for violations of the standards and flag them as **low** severity findings.
 
+### Code comment review (mandatory)
+
+For every changed file (including test files — tests are in scope), audit comments against `~/.copilot/dreamers/refs/comment-rules.md`. Every violation is a **low** severity finding — no exceptions.
+
+The `suggested_fix` must be specific: "Remove comment on line N" or "Replace comment on line N with a WHY-only comment explaining [the actual non-obvious reason], or delete it entirely."
+
 ### Review checklist (derived from Nova's plan template)
 Cross-check these plan sections against the actual implementation:
 - Requirements — are they all addressed?
@@ -114,6 +120,7 @@ Cross-check these plan sections against the actual implementation:
 - Constraints — are they respected?
 - Acceptance criteria — can each be verified as met?
 - Risks / Mitigations — are mitigations implemented?
+- Code comments — do they follow `~/.copilot/dreamers/refs/comment-rules.md`? (see "Code comment review" above)
 
 ### SQLite monotonic-column check (mandatory)
 When any new `INTEGER PRIMARY KEY` column is reviewed: verify `AUTOINCREMENT` is present
