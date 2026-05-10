@@ -39,10 +39,9 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 ## Commit structure (one commit per sub-plan)
 - Bolt makes exactly **one** commit per sub-plan, immediately after Probe passes and user testing (if required) is signed off.
 - Forge and Probe stage their changes with `git add` throughout the pipeline but do **not** run `git commit`.
-- Commit message format (Conventional Commits, imperative mood, under 72 chars):
-  - `feat: <sub-plan-name>` — standard sub-plan
-  - `feat!: <sub-plan-name>` + `BREAKING CHANGE:` footer — if the sub-plan introduces a breaking change
-- Reference the plan file in the commit body: `Plan: plan-add-auth-a`.
+- Commit message format follows `.github/instructions/git.instructions.md`. Pipeline-specific bits:
+  - Subject: `feat: <sub-plan-name>` (or `feat!: <sub-plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
+  - Body: reference the plan file (e.g. `Plan: plan-add-auth-a`)
 
 One commit per sub-plan keeps each sub-plan's contribution atomic. Fix rounds (Sentinel → Forge) are staging work, not separate commits.
 

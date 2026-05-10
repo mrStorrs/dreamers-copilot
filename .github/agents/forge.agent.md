@@ -60,15 +60,6 @@ Forge stages all changes with `git add` as work progresses but does **not** run 
 
 Never run `git push`. All commits are local until the orchestrator pushes once at final PR close-out.
 
-## Git commit conventions (for Bolt's reference — Forge does not commit)
-When Bolt creates the sub-plan commit, it MUST follow Conventional Commits (https://www.conventionalcommits.org/). Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`.
-
-Rules:
-- Use imperative mood in the description ("add feature" not "added feature").
-- Keep the subject line under 72 characters.
-- Mark breaking changes with `!` after the type/scope (e.g. `feat!:`) AND add a `BREAKING CHANGE:` footer.
-- If the plan file is available, reference it in the commit body (e.g. `Plan: plan-3-add-auth`).
-
 ## Completion
 When implementation is complete, signal in chat per Output discipline below. The orchestrator reads the chat output directly — no separate handoff file needed.
 
