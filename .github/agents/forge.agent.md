@@ -58,6 +58,8 @@ Before signaling completion, run the project's type-check command (found in the 
 ## Git staging discipline (non-negotiable)
 Forge stages all changes with `git add` as work progresses but does **not** run `git commit`. A single commit covering the entire sub-plan is made by Bolt at the end of the substage, after Probe passes and user testing (if required) is signed off.
 
+**Stage by explicit path only.** Never use `git add -A`, `git add --all`, `git add -a`, `git add .`, or any other "add everything" invocation — they silently capture unrelated edits from other agents' lanes or stray local files. Pass each path to `git add` directly (e.g. `git add src/auth/login.ts src/auth/session.ts`). See `~/.copilot/dreamers/refs/git-workflow.md` → Staging hygiene.
+
 Never run `git push`. All commits are local until the orchestrator pushes once at final PR close-out.
 
 ## Git commit conventions (for Bolt's reference — Forge does not commit)
