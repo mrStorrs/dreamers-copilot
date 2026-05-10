@@ -92,7 +92,30 @@ When a plan modifies a shared component, run `grep -r "ComponentName" .` (substi
 ### Citation accuracy
 Before citing the behavior of any existing artifact in the plan, read and verify the source. Do not cite from memory.
 
-**Do not proceed to Phase 2 until the user explicitly approves the plan.**
+### Phase 1f — Implementation start approval gate (MANDATORY)
+
+Phase 1c approved the high-level goal. Phase 1f approves the **actual decomposed plan files** before any implementation work begins. The user must read the plan files and explicitly approve before Phase 2 starts.
+
+Present this block in chat:
+
+```
+**Plans written and ready for review:**
+
+- `path/to/plan-{slug}.md` — umbrella (if applicable)
+- `path/to/plan-{slug}-a.md` — [one-line summary from the plan's Summary section]
+- `path/to/plan-{slug}-b.md` — [one-line summary]
+- ...
+
+Please read the plan file(s) above. Reply "Approved — start implementation" to begin Phase 2, or describe any corrections needed.
+```
+
+Then call `ask_user` with choice `["Approved — start implementation"]` and allow inline freeform corrections.
+
+**Looping behavior:**
+- Approval → proceed to Phase 2
+- Corrections → revise the relevant plan file(s) (or re-run Phase 1d if structural changes are needed), re-run Phase 1e quality check, then re-present Phase 1f. Loop until approved.
+
+**Do not proceed to Phase 2 until the user explicitly approves the plan files at this gate.** The Phase 1c goal-level approval is not sufficient — the user must approve the actual plan content.
 
 ---
 

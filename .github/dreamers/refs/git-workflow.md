@@ -20,8 +20,8 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    If any file still contains prior-milestone content after this step, it is a protocol failure.
    **Wipe mechanism:** Use Bash `printf 'content' > path` for each file — do NOT use the Write tool for wipes.
 4. **Legacy workspace cleanup (optional)** — pre-refine cycles wrote workspace files under `.dreamers/forge/`, `.dreamers/sentinel/`, `.dreamers/hone/`, `.dreamers/echo/`. Those agents no longer write workspace files; old contents are gitignored and harmless. Optionally delete the directories to reduce clutter: `rm -rf .dreamers/{forge,sentinel,hone,echo}/`.
-5. **Clean up prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
-   - **Merged:** delete all plan files for that feature from `.dreamers/plans/`. The PR description is the lasting record.
+5. **Archive prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
+   - **Merged:** move all plan files for that feature from `.dreamers/plans/` to `.dreamers/plans/archive/` (create the dir if it doesn't exist). The PR description is the lasting public record; the archived plan files are preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files.
    - **Not merged:** leave plan files in place.
 6. No init commit — Bolt's first commit for the milestone is the first thing in the PR diff.
 

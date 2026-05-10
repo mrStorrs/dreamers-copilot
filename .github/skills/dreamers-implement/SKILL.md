@@ -36,12 +36,28 @@ The prompt must include a path to the existing plan file. If none provided, stop
    
    Any failure → halt and prompt the user with the specific item(s) that failed.
 3. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer.
-4. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "sync")` per `git-workflow.md`:
+4. **Implementation start approval gate (MANDATORY)** — Even though the user provided the plan path, present a final gate before implementation begins. Present this block in chat:
+
+   ```
+   **Plan ready for implementation:**
+
+   - `path/to/plan.md` — [one-line summary from plan's Summary section]
+   - (list any sub-plans if applicable, each with one-line summary)
+
+   Reply "Approved — start implementation" to begin, or describe any corrections needed.
+   ```
+
+   Call `ask_user` with choice `["Approved — start implementation"]` and allow inline freeform corrections. If User Input Audit (step 1) updated the plan, this gate gives the user a chance to re-confirm before any agent edits code.
+
+   - Approval → proceed to step 5
+   - Corrections → revise the plan file(s), re-run quality self-check, re-present this gate. Loop until approved.
+
+5. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "sync")` per `git-workflow.md`:
    - Detect default branch (canonical two-step: `git symbolic-ref refs/remotes/origin/HEAD` with `gh repo view` fallback)
    - `git fetch origin && git checkout <DEFAULT> && git pull`
    - Cut `feat/d<N>-<name>` from default
-   - Clean up prior feature's plan files if its PR is merged
-5. **Do not write or edit production files yourself.** All implementation goes through agents.
+   - Archive prior feature's plan files if its PR is merged (move to `.dreamers/plans/archive/`, never delete)
+6. **Do not write or edit production files yourself.** All implementation goes through agents.
 
 ---
 
