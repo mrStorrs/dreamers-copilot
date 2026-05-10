@@ -16,11 +16,11 @@ Run `gh pr list --state open` to find all live PRs. If a specific PR is provided
 $ARGUMENTS
 
 **Step 2 — Pull unresolved review threads**
-For the target PR, use GraphQL to get only the unresolved threads (the REST API `resolved` field is unreliable — always use GraphQL):
+Use the helper (REST `resolved` is unreliable — the script wraps the canonical GraphQL query):
+```bash
+~/.copilot/dreamers/scripts/dreamers-pr-unresolved.sh <PR_NUMBER>
 ```
-gh api graphql -f query='{ repository(owner: "OWNER", name: "REPO") { pullRequest(number: N) { reviewThreads(first: 50) { nodes { isResolved id comments(first: 1) { nodes { path body } } } } } } }'
-```
-Extract only threads where `isResolved: false`. If there are none, report that back to the user and stop.
+Output is a JSON array of `{threadId, path, body}` for unresolved threads only. If empty, report that back to the user and stop.
 
 **Step 3 — Invoke Forge**
 Pass all unresolved threads to Forge (follow delegation.md) with this framing:
@@ -32,11 +32,11 @@ Pass all unresolved threads to Forge (follow delegation.md) with this framing:
 After Forge completes, route to Probe to verify that accepted changes pass tests and nothing regressed.
 
 **Step 5 — Resolve comments (Bolt)**
-After Probe passes, invoke **Bolt** to resolve each accepted thread via the GitHub API:
+After Probe passes, invoke **Bolt** to resolve each accepted thread:
+```bash
+~/.copilot/dreamers/scripts/dreamers-pr-resolve-thread.sh <THREAD_ID>
 ```
-gh api graphql -f query='mutation { resolveReviewThread(input: { threadId: "THREAD_ID" }) { thread { isResolved } } }'
-```
-Pass Bolt the list of thread IDs to resolve (accepted comments only). Leave rejected threads open — they represent active disagreements the reviewer should see.
+Pass Bolt the list of accepted-thread IDs and have it call the script once per ID. Leave rejected threads open — they represent active disagreements the reviewer should see.
 
 Bolt reports back: threads resolved. Then report to the user: how many comments were accepted, how many rejected, and which threads remain open (with a one-line reason per rejection).
 

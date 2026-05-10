@@ -71,18 +71,22 @@ Use templates as starting structure:
 
 ### Phase 1e — Plan quality self-check (MANDATORY, replaces former Gate 2)
 
-Before exiting Phase 1, verify the plan(s) against:
-- [ ] Filenames follow `plan-{slug}[-a..n].md`
+Before exiting Phase 1, run the linter for mechanical checks then verify the judgment-only items by hand:
+
+```bash
+~/.copilot/dreamers/scripts/dreamers-plan-lint.sh   # checks every plan-*.md in .dreamers/plans/
+```
+
+The linter covers: filename pattern, H1, Status field + value, Acceptance Criteria / Design Decisions / Rollback / Test Cases sections (sub-plan and standalone), umbrella Sub-plans section, and no fenced code blocks outside an Interface/Type contracts section.
+
+Judgment-only items (verify by hand):
 - [ ] Non-trivial features have an umbrella + sub-plans (not monolithic)
-- [ ] Every sub-plan / standalone has measurable Acceptance Criteria
-- [ ] Every sub-plan / standalone has Test Cases (Given/When/Then) for non-trivial cases
-- [ ] Every sub-plan / standalone has Design Decisions in the structured format
-- [ ] Every sub-plan / standalone has a Rollback Boundary
-- [ ] Every sub-plan / standalone has a Status field (Draft / Active / Completed / Superseded)
+- [ ] Acceptance Criteria are measurable (not vague)
+- [ ] Test Cases use Given/When/Then for non-trivial cases
+- [ ] Design Decisions follow the Decision / Rationale / Rejected structure
 - [ ] Plans reference only files/paths that exist (no invented paths)
 - [ ] Sub-plan splits at natural seams (not arbitrary line-count cuts)
 - [ ] No sub-plan's testability depends on a sibling not yet shipped
-- [ ] No code snippets (exception: interface/type contracts only)
 
 Any failure → halt and prompt the user with the specific item(s) that failed.
 

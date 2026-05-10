@@ -49,7 +49,7 @@ Do not proceed until the user explicitly approves.
 
 ## Phase 2 — Branch setup
 
-```
+```bash
 DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
 git checkout "$DEFAULT_BRANCH" && git pull origin "$DEFAULT_BRANCH"
 git checkout -b chore/add-logging

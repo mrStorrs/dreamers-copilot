@@ -92,6 +92,21 @@ $total += Copy-Files -From (Join-Path $Source "dreamers" "refs") -To (Join-Path 
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
 $total += Copy-Files -From (Join-Path $Source "dreamers" "templates") -To (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
 
+# Dreamers scripts (bash; runtime helpers callable from skills)
+Write-Host "[dreamers/scripts]" -ForegroundColor Cyan
+$scriptsTarget = Join-Path $CopilotHome "dreamers" "scripts"
+$total += Copy-Files -From (Join-Path $Source "scripts") -To $scriptsTarget -Label "scripts"
+# Best-effort: mark .sh files executable if running on a POSIX-aware shell.
+if (Test-Path $scriptsTarget) {
+    foreach ($sh in (Get-ChildItem $scriptsTarget -Filter "*.sh" -File -ErrorAction SilentlyContinue)) {
+        try {
+            & bash -c "chmod +x '$($sh.FullName -replace '\\','/')'" 2>$null
+        } catch {
+            # bash not on PATH (rare on systems that need these scripts) — skip silently.
+        }
+    }
+}
+
 # Instructions (auto-loaded by Copilot CLI from ~/.copilot/instructions/*.instructions.md)
 Write-Host "[instructions]" -ForegroundColor Cyan
 $total += Copy-Files -From (Join-Path $Source "instructions") -To (Join-Path $CopilotHome "instructions") -Label "instructions"

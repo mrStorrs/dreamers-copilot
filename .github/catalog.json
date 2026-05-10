@@ -314,6 +314,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-setup",
+      "name": "dreamers-setup",
+      "description": "Prepare the local environment to run the Dreamers bash scripts: detect missing dependencies, propose OS-appropriate install commands, get user approval per command, install, and re-verify with the dep-check script.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-setup/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-simplify",
       "name": "dreamers-simplify",
       "description": "Run Hone simplification (fix-on-sight, branch-diff scope, behavior-preserving) on the current feature branch, followed by a project-defined test/lint pass. Does not create branches or PRs.",
@@ -452,6 +465,10 @@
         },
         {
           "type": "skill",
+          "slug": "dreamers-setup"
+        },
+        {
+          "type": "skill",
           "slug": "dreamers-simplify"
         },
         {
@@ -465,6 +482,10 @@
         {
           "type": "folder",
           "slug": "dreamers-templates"
+        },
+        {
+          "type": "folder",
+          "slug": "dreamers-scripts"
         },
         {
           "type": "folder",
@@ -489,6 +510,14 @@
       "description": "Shared templates used by Dreamers skills (plan umbrella/sub, GitHub issue, PR description, project brief, etc.).",
       "sourcePath": ".github/dreamers/templates",
       "destSubpath": "dreamers/templates"
+    },
+    {
+      "type": "folder",
+      "slug": "dreamers-scripts",
+      "name": "Dreamers Scripts",
+      "description": "Bash helper scripts used by Dreamers skills and refs (default-branch detection, PR-comment GraphQL, plan-quality lint, slug derivation, scope resolution, workspace reset, plan archival, catalog sync).",
+      "sourcePath": ".github/scripts",
+      "destSubpath": "dreamers/scripts"
     },
     {
       "type": "folder",

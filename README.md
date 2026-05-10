@@ -10,11 +10,34 @@ Everything lives under `.github/`:
 .github/
 ├── agents/           # Agent definitions (Forge, Sentinel, Probe, Echo, Nova, Bolt, Sage)
 ├── skills/           # Skill entry points for each pipeline (dreamers-full, dreamers-fix, etc.)
+├── scripts/          # Bash helper scripts called by skills/refs (see Scripts section)
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (delegation protocol, git workflow, quality gates, etc.)
 │   └── templates/    # Plan templates, PR descriptions, logging standards
 └── instructions/     # Auto-injected instruction files (comment rules, etc.)
 ```
+
+## Scripts
+
+A small set of bash scripts in `.github/scripts/` handle the routines where the LLM most often got things wrong (GraphQL string assembly, mechanical lint checklists). Skills call them as `~/.copilot/dreamers/scripts/<name>.sh`. Everything else stays as inline bash inside the skills/refs.
+
+| Script | Purpose |
+|--------|---------|
+| `dreamers-pr-unresolved.sh <PR#>` | JSON of unresolved review threads (GraphQL, since REST `resolved` is unreliable). |
+| `dreamers-pr-resolve-thread.sh <threadId>` | Resolve one review thread via the `resolveReviewThread` mutation. |
+| `dreamers-plan-lint.sh [<plan-path>]` | Lint the mechanical subset of the plan quality checklist (filename, sections, status, code-block rules). |
+| `dreamers-catalog-lint.sh` | Verify `catalog.json` matches the actual `agents/` + `skills/` tree. Dev-time check for this repo. |
+| `dreamers-deps-check.sh` | Verify the tools listed below are installed and `gh` is authenticated. |
+
+### Dependencies
+
+The scripts deliberately add **zero new runtime dependencies** beyond what Dreamers already needed for its inline bash. Run `dreamers-deps-check.sh` (or `/dreamers-setup`) to verify:
+
+- **`bash`** — Git Bash on Windows is sufficient; WSL works.
+- **`git`** — used by `dreamers-catalog-lint.sh`.
+- **`gh`** — required by the PR scripts. Must be authenticated (`gh auth login`).
+- **`python3`** — **only** `dreamers-catalog-lint.sh`, which is a dev-time tool for this repo. End users running pipelines do not need Python. The Microsoft Store `python3` stub on Windows does NOT work — install real Python and put it on PATH ahead of the stub.
+- **POSIX coreutils** (`sed`, `awk`, `grep`) — bundled with any bash environment.
 
 ## Agents
 
@@ -60,14 +83,23 @@ Everything lives under `.github/`:
 | `dreamers-clean-work` | Between-milestone maintenance |
 | `dreamers-add-logging` | Add production-grade logging |
 | `dreamers-atlas-choice` | Route to the correct pipeline |
+| `dreamers-setup` | Detect missing script dependencies (via `dreamers-deps-check.sh`) and walk the user through installing them with OS-appropriate commands |
 
 ## Install
 
-Install agents, skills, refs, and templates into your global `~/.copilot/` directory:
+Install agents, skills, refs, scripts, and templates into your global `~/.copilot/` directory:
 
 ```powershell
 .\Install-Dreamers.ps1
 ```
+
+Then prepare the environment for the bash scripts. Two options:
+
+- **Guided (recommended):** run `/dreamers-setup` in Copilot CLI. The skill detects missing tools, proposes OS-appropriate install commands, and confirms each one with you before running it.
+- **Verify-only:** run the dep-check script directly — no installs, just a pass/fail report:
+  ```bash
+  ~/.copilot/dreamers/scripts/dreamers-deps-check.sh
+  ```
 
 Options:
 - `-Force` — overwrite existing files without prompting

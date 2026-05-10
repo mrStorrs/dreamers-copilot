@@ -2,18 +2,31 @@
 
 ## Gate 2 — Plan quality check (orchestrator-side, MANDATORY)
 
-Before routing to Forge for implementation, the orchestrator (`/dreamers-plan` Phase 3 exit, `/dreamers-full` Phase 1 exit, `/dreamers-implement` startup) reads the plan file(s) and verifies:
+Before routing to Forge for implementation, the orchestrator (`/dreamers-plan` Phase 3 exit, `/dreamers-full` Phase 1 exit, `/dreamers-implement` startup) verifies plan quality.
 
-- [ ] Plan file(s) named per naming convention (`plan-{slug}.md`, `plan-{slug}-{letter}.md`)
-- [ ] Non-trivial features have an umbrella plan + sub-plans (not one monolithic plan)
-- [ ] Each sub-plan has **Acceptance Criteria** — numbered, measurable, Forge-verifiable (not vague)
-- [ ] Each sub-plan has **Test Cases for Probe** using Given/When/Then format for non-trivial cases
-- [ ] Each sub-plan has a **Design Decisions** section using the structured format
-- [ ] Each sub-plan has a **Rollback Boundary** declaration
-- [ ] Each sub-plan references only files/paths that actually exist in the codebase — no invented paths
-- [ ] Sub-plan splits are at natural seams, not arbitrary line-count cuts
-- [ ] No sub-plan's testability depends on a sibling sub-plan that hasn't shipped yet
-- [ ] Plan contains no code snippets (exception: interface/type contracts only)
+### Mechanical checks (run the linter)
+```bash
+~/.copilot/dreamers/scripts/dreamers-plan-lint.sh path/to/plan.md
+# or, for every plan in .dreamers/plans/:
+~/.copilot/dreamers/scripts/dreamers-plan-lint.sh
+```
+The linter enforces:
+- Filename matches `plan-{slug}.md` or `plan-{slug}-{letter}.md`
+- H1 starts with `# Plan —`
+- Status field present and ∈ {Draft, Active, Completed, Superseded}
+- Sub-plan / standalone has `Acceptance Criteria`, `Design Decisions`, `Rollback`, and `Test Cases for Probe` sections
+- Umbrella has `Sub-plans` section
+- No fenced code blocks outside an `Interface contracts` / `Type contracts` section
+
+Non-zero exit ⇒ halt and surface the failed items to the user.
+
+### Judgment-only checks (the orchestrator must still verify by hand)
+- Non-trivial features have an umbrella + sub-plans (not one monolithic plan)
+- Acceptance Criteria are numbered, measurable, Forge-verifiable (not vague)
+- Design Decisions follow the structured `Decision / Rationale / Rejected` format
+- Plan references only files/paths that actually exist in the codebase
+- Sub-plan splits are at natural seams, not arbitrary line-count cuts
+- No sub-plan's testability depends on a sibling sub-plan that hasn't shipped yet
 
 **Any failure = halt and prompt the user with the specific item(s) that failed.**
 

@@ -95,6 +95,10 @@ $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "refs") -
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
 $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "templates") -TargetDir (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
 
+# Dreamers scripts
+Write-Host "[dreamers/scripts]" -ForegroundColor Cyan
+$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "scripts") -TargetDir (Join-Path $CopilotHome "dreamers" "scripts") -Label "scripts"
+
 # Clean up empty dreamers directory
 if (-not $DryRun -and (Test-Path (Join-Path $CopilotHome "dreamers"))) {
     $remaining = Get-ChildItem (Join-Path $CopilotHome "dreamers") -Force -Recurse
