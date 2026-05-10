@@ -69,7 +69,7 @@ For each sub-plan:
 2. **Sentinel** — `task(agent_type: "sentinel", mode: "sync")` — fix-on-sight review in production-code lane. Severity-graded fixes-applied list. Type-checks after fixes.
 3. **Probe** — `task(agent_type: "probe", mode: "sync")` — fix-on-sight in test-files lane. Writes AC coverage matrix, runbook, bugs.
 4. **If Probe surfaces a production bug** — re-spawn Sentinel scoped to that bug, then re-run Probe.
-5. **User-testing-required check** — if `yes`, then pause by calling the `request_info` tool. Required content and resume rules are defined in `~/.copilot/dreamers/refs/sub-plan-loop.md` → "User testing pause rule" — follow it exactly (sub-plan ID + path, build details, what changed, step-by-step test steps from AC + Probe Given/When/Then, known limitations, approve / `Bug: <desc>` response format).
+5. **User-testing-required check** — if `yes`, then pause by calling the `request_info` tool. Required content and resume rules are defined in `~/.copilot/dreamers/refs/sub-plan-loop.md` → "User testing pause rule" — follow it exactly (sub-plan ID + path, build/distribution per `.github/instructions/build.instructions.md` if present — otherwise ask the user to build/distribute, what changed, step-by-step test steps from AC + Probe Given/When/Then, known limitations, approve / `Bug: <desc>` response format). Run only the build/distribution steps that `build.instructions.md` explicitly authorises; surface everything else to the user.
 6. **Bolt commits the sub-plan** — single commit per sub-plan, Conventional Commits, plan reference in body.
 7. **`/dreamers-plan-verify`** — invoke with next sub-plan path. Halt if drift; continue if no change.
 
