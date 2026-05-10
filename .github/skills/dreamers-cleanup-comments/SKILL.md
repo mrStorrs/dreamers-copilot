@@ -26,10 +26,7 @@ Invoke Forge (follow delegation.md). Read `~/.copilot/dreamers/refs/comment-rule
 
 **Step 3 — Stage changes (Forge)**
 
-Forge stages all changes only — no commit:
-```
-git add -A
-```
+Forge stages the files it actually edited — by explicit path, one or more `git add <path>` invocations covering only the comment-cleanup edits. **Do not use `git add -A`** or any "add everything" form — see `~/.copilot/dreamers/refs/git-workflow.md` → Staging hygiene. No commit.
 
 **Step 4 — Commit, push, and PR (Bolt)**
 Invoke **Bolt** to handle the mechanical close-out:

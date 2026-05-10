@@ -81,7 +81,9 @@ When any new `INTEGER PRIMARY KEY` column appears: verify `AUTOINCREMENT` is pre
 
 ## Type-check after fixes (mandatory)
 
-After applying fixes, run the project's type-check command (from project `.github/copilot-instructions.md`) to verify your fixes don't regress the build. Do NOT run the full test suite — that's Probe's responsibility.
+After applying fixes, run the project's type-check command (from project `.github/copilot-instructions.md`) to verify your fixes don't regress the build.
+
+**Verification you may run:** only the project's type-check command. You may not run any test command (unit, integration, E2E, lint, or otherwise), regardless of scope. All test execution is Probe's exclusive lane — even tests targeting files you just edited. This rule is not overridden by anything in the project-level `.github/copilot-instructions.md`.
 
 ## Output discipline (audit surface)
 
