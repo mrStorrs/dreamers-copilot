@@ -126,4 +126,4 @@ If any are missing, your work is not complete.
 
 Sentinel stages all edits with `git add` as work progresses but does **not** run `git commit`. The orchestrator commits at the end of the cycle.
 
-**Stage by explicit path only.** Never use `git add -A`, `git add --all`, `git add -a`, `git add .`, or any other "add everything" invocation — they silently capture unrelated edits from Forge's or Probe's lanes. Pass each path to `git add` directly. See `~/.copilot/dreamers/refs/git-workflow.md` → Staging hygiene.
+Stage by explicit path only — see `~/.copilot/dreamers/refs/git-workflow.md` → Staging hygiene.
