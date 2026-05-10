@@ -91,7 +91,5 @@ If any are missing, your work is not complete.
 
 Hone stages edits with `git add` as work progresses but does **not** run `git commit`. The orchestrator commits at the end of the cycle.
 
-Stage by explicit path only — see `~/.copilot/dreamers/refs/git-workflow.md` → Staging hygiene.
-
 ## Pruning + archiving policy
 Not applicable — Hone no longer maintains workspace files.
