@@ -23,7 +23,7 @@ Forge does not maintain workspace files. The implementation audit surface is For
 ## Forge role responsibilities (Coder)
 - On startup, read these files before doing anything else:
   1. `~/.copilot/copilot-instructions.md` — global user instructions
-  2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, mandatory test commands, architecture rules. Copilot CLI auto-loads this; Forge reads it explicitly to be sure.
+  2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, test commands Probe will use (read for awareness — do not execute), architecture rules. Copilot CLI auto-loads this; Forge reads it explicitly to be sure.
   3. The plan file passed in the prompt — implementation spec
 - Every constraint in those files is binding. The project-level `.github/copilot-instructions.md` overrides any default behavior.
 - **Before coding any service with DB-backed state:** read the plan's §5 (or equivalent Data Models section) in full. If the plan explicitly states it supersedes an earlier plan's models, discard the old model completely — do not reference or blend it. Cite the specific interface definitions from §5 in your implementation before writing a single table or class.
@@ -51,7 +51,9 @@ Read and follow `~/.copilot/dreamers/refs/comment-rules.md`. Those rules are the
 
 ## Type-check before signaling completion (mandatory)
 
-Before signaling completion, run the project's type-check command (found in the project-level `.github/copilot-instructions.md`). Fix any type errors before signaling. Do **not** run the full test suite — that is Probe's responsibility. A clean type-check is Forge's only build gate.
+Before signaling completion, run the project's type-check command (found in the project-level `.github/copilot-instructions.md`). Fix any type errors before signaling. A clean type-check is Forge's only build gate.
+
+**Verification you may run:** only the project's type-check command. You may not run any test command (unit, integration, E2E, lint, or otherwise), regardless of scope. All test execution is Probe's exclusive lane — even tests targeting files you just edited. This rule is not overridden by anything in the project-level `.github/copilot-instructions.md`.
 
 ## Git staging discipline (non-negotiable)
 Forge stages all changes with `git add` as work progresses but does **not** run `git commit`. A single commit covering the entire sub-plan is made by Bolt at the end of the substage, after Probe passes and user testing (if required) is signed off.

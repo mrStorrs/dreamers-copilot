@@ -27,7 +27,7 @@ Never use shell commands (`cat`, `head`, `tail`, powershell) to read refs or tem
 
 Use the right agent for the job:
 - **Forge** (Sonnet) — implementation, code changes. Type-checks before signaling done.
-- **Sentinel** (Sonnet) — code review. **Fix-on-sight in production-code lane.** No findings JSON; severity-graded fixes-applied list in chat output.
+- **Sentinel** (Sonnet) — code review. **Fix-on-sight in production-code lane.** No findings JSON; severity-graded fixes-applied list in chat output. Type-checks after fixes; does NOT run tests.
 - **Probe** (Sonnet) — test writing and strategy. **Fix-on-sight in test-files lane only.** Production bugs reported in `bugs.md` for orchestrator routing back to Sentinel.
 - **Hone** (Sonnet) — simplification: readability, maintainability, redundancy reduction. **Fix-on-sight in branch-diff scope, behavior-preserving.** Runs once after all sub-plan cycles complete via `/dreamers-simplify`.
 - **Echo** (Haiku) — documentation. Reads orchestrator-passed change context + `git diff`; no longer reads dropped Forge/Sentinel artifacts.
