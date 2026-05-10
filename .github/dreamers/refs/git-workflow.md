@@ -36,12 +36,9 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 ## Post-PR push discipline
 If the user approves a post-PR commit, push with `git push` (no force). The PR will update automatically.
 
-## Staging hygiene (non-negotiable)
-Stage files by explicit path. **Never use `git add -A`, `git add --all`, `git add -a`, `git add .`, or any other "add everything" invocation.** Those capture unrelated working-tree changes — in-flight edits in other agents' lanes, stray local files, newly-tracked artifacts — and silently widen the PR diff. Pass each path to `git add` directly (multiple paths in one invocation is fine: `git add path/a path/b`). If a directory genuinely is the unit of work, pass the directory path — that scope is bounded by what you typed, not "everything currently dirty." This rule binds every agent (Forge, Sentinel, Probe, Hone) and every skill.
-
 ## Commit structure (one commit per sub-plan)
 - Bolt makes exactly **one** commit per sub-plan, immediately after Probe passes and user testing (if required) is signed off.
-- Forge and Probe stage their changes with `git add` (per the Staging hygiene rule above) throughout the pipeline but do **not** run `git commit`.
+- Forge and Probe stage their changes with `git add` throughout the pipeline but do **not** run `git commit`.
 - Commit message format (Conventional Commits, imperative mood, under 72 chars):
   - `feat: <sub-plan-name>` — standard sub-plan
   - `feat!: <sub-plan-name>` + `BREAKING CHANGE:` footer — if the sub-plan introduces a breaking change
