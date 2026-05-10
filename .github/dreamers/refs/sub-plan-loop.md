@@ -7,7 +7,7 @@ For features with an umbrella plan + sub-plans, loop through each sub-plan seque
   → [for each sub-plan]:
       Forge → Sentinel (fix-on-sight) → Probe (fix-on-sight in test files)
       → if "User testing required: yes":
-            distribute build → PAUSE → wait for user sign-off
+            distribute build → call `request_info` (PAUSE) → wait for user sign-off
       → commit sub-plan
       → /dreamers-plan-verify (lightweight Nova verify mode)
       → [repeat for next sub-plan]
@@ -39,4 +39,22 @@ If Probe surfaces a production bug after Sentinel ran, the orchestrator spawns S
 ## User testing pause rule
 Check the completed sub-plan's `User testing required` field:
 - `no` — commit immediately, invoke `/dreamers-plan-verify`, continue without pausing.
-- `yes` — distribute a build per the project's distribution method (check the project-level `.github/copilot-instructions.md` Distribution section), notify the user, and **pause the pipeline**. Do not invoke `/dreamers-plan-verify` or start the next sub-plan until the user explicitly gives the go-ahead.
+- `yes` — then **pause the pipeline by calling the `request_info` tool**. Do not commit, invoke `/dreamers-plan-verify`, or start the next sub-plan until the user explicitly approves via the `request_info` response.
+
+### `request_info` content (mandatory)
+
+The `request_info` call MUST include every item below — do not abbreviate or omit. The user reads only what is in this prompt; anything missing means they cannot test:
+
+- **Sub-plan being tested:** ID + path (e.g. `plan-{slug}-a` → `.dreamers/plans/plan-{slug}-a.md`).
+- **Build distribution details:** exactly where/how to get the build per the project's Distribution section — link or location, version/build number, install or launch steps. If distribution failed, say so and stop instead of asking the user to test nothing.
+- **What changed in this sub-plan:** 1–3 bullets summarising the user-visible behaviour delivered.
+- **Step-by-step test steps:** numbered, concrete, reproducible. Derive directly from the sub-plan's Acceptance Criteria and Probe's Given/When/Then test cases. Each step states the action to take and the expected observation.
+- **Known limitations / out-of-scope:** anything the user might try that this sub-plan deliberately doesn't cover, so they don't flag it as a bug.
+- **How to respond:** instruct the user to reply with one of:
+  - `Approved — continue` (orchestrator proceeds to the Bolt commit step)
+  - `Bug: <description>` (orchestrator routes the bug to Sentinel, re-runs Probe, re-distributes, then re-issues `request_info`)
+  - Freeform notes / corrections are also accepted and treated as bugs unless clearly approving.
+
+### Resume rules
+- On `Approved — continue` → proceed to Bolt commit, then `/dreamers-plan-verify`, then next sub-plan.
+- On any bug or correction → fix-and-re-test cycle: re-spawn Sentinel scoped to the bug → re-run Probe → re-distribute build → re-call `request_info`. Do **not** commit until explicit approval is received.
