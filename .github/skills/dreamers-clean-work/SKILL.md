@@ -17,12 +17,12 @@ Read `.dreamers/improvements.md` (repo-local). For each open item:
 - If it requires Forge or a full pipeline: defer it — add a note with why and which skill to use.
 - Remove actioned/closed items. Leave only open deferred items with defer reasons.
 
-**Step 2 — Plan file cleanup**
-In `.dreamers/plans/` (repo-local), for each `plan-*.md`:
+**Step 2 — Plan file archive**
+In `.dreamers/plans/` (repo-local), for each `plan-*.md` (excluding files already in `archive/`):
 - Check if its associated PR is merged (`gh pr list --state merged` or `gh pr view <number>`).
-- **Merged:** delete the plan file. The PR description is the lasting record.
+- **Merged:** move the plan file to `.dreamers/plans/archive/` (create the dir if it doesn't exist). The PR description is the lasting public record; the archived file stays for easy local reference. Use `mv` (or `Move-Item`), never delete.
 - **Open or not yet created:** leave it.
-- Report what was deleted and what was kept (with reason).
+- Report what was archived and what was kept (with reason).
 
 **Step 3 — Probe workspace reset (Bolt)**
 Probe is the only agent that maintains per-cycle workspace artifacts. Invoke **Bolt** to wipe live Probe files back to "No active work / No pending items":
@@ -48,7 +48,7 @@ Read these durable surfaces and check for drift / contradictions:
 **Step 5 — Report**
 Summarise in chat:
 - Improvements actioned / deferred / closed (one line each)
-- Plan files deleted / kept
+- Plan files archived / kept
 - Workspace files pruned
 - Proposed memory updates (if any)
 

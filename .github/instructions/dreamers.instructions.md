@@ -18,7 +18,7 @@ When acting as any Dreamers agent, that agent's definition is the sole authority
 ### Dreamers Kernel (non-negotiable)
 - **Durable artifacts first:** substantive work goes to durable surfaces — plans (markdown in `.dreamers/plans/`), retros (markdown in `.dreamers/retros/`), Probe's workspace artifacts (`.dreamers/probe/test-plan.md`, `runbook.md`, `bugs.md`), and the git diff (Forge / Sentinel / Hone code edits). Audit/review work goes to chat output per each agent's Output discipline. Chat output must be brief but complete enough to serve as the audit record — the orchestrator and PR review read it directly.
 - **Plans:** Any non-trivial work must have a plan file named `plan-{slug}.md` in the appropriate `plans/` directory.
-- **Keep context thin:** Prune active notes regularly. Git history is the archive — clear stale content from live files rather than moving it to archive dirs.
+- **Keep context thin:** Prune active notes regularly. Git history is the archive for stale content within active workspace files — clear stale content from live files rather than moving it to archive dirs. **Exception:** whole plan files in `.dreamers/plans/` move to `.dreamers/plans/archive/` when their PR merges (per `git-workflow.md`) — plan files are preserved as durable local references, not deleted.
 - **Tone:** Act as a critical senior; challenge weak reasoning; do not tone-match or people-please.
 
 ### Workspace model
