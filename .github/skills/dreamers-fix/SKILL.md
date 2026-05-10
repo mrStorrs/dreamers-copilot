@@ -26,47 +26,37 @@ State your choice and reasoning in one sentence, then proceed immediately.
 
 ## Tier 1 — Simple fix
 
-Read these refs:
-- `~/.copilot/dreamers/refs/git-workflow.md`
-- `~/.copilot/dreamers/refs/delegation.md`
+Read `~/.copilot/dreamers/refs/git-workflow.md` once at startup.
 
-Follow the Dreamers Kernel and output discipline from `copilot-instructions.md`.
+Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
 
-Route: Forge → Bolt (run tests) → Close-out
+**Route:** Branch setup (Bolt) → Forge → Bolt (run tests) → Bolt commit + PR
 
-After Forge stages the fix (`git add`), invoke **Bolt** to run the project's test suite. If tests pass, proceed to close-out (Bolt commits and handles push + PR). Skip Probe and Sentinel — this is a simple fix.
+1. **Bolt** — branch setup per `git-workflow.md` (canonical default detection, `feat/d<N>-fix-<slug>` from default).
+2. **Forge** — `task(agent_type: "forge", mode: "sync")` — apply the fix; type-check; stage with `git add`. Mark task `trivial` in the prompt to skip the strict plan requirement.
+3. **Bolt** — `task(agent_type: "bolt", mode: "sync")` — run the project's test suite (from project `.github/copilot-instructions.md`).
+4. If tests pass: **Bolt** commits + pushes + opens PR with body from `pr-description.md` template. If the original prompt referenced a GitHub issue: `gh issue close <number> --comment "Resolved in <PR URL>"`.
+
+Skip Sentinel and Probe for Tier 1 — this is a simple corrective fix on a shipped feature.
 
 ---
 
 ## Tier 2 — Full pipeline
 
-### Phase 1 — Planning
+Tier 2 routes through the same body as `/dreamers-full`. Either:
 
-Read these refs:
-- `~/.copilot/dreamers/refs/planning-protocol.md`
-- `~/.copilot/dreamers/refs/plan-rules.md`
-- `~/.copilot/dreamers/refs/plan-content.md`
-- `~/.copilot/dreamers/refs/testing-mandate.md`
-- `~/.copilot/dreamers/refs/citation-accuracy.md`
+- Invoke `/dreamers-full` with the bug description as input, OR
+- Inline the same flow: Phase 1 (planning + approval) → Phase 2 (per-sub-plan Forge → Sentinel → Probe → plan-verify loop) → Phase 3 (simplify + Echo + close-out).
 
-Run the full requirements conversation with the user. Wait for explicit approval.
+**Tier 2 specifics:**
+- Plan must include a regression analysis section (why this bug existed; what tests will prevent recurrence). This satisfies Probe's `regression-analysis.md` requirement at completion.
+- Probe must write `regression-analysis.md` for any user-reported bug — three questions: why wasn't it caught, what was added, what else might be missing.
 
-### Phase 2 — Implementation
-
-Read these refs:
-- `~/.copilot/dreamers/refs/git-workflow.md`
-- `~/.copilot/dreamers/refs/quality-gates.md`
-- `~/.copilot/dreamers/refs/delegation.md`
-- `~/.copilot/dreamers/refs/close-out.md`
-
-Route: Forge → Sentinel → Probe → Close-out (Bolt handles push + PR)
-
-Include regression analysis from Probe — not just "fixed", but "here is why testing missed it and what we've added to prevent recurrence."
+Follow `git-workflow.md` for branching, commits, and push discipline. Follow `close-out.md` for retro and PR.
 
 ---
 
 ## Rules for both tiers
 
 - If the prompt references a GitHub issue number or URL, close that issue once the PR is created: `gh issue close <number> --comment "Resolved in <PR URL>"`.
-- Follow git-workflow.md for branching, commits, and push discipline.
-
+- Push exactly once at PR close-out.

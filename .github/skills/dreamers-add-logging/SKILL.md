@@ -18,7 +18,7 @@ $ARGUMENTS
 ## Phase 1 — Audit (do this directly, no agents)
 
 **Stack detection:**
-- Read `CLAUDE.md` (project-level), `package.json`, `build.gradle`, `pyproject.toml`, `go.mod` — whatever exists
+- Read `.github/copilot-instructions.md` (project-level), `package.json`, `build.gradle`, `pyproject.toml`, `go.mod` — whatever exists
 - Identify: language(s), runtime, existing dependencies, package manager
 
 **Existing logging inventory:**

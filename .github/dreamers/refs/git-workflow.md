@@ -14,13 +14,12 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 ## Branch setup (before invoking Forge)
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
-3. Review all persistent workspace files across agents (`assumptions.md`, `decisions.md`, `questions.md`, `links.md`) — prune stale/resolved entries.
-4. Wipe all live files across **all** agents — every file in this list must be reset to "No active work / No pending items":
-   - `forge/status.md`, and any `forge/implementation*.md`
-   - `probe/status.md`, `probe/bugs.md`, `probe/test-plan.md`, `probe/runbook.md`, and any `probe/*-test-plan.md`
-   - `sentinel/status.md`, `sentinel/findings.md`, `sentinel/review.md`
+3. **Wipe Probe workspace** — Probe is the only agent that maintains per-cycle workspace artifacts. Reset to "No active work / No pending items":
+   - `.dreamers/probe/bugs.md`, `.dreamers/probe/test-plan.md`, `.dreamers/probe/runbook.md`
+   - Also `.dreamers/probe/regression-analysis.md` if present from a prior user-bug cycle.
    If any file still contains prior-milestone content after this step, it is a protocol failure.
    **Wipe mechanism:** Use Bash `printf 'content' > path` for each file — do NOT use the Write tool for wipes.
+4. **Legacy workspace cleanup (optional)** — pre-refine cycles wrote workspace files under `.dreamers/forge/`, `.dreamers/sentinel/`, `.dreamers/hone/`, `.dreamers/echo/`. Those agents no longer write workspace files; old contents are gitignored and harmless. Optionally delete the directories to reduce clutter: `rm -rf .dreamers/{forge,sentinel,hone,echo}/`.
 5. **Clean up prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
    - **Merged:** delete all plan files for that feature from `.dreamers/plans/`. The PR description is the lasting record.
    - **Not merged:** leave plan files in place.

@@ -68,8 +68,7 @@ If not already a repo:
    - Create `.gitignore` with `.dreamers/` plus standard ignores for the agreed stack
    - `New-Item -ItemType Directory -Force -Path .dreamers/plans, .dreamers/atlas | Out-Null`
 
-After Bolt completes, create the project-level `CLAUDE.md` per project-bootstrap.md ownership rules (this requires judgment — do it directly, not via Bolt).
-
+After Bolt completes, create the project-level `.github/copilot-instructions.md` per project-bootstrap.md ownership rules (this requires judgment — do it directly, not via Bolt).
 ---
 
 ## Phase 5 — Shell plans

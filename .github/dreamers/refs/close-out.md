@@ -5,9 +5,9 @@ Run this when all Sentinel passes clear and Probe passes.
 ## Echo (documentation update)
 
 Before final commit, invoke **Echo** (Haiku subagent) to update project documentation:
-- Pass Echo the plan file path, `forge/implementation.md`, and any relevant context
-- Echo updates the project-level `CLAUDE.md` (Echo-owned sections only) and any other docs that need updates based on what was shipped
-- Echo logs all doc changes to `.dreamers/echo/docs-log.md`
+- Pass Echo: the plan file path, the list of changed files (e.g. from `git diff --name-only origin/<DEFAULT>...HEAD`), a one-paragraph summary of what was reviewed/fixed (from Sentinel's chat output / commit messages), and the diff base for `git diff` lookups
+- Echo updates the project-level `.github/copilot-instructions.md` (Echo-owned sections only — Tech stack, Repo structure, Conventions, Key files, Test commands) and any other docs that need updates based on what was shipped
+- Echo's doc-changes log appears in its chat output (no separate `docs-log.md` file)
 
 ## Final commit (before PR)
 
@@ -37,9 +37,9 @@ If any changes are made after the PR is created (e.g., addressing review comment
 
 1. Review the full cycle by reading:
    - Plan file for this milestone
-   - `forge/implementation.md`
-   - `sentinel/findings.md` and `sentinel/review.md`
-   - `probe/bugs.md` and `probe/test-plan.md`
+   - PR description (drafted from `pr-description.md` template — captures Forge/Sentinel summary)
+   - `git log origin/<DEFAULT>..HEAD --format=%B` — all commit messages on the branch (Forge's chat-output content lands here per the new git workflow)
+   - Probe artifacts: `probe/test-plan.md`, `probe/bugs.md`, `probe/regression-analysis.md` (if present)
 2. Write a retro file to `.dreamers/retros/retro-d<N>-<name>.md` containing:
    - **What worked well** — clean handoffs, agents that ran without rework
    - **Friction points** — weak output, rework, unclear handoffs
@@ -48,7 +48,14 @@ If any changes are made after the PR is created (e.g., addressing review comment
 
 ## Post-PR
 1. **Surface improvements** from this cycle's retro — one sentence each. Ask: "Should I address any of these?" Do not apply without user go-ahead.
-2. **Project state scan:** Review workspace files under `.dreamers/` (decisions, assumptions, questions). Check for: tech stack drift, architecture pivots not propagated, milestone status fallen behind, rule conflicts across agent definitions. **Propose all changes — do not auto-apply.**
+2. **Project state scan:** Read these durable surfaces and check for drift:
+   - The just-merged PR description vs the umbrella plan
+   - `git log origin/<DEFAULT> -10 --format=%s` — recent merged work
+   - Project-level `.github/copilot-instructions.md` Echo-owned sections (Tech stack, Repo structure, Conventions, Key files) — does the codebase still match?
+   - `.dreamers/improvements.md` — open items still relevant?
+   - Surviving Probe artifacts — anything stale?
+   
+   Check for: tech stack drift, architecture pivots not reflected in instructions, milestone status drift, rule conflicts across agent definitions. **Propose all changes — do not auto-apply.**
 
 ## Rules for improvement suggestions
 - Propose only; never auto-apply changes to agent files or refs.

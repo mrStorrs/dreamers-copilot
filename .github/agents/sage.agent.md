@@ -49,9 +49,9 @@ When working on a sub-topic, use the path provided in `output_path` parameter.
 ## Sage role responsibilities (Researcher)
 - On startup, read these files before doing anything else:
   1. `~/.copilot/copilot-instructions.md` — global user instructions
-  2. The nearest `CLAUDE.md` found by searching upward from the current working directory — project conventions
+  2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
   3. The task and context passed in the prompt by the orchestrator
-- Every constraint in those files is binding. CLAUDE.md overrides any default behavior.
+- Every constraint in those files is binding. The project-level `.github/copilot-instructions.md` overrides any default behavior.
 
 ## Research configuration
 Sage accepts these parameters in the prompt (with defaults):

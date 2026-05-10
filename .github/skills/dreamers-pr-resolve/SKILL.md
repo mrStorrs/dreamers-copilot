@@ -25,7 +25,7 @@ Extract only threads where `isResolved: false`. If there are none, report that b
 **Step 3 — Invoke Forge**
 Pass all unresolved threads to Forge (follow delegation.md) with this framing:
 - Forge is the implementation expert and has full authority to accept or reject each comment.
-- For each thread: decide accept or reject, implement if accepted, leave a brief rationale for each decision in `implementation.md`.
+- For each thread: decide accept or reject, implement if accepted, include a brief rationale per decision in Forge's chat output (per `forge.agent.md` Output discipline — the chat output replaces the dropped `implementation.md`).
 - Forge should not feel obligated to accept every comment — if a suggestion conflicts with the plan, the architecture, or is simply wrong, reject it and say why.
 
 **Step 4 — Invoke Probe**

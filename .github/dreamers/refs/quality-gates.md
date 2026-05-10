@@ -1,12 +1,8 @@
-# Quality Gates (MANDATORY)
+# Quality Gates
 
-Run a quality gate at every major handoff boundary. **If a gate fails, send back to the originating agent with specific issues — never route forward on a failed gate.**
+## Gate 2 — Plan quality check (orchestrator-side, MANDATORY)
 
----
-
-## Gate 2 — Plan quality check
-
-Before routing to Forge, read the plan file(s) and check every item:
+Before routing to Forge for implementation, the orchestrator (`/dreamers-plan` Phase 3 exit, `/dreamers-full` Phase 1 exit, `/dreamers-implement` startup) reads the plan file(s) and verifies:
 
 - [ ] Plan file(s) named per naming convention (`plan-{slug}.md`, `plan-{slug}-{letter}.md`)
 - [ ] Non-trivial features have an umbrella plan + sub-plans (not one monolithic plan)
@@ -19,78 +15,25 @@ Before routing to Forge, read the plan file(s) and check every item:
 - [ ] No sub-plan's testability depends on a sibling sub-plan that hasn't shipped yet
 - [ ] Plan contains no code snippets (exception: interface/type contracts only)
 
-**Any failure = spawn Nova as a subagent with the specific item(s) that failed.**
+**Any failure = halt and prompt the user with the specific item(s) that failed.**
+
+Gate 2 is the only orchestrator-side gate. It catches plan-quality issues before any implementation effort is wasted.
 
 ---
 
-## Gate 3a — Pre-Sentinel: Implementation artifact exists
+### What each agent self-asserts before signaling done
 
-After Forge completes and before Sentinel:
+| Agent | Self-check requirements |
+|---|---|
+| Forge | Chat output contains: status line, files-changed list, files-read-for-context list, how-to-test, known-limitations (or "none"), Deferred AC items if any. Type-check passed. |
+| Sentinel | Chat output contains: status line, severity-graded fixes-applied list, plan-alignment summary. Type-check passed. |
+| Probe | `test-plan.md` (with AC coverage matrix + Coverage Expansion section), `runbook.md`, `bugs.md`, and `regression-analysis.md` (if user-bug invocation) all written. Every plan AC has a covering test (or documented reason). |
+| Hone | Chat output contains: status line, files-edited list, simplifications-not-made section, observations section. |
+| Nova | Chat output contains: mode, decision, file paths if changed, mode-specific notes (drift items / change summary / plan paths). |
+| Echo | Chat output contains: status line, doc-changes log, comment audit results, open questions if any. |
 
-- [ ] `forge/implementation.md` exists and is non-empty
+### Orchestrator side
 
-If missing: send back to Forge.
-
----
-
-## Gate 3b — Post-Forge-fixes: Implementation completeness
-
-After Sentinel → Forge-fixes cycle completes and before Probe:
-
-- [ ] Lists every file **changed** (with one-line reason per file)
-- [ ] Lists every file **read for context**
-- [ ] `How to test` section maps to the sub-plan's Test Cases for Probe
-- [ ] Known limitations / follow-ups section is present (even if "none")
-
-**Any missing field = send back to Forge.**
+The orchestrator only confirms the agent **signaled completion in chat**. It does not re-read agent artifacts. If an agent's chat output is missing required content, the agent's own self-check should have caught it — the orchestrator escalates by re-prompting the agent with the specific gap.
 
 ---
-
-## Gate 4 — Post-Probe: Test coverage check
-
-After Probe completes:
-
-- [ ] AC coverage matrix exists — every AC from the plan is listed
-- [ ] Every AC has at least one test mapped to it
-- [ ] `probe/runbook.md` exists with exact commands and expected outputs
-- [ ] If user-reported bug: `probe/regression-analysis.md` exists and answers all three questions
-
-**Any missing item = send back to Probe.**
-
----
-
-## findings.md format (mandatory)
-
-Sentinel **must** write `findings.md` as a JSON code block containing an array of finding objects. No prose, no markdown lists — structured output only.
-
-```json
-[
-  {
-    "id": "S-01",
-    "file": "relative/path/to/file.ts",
-    "line": 42,
-    "severity": "critical | high | medium | low",
-    "issue": "One-sentence description of the problem.",
-    "suggested_fix": "Specific, actionable description of what Forge should do."
-  }
-]
-```
-
-- `id`: Sequential (`S-01`, `S-02`, …) — used for tracking and re-review scoping
-- `file` + `line`: Must be exact — no invented paths, no approximate line numbers
-- `severity`: One of the four values above, no others
-- `suggested_fix`: Must be actionable enough for Forge to act on without follow-up questions
-
-If there are no findings, write `[]`. Never omit the file.
-
----
-
-## Finding routing rule (non-negotiable)
-
-Any finding in `findings.md` at any severity — critical, high, medium, or low — routes to Forge for a fix before Probe runs. No deferred or skipped findings. If Sentinel files it, Forge fixes it.
-
-The orchestrator passes the parsed `findings.md` JSON array directly as Forge's fix brief — no rewriting required. Forge must address every finding by `id` and confirm each one in `implementation.md`.
-
-## Re-review rule
-
-Only re-run Sentinel after Forge fixes if the original findings included critical or high severity. Medium/low fixes go directly to Probe — no Sentinel re-run required.

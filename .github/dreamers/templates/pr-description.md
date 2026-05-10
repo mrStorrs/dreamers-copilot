@@ -5,15 +5,10 @@ Use this structure for `gh pr create --body`.
 ---
 
 ## Summary
+plan/task summary here
 
 - [bullet: what was delivered]
 - [bullet: why / what problem it solves]
-
-## Files changed
-
-| File | Change |
-|---|---|
-| `path/to/file.ts` | [one-line reason] |
 
 ## Test counts
 
@@ -22,18 +17,8 @@ Use this structure for `gh pr create --body`.
 
 *(Omit platforms not touched by this PR.)*
 
-## Sentinel findings resolved
+## Fixes applied
 
-- F-N (severity): [one-line description of what was fixed]
+- [SEVERITY] file:line — what was fixed (from Sentinel's chat output / commit messages)
 
-*(Omit if no findings.)*
-
-## Firebase build
-
-Release X.Y.Z (build N) distributed to alpha group — available in Firebase App Tester.
-
-*(Replace with "N/A — no mobile runtime changes" if skipped.)*
-
----
-
-🤖 Generated with GitHub Copilot
+*(Omit if no fixes applied.)*

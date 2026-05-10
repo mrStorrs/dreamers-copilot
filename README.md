@@ -21,22 +21,36 @@ Everything lives under `.github/`:
 | Agent | Role | Model |
 |-------|------|-------|
 | **Forge** | Coder — implements changes against a plan | Sonnet |
-| **Sentinel** | Reviewer — correctness, security, maintainability | Sonnet |
-| **Probe** | Tester — derives tests from acceptance criteria | Sonnet |
-| **Echo** | Documentarian — READMEs, changelogs, ADRs | Haiku |
-| **Nova** | Replanner — re-verifies remaining plans between sub-plan cycles | Opus |
+| **Sentinel** | Reviewer (fix-on-sight, production-code lane) — correctness, security, maintainability | Sonnet |
+| **Probe** | Tester (fix-on-sight, test-files lane) — derives tests from acceptance criteria | Sonnet |
+| **Hone** | Simplifier (fix-on-sight, branch-diff scope, behavior-preserving) — readability, maintainability, redundancy reduction | Sonnet |
+| **Nova** | Planning specialist (multi-mode: verify / replan / plan-new) | Opus |
+| **Echo** | Documentarian — README, CHANGELOG, project-level `.github/copilot-instructions.md` (Echo-owned sections), project-specific docs | Haiku |
 | **Bolt** | Runner — git ops, test execution, PR creation | Haiku |
 | **Sage** | Researcher — deep multi-perspective research | Sonnet |
-| **Hone** | Simplifier — readability, maintainability, redundancy reduction | Sonnet |
 
 ## Skills (Pipelines)
 
+### Pipeline orchestrators
 | Skill | Purpose |
 |-------|---------|
-| `dreamers-full` | Full pipeline: plan → implement → review → test → document → PR |
+| `dreamers-full` | Full pipeline: plan → implement → fix-on-sight Sentinel → fix-on-sight Probe → plan-verify → simplify → docs → PR |
 | `dreamers-plan` | Planning only — produce a plan without implementing |
 | `dreamers-implement` | Implement an existing approved plan |
-| `dreamers-fix` | Bug triage and fix |
+| `dreamers-fix` | Bug triage and fix (Tier 1 quick / Tier 2 full pipeline) |
+
+### Agent wrappers (ergonomic arg-flag invocation of a single agent)
+| Skill | Purpose |
+|-------|---------|
+| `dreamers-review` | Sentinel-backed review with arg flags (`--branch`, `--paths`, `--all`); fix-on-sight in production-code lane |
+| `dreamers-test` | Probe-backed test pass with arg flags; fix-on-sight in test-files lane |
+| `dreamers-simplify` | Hone fix-on-sight (branch-diff scope, behavior-preserving) + project-defined test/lint pass |
+| `dreamers-plan-verify` | Nova verify mode — lightweight applicability check on the next sub-plan; halts on drift |
+| `dreamers-docs` | Echo-backed doc update with arg flags |
+
+### Specialty pipelines
+| Skill | Purpose |
+|-------|---------|
 | `dreamers-research` | Deep research with phased workflow |
 | `dreamers-pr-resolve` | Resolve PR review comments |
 | `dreamers-issue` | Create structured GitHub issues |
@@ -46,7 +60,6 @@ Everything lives under `.github/`:
 | `dreamers-clean-work` | Between-milestone maintenance |
 | `dreamers-add-logging` | Add production-grade logging |
 | `dreamers-atlas-choice` | Route to the correct pipeline |
-| `dreamers-simplify` | Simplification pass on the full feature-branch diff (Hone + Sentinel + Probe) |
 
 ## Install
 
@@ -83,6 +96,6 @@ The uninstaller removes only files the installer placed (agents, skills, refs, t
 When bootstrapping a new project to use Dreamers, see the [project bootstrap ref](.github/dreamers/refs/project-bootstrap.md) for the checklist:
 
 1. Ensure `.dreamers/` is in the project's `.gitignore`
-2. Create the project-level `CLAUDE.md`
+2. Create the project-level `.github/copilot-instructions.md` (Copilot CLI auto-loads this for the project)
 3. Create `.dreamers/plans/` directory
 4. Copy instruction files to `.github/instructions/`

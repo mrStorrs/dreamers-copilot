@@ -1,42 +1,80 @@
 ---
 name: dreamers-implement
-description: 'Implementation only — execute against an existing plan file. Use when a plan already exists and is approved. Triggers: /dreamers-implement, implement this plan, start implementation, execute the plan.'
+description: 'Implementation only — execute against an existing approved plan. Use when a plan already exists. Triggers: /dreamers-implement, implement this plan, start implementation, execute the plan.'
 argument-hint: 'path/to/plan.md'
 ---
 
-### ⚠️ MANDATORY FIRST ACTIONS — do these before anything else, in this exact order
+## Pre-flight reads
 
-1. **Read ALL of the following refs** (no skipping):
-- `~/.copilot/dreamers/refs/git-workflow.md`
-- `~/.copilot/dreamers/refs/quality-gates.md`
-- `~/.copilot/dreamers/refs/delegation.md`
-- `~/.copilot/dreamers/refs/close-out.md`
-- `~/.copilot/dreamers/refs/agent-recovery.md`
+Read these refs once at startup (use the `view` tool, full file):
+- `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, push discipline
+- `~/.copilot/dreamers/refs/close-out.md` — retro and PR procedure
 
-If the plan has sub-plans, also read:
-- `~/.copilot/dreamers/refs/sub-plan-loop.md`
-
-2. **Invoke Bolt** to set up the feature branch per `git-workflow.md` (detect default branch, checkout and pull it, cut `feat/d<N>-<name>` from it, wipe agent workspaces). Do not proceed until Bolt confirms.
-3. **Do not write or edit code yourself.** All implementation must go through the agents below.
-
----
-
-Follow the Dreamers Kernel and output discipline from `copilot-instructions.md`.
-
-A plan already exists. Go straight to implementation for the following task:
+Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
 
 $ARGUMENTS
 
-The prompt must include a path to the existing plan file. If no plan file path is provided, stop and ask for it before proceeding — do not invent or skip the plan.
+The prompt must include a path to the existing plan file. If none provided, stop and ask before proceeding — do not invent or skip the plan.
 
-**User Input Audit (before Gate 2):** Review the entire conversation thread. For every suggestion, correction, preference, or constraint the user expressed, confirm it is explicitly addressed in the plan file. If anything is missing, update the plan to incorporate it before proceeding. Do not skip this step.
+---
 
-**Single plan route:** Forge → Sentinel → Probe → `dreamers-simplify` → Echo → Close-out (Bolt handles push + PR)
-**Sub-plan route:** Loop per sub-plan (see sub-plan-loop.md), then `dreamers-simplify` → Echo → Close-out (Bolt handles push + PR)
+## MANDATORY first actions (in order)
 
-Run Gate 2 (plan quality check) first. Run quality gates at every handoff boundary. Follow delegation.md for all agent invocations (use Bolt for mechanical tasks like test runs, git push, PR creation, issue closing). Follow git-workflow.md for branching, commits, and push discipline. Follow close-out.md for retro and PR creation.
+1. **User Input Audit** — Review the entire conversation thread. For every suggestion, correction, preference, or constraint the user expressed, confirm it is explicitly addressed in the plan file. If anything is missing, update the plan to incorporate it before proceeding.
+2. **Plan quality self-check (MANDATORY, replaces former Gate 2)** — verify the plan against:
+   - [ ] Filenames follow `plan-{slug}[-a..n].md`
+   - [ ] Non-trivial features have an umbrella + sub-plans (not monolithic)
+   - [ ] Every sub-plan / standalone has measurable Acceptance Criteria
+   - [ ] Every sub-plan / standalone has Test Cases (Given/When/Then) for non-trivial cases
+   - [ ] Every sub-plan / standalone has Design Decisions in the structured format
+   - [ ] Every sub-plan / standalone has a Rollback Boundary
+   - [ ] Every sub-plan / standalone has a Status field (Draft / Active / Completed / Superseded)
+   - [ ] Plans reference only files/paths that exist (no invented paths)
+   - [ ] Sub-plan splits at natural seams
+   - [ ] No sub-plan's testability depends on a sibling not yet shipped
+   - [ ] No code snippets (exception: interface/type contracts only)
+   
+   Any failure → halt and prompt the user with the specific item(s) that failed.
+3. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer.
+4. **Delegate branch setup to Bolt** via `task(agent_type: "bolt", mode: "sync")` per `git-workflow.md`:
+   - Detect default branch (canonical two-step: `git symbolic-ref refs/remotes/origin/HEAD` with `gh repo view` fallback)
+   - `git fetch origin && git checkout <DEFAULT> && git pull`
+   - Cut `feat/d<N>-<name>` from default
+   - Clean up prior feature's plan files if its PR is merged
+5. **Do not write or edit production files yourself.** All implementation goes through agents.
 
-**Before PR creation:** Invoke the `dreamers-simplify` skill — it runs Hone on the full feature-branch diff (not just the latest sub-plan), then a final Sentinel + Probe pass internally. Do not invoke Sentinel or Probe separately after the skill completes. Then invoke Echo to update project docs before proceeding to close-out.
+---
 
-If the prompt references a GitHub issue number or URL, pass it to Bolt at close-out to close: `gh issue close <number> --comment "Resolved in <PR URL>"`.
+## Per sub-plan loop (sequential, fix-on-sight)
 
+For each sub-plan:
+
+1. **Forge** — `task(agent_type: "forge", mode: "sync")` — implements against the sub-plan. Forge stages, type-checks, signals done with the implementation chat output.
+2. **Sentinel** — `task(agent_type: "sentinel", mode: "sync")` — fix-on-sight review in production-code lane. Severity-graded fixes-applied list. Type-checks after fixes.
+3. **Probe** — `task(agent_type: "probe", mode: "sync")` — fix-on-sight in test-files lane. Writes AC coverage matrix, runbook, bugs.
+4. **If Probe surfaces a production bug** — re-spawn Sentinel scoped to that bug, then re-run Probe.
+5. **User-testing-required check** — pause if `yes` per `git-workflow.md` distribution rules.
+6. **Bolt commits the sub-plan** — single commit per sub-plan, Conventional Commits, plan reference in body.
+7. **`/dreamers-plan-verify`** — invoke with next sub-plan path. Halt if drift; continue if no change.
+
+---
+
+## Standalone-plan route
+
+If the plan is a single standalone (no sub-plans), run the loop body once and skip plan-verify (no next sub-plan to verify).
+
+---
+
+## End of session
+
+1. **`/dreamers-simplify`** — Hone fix-on-sight + project-defined test/lint pass.
+2. **Echo** — `task(agent_type: "echo", mode: "sync")`. Pass: plan path, changed-files list, one-paragraph Sentinel summary, diff base.
+3. **Close-out** per `close-out.md`: retro, final commit, Bolt opens PR via `gh pr create` with body from `pr-description.md` template.
+4. **Issue close (if applicable)** via Bolt.
+5. **`improvements.md` milestone-close append**.
+
+### Push discipline
+`git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out.
+
+### Agent self-checks
+The orchestrator does not re-read agent artifacts. Per `~/.copilot/dreamers/refs/quality-gates.md`, each agent self-asserts its DoD before signaling done.
