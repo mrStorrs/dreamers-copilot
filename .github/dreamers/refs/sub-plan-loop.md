@@ -55,9 +55,9 @@ The `request_info` call MUST include every item below — do not abbreviate or o
 - **Known limitations / out-of-scope:** anything the user might try that this sub-plan deliberately doesn't cover, so they don't flag it as a bug.
 - **How to respond:** instruct the user to reply with one of:
   - `Approved — continue` (orchestrator proceeds to the Bolt commit step)
-  - `Bug: <description>` (orchestrator routes the bug to Sentinel, re-runs Probe, re-runs build/distribution per `build.instructions.md` — or asks the user again if the file is absent — then re-issues `request_info`)
+  - `Bug: <description>` (orchestrator routes the bug **only to Forge**, re-runs build/distribution per `build.instructions.md` — or asks the user again if the file is absent — then re-issues `request_info` with refreshed test steps that verify the fix. Sentinel and Probe are **not** re-invoked: during user-testing rounds the user is the test layer.)
   - Freeform notes / corrections are also accepted and treated as bugs unless clearly approving.
 
 ### Resume rules
 - On `Approved — continue` → proceed to Bolt commit, then `/dreamers-plan-verify`, then next sub-plan.
-- On any bug or correction → fix-and-re-test cycle: re-spawn Sentinel scoped to the bug → re-run Probe → re-run build/distribution per `.github/instructions/build.instructions.md` (or ask the user again if the file is absent) → re-call `request_info`. Do **not** commit until explicit approval is received. The orchestrator only runs build/distribution commands explicitly authorised by `build.instructions.md`; otherwise it surfaces them to the user.
+- On any bug or correction → **Forge-only** fix-and-re-test cycle: re-spawn **only Forge** scoped to the reported bug (do **not** re-invoke Sentinel or Probe — the user is the test layer for user-testing rounds) → re-run build/distribution per `.github/instructions/build.instructions.md` (or ask the user again if the file is absent) → re-call `request_info` with **refreshed test steps** that reproduce the original bug scenario plus any other steps still requiring user verification, so the user can confirm the fix. Do **not** commit until explicit approval is received. The orchestrator only runs build/distribution commands explicitly authorised by `build.instructions.md`; otherwise it surfaces them to the user.
