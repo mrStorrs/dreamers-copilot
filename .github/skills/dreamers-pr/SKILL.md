@@ -41,7 +41,7 @@ The caller passes a full set of inputs in the prompt:
 - Default branch name
 - Plan file paths (list shipped this milestone)
 - Retro file path (for PR body content)
-- Sentinel-TDD summary string (for PR body)
+- Sentinel summary string (for PR body)
 - Issue number / URL (if applicable)
 - Final commit hash (if any docs were committed by close-out)
 
@@ -86,7 +86,7 @@ Use `~/.copilot/dreamers/templates/pr-description.md` as the base template. Fill
 
 - **Summary** — one paragraph: plan title + 1–3 bullets of what was delivered + why.
 - **Test counts** — only if test platforms are touched. Otherwise omit the section.
-- **Fixes applied** — severity-graded list from the Sentinel-TDD summary string (if present in composed mode).
+- **Fixes applied** — severity-graded list from the Sentinel summary string (if present in composed mode).
 
 Title format: short (under 70 chars). Body details, not the title.
 

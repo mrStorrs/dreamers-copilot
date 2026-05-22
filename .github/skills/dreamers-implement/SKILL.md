@@ -12,7 +12,7 @@ Takes an approved plan file as input and runs one implementation cycle:
 2. Implement per the plan
 3. Type-check + run tests
 4. Coverage sweep
-5. Spawn Sentinel-TDD for fresh-eyes review
+5. Spawn Sentinel for fresh-eyes review
 6. Handle Sentinel output
 7. User-testing pause (if plan requires)
 8. Commit the cycle
@@ -30,8 +30,8 @@ Read these refs once at startup (use the `view` tool, full file — never `cat`/
 - `~/.copilot/dreamers/refs/comment-rules.md` — comment discipline
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations
 - `~/.copilot/dreamers/templates/logging-standards.md` — logging discipline
-- `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel-TDD crashes mid-run
-- `~/.copilot/dreamers/refs/delegation.md` — protocol for invoking Sentinel-TDD
+- `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel crashes mid-run
+- `~/.copilot/dreamers/refs/delegation.md` — protocol for invoking Sentinel
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, **test commands** (binding), build commands.
@@ -84,13 +84,13 @@ Inspect the plan file passed in:
 
 ---
 
-## Subagent failure recovery (applies to Sentinel-TDD invocation below)
+## Subagent failure recovery (applies to Sentinel invocation below)
 
-Per `agent-recovery.md`: if Sentinel-TDD hits a rate limit, crashes, or times out mid-run:
+Per `agent-recovery.md`: if Sentinel hits a rate limit, crashes, or times out mid-run:
 
 1. Read whatever the agent managed to write before failing (chat output, any staged files via `git status`).
 2. Determine which checks/fixes completed and which remain.
-3. Complete remaining work inline (this skill has Read/Write/Edit/Bash) OR re-spawn Sentinel-TDD scoped to only the remaining work.
+3. Complete remaining work inline (this skill has Read/Write/Edit/Bash) OR re-spawn Sentinel scoped to only the remaining work.
 4. Do not re-run steps that already completed — build on partial progress.
 
 ---
@@ -121,7 +121,7 @@ If tests fail:
 
 ### Step 4 — Coverage sweep (mandatory, unskippable checklist)
 
-After tests are green, run the coverage sweep before invoking Sentinel-TDD. Work through item by item, do not collapse to "looks fine":
+After tests are green, run the coverage sweep before invoking Sentinel. Work through item by item, do not collapse to "looks fine":
 
 - [ ] **AC coverage matrix:** for every plan AC, name the test(s) that cover it. Any AC without a covering test → write one now.
 - [ ] **Layer audit — Unit:** for each changed file, are there functions, branches, or error paths with no unit test?
@@ -133,12 +133,12 @@ After tests are green, run the coverage sweep before invoking Sentinel-TDD. Work
 
 Any gap → write the test now. Re-run the test command. Loop until all checklist items pass.
 
-### Step 5 — Sentinel-TDD review (the ONLY subagent in the cycle)
+### Step 5 — Sentinel review (the ONLY subagent in the cycle)
 
-Invoke Sentinel-TDD via the Agent tool:
+Invoke Sentinel via the Agent tool:
 
 ```
-agent_type: "sentinel-tdd"
+agent_type: "sentinel"
 mode: "sync"
 prompt:
   Context: TDD pipeline. You are the only fresh-eyes pass for this cycle.
@@ -152,12 +152,12 @@ prompt:
   Return: status line + severity-graded lane-labelled fixes-applied list + plan-alignment summary + simplifications-not-made + design questions.
 ```
 
-Wait for Sentinel-TDD to signal completion. Read its chat output.
+Wait for Sentinel to signal completion. Read its chat output.
 
-### Step 6 — Handle Sentinel-TDD output
+### Step 6 — Handle Sentinel output
 
 - **`Approved — no fixes needed`** → proceed to step 7.
-- **`Fixed and approved — N fixes applied`** → proceed to step 7. Sentinel-TDD already type-checked + re-ran tests; no need to re-verify mechanically.
+- **`Fixed and approved — N fixes applied`** → proceed to step 7. Sentinel already type-checked + re-ran tests; no need to re-verify mechanically.
 - **`Blocked — <reason>`** → halt cycle. Surface the block to the user. Common cases: plan AC missing, plan revision needed, scope ambiguity. Resolve, then resume from step 5.
 - **Design questions raised** → present each question to the user before proceeding. Capture decisions inline. Apply the decisions; if implementation changes meaningfully, re-run steps 3 + 4 + 5 for the affected scope.
 
@@ -184,7 +184,7 @@ The `request_info` call MUST include every item below. Do not abbreviate — the
 
 **Resume rules:**
 - On `Approved — continue` → proceed to step 8.
-- On any bug or correction → **fix inline.** No Sentinel-TDD re-invocation: during user-testing rounds, the user IS the test layer. Steps: diagnose → fix in production code → re-run the test command to confirm no regression → re-build/distribute per `build.instructions.md` (or ask the user if no file) → re-call `request_info` with refreshed test steps that reproduce the original bug scenario plus any other steps still requiring user verification. Do NOT commit until explicit approval.
+- On any bug or correction → **fix inline.** No Sentinel re-invocation: during user-testing rounds, the user IS the test layer. Steps: diagnose → fix in production code → re-run the test command to confirm no regression → re-build/distribute per `build.instructions.md` (or ask the user if no file) → re-call `request_info` with refreshed test steps that reproduce the original bug scenario plus any other steps still requiring user verification. Do NOT commit until explicit approval.
 
 ### Step 8 — Commit the cycle
 
@@ -199,13 +199,13 @@ One commit per cycle. Do not push.
 When called **standalone**, exit on Step 8 commit. Tell the user:
 - Commit hash + summary.
 - AC coverage matrix.
-- Sentinel-TDD status.
+- Sentinel status.
 - Next step (their choice): more cycles (next sub-plan), or `/dreamers-close-out` if the feature is complete.
 
 When called **from `/dreamers-full`**, exit on Step 8 commit. Return in chat output:
 - Commit hash.
 - AC coverage matrix.
-- Sentinel-TDD chat output summary (for the orchestrator to concatenate across cycles into the Echo prompt).
+- Sentinel chat output summary (for the orchestrator to concatenate across cycles into the Echo prompt).
 - User-testing notes (if applicable).
 
 The orchestrator reads this chat output, runs the inline drift check (if more sub-plans remain), and either loops to the next sub-plan or proceeds to Phase 3.

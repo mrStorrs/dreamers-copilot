@@ -42,7 +42,7 @@ The orchestrator passes:
 - Plan file paths (list shipped this milestone).
 - Branch name.
 - Default branch name.
-- Sentinel-TDD summary string (concatenated across cycles).
+- Sentinel summary string (concatenated across cycles).
 - Issue reference (if the originating task referenced one).
 
 ### Standalone mode (user invokes directly)
@@ -69,7 +69,7 @@ Invoke `/dreamers-docs` in composed mode. Pass:
 - Plan file paths.
 - Changed files: output of `git diff --name-only origin/<DEFAULT>...HEAD`.
 - Diff base: `origin/<DEFAULT>`.
-- Sentinel-TDD summary string (composed mode) or placeholder (standalone mode).
+- Sentinel summary string (composed mode) or placeholder (standalone mode).
 
 Wait for `/dreamers-docs` to signal completion. Capture Echo's doc-changes log + open questions from chat output.
 
@@ -112,7 +112,7 @@ Plan(s) shipped:
 
 AC coverage: <N>/<N> ACs covered (or list any uncovered with reason)
 
-Sentinel-TDD summary: <one-paragraph from chat outputs across cycles>
+Sentinel summary: <one-paragraph from chat outputs across cycles>
 
 Echo docs result: <status line + N files touched, or "No doc updates needed">
 
@@ -138,7 +138,7 @@ Invoke `/dreamers-pr` in composed mode. Pass:
 - Branch name + default branch.
 - Plan paths.
 - Retro file path.
-- Sentinel-TDD summary string.
+- Sentinel summary string.
 - Issue reference (if applicable).
 - Final commit hash (if Step 4 ran).
 

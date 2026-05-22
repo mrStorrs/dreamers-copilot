@@ -2,7 +2,7 @@
 
 When a Dreamers TDD-pipeline sub-skill is doing work that would normally be delegated to a subagent — implementation, test writing, comment writing, logging, git operations — the orchestrator MUST follow these rules. They are baked into this ref (rather than into each agent file) because the new pipeline collapses Forge / Probe / Bolt's roles into inline orchestrator work; the agent files for those roles no longer exist or are no longer invoked.
 
-This ref is cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`, and the `/dreamers-full` orchestrator.
+This ref is cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, and `/dreamers-pr`. The `/dreamers-full` orchestrator does NOT cite this ref directly — it trusts the sub-skills do.
 
 ---
 

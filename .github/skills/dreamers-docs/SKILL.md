@@ -31,7 +31,7 @@ The orchestrator passes a full prompt to this skill including:
 - Plan file paths (list of plans shipped in this milestone)
 - Changed-files list (output of `git diff --name-only origin/<DEFAULT>...HEAD`)
 - Diff base (`origin/<DEFAULT_BRANCH>`)
-- Sentinel-TDD summary string (concatenated chat outputs from Sentinel across all cycles)
+- Sentinel summary string (concatenated chat outputs from Sentinel across all cycles)
 
 The skill forwards these to Echo's invocation prompt.
 
@@ -65,7 +65,7 @@ prompt:
   Plan file(s): <absolute paths to the plan(s) shipped this milestone; or "none — standalone invocation, discover from .dreamers/plans/" in standalone mode>
   Changed files: <output of the resolved git diff per scope>
   Diff base: origin/<DEFAULT_BRANCH>
-  Sentinel-TDD summary: <one-paragraph concatenation of Sentinel-TDD chat outputs across all cycles; or "Standalone invocation — no Sentinel summary available" in standalone mode>
+  Sentinel summary: <one-paragraph concatenation of Sentinel chat outputs across all cycles; or "Standalone invocation — no Sentinel summary available" in standalone mode>
   Scope: update Echo-owned sections of `.github/copilot-instructions.md` (Tech stack, Repo structure, Conventions, Key files, Test commands) plus any other project docs (README, CHANGELOG, TESTING.md, etc.) that need updates based on what shipped. Skip sections the change doesn't materially affect.
   Return: doc-changes log + open questions (use "none" if empty) in chat output.
 ```

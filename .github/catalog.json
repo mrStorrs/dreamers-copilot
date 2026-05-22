@@ -95,7 +95,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — fix-on-sight in the production-code lane. Correctness, security, maintainability; strict, specific, actionable.",
+      "description": "Reviewer of the Dreamers — fix-on-sight across production AND test files. Five lenses: correctness, security, maintainability, simplicity / over-engineering, test coverage gaps. The only judgment subagent in the TDD pipeline's per-cycle hot path.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -103,19 +103,6 @@
         "agent"
       ],
       "path": ".github/agents/sentinel.agent.md"
-    },
-    {
-      "type": "agent",
-      "slug": "sentinel-tdd",
-      "name": "sentinel-tdd",
-      "description": "TDD-pipeline Reviewer of the Dreamers — expanded-lane Sentinel for `/dreamers-tdd`. Fix-on-sight across production AND test files; five lenses (correctness, security, maintainability, simplicity, test coverage). The only subagent in the `/dreamers-tdd` hot path.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/sentinel-tdd.agent.md"
     },
     {
       "type": "skill",
@@ -225,7 +212,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "Full Dreamers pipeline: plan a feature, implement with agent delegation (fix-on-sight Sentinel/Probe/Hone), and ship. Use when starting a new feature from scratch.",
+      "description": "Full Dreamers TDD pipeline orchestrator. Delegates Phase 1 to /dreamers-plan, Phase 2 to /dreamers-implement (looped per sub-plan for umbrella mode), Phase 3 to /dreamers-close-out. Owns branch setup, umbrella-vs-cohesive routing, and the inline drift check between sub-plans.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -366,19 +353,6 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-tdd",
-      "name": "dreamers-tdd",
-      "description": "TDD pipeline with inline implementation. Plan → write failing tests → implement → run tests → Sentinel-TDD review → user-test → close-out, all inline except a Sentinel-TDD subagent pass per cycle and one Echo subagent doc-update at close-out. Faster than /dreamers-full for small-to-medium features.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-tdd/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-test",
       "name": "dreamers-test",
       "description": "Probe-backed test pass with arg-flag invocation. Writes/runs tests, fixes test-file issues on sight, reports production bugs for Sentinel routing. Args: --branch, --paths, --all.",
@@ -437,10 +411,6 @@
         {
           "type": "agent",
           "slug": "sentinel"
-        },
-        {
-          "type": "agent",
-          "slug": "sentinel-tdd"
         },
         {
           "type": "skill",
@@ -517,10 +487,6 @@
         {
           "type": "skill",
           "slug": "dreamers-simplify"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-tdd"
         },
         {
           "type": "skill",
