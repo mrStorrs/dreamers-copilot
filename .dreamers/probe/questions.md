@@ -1,3 +1,0 @@
-# Questions
-
-None.

@@ -61,14 +61,14 @@ git rev-parse --is-inside-work-tree 2>$null
 
 If not already a repo:
 1. Ask the user: public or private repo?
-2. Invoke **Bolt** with the following commands:
+2. Run the following commands inline (no subagent — this is mechanical setup the orchestrator does directly):
    - `git init`
    - `gh repo create [project-name] --[public|private] --source=. --remote=origin`
    - `git remote set-url origin git@github.com:[owner]/[project-name].git`
    - Create `.gitignore` with `.dreamers/` plus standard ignores for the agreed stack
-   - `New-Item -ItemType Directory -Force -Path .dreamers/plans, .dreamers/atlas | Out-Null`
+   - Create `.dreamers/plans/` and `.dreamers/atlas/` directories
 
-After Bolt completes, create the project-level `.github/copilot-instructions.md` per project-bootstrap.md ownership rules (this requires judgment — do it directly, not via Bolt).
+Then create the project-level `.github/copilot-instructions.md` per `project-bootstrap.md` ownership rules — this requires judgment and is done directly.
 ---
 
 ## Phase 5 — Shell plans
@@ -85,5 +85,5 @@ Ask the user: **"Review the milestone breakdown above. Tell me if you want to sp
 
 If the user requests changes: update the affected plan files, re-list all plans, and ask again. Repeat until the user signs off.
 
-Do not invoke Forge, Sentinel, or Probe. This skill ends when the user is happy with the shell plans.
+This skill ends when the user is happy with the shell plans. From there the user invokes `/dreamers-plan` on a specific milestone (or `/dreamers-full` to plan + implement in one session).
 

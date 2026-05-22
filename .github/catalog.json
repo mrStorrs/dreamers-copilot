@@ -2,22 +2,9 @@
   "items": [
     {
       "type": "agent",
-      "slug": "bolt",
-      "name": "bolt",
-      "description": "Runner of the Dreamers — executes mechanical, low-reasoning tasks cheaply and fast. Runs tests, performs git operations, creates PRs.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/bolt.agent.md"
-    },
-    {
-      "type": "agent",
       "slug": "echo",
       "name": "echo",
-      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), project-level instruction files (.github/copilot-instructions.md Echo-owned sections), and project-specific docs from completed implementation and review outputs. Runs after Sentinel approves work.",
+      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), project-level instruction files (.github/copilot-instructions.md Echo-owned sections), and project-specific docs from completed implementation and review outputs. Invoked by /dreamers-docs at close-out.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -25,58 +12,6 @@
         "agent"
       ],
       "path": ".github/agents/echo.agent.md"
-    },
-    {
-      "type": "agent",
-      "slug": "forge",
-      "name": "forge",
-      "description": "Coder of the Dreamers — implements changes strictly against a referenced plan; incremental, minimal, disciplined.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/forge.agent.md"
-    },
-    {
-      "type": "agent",
-      "slug": "hone",
-      "name": "hone",
-      "description": "Simplifier of the Dreamers — fix-on-sight on the full feature-branch diff, behavior-preserving. Runs once after all sub-plan cycles complete.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/hone.agent.md"
-    },
-    {
-      "type": "agent",
-      "slug": "nova",
-      "name": "nova",
-      "description": "Planning specialist of the Dreamers — multi-mode (verify / replan / plan-new). Lightweight applicability checks between sub-plans, drift recovery, or full new-feature planning conversations.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/nova.agent.md"
-    },
-    {
-      "type": "agent",
-      "slug": "probe",
-      "name": "probe",
-      "description": "Tester of the Dreamers — fix-on-sight in the test-files lane. Derives tests from plan acceptance criteria; hunts edge cases; relentless.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/probe.agent.md"
     },
     {
       "type": "agent",
@@ -106,35 +41,9 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-add-logging",
-      "name": "dreamers-add-logging",
-      "description": "Add comprehensive, production-grade logging to the project. Phased pass requiring user approval before code changes.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-add-logging/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-atlas-choice",
-      "name": "dreamers-atlas-choice",
-      "description": "Route a task to the correct Dreamers pipeline based on task type. Use when unsure whether to plan or implement.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-atlas-choice/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-clean-work",
       "name": "dreamers-clean-work",
-      "description": "Between-milestone maintenance pass: prune stale files, check consistency, clean workspace. No implementation, no planning.",
+      "description": "Between-milestone maintenance pass: prune stale files, archive merged plans, audit improvements.md, scan for project-state drift. All inline — no subagents.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -142,32 +51,6 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-clean-work/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-cleanup-comments",
-      "name": "dreamers-cleanup-comments",
-      "description": "Code comment cleanup pass — remove redundant/stale comments and improve clarity across the codebase.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-cleanup-comments/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-cleanup-comments-branch",
-      "name": "dreamers-cleanup-comments-branch",
-      "description": "Feature-branch comment cleanup pass — clean up comments only in files changed on the current feature branch. For use inside parent pipelines.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-cleanup-comments-branch/SKILL.md"
     },
     {
       "type": "skill",
@@ -194,19 +77,6 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-docs/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-fix",
-      "name": "dreamers-fix",
-      "description": "Bug triage and fix pipeline. Routes to quick-fix (Forge only) or full pipeline based on bug scope.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-fix/SKILL.md"
     },
     {
       "type": "skill",
@@ -251,7 +121,7 @@
       "type": "skill",
       "slug": "dreamers-new-project",
       "name": "dreamers-new-project",
-      "description": "Bootstrap a brand new project from scratch: discovery questions, project brief, shell plans.",
+      "description": "Bootstrap a brand new project from scratch: discovery questions, project brief, shell plans. All work inline.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -275,19 +145,6 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-plan-verify",
-      "name": "dreamers-plan-verify",
-      "description": "Lightweight Nova-verify check on the next sub-plan against current codebase reality. Halts on drift.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-plan-verify/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-pr",
       "name": "dreamers-pr",
       "description": "PR-creation phase of the Dreamers TDD pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. The single push of the milestone happens here.",
@@ -303,7 +160,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Resolve unresolved PR review comments via the Forge → Probe → resolve threads pipeline.",
+      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel for review, then resolves accepted threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -324,45 +181,6 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-research/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-review",
-      "name": "dreamers-review",
-      "description": "Sentinel-backed code review with arg-flag invocation. Reviews through correctness/security/maintainability lenses and fixes issues on sight in production-code lane. Args: --branch, --paths, --all.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-review/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-simplify",
-      "name": "dreamers-simplify",
-      "description": "Run Hone simplification (fix-on-sight, branch-diff scope, behavior-preserving) on the current feature branch, followed by a project-defined test/lint pass. Does not create branches or PRs.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-simplify/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-test",
-      "name": "dreamers-test",
-      "description": "Probe-backed test pass with arg-flag invocation. Writes/runs tests, fixes test-file issues on sight, reports production bugs for Sentinel routing. Args: --branch, --paths, --all.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-test/SKILL.md"
     }
   ],
   "collections": [
@@ -370,7 +188,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Full Dreamers system — orchestrated agents (Forge, Sentinel, Probe, Echo, Hone, Nova, Sage, Bolt) with fix-on-sight Sentinel/Probe/Hone and multi-mode Nova, skills (plan, implement, fix, simplify, research, plus arg-flag wrappers for review/test/plan-verify/docs), shared refs/templates, and the Copilot instructions that wire it together.",
+      "description": "Dreamers TDD pipeline — orchestrator (`/dreamers-full`) wrapping phase sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`) with two judgment subagents (Sentinel for per-cycle review, Echo for close-out docs) plus Sage for orthogonal research. Inline implementation; tests-first per cycle; Sentinel reviews production AND test files across five lenses.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -382,27 +200,7 @@
       "members": [
         {
           "type": "agent",
-          "slug": "bolt"
-        },
-        {
-          "type": "agent",
           "slug": "echo"
-        },
-        {
-          "type": "agent",
-          "slug": "forge"
-        },
-        {
-          "type": "agent",
-          "slug": "hone"
-        },
-        {
-          "type": "agent",
-          "slug": "nova"
-        },
-        {
-          "type": "agent",
-          "slug": "probe"
         },
         {
           "type": "agent",
@@ -414,23 +212,7 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-add-logging"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-atlas-choice"
-        },
-        {
-          "type": "skill",
           "slug": "dreamers-clean-work"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-cleanup-comments"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-cleanup-comments-branch"
         },
         {
           "type": "skill",
@@ -439,10 +221,6 @@
         {
           "type": "skill",
           "slug": "dreamers-docs"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-fix"
         },
         {
           "type": "skill",
@@ -466,10 +244,6 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-plan-verify"
-        },
-        {
-          "type": "skill",
           "slug": "dreamers-pr"
         },
         {
@@ -479,18 +253,6 @@
         {
           "type": "skill",
           "slug": "dreamers-research"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-review"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-simplify"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-test"
         },
         {
           "type": "folder",
@@ -512,7 +274,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (delegation, planning protocol, quality gates, testing mandate, etc.).",
+      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, git workflow, close-out procedure, TDD orchestrator discipline, etc.).",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },
@@ -520,7 +282,7 @@
       "type": "folder",
       "slug": "dreamers-templates",
       "name": "Dreamers Templates",
-      "description": "Shared templates used by Dreamers skills (plan umbrella/sub, GitHub issue, PR description, project brief, etc.).",
+      "description": "Shared templates used by Dreamers skills (plan umbrella/sub, GitHub issue, PR description, project brief, logging standards, etc.).",
       "sourcePath": ".github/dreamers/templates",
       "destSubpath": "dreamers/templates"
     },
@@ -528,7 +290,7 @@
       "type": "folder",
       "slug": "instructions",
       "name": "Instructions",
-      "description": "Shared instruction files (e.g. comment rules) consumed by Dreamers agents.",
+      "description": "Shared instruction files (e.g. comment rules) consumed by Dreamers agents and skills.",
       "sourcePath": ".github/instructions",
       "destSubpath": "instructions"
     }

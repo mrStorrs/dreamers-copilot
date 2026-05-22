@@ -1,6 +1,6 @@
 # Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Dreamers coordinates specialized AI agents through structured pipelines — planning, implementation, review, testing, and documentation — to deliver production-grade code changes.
+A TDD-pipeline agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → review → docs → PR flow with most work done inline by the orchestrator and a single judgment subagent (Sentinel) reviewing every cycle.
 
 ## Structure
 
@@ -8,58 +8,60 @@ Everything lives under `.github/`:
 
 ```
 .github/
-├── agents/           # Agent definitions (Forge, Sentinel, Probe, Echo, Nova, Bolt, Sage)
-├── skills/           # Skill entry points for each pipeline (dreamers-full, dreamers-fix, etc.)
+├── agents/           # Agent definitions (Sentinel, Echo, Sage)
+├── skills/           # Skill entry points for each pipeline phase
 ├── dreamers/
-│   ├── refs/         # Shared reference docs (delegation protocol, git workflow, quality gates, etc.)
+│   ├── refs/         # Shared reference docs (TDD orchestrator discipline, git workflow, planning, etc.)
 │   └── templates/    # Plan templates, PR descriptions, logging standards
 └── instructions/     # Auto-injected instruction files (comment rules, etc.)
 ```
 
-## Agents
+## Agents (3 total)
 
-| Agent | Role | Model |
-|-------|------|-------|
-| **Forge** | Coder — implements changes against a plan | Sonnet |
-| **Sentinel** | Reviewer (fix-on-sight, production-code lane) — correctness, security, maintainability | Sonnet |
-| **Probe** | Tester (fix-on-sight, test-files lane) — derives tests from acceptance criteria | Sonnet |
-| **Hone** | Simplifier (fix-on-sight, branch-diff scope, behavior-preserving) — readability, maintainability, redundancy reduction | Sonnet |
-| **Nova** | Planning specialist (multi-mode: verify / replan / plan-new) | Opus |
-| **Echo** | Documentarian — README, CHANGELOG, project-level `.github/copilot-instructions.md` (Echo-owned sections), project-specific docs | Haiku |
-| **Bolt** | Runner — git ops, test execution, PR creation | Haiku |
-| **Sage** | Researcher — deep multi-perspective research | Sonnet |
+| Agent | Role | When invoked |
+|-------|------|--------------|
+| **Sentinel** | Reviewer (fix-on-sight, production AND test files). Five lenses: correctness, security, maintainability, simplicity / over-engineering, test coverage gaps. | Per cycle in `/dreamers-implement` |
+| **Echo** | Documentarian — updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, etc.). | At close-out via `/dreamers-docs` |
+| **Sage** | Researcher — deep multi-perspective research. | Standalone via `/dreamers-research` |
 
-## Skills (Pipelines)
+## Skills (11 total)
 
-### Pipeline orchestrators
+### TDD pipeline (composable phases)
+
+| Skill | Purpose | Invokable standalone? |
+|-------|---------|----------------------|
+| `dreamers-full` | Orchestrator — wires plan → implement → close-out together. Owns branch setup, umbrella-vs-cohesive routing, inline drift check between sub-plans. | Yes — full pipeline |
+| `dreamers-plan` | Phase 1 — three-phase planning conversation, writes plan files, hard-stops at the approval gate. | Yes — plan only |
+| `dreamers-implement` | Phase 2 — per-cycle loop (tests-first → implement → run → coverage sweep → Sentinel → optional user-test → commit). | Yes — with an approved plan |
+| `dreamers-close-out` | Phase 3 wrapper — improvements append + docs + retro + final commit + user gate + push + PR + post-PR discipline. | Yes — at end of a milestone |
+| `dreamers-docs` | Sub-phase — spawn Echo for project-doc updates. | Yes — ad-hoc doc update |
+| `dreamers-pr` | Sub-phase — push + `gh pr create` + optional issue close. The single push of the milestone. | Yes — push & PR a branch |
+
+### Orthogonal skills
+
 | Skill | Purpose |
 |-------|---------|
-| `dreamers-full` | Full pipeline: plan → implement → fix-on-sight Sentinel → fix-on-sight Probe → plan-verify → simplify → docs → PR |
-| `dreamers-plan` | Planning only — produce a plan without implementing |
-| `dreamers-implement` | Implement an existing approved plan |
-| `dreamers-fix` | Bug triage and fix (Tier 1 quick / Tier 2 full pipeline) |
+| `dreamers-research` | Deep research with phased workflow (Sage subagent). |
+| `dreamers-pr-resolve` | Resolve PR review comments inline + Sentinel review of accepted changes. |
+| `dreamers-issue` | Create structured GitHub issues with acceptance criteria. |
+| `dreamers-new-project` | Bootstrap a brand new project (discovery → tech stack → brief → shell plans). |
+| `dreamers-clean-work` | Between-milestone maintenance (improvements audit, plan archive, drift scan). |
 
-### Agent wrappers (ergonomic arg-flag invocation of a single agent)
-| Skill | Purpose |
-|-------|---------|
-| `dreamers-review` | Sentinel-backed review with arg flags (`--branch`, `--paths`, `--all`); fix-on-sight in production-code lane |
-| `dreamers-test` | Probe-backed test pass with arg flags; fix-on-sight in test-files lane |
-| `dreamers-simplify` | Hone fix-on-sight (branch-diff scope, behavior-preserving) + project-defined test/lint pass |
-| `dreamers-plan-verify` | Nova verify mode — lightweight applicability check on the next sub-plan; halts on drift |
-| `dreamers-docs` | Echo-backed doc update with arg flags |
+## Pipeline shape
 
-### Specialty pipelines
-| Skill | Purpose |
-|-------|---------|
-| `dreamers-research` | Deep research with phased workflow |
-| `dreamers-pr-resolve` | Resolve PR review comments |
-| `dreamers-issue` | Create structured GitHub issues |
-| `dreamers-new-project` | Bootstrap a new project |
-| `dreamers-cleanup-comments` | Code comment cleanup pass |
-| `dreamers-cleanup-comments-branch` | Branch-scoped comment cleanup for use inside parent pipelines |
-| `dreamers-clean-work` | Between-milestone maintenance |
-| `dreamers-add-logging` | Add production-grade logging |
-| `dreamers-atlas-choice` | Route to the correct pipeline |
+```
+/dreamers-full
+  ├─ Phase 1 → /dreamers-plan         (three-phase planning conversation, exit at Phase 1g approval)
+  ├─ Phase 2 → /dreamers-implement    (per cycle; spawns Sentinel)
+  │             ↳ loops per sub-plan in umbrella mode, with inline drift check between
+  └─ Phase 3 → /dreamers-close-out    (improvements append + retro + final commit + push + PR)
+                ├─ /dreamers-docs     (spawns Echo)
+                └─ /dreamers-pr       (single push + PR creation)
+```
+
+Most work is inline in the orchestrator. Two judgment subagents spawn:
+- **Sentinel** — once per cycle, reviews production + test files across five lenses.
+- **Echo** — once per milestone, updates project docs.
 
 ## Install
 
