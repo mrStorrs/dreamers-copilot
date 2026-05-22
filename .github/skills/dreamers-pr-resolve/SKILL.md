@@ -1,9 +1,9 @@
 ---
 name: dreamers-pr-resolve
-description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel for review of accepted changes, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel + Probe + Hone in parallel for review of accepted changes, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
 ---
 
-Resolve unresolved PR review comments. All work inline except a single Sentinel review pass over the accepted changes.
+Resolve unresolved PR review comments. All work inline except a parallel review pass (Sentinel + Probe + Hone) over the accepted changes.
 
 ## Pre-flight reads
 
@@ -51,30 +51,39 @@ If any threads were accepted:
 
 If no threads were accepted, skip to Step 6.
 
-## Step 5 — Sentinel review of accepted changes
+## Step 5 — Parallel review of accepted changes (Sentinel + Probe + Hone)
 
-Invoke Sentinel via the Agent tool, scoped to ONLY the files touched by accepted threads:
+Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `tdd-orchestrator-discipline.md`. Scope is restricted to ONLY the files touched by accepted threads.
 
-```
-agent_type: "sentinel"
-mode: "sync"
-prompt:
-  Context: PR-comment-fix pass via /dreamers-pr-resolve.
-  Plan file: none (ad-hoc PR-feedback work, no plan binding)
-  Scope: <list of files changed by accepted threads from git status>
-  Branch: <current feature branch>
-  Default branch: <detected default>
-  What the orchestrator has done: addressed N accepted PR review comments via inline edits; type-checked + tests green.
-  Five lenses to apply: correctness, security, maintainability, simplicity / over-engineering, test coverage gaps.
-  Fix-on-sight in BOTH production and test files. Type-check + re-run tests after fixes.
-  Return: status line + severity-graded lane-labelled fixes-applied list + plan-alignment summary (mark as N/A here — no plan) + simplifications-not-made + design questions.
-```
+Common prompt context for all three:
+- Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
+- Scope: list of files changed by accepted threads from `git status`
+- Branch + default branch names
+- What the orchestrator has done: addressed N accepted PR review comments via inline edits; type-checked + tests green.
 
-Wait for Sentinel. If `Blocked`, halt; surface to user. If `Fixed and approved`, proceed.
+Per-reviewer prompt addition:
+
+**Sentinel** (`agent_type: "sentinel"`, `mode: "sync"`) — correctness, security, maintainability lenses.
+
+**Probe** (`agent_type: "probe"`, `mode: "sync"`) — test coverage lens (did the PR-feedback fixes break or weaken test coverage?).
+
+**Hone** (`agent_type: "hone"`, `mode: "sync"`) — simplicity lens (did the fixes introduce over-engineering or redundancy?).
+
+Wait for all three to signal completion. Apply findings inline per the orchestrator-as-fixer behavior:
+
+1. Sort findings by severity.
+2. Resolve conflicts per the rule (correctness > simplicity).
+3. Apply each fix inline; stage with `git add`.
+4. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
+
+Handle non-finding outputs:
+- Any reviewer returns `Blocked` → halt; surface; resolve; re-spawn that reviewer.
+- Open questions → present to user before proceeding.
+- All three `Approved — no findings` → proceed to Step 6 directly.
 
 ## Step 6 — Commit accepted fixes (if any)
 
-If any fixes landed (Step 3 accepted + Step 5 Sentinel edits):
+If any fixes landed (Step 3 accepted + Step 5 reviewer findings applied):
 
 ```bash
 git status                # confirm staged content
@@ -106,6 +115,6 @@ Report to the user:
 - M comments rejected (with one-line path + rejection rationale per reject)
 - Threads remaining open (the M rejected ones)
 - Commit hash + push status
-- Sentinel result
+- Reviewer results (Sentinel + Probe + Hone)
 
 This skill does NOT update the PR description, does NOT re-request review, does NOT close the PR. Those are user actions.

@@ -1,6 +1,6 @@
 # Dreamers
 
-A TDD-pipeline agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → review → docs → PR flow with most work done inline by the orchestrator and a single judgment subagent (Sentinel) reviewing every cycle.
+A TDD-pipeline agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → parallel-review → docs → PR flow with most work done inline by the orchestrator. Per cycle, three specialized read-only reviewers (Sentinel + Probe + Hone) spawn in parallel and return structured findings; the orchestrator applies fixes inline.
 
 ## Structure
 
@@ -8,7 +8,7 @@ Everything lives under `.github/`:
 
 ```
 .github/
-├── agents/           # Agent definitions (Sentinel, Echo, Sage)
+├── agents/           # Agent definitions (Sentinel, Probe, Hone, Echo, Sage)
 ├── skills/           # Skill entry points for each pipeline phase
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (TDD orchestrator discipline, git workflow, planning, etc.)
@@ -16,13 +16,17 @@ Everything lives under `.github/`:
 └── instructions/     # Auto-injected instruction files (comment rules, etc.)
 ```
 
-## Agents (3 total)
+## Agents (5 total)
 
 | Agent | Role | When invoked |
 |-------|------|--------------|
-| **Sentinel** | Reviewer (fix-on-sight, production AND test files). Five lenses: correctness, security, maintainability, simplicity / over-engineering, test coverage gaps. | Per cycle in `/dreamers-implement` |
+| **Sentinel** | Reviewer (read-only / report-only). Three lenses: correctness, security, maintainability. | Per cycle in `/dreamers-implement`, parallel with Probe + Hone |
+| **Probe** | Tester (read-only / report-only). Lens: test coverage (AC matrix, layer audit, edge + negative cases, regression risk). | Per cycle in `/dreamers-implement`, parallel with Sentinel + Hone |
+| **Hone** | Simplifier (read-only / report-only). Lens: simplicity / over-engineering / redundancy (behavior-preserving). | Per cycle in `/dreamers-implement`, parallel with Sentinel + Probe |
 | **Echo** | Documentarian — updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, etc.). | At close-out via `/dreamers-docs` |
 | **Sage** | Researcher — deep multi-perspective research. | Standalone via `/dreamers-research` |
+
+The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/dreamers-implement` and `/dreamers-pr-resolve`. All three are read-only; they return structured findings; the orchestrator applies fixes inline. Conflict-resolution rule: correctness > simplicity. Ambiguity surfaces to user.
 
 ## Skills (11 total)
 
@@ -52,15 +56,23 @@ Everything lives under `.github/`:
 ```
 /dreamers-full
   ├─ Phase 1 → /dreamers-plan         (three-phase planning conversation, exit at Phase 1g approval)
-  ├─ Phase 2 → /dreamers-implement    (per cycle; spawns Sentinel)
+  ├─ Phase 2 → /dreamers-implement    (per cycle)
+  │             1. write failing tests
+  │             2. implement inline
+  │             3. type-check + run tests
+  │             4. coverage sweep
+  │             5. spawn Sentinel + Probe + Hone in PARALLEL  ← three read-only reviewers
+  │             6. apply combined findings inline; re-run tests
+  │             7. optional user-test pause
+  │             8. commit
   │             ↳ loops per sub-plan in umbrella mode, with inline drift check between
   └─ Phase 3 → /dreamers-close-out    (improvements append + retro + final commit + push + PR)
                 ├─ /dreamers-docs     (spawns Echo)
                 └─ /dreamers-pr       (single push + PR creation)
 ```
 
-Most work is inline in the orchestrator. Two judgment subagents spawn:
-- **Sentinel** — once per cycle, reviews production + test files across five lenses.
+Most work is inline in the orchestrator. Per cycle, three reviewers spawn in parallel; per milestone, Echo spawns once:
+- **Sentinel + Probe + Hone** — parallel review, each on one lens. Read-only / report-only. Orchestrator applies the combined findings.
 - **Echo** — once per milestone, updates project docs.
 
 ## Install

@@ -1,6 +1,6 @@
 ---
 name: dreamers-implement
-description: 'Implementation phase of the Dreamers TDD pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → Sentinel review → optional user-test → commit). Invokable standalone (given a plan path) or composed from `/dreamers-full` Phase 2. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+description: 'Implementation phase of the Dreamers TDD pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone (given a plan path) or composed from `/dreamers-full` Phase 2. Triggers: /dreamers-implement, implement this plan, execute the plan.'
 argument-hint: 'path/to/plan.md'
 ---
 
@@ -12,8 +12,8 @@ Takes an approved plan file as input and runs one implementation cycle:
 2. Implement per the plan
 3. Type-check + run tests
 4. Coverage sweep
-5. Spawn Sentinel for fresh-eyes review
-6. Handle Sentinel output
+5. Spawn Sentinel + Probe + Hone in parallel for fresh-eyes review
+6. Apply findings from all three reviewers inline
 7. User-testing pause (if plan requires)
 8. Commit the cycle
 
@@ -31,7 +31,7 @@ Read these refs once at startup (use the `view` tool, full file — never `cat`/
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations
 - `~/.copilot/dreamers/templates/logging-standards.md` — logging discipline
 - `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel crashes mid-run
-- `~/.copilot/dreamers/refs/delegation.md` — protocol for invoking Sentinel
+- `~/.copilot/dreamers/refs/delegation.md` — protocol for invoking reviewers (Sentinel, Probe, Hone)
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, **test commands** (binding), build commands.
@@ -121,7 +121,7 @@ If tests fail:
 
 ### Step 4 — Coverage sweep (mandatory, unskippable checklist)
 
-After tests are green, run the coverage sweep before invoking Sentinel. Work through item by item, do not collapse to "looks fine":
+After tests are green, run the coverage sweep before invoking the reviewers. Work through item by item, do not collapse to "looks fine":
 
 - [ ] **AC coverage matrix:** for every plan AC, name the test(s) that cover it. Any AC without a covering test → write one now.
 - [ ] **Layer audit — Unit:** for each changed file, are there functions, branches, or error paths with no unit test?
@@ -133,33 +133,50 @@ After tests are green, run the coverage sweep before invoking Sentinel. Work thr
 
 Any gap → write the test now. Re-run the test command. Loop until all checklist items pass.
 
-### Step 5 — Sentinel review (the ONLY subagent in the cycle)
+### Step 5 — Parallel review (Sentinel + Probe + Hone)
 
-Invoke Sentinel via the Agent tool:
+Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `tdd-orchestrator-discipline.md`. None of them edits files.
 
-```
-agent_type: "sentinel"
-mode: "sync"
-prompt:
-  Context: TDD pipeline. You are the only fresh-eyes pass for this cycle.
-  Plan file: <absolute path to the active plan / sub-plan>
-  Scope: <list of changed files from git status>
-  Branch: <current feature branch>
-  Default branch: <detected default>
-  What the orchestrator has done: written failing tests, implemented, type-checked, ran tests (passing), completed coverage sweep.
-  Five lenses to apply: correctness, security, maintainability, simplicity / over-engineering, test coverage gaps.
-  Fix-on-sight in BOTH production and test files. Type-check + re-run tests after fixes.
-  Return: status line + severity-graded lane-labelled fixes-applied list + plan-alignment summary + simplifications-not-made + design questions.
-```
+Common prompt context for all three:
+- Plan file path
+- Scope: list of changed files from `git status`
+- Branch + default branch names
+- What the orchestrator has done: written failing tests, implemented, type-checked, ran tests (passing), completed coverage sweep.
 
-Wait for Sentinel to signal completion. Read its chat output.
+Per-reviewer prompt addition:
 
-### Step 6 — Handle Sentinel output
+**Sentinel** (`agent_type: "sentinel"`, `mode: "sync"`):
+- Lenses: correctness, security, maintainability
+- Out of scope: test coverage (Probe's lane), simplicity (Hone's lane)
+- Return: structured findings per the spec, plus plan-alignment summary
 
-- **`Approved — no fixes needed`** → proceed to step 7.
-- **`Fixed and approved — N fixes applied`** → proceed to step 7. Sentinel already type-checked + re-ran tests; no need to re-verify mechanically.
-- **`Blocked — <reason>`** → halt cycle. Surface the block to the user. Common cases: plan AC missing, plan revision needed, scope ambiguity. Resolve, then resume from step 5.
-- **Design questions raised** → present each question to the user before proceeding. Capture decisions inline. Apply the decisions; if implementation changes meaningfully, re-run steps 3 + 4 + 5 for the affected scope.
+**Probe** (`agent_type: "probe"`, `mode: "sync"`):
+- Lens: test coverage (AC matrix, layer audit, edge cases, gaps)
+- Out of scope: correctness/security/maintainability (Sentinel's lane), simplicity (Hone's lane)
+- Return: structured findings per the spec, plus plan AC coverage table
+
+**Hone** (`agent_type: "hone"`, `mode: "sync"`):
+- Lens: simplicity / over-engineering / redundancy (behavior-preserving only)
+- Out of scope: correctness/security/maintainability (Sentinel's lane), test coverage (Probe's lane)
+- Return: structured findings per the spec
+
+Wait for all three to signal completion. Read all three chat outputs.
+
+### Step 6 — Apply findings inline (orchestrator-as-fixer)
+
+Concatenate findings from all three reviewers per the orchestrator-as-fixer behavior in `tdd-orchestrator-discipline.md`:
+
+1. **Sort by severity** (critical → high → medium → low).
+2. **Resolve conflicts** per the conflict-resolution rule: correctness > simplicity. Genuine ambiguity → surface to user before applying.
+3. **Apply each fix inline** as a targeted Edit. Stage with `git add` as you go.
+4. **Re-run type-check + tests** after all fixes applied. If regressions appear, diagnose + re-fix inline (up to 3 attempts, then surface to user).
+
+Handle non-finding outputs:
+- Any reviewer returns **`Blocked — <reason>`** → halt cycle; surface; resolve; re-spawn the affected reviewer only.
+- Any reviewer returns **open questions** → present each to the user before proceeding. Capture decisions; apply; if implementation changes meaningfully, re-run Steps 3 + 4 + 5 for the affected scope.
+- All three return **`Approved — no findings`** → proceed to Step 7 directly. No fix application needed.
+
+After fix application (or skip), proceed to Step 7.
 
 ### Step 7 — User testing (if required)
 
@@ -199,13 +216,13 @@ One commit per cycle. Do not push.
 When called **standalone**, exit on Step 8 commit. Tell the user:
 - Commit hash + summary.
 - AC coverage matrix.
-- Sentinel status.
+- Reviewer status (Sentinel + Probe + Hone).
 - Next step (their choice): more cycles (next sub-plan), or `/dreamers-close-out` if the feature is complete.
 
 When called **from `/dreamers-full`**, exit on Step 8 commit. Return in chat output:
 - Commit hash.
 - AC coverage matrix.
-- Sentinel chat output summary (for the orchestrator to concatenate across cycles into the Echo prompt).
+- Reviewer chat output summary (Sentinel + Probe + Hone combined, for the orchestrator to concatenate across cycles into the Echo prompt).
 - User-testing notes (if applicable).
 
 The orchestrator reads this chat output, runs the inline drift check (if more sub-plans remain), and either loops to the next sub-plan or proceeds to Phase 3.

@@ -88,8 +88,65 @@ Pulled from `logging-standards.md`. Key rules:
 
 ---
 
+## Review phase: parallel reviewers + orchestrator-as-fixer
+
+The review phase in `/dreamers-implement` and `/dreamers-pr-resolve` spawns **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses:
+
+- **Sentinel** — correctness, security, maintainability lenses
+- **Probe** — test coverage lens (AC matrix, layer audit, edge cases, gaps)
+- **Hone** — simplicity / over-engineering / behavior-preserving simplification lens
+
+**All three are read-only / report-only.** They identify findings and return them in the structured format below. **None of them edits files** — the orchestrator (which already has the code in context from implementation) applies fixes from the combined findings.
+
+### Structured findings format (mandatory — all three reviewers MUST use)
+
+Each reviewer returns chat output containing:
+
+**Status line** (one of):
+- `Approved — no findings`
+- `Findings reported — N items`
+- `Blocked — <reason>`
+
+**Findings** (if any) — one bullet per finding, exact format:
+```
+[severity] [lens-tag] file:line — what was wrong → suggested fix
+```
+
+Where:
+- `severity` is one of: `critical`, `high`, `medium`, `low`
+- `lens-tag` is one of: `correctness`, `security`, `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
+- `file:line` is the absolute or repo-relative path + line number
+- `what was wrong → suggested fix` is a one-line description + targeted fix the orchestrator can apply mechanically
+
+**Observations** (optional, all reviewers) — out-of-scope notes that aren't findings. The orchestrator may or may not act on them.
+
+**Open questions** (optional, all reviewers) — items needing orchestrator or user judgment. Use "none" if no questions.
+
+### Orchestrator-as-fixer behavior
+
+After all three reviewers return their chat output, the orchestrator:
+
+1. **Concatenates the findings** into a single list, sorted by severity (critical → high → medium → low).
+2. **Resolves conflicts.** If two findings touch the same `file:line` with contradicting fixes — e.g., Sentinel `[correctness] add defensive check` vs Hone `[simplicity] remove this as over-engineering` — apply the **conflict-resolution rule**:
+   - **Correctness > simplicity always.** When in conflict, the correctness/security/maintainability finding wins.
+   - **Genuine ambiguity surfaces to user.** If both arguments are equally strong (rare), present the conflict to the user before applying either.
+3. **Applies fixes inline.** The orchestrator has Edit + Write tools; agents don't. Apply each finding's suggested fix as a targeted edit. Stage with `git add`.
+4. **Re-runs type-check + tests after applying fixes** (to catch any regression introduced by fix application).
+5. **Handles `Blocked` status from any reviewer** by halting the cycle and surfacing the block to the user. Resolve, then re-spawn the affected reviewer.
+6. **Handles open questions** from any reviewer by presenting them to the user before declaring the review phase complete.
+
+If the post-fix test run regresses (tests fail), the orchestrator diagnoses and re-fixes inline — up to 3 attempts, then surfaces to the user.
+
+### Parallel spawn — invocation pattern
+
+In the skill body, the review phase is described as a single tool-call with 3 Agent sub-tool-uses (Claude Code idiom) or 3 parallel `task()` invocations (Copilot CLI idiom). Skills should specify intent ("spawn S + P + H in parallel; wait for all three to complete") and let the runtime execute per its primitives. If a runtime doesn't support parallel spawn, the skill still works — wall-clock cost increases but correctness is preserved.
+
+---
+
 ## How sub-skills cite this ref
 
 Each TDD-pipeline sub-skill includes this ref in its pre-flight reads, alongside the always-load refs (`git-workflow.md`, `plan-content.md`, `comment-rules.md`, `logging-standards.md`, etc.). The sub-skill does NOT re-embed the rules — it cites the ref and follows them.
 
 The orchestrator (`/dreamers-full`) does NOT cite this ref directly; it trusts the sub-skills do. This avoids double-loading the discipline content in the orchestrator's context.
+
+The three reviewer agents (Sentinel, Probe, Hone) also cite this ref for the structured findings format spec.

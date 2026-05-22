@@ -15,6 +15,32 @@
     },
     {
       "type": "agent",
+      "slug": "hone",
+      "name": "hone",
+      "description": "Simplifier of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, redundancy, and behavior-preserving cleanup opportunities. One of three parallel reviewers in the TDD pipeline's review phase.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "agent"
+      ],
+      "path": ".github/agents/hone.agent.md"
+    },
+    {
+      "type": "agent",
+      "slug": "probe",
+      "name": "probe",
+      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). One of three parallel reviewers in the TDD pipeline's review phase.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "agent"
+      ],
+      "path": ".github/agents/probe.agent.md"
+    },
+    {
+      "type": "agent",
       "slug": "sage",
       "name": "sage",
       "description": "Researcher of the Dreamers — conducts deep, multi-perspective research on any topic. Produces comprehensive, citation-backed reports with verified sources.",
@@ -30,7 +56,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — fix-on-sight across production AND test files. Five lenses: correctness, security, maintainability, simplicity / over-engineering, test coverage gaps. The only judgment subagent in the TDD pipeline's per-cycle hot path.",
+      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. One of three parallel reviewers (with Probe and Hone) in the TDD pipeline's review phase. Returns structured findings; orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -95,7 +121,7 @@
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Implementation phase of the Dreamers TDD pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → Sentinel review → optional user-test → commit). Invokable standalone or composed from `/dreamers-full`.",
+      "description": "Implementation phase of the Dreamers TDD pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone or composed from `/dreamers-full`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -160,7 +186,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel for review, then resolves accepted threads via `gh api`.",
+      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel + Probe + Hone in parallel for review of accepted changes, then resolves accepted threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -188,7 +214,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Dreamers TDD pipeline — orchestrator (`/dreamers-full`) wrapping phase sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`) with two judgment subagents (Sentinel for per-cycle review, Echo for close-out docs) plus Sage for orthogonal research. Inline implementation; tests-first per cycle; Sentinel reviews production AND test files across five lenses.",
+      "description": "Dreamers TDD pipeline — orchestrator (`/dreamers-full`) wrapping phase sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`). Inline implementation; tests-first per cycle. Review phase spawns three read-only reviewers in parallel: Sentinel (correctness/security/maintainability), Probe (test coverage), Hone (simplicity / over-engineering). Each returns structured findings; orchestrator applies fixes inline. Echo handles close-out docs; Sage covers orthogonal research.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -201,6 +227,14 @@
         {
           "type": "agent",
           "slug": "echo"
+        },
+        {
+          "type": "agent",
+          "slug": "hone"
+        },
+        {
+          "type": "agent",
+          "slug": "probe"
         },
         {
           "type": "agent",
