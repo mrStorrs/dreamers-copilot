@@ -1,10 +1,8 @@
-# Plan N[letter] — [Short Description]
+# Plan — [Short Description]
 
 **Owner:** [Owner]
 **Date:** YYYY-MM-DD
 **Scope:** repo-local
-**Parent:** [plan-N-short-name.md](plan-N-short-name.md)
-**Depends-on:** [plan-Na-prior-sub-plan.md](plan-Na-prior-sub-plan.md) *(or "none")*
 **Status:** Draft
 **Branch:** feat/d<N>-<name>
 **User-testing-required:** yes/no
@@ -14,7 +12,7 @@
 
 ## Summary
 
-[1-2 sentences: what this sub-plan delivers and why it is needed]
+[1-2 sentences: what this plan delivers and why it is needed]
 
 ---
 
@@ -30,7 +28,7 @@
 
 ## Constraints
 
-- [hard rules Forge must not violate]
+- [hard rules the implementation must not violate]
 
 ---
 
@@ -41,7 +39,7 @@
 **Rejected:** [alternatives considered and why they lost]
 
 ### Race conditions and ordering
-*(Required when the data flow involves async operations, shared mutable state, or concurrent writes — e.g., seq counters, catch-up protocols, event replay, optimistic UI updates. Omit only if the sub-plan has no async flows with shared state.)*
+*(Required when the data flow involves async operations, shared mutable state, or concurrent writes — e.g., seq counters, catch-up protocols, event replay, optimistic UI updates. Omit only if this plan has no async flows with shared state.)*
 
 | Scenario | Risk | Resolution |
 |---|---|---|
@@ -51,7 +49,7 @@
 
 ## Acceptance Criteria
 
-1. [Numbered, measurable, Forge-verifiable — not vague]
+1. [Numbered, measurable, implementation-verifiable — not vague]
 2. ...
 
 ---
@@ -66,7 +64,7 @@
 
 ---
 
-## Test Cases for Probe
+## Test Cases
 
 **TC-1 ([short name]):**
 Given [precondition] /
@@ -92,7 +90,7 @@ Given ... / When ... / Then ...
 
 ## Rollback Boundary
 
-[Which files can be reverted, and whether rollback affects other sub-plans or features]
+[Which files can be reverted, and whether rollback affects other plans in the same sequence or features]
 
 ---
 

@@ -1,14 +1,16 @@
 ---
 name: dreamers-review
-description: 'Sentinel-backed code review with arg-flag invocation. Reviews through correctness/security/maintainability lenses and fixes issues on sight in production-code lane. Triggers: /dreamers-review, review my code, review staged changes, review the branch.'
+description: 'Standalone Sentinel review (correctness / security / maintainability). Read-only — returns structured findings without applying fixes. For ad-hoc audits outside the full pipeline. Triggers: /dreamers-review, review my code, audit correctness, audit security.'
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
 ## What this skill does
 
-Wraps the Sentinel agent for ergonomic standalone invocation. Sentinel reviews through three lenses (correctness, security, maintainability), fixes issues directly in production code, and reports a severity-graded fixes-applied list in chat.
+Spawns just Sentinel (one of the three pipeline reviewers) for a standalone correctness / security / maintainability audit. Read-only — Sentinel returns structured findings; no orchestrator-as-fixer step. If you want fixes applied, take the findings and run `/dreamers-implement` with a fix plan, or invoke `/dreamers-full` for a full cycle.
 
-Test files are Probe's domain — Sentinel only edits test-file comments to enforce comment-rules.
+## Pre-flight reads
+
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — for the structured findings format spec Sentinel uses.
 
 $ARGUMENTS
 
@@ -18,37 +20,38 @@ $ARGUMENTS
 
 Default scope (no flags): staged + unstaged changes.
 
-- `--branch` — scope to feature-branch diff vs default branch:
+- `--branch` — scope to feature-branch diff vs default:
   ```bash
   DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
   [ -z "$DEFAULT" ] && DEFAULT=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
   # scope = files in `git diff origin/$DEFAULT...HEAD --name-only`
   ```
-- `--paths <glob>` — scope to files matching the glob (e.g. `--paths "src/**/*.ts"`).
+- `--paths <glob>` — scope to files matching the glob.
 - `--all` — entire codebase. Emit a chat warning before invoking; rare.
-
----
-
-## Invocation modes
-
-- **Standalone:** user invokes directly with arg flags; this skill runs in the main thread and spawns Sentinel.
-- **From orchestrator:** `/dreamers-full` and `/dreamers-implement` may call this in lieu of a direct `task(agent_type: "sentinel", ...)` call. Functionally identical.
 
 ---
 
 ## Spawn Sentinel
 
-`task(agent_type: "sentinel", mode: "sync")` with prompt that includes:
-- The scope (file list or diff range derived from arg flags)
-- The plan file path if available in the calling context (else "no plan; review against general standards in `comment-rules.md`, `logging-standards.md`, and the three review lenses")
-- Any additional context from the orchestrator
+Invoke via the Agent tool:
 
----
+```
+agent_type: "sentinel"
+mode: "sync"
+prompt:
+  Context: Standalone review via /dreamers-review. No plan binding (ad-hoc audit).
+  Scope: <list of files from arg parsing above>
+  Branch: <current feature branch>
+  Default branch: <detected default>
+  Lenses: correctness, security, maintainability (the three canonical Sentinel lenses).
+  Plan-alignment summary: mark N/A — no plan binding.
+  Return: status line + severity-graded lane-labelled findings + open questions.
+```
+
+Wait for Sentinel to signal completion. Read its chat output.
 
 ## Output
 
-Chat output is Sentinel's chat output (passed through):
-- Status line — `Approved — no fixes needed`, `Fixed and approved — N fixes applied`, or `Blocked — <reason>`
-- Severity-graded fixes-applied list (if any) — `[SEVERITY] file:line — what was wrong → what was fixed`
-- Plan-alignment summary
-- Risk notes (if any)
+Pass Sentinel's chat output through to the user verbatim. Do NOT apply fixes — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+
+If the user wants fixes applied from the findings, suggest: "Run `/dreamers-implement` with a plan that addresses these findings, or `/dreamers-full` for a full cycle."

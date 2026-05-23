@@ -11,45 +11,40 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
 2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
-## Branch setup (before invoking Forge)
+## Branch setup (before invoking `/dreamers-implement`)
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
-3. **Wipe Probe workspace** — Probe is the only agent that maintains per-cycle workspace artifacts. Reset to "No active work / No pending items":
-   - `.dreamers/probe/bugs.md`, `.dreamers/probe/test-plan.md`, `.dreamers/probe/runbook.md`
-   - Also `.dreamers/probe/regression-analysis.md` if present from a prior user-bug cycle.
-   If any file still contains prior-milestone content after this step, it is a protocol failure.
-   **Wipe mechanism:** Use Bash `printf 'content' > path` for each file — do NOT use the Write tool for wipes.
-4. **Legacy workspace cleanup (optional)** — pre-refine cycles wrote workspace files under `.dreamers/forge/`, `.dreamers/sentinel/`, `.dreamers/hone/`, `.dreamers/echo/`. Those agents no longer write workspace files; old contents are gitignored and harmless. Optionally delete the directories to reduce clutter: `rm -rf .dreamers/{forge,sentinel,hone,echo}/`.
-5. **Archive prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
+3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
+4. **Archive prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
    - **Merged:** move all plan files for that feature from `.dreamers/plans/` to `.dreamers/plans/archive/` (create the dir if it doesn't exist). The PR description is the lasting public record; the archived plan files are preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files.
    - **Not merged:** leave plan files in place.
-6. No init commit — Bolt's first commit for the milestone is the first thing in the PR diff.
+5. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
 ## Commit discipline (non-negotiable)
-1. **Commit at end of each sub-plan** — after Probe passes (and user sign-off if required).
+1. **Commit at end of each cycle** — one commit per plan in the sequence (single-plan: one commit total; multi-plan: N commits, one per plan).
 2. **Commit before PR creation** — a final commit capturing any last changes before opening the PR.
 3. **No auto-commit after PR is created** — if changes are made after `gh pr create`, do NOT commit automatically. Ask the user first.
 
 ## Push discipline (non-negotiable)
-`git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between sub-plans, or at any other point in the pipeline.
+`git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between cycles, or at any other point in the pipeline.
 
 ## Post-PR push discipline
 If the user approves a post-PR commit, push with `git push` (no force). The PR will update automatically.
 
-## Commit structure (one commit per sub-plan)
-- Bolt makes exactly **one** commit per sub-plan, immediately after Probe passes and user testing (if required) is signed off.
-- Forge and Probe stage their changes with `git add` throughout the pipeline but do **not** run `git commit`.
-- Commit message format follows `.github/instructions/git.instructions.md`. Pipeline-specific bits:
-  - Subject: `feat: <sub-plan-name>` (or `feat!: <sub-plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: plan-add-auth-a`)
+## Commit structure (one commit per cycle)
+- Exactly **one** commit per plan/cycle, immediately after the reviewer findings have been applied and tests are green (and user testing, if required, is signed off).
+- The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
+- Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
+  - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
+  - Body: reference the plan file (e.g. `Plan: plan-add-auth`)
 
-One commit per sub-plan keeps each sub-plan's contribution atomic. Fix rounds (Sentinel → Forge) are staging work, not separate commits.
+One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
 ## What gets committed
-Nothing in `.dreamers/` is committed — all workspace files are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
+Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-Forge works directly on the feature branch. Worktrees caused Sentinel/Probe to read stale default-branch code.
+The orchestrator works directly on the feature branch. Worktrees previously caused reviewers to read stale default-branch code.
 
 ## Git history is the archive
 No separate archive directories. `git log` and PR diffs are the record.

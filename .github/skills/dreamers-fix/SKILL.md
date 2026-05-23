@@ -1,62 +1,41 @@
 ---
 name: dreamers-fix
-description: 'Bug triage and fix pipeline. Routes to quick-fix (Forge only) or full pipeline based on bug scope. Triggers: /dreamers-fix, fix this bug, there is a bug, bug fix.'
+description: 'Bug-fix entry point. Routes to /dreamers-full with bug-fix framing in the planning conversation. The planning phase produces a minimal plan for trivial bugs, a fuller plan for complex ones. Triggers: /dreamers-fix, fix this bug, there is a bug, bug fix, address the bug.'
 argument-hint: '$ARGUMENTS'
 ---
 
-Evaluate the following bug and choose the correct tier:
+## What this skill does
+
+Thin entry-point wrapper for bug fixes. Forwards the bug description to `/dreamers-full` with framing that tells the planning phase "this is a bug fix, not new functionality."
+
+The planning conversation handles the rest:
+- Trivial bug (single-file edit, no new logic) → minimal plan, one cycle, ship quickly.
+- Complex bug (touches multiple components, may need new tests or refactor) → fuller plan, possibly multiple plans if scope warrants (per the multi-plan model).
+
+No tier-1 vs tier-2 split. No special Forge-only shortcut path (Forge is gone; the orchestrator does implementation inline). Every bug goes through plan → implement → close-out, with planning scaled to the bug's complexity.
+
+## Pre-flight reads
+
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — implementation + comment + git rules (relevant for the eventual implementation step).
 
 $ARGUMENTS
 
 ---
 
-## How to choose
+## Routing
 
-**Use Tier 1 if ALL four conditions are true:**
-1. The feature it belongs to is fully shipped (PR merged)
-2. The bug is directly and obviously caused by the just-shipped feature
-3. The fix is clearly scoped — describable in one sentence
-4. No new logic, no new files, no data model changes — purely corrective
+Invoke `/dreamers-full` with a prompt that includes:
 
-**Use Tier 2 for everything else.**
+- The bug description (user's `$ARGUMENTS`).
+- Framing: "This is a bug fix. Planning should focus on reproducing the bug, identifying the root cause, and specifying the corrective change. If the bug touches existing behavior, the plan must include regression-analysis questions: (1) why wasn't this caught? (2) what test will prevent recurrence? (3) what adjacent cases might be similarly broken?"
+- If the user referenced a GitHub issue number / URL in `$ARGUMENTS`, forward it so `/dreamers-close-out`'s issue-close step fires at PR creation.
 
-State your choice and reasoning in one sentence, then proceed immediately.
+## Output
 
----
+This skill produces no output of its own — it hands off to `/dreamers-full`. The user interacts with `/dreamers-full`'s phases (planning conversation, approval gates, implementation cycle, close-out, PR).
 
-## Tier 1 — Simple fix
+## When this skill is NOT the right tool
 
-Read `~/.copilot/dreamers/refs/git-workflow.md` once at startup.
-
-Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
-
-**Route:** Branch setup (Bolt) → Forge → Bolt (run tests) → Bolt commit + PR
-
-1. **Bolt** — branch setup per `git-workflow.md` (canonical default detection, `feat/d<N>-fix-<slug>` from default).
-2. **Forge** — `task(agent_type: "forge", mode: "sync")` — apply the fix; type-check; stage with `git add`. Mark task `trivial` in the prompt to skip the strict plan requirement.
-3. **Bolt** — `task(agent_type: "bolt", mode: "sync")` — run the project's test suite (from project `.github/copilot-instructions.md`).
-4. If tests pass: **Bolt** commits + pushes + opens PR with body from `pr-description.md` template. If the original prompt referenced a GitHub issue: `gh issue close <number> --comment "Resolved in <PR URL>"`.
-
-Skip Sentinel and Probe for Tier 1 — this is a simple corrective fix on a shipped feature.
-
----
-
-## Tier 2 — Full pipeline
-
-Tier 2 routes through the same body as `/dreamers-full`. Either:
-
-- Invoke `/dreamers-full` with the bug description as input, OR
-- Inline the same flow: Phase 1 (planning + approval) → Phase 2 (per-sub-plan Forge → Sentinel → Probe → plan-verify loop) → Phase 3 (simplify + Echo + close-out).
-
-**Tier 2 specifics:**
-- Plan must include a regression analysis section (why this bug existed; what tests will prevent recurrence). This satisfies Probe's `regression-analysis.md` requirement at completion.
-- Probe must write `regression-analysis.md` for any user-reported bug — three questions: why wasn't it caught, what was added, what else might be missing.
-
-Follow `git-workflow.md` for branching, commits, and push discipline. Follow `close-out.md` for retro and PR.
-
----
-
-## Rules for both tiers
-
-- If the prompt references a GitHub issue number or URL, close that issue once the PR is created: `gh issue close <number> --comment "Resolved in <PR URL>"`.
-- Push exactly once at PR close-out.
+- Multi-feature scope masquerading as a "bug" → use `/dreamers-full` directly with the feature framing.
+- Question about existing behavior (not a real bug) → answer in chat; no pipeline needed.
+- Trivial typo fix in a doc → just edit the doc directly. Don't spin up a planning conversation.

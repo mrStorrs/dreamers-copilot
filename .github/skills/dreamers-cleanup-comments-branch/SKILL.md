@@ -1,41 +1,57 @@
 ---
 name: dreamers-cleanup-comments-branch
-description: 'Feature-branch comment cleanup pass — clean up comments in files changed on the current feature branch only. Does NOT checkout the default branch, cut a new branch, or open a PR. For use inside parent pipelines (e.g. dreamers-full). Triggers: /dreamers-cleanup-comments-branch.'
+description: 'Branch-scoped comment cleanup. Same as /dreamers-cleanup-comments but scoped to the current feature-branch diff. For use inside parent pipelines as a pre-PR comment sweep. Triggers: /dreamers-cleanup-comments-branch, comment cleanup branch scope, pre-PR comment sweep.'
 ---
 
-Run a comment cleanup pass scoped to the current feature branch. This skill is for in-pipeline use — it operates only on files changed on the current branch and leaves branch and PR ownership entirely with the parent pipeline.
+## What this skill does
 
-Follow the Dreamers Kernel and output discipline from `copilot-instructions.md`.
+Branch-scoped variant of `/dreamers-cleanup-comments`. Audits and cleans comment-rules violations on the feature-branch diff only (files in `git diff origin/<DEFAULT>...HEAD --name-only`). Identical phase structure: audit → propose → user approval → apply inline → optional Sentinel review → commit.
+
+Intended for use inside larger pipelines (e.g., between `/dreamers-implement` cycles and `/dreamers-close-out`) when the user wants a comment sweep limited to the changes this branch introduced.
+
+## Pre-flight reads
+
+- `~/.copilot/dreamers/refs/comment-rules.md`
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md`
 
 $ARGUMENTS
 
-**Step 1 — Identify changed files**
+---
 
-Fetch the latest remote refs, then determine which files have been changed on the current branch relative to the default branch:
+## Scope detection
 
+Detect default branch (canonical two-step):
 ```bash
-git fetch origin 2>/dev/null || true
-DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-[ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
-git diff --name-only "origin/$DEFAULT_BRANCH"...HEAD
+DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+[ -z "$DEFAULT" ] && DEFAULT=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
 ```
 
-If there are no changed files, report that and stop — nothing to clean.
+Fetch the remote before computing the diff (otherwise a stale local `origin/$DEFAULT` will produce a wrong or empty file list):
+```bash
+git fetch origin
+```
 
-**Step 2 — Forge's task — comment cleanup (non-negotiable)**
+If `git rev-parse origin/$DEFAULT` fails after the fetch, halt with: "Could not resolve `origin/$DEFAULT`. Check your remote configuration."
 
-Invoke Forge (follow `~/.copilot/dreamers/refs/delegation.md`). Pass Forge:
-- The list of changed files from Step 1
-- The rule source: `~/.copilot/dreamers/refs/comment-rules.md` — those are the authoritative rules
-- Constraint: scan and edit only the files in the changed-files list; do not touch logic, formatting, structure, or files not in the list
+Scope = files in `git diff origin/$DEFAULT...HEAD --name-only`.
 
-Forge stages any changes with `git add`. No commit — staging only.
+If the working tree is on the default branch (no feature-branch diff), halt with an error: "This skill operates on a feature branch's diff. Use `/dreamers-cleanup-comments` for project-wide cleanup."
 
-**Step 3 — Report**
+---
 
-After Forge completes, report in chat:
-- Files reviewed
-- Files changed (with a one-line summary of what was cleaned per file)
-- Files with no changes needed
+## Phases
 
-Do not push, do not open a PR. The parent pipeline owns the branch and the eventual PR.
+Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch-diff file list:
+
+1. **Audit** the branch-diff scope; categorize comment-rules violations.
+2. **Propose** changes; `ask_user` for approval.
+3. **Apply** changes inline; stage with `git add`.
+4. **Optional Sentinel review** of changed files.
+5. **Commit** with message `chore: comment cleanup on feature branch`. Do NOT push.
+
+## When this skill is the right tool
+
+- Mid-pipeline sweep — between implementation and close-out, when you want comments tidied without re-running the full review phase.
+- Pre-PR polish — after a feature is done, before opening the PR, when you want the branch's comments inspected before they ship.
+
+For project-wide cleanup (not branch-scoped), use `/dreamers-cleanup-comments`.

@@ -1,12 +1,17 @@
 ---
 name: dreamers-test
-description: 'Probe-backed test pass with arg-flag invocation. Writes/runs tests, fixes test-file issues on sight, reports production bugs for Sentinel routing. Triggers: /dreamers-test, run tests, write tests, test coverage check.'
+description: 'Standalone Probe review (test coverage audit). Read-only — returns structured findings on AC coverage, layer audit, edge cases, regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps.'
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
 ## What this skill does
 
-Wraps the Probe agent for ergonomic standalone invocation. Probe writes tests against the AC coverage matrix, runs them, fixes test-file issues directly. Production code bugs are recorded in `.dreamers/probe/bugs.md` for orchestrator routing back to Sentinel.
+Spawns just Probe (one of the three pipeline reviewers) for a standalone test-coverage audit. Read-only — Probe reads the code and tests in scope, identifies coverage gaps + edge case misses + regression risks, returns structured findings. No orchestrator-as-fixer step. If you want missing tests written, take the findings and run `/dreamers-implement` with a plan that adds them.
+
+## Pre-flight reads
+
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — for the structured findings format spec Probe uses.
+- `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations.
 
 $ARGUMENTS
 
@@ -22,30 +27,30 @@ Default scope (no flags): staged + unstaged changes.
   [ -z "$DEFAULT" ] && DEFAULT=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
   ```
 - `--paths <glob>` — scope to files matching the glob.
-- `--all` — entire codebase. Emit a chat warning before invoking.
-
----
-
-## Invocation modes
-
-- **Standalone:** user invokes directly; this skill runs in the main thread and spawns Probe.
-- **From orchestrator:** `/dreamers-full` and `/dreamers-implement` may call this in lieu of a direct `task(agent_type: "probe", ...)` call. Functionally identical.
+- `--all` — entire codebase. Emit a chat warning before invoking; rare.
 
 ---
 
 ## Spawn Probe
 
-`task(agent_type: "probe", mode: "sync")` with prompt that includes:
-- The scope (file list or diff range derived from arg flags)
-- The plan file path if available (else "ad-hoc test pass against general AC")
-- User-bug flag if applicable (triggers Probe's `regression-analysis.md` output)
+Invoke via the Agent tool:
 
----
+```
+agent_type: "probe"
+mode: "sync"
+prompt:
+  Context: Standalone test-coverage audit via /dreamers-test. No plan binding (ad-hoc audit).
+  Scope: <list of files from arg parsing above>
+  Branch: <current feature branch>
+  Default branch: <detected default>
+  Lens: test coverage (AC matrix is N/A here — no plan binding; focus on layer audit + edge cases + regression risks for the scope).
+  Return: status line + severity-graded findings + observations + open questions.
+```
+
+Wait for Probe to signal completion. Read its chat output.
 
 ## Output
 
-Chat output is Probe's chat output (passed through):
-- Brief summary (pass / fail / partial)
-- Paths to `test-plan.md`, `runbook.md`, `bugs.md` (and `regression-analysis.md` if user-bug)
-- Bug count and severity (if any failures)
-- Production bugs found (if any) flagged for orchestrator routing to Sentinel
+Pass Probe's chat output through to the user verbatim. Do NOT write any tests — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+
+If the user wants missing tests written from the findings, suggest: "Run `/dreamers-implement` with a plan that addresses these coverage gaps."

@@ -1,95 +1,76 @@
 ---
 name: dreamers-add-logging
-description: 'Add comprehensive production-grade logging to the project. Triggers: /dreamers-add-logging, add logging, improve logging, logging pass.'
+description: 'Phased pass to add or improve project logging per logging-standards.md. Audit current state → propose changes → user approval → implement inline → optional Sentinel review. Triggers: /dreamers-add-logging, add logging, improve logging, audit log calls.'
+argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
-Add comprehensive, production-grade logging to the project. Work through the phases in order. Do not touch code until the user approves the audit findings.
+## What this skill does
 
-Read these refs:
-- `~/.copilot/dreamers/refs/git-workflow.md`
-- `~/.copilot/dreamers/refs/delegation.md`
+Walks a project (or a subdirectory) and brings the logging up to `logging-standards.md`:
 
-Follow the Dreamers Kernel and output discipline from `copilot-instructions.md`.
+- ERROR for unhandled failures with full stack traces
+- WARN for recoverable issues
+- INFO for lifecycle / business signal (startup config, request/response status+duration, auth events, business events)
+- DEBUG for traceability (function entry/exit on non-trivial fns, branch decisions, repo calls, retries, state transitions)
+- No secrets / PII / full request bodies logged
+
+The orchestrator does all the work inline — no Forge, no Bolt. Optionally spawns Sentinel at the end to review the changes.
+
+## Pre-flight reads
+
+- `~/.copilot/dreamers/templates/logging-standards.md` — the binding spec
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — logging discipline (NEVER-LOG rules, log level guidance)
+- `.github/copilot-instructions.md` (project, if present) — project-specific logging conventions (logger library, format)
 
 $ARGUMENTS
 
 ---
 
-## Phase 1 — Audit (do this directly, no agents)
+## Phase 1 — Audit
 
-**Stack detection:**
-- Read `.github/copilot-instructions.md` (project-level), `package.json`, `build.gradle`, `pyproject.toml`, `go.mod` — whatever exists
-- Identify: language(s), runtime, existing dependencies, package manager
+Scope: project source root by default; `--scope <path>` to restrict.
 
-**Existing logging inventory:**
-- Search for `console.log`, `console.error`, `console.warn`, `print(`, `println(`, `Log.d(`, `Log.e(`, `logger.`, `logging.` and any existing logging framework imports
-- Note: how many, where, what kind (debug noise vs. genuine signal)
+Walk the scope and identify:
+- Functions with no logging where DEBUG entry/exit would help.
+- Branches without log statements that affect business outcomes.
+- ERROR-level logs missing stack traces.
+- INFO logs that include secrets, PII, or full request bodies (NEVER-LOG violations — high priority).
+- DEBUG logs in high-frequency loops without `// high-freq` annotation.
+- Log calls using the wrong level (e.g., ERROR for recoverable issues; INFO for incoming requests with full bodies).
 
-**Key instrumentation areas:**
-- Identify: app entry point / startup, server/service init, route handlers or API endpoints, database access layer, external API/HTTP calls, auth flows, background jobs or workers, top-level error handlers
+Produce an audit summary in chat: file path → issues found.
 
-**Framework recommendation:**
-Based on detected stack, recommend one framework. Common mappings:
-- Node.js / TypeScript → **pino** or **winston**
-- Python → **structlog** or **loguru**
-- Kotlin / Android → **Timber**
-- Go → **zap** or **slog**
-- Other → surface to user and ask
+## Phase 2 — Proposal + user approval
 
-**Surface to user:**
-1. Detected stack and package manager
-2. Existing logging found (count, locations, quality assessment)
-3. Recommended framework + rationale + rejected alternative(s)
-4. Areas that will be instrumented
-5. Ask: **"Does this look right? Approve or tell me what to adjust."**
+Present the proposed changes in chat:
+- List of files to modify, with one-line summary per file.
+- Net adds vs net changes (e.g., "12 new DEBUG calls, 3 ERROR-level fixes, 2 NEVER-LOG violations to remove").
+- Any logger-library / format conventions detected from existing code (so additions are consistent).
 
-Do not proceed until the user explicitly approves.
+Call `ask_user` with `["Approved — apply changes"]` and allow inline freeform corrections.
 
----
+- Approval → proceed to Phase 3.
+- Corrections → revise proposal; re-present. Loop until approved.
 
-## Phase 2 — Branch setup
+## Phase 3 — Implement
 
-```
-DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
-git checkout "$DEFAULT_BRANCH" && git pull origin "$DEFAULT_BRANCH"
-git checkout -b chore/add-logging
-```
+Apply the approved changes inline. Stage with `git add` as you go. Follow `orchestrator-discipline.md` implementation rules — only edit files in scope; no while-I'm-here cleanup.
 
----
+Run the project's type-check command after edits. Fix any type errors.
 
-## Phase 3 — Forge implementation
+## Phase 4 — Optional Sentinel review
 
-Invoke Forge (follow delegation.md). Forge's task:
+Ask the user: *"Want a Sentinel review of the logging changes before commit?"*
 
-- Install the approved framework using the project's package manager
-- Set up central logger module with dev (pretty-printed) and prod (structured JSON) modes
-- Follow `~/.copilot/dreamers/templates/logging-standards.md`
-- Replace existing raw logging with appropriate log level calls
-- Add logging to instrumentation areas from Phase 1
+- Yes → invoke `agent_type: "sentinel"` with the changed-files scope. Sentinel reviews under correctness/security/maintainability lenses; comment-rules + logging-standards violations surface here. Apply findings inline.
+- No → proceed to commit.
 
-Single commit: `chore: add structured logging with [framework name]`
+## Phase 5 — Commit
 
----
+`git status` to confirm staged content. Commit message: `chore: improve logging per logging-standards.md` (or appropriate). Do NOT push (user pushes when ready, or via `/dreamers-pr`).
 
-## Phase 4 — Sentinel review
+## What this skill does NOT do
 
-Invoke Sentinel (follow delegation.md). Focus areas:
-- Log calls exposing PII, credentials, or sensitive data
-- Log calls in tight loops or hot paths at INFO level
-- Missing stack traces on ERROR-level catches
-- Inconsistent log levels
-- Raw print/console calls Forge missed
-
-Re-review only if findings include critical or high severity.
-
----
-
-## Phase 5 — PR (Bolt)
-
-Invoke **Bolt** to handle the mechanical close-out:
-- Push the branch
-- Open PR with title: `chore: add structured logging with [framework name]`
-- Body: framework chosen, environments configured, areas instrumented, noise removed
-
-Bolt reports the PR URL.
-
+- Does NOT add a new logger library or change the logger framework.
+- Does NOT add log calls in tests (tests don't need INFO/DEBUG log calls).
+- Does NOT auto-apply changes without Phase 2 user approval.

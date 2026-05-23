@@ -35,7 +35,7 @@ Run `gh label list` to see available labels. Pick the most appropriate existing 
 - Unclear ownership → `question`
 
 **Step 3 — Minimal exploration (optional)**
-Light exploration is allowed — e.g. confirm a feature exists, glance at a config, check a directory structure. Keep it to 1-3 lookups max. Deep codebase analysis is Nova's job at planning time.
+Light exploration is allowed — e.g. confirm a feature exists, glance at a config, check a directory structure. Keep it to 1-3 lookups max. Deep codebase analysis belongs in `/dreamers-plan`, not here.
 
 **Step 4 — Draft the issue**
 Write a focused, minimal issue from the user's input (and any brief exploration from Step 3).
