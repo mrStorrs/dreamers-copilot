@@ -61,7 +61,63 @@ If `$ARGUMENTS` contains plan paths directly (Mode 2): skip Phase 1; treat the p
 
 If `$ARGUMENTS` contains a manifest path (Mode 3): skip Phase 1; read the manifest's "Plan sequence" table to extract the ordered plan list. Capture the manifest content (shared constraints, design decisions, data models, end-to-end ACs, cross-plan risks) as the **shared context payload** for later use in Phase 2.
 
-After Phase 1 (or its skip), proceed to Phase 2.
+After Phase 1 (or its skip), proceed to Phase 1.5.
+
+---
+
+## Phase 1.5 — Ship strategy gate (multi-plan only)
+
+**If only one plan is in the sequence: skip Phase 1.5 entirely.** Single-plan = one cycle = one PR no matter the strategy.
+
+**If two or more plans are in the sequence**, the orchestrator decides ship strategy:
+
+- **Incremental** — each plan's cycle ends with a light close-out (docs if applicable + push + PR for that plan). Plans land on `main` incrementally; subsequent plans branch off the updated main as they go. Milestone-level retro + improvements append happens at the end of the LAST plan only.
+- **Atomic** — current behavior. Plans land as commits on one branch; ONE full close-out at the end with retro + improvements + PR covering all plans.
+
+### Recommend a strategy
+
+Read the manifest (if any) and the plan files. Score against the heuristics below. Pick the strongest signal and form a one-sentence cited reason.
+
+**Recommend INCREMENTAL when any hold:**
+- ≥ 4 plans in the sequence (review burden of one big PR is high).
+- Plans touch significantly different file subsystems (low overlap in plan §Scope file lists).
+- Manifest's cross-plan Risks section does NOT mention "ordering dependency," "breaking change," or "coordinated revert."
+- Plans are estimated as substantial (≥ 5 ACs each, or test cases spanning multiple layers).
+- Plan A's value is observable to users without plans B+ (incremental value delivery).
+
+**Recommend ATOMIC when any hold:**
+- 2–3 plans only (small feature).
+- Plans touch overlapping files (same files edited by multiple plans).
+- Manifest's cross-plan Risks mentions "ordering dependency," "breaking change requiring shim," or "coordinated revert."
+- DB migrations or schema changes gated on prior plans.
+- End-to-end ACs require ALL plans to verify (no piecewise testability).
+- Feature-flag protected work where partial deployment leaves the system in a half-state.
+
+If signals point both ways, default to ATOMIC (safer) and cite the conflicting signals in the reasoning.
+
+### Present the gate
+
+```
+**Phase 1.5 — Ship strategy**
+
+Plans in sequence:
+- path/to/plan-a.md — [one-line summary]
+- path/to/plan-b.md — [one-line summary]
+- path/to/plan-c.md — [one-line summary]
+
+Manifest: [feature-{slug}.md path, or "none"]
+
+**Recommended strategy:** [INCREMENTAL | ATOMIC]
+**Reasoning:** [one sentence citing the strongest heuristic signal]
+
+How do you want to ship?
+- INCREMENTAL — PR per plan; main advances incrementally.
+- ATOMIC — one PR at end; all plans ship together.
+```
+
+Call `ask_user` with choices `["Incremental", "Atomic"]` and allow inline freeform corrections (e.g., "Atomic for plans A and B together; incremental for C").
+
+Capture the user's choice as the **strategy** value for Phase 2.
 
 ---
 
@@ -86,19 +142,28 @@ After Phase 1 (or its skip), proceed to Phase 2.
 
 ### Sequential plan loop
 
+The loop branches on the **strategy** captured in Phase 1.5 (single-plan invocations: strategy is irrelevant; loop runs once and proceeds to Phase 3).
+
 For each plan in the approved list (argument order from Mode 2, plan sequence from Mode 1 or Mode 3 manifest):
 
 1. **Invoke `/dreamers-implement <path-to-plan>`.**
    - When a manifest is available (Mode 3, or Mode 1 where `/dreamers-plan` produced a manifest), ALSO pass the captured **shared context payload** from the manifest. The shared context is threaded into the per-cycle reviewer prompts (Sentinel + Probe + Hone) so they reason with full feature context, not just the single plan's contents. This is the hierarchical AI-context lever.
    - When no manifest exists (Mode 2 variadic, or Mode 1 where no manifest was produced), no shared context is passed — plans run in isolation.
-2. Wait for it to complete (one commit lands on the branch).
-3. **If more plans remain — inline drift check before the next plan.** Re-read the next plan and ask explicitly:
+2. Wait for `/dreamers-implement` to complete (one commit lands on the branch).
+3. **If strategy is INCREMENTAL** AND more plans remain:
+   - Invoke `/dreamers-close-out --light <plan-path>` for the just-completed plan. The light close-out: docs update (if applicable) + push + PR for THIS plan only. NO retro, NO improvements append (those run at the final plan only).
+   - Wait for the PR to merge OR for the user to confirm they want to proceed without merge (rare; usually you wait for merge to land plan A's content on main before plan B's cycle starts so drift check has accurate input).
+   - After merge: switch to default branch + pull + re-cut feature branch for the next plan (light close-out's PR squashed main; need fresh branch for next plan).
+4. **If strategy is INCREMENTAL** AND this is the LAST plan in the sequence:
+   - Skip the light close-out. Fall through to Phase 3 (full close-out) — the final plan's commit is the last thing on the current branch and gets the milestone retro + improvements + PR.
+5. **If strategy is ATOMIC**: do NOT push, do NOT close out per plan. The commit stays on the current branch. Proceed to drift check if more plans remain.
+6. **If more plans remain — inline drift check before the next plan.** Re-read the next plan and ask explicitly:
    - Does it still apply against the codebase as it now stands?
    - Did anything in the just-completed plan change file paths, function signatures, or data shapes the next plan references?
    - Are the next plan's Acceptance Criteria still measurable against the current code?
    - (Manifest modes) Does the manifest's shared context still hold given the just-completed cycle? If a shared constraint or end-to-end AC is now invalid, surface to user.
-4. **If yes to all three (or four)** → loop to step 1 with the next plan.
-5. **If any drift detected** → surface drift items to the user. Options:
+7. **If yes to all three (or four)** → loop to step 1 with the next plan.
+8. **If any drift detected** → surface drift items to the user. Options:
    - User revises the next plan or the manifest inline (re-run quality self-check from `/dreamers-plan` Phase 1f mentally, then continue).
    - User skips the affected plan (proceed without it; the user accepts the consequences).
    - User halts the orchestrator entirely for manual recovery.
@@ -107,11 +172,14 @@ After the last plan's cycle completes, proceed to Phase 3.
 
 ### Single-plan mode
 
-If only one plan path was provided (Mode 2 with one path, or Mode 1 producing one plan), the sequential loop runs exactly once. No drift check (no next plan). Proceed to Phase 3.
+If only one plan path was provided (Mode 2 with one path, or Mode 1 producing one plan), the sequential loop runs exactly once. Phase 1.5 was skipped. No drift check (no next plan). Proceed to Phase 3.
 
-### Push discipline (no push in Phase 2)
+### Push discipline
 
-Neither the orchestrator nor `/dreamers-implement` pushes during Phase 2. Each plan's cycle ends with a local commit. Push happens once in Phase 3 via `/dreamers-pr`.
+- **ATOMIC strategy:** no push during Phase 2. Single push at Phase 3 via `/dreamers-pr` covering all plans.
+- **INCREMENTAL strategy:** ONE push per plan via `/dreamers-close-out --light` (which invokes `/dreamers-pr` under the hood). The FINAL plan's push happens at Phase 3 (full close-out).
+
+Net push count = ATOMIC: 1 per milestone | INCREMENTAL: N per milestone (one per plan).
 
 ---
 
@@ -168,4 +236,5 @@ Per milestone: (3 × N) reviewer spawns + 1 Echo spawn, where N = number of plan
 
 ## Push discipline (single source of truth)
 
-`git push` happens EXACTLY ONCE per milestone — inside `/dreamers-pr` (invoked by `/dreamers-close-out` Step 6). Never between cycles, never in Phase 2.
+- **ATOMIC:** `git push` happens EXACTLY ONCE per milestone — inside `/dreamers-pr` (invoked by `/dreamers-close-out` Step 6). Never between cycles, never in Phase 2.
+- **INCREMENTAL:** `git push` happens once per plan — inside `/dreamers-pr` invoked by `/dreamers-close-out --light` for every plan except the last; the last plan's push is via Phase 3's full close-out. Never push more than once per close-out event.

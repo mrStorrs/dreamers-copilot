@@ -36,16 +36,27 @@ $ARGUMENTS
 
 ### Composed mode (called by `/dreamers-close-out`)
 
-The caller passes a full set of inputs in the prompt:
+The caller passes a set of inputs in the prompt. Inputs vary by which close-out mode invoked this skill:
+
+**From FULL close-out (milestone end):**
 - Current branch name
 - Default branch name
-- Plan file paths (list shipped this milestone)
+- Plan file paths (list shipped this milestone — may be one or many)
 - Retro file path (for PR body content)
-- Sentinel summary string (for PR body)
+- Sentinel summary string (concatenated across all cycles in the milestone)
 - Issue number / URL (if applicable)
 - Final commit hash (if any docs were committed by close-out)
 
-The skill uses these to construct the PR title + body.
+**From LIGHT close-out (per-plan PR during INCREMENTAL ship mode):**
+- Current branch name
+- Default branch name
+- Plan file path (SINGLE plan — the one just completed)
+- Retro file path: **omitted** (retro happens at the milestone's final plan, not per plan)
+- Sentinel summary string (just THIS plan's reviewer summary, not concatenated across milestone)
+- Issue number / URL (if applicable)
+- Final commit hash (if docs were committed by light close-out)
+
+PR body drafting (Step 2 below) handles both: when retro path is provided, the body references it; when not provided, the body omits the retro section entirely. The PR title and Summary section adapt — milestone PR titles describe the feature, per-plan PR titles describe the single plan.
 
 ### Standalone mode (user invokes directly)
 
