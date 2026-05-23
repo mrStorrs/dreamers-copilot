@@ -139,5 +139,5 @@ If the post-fix test run regresses (tests fail), the orchestrator diagnoses and 
 
 ### Parallel spawn — invocation pattern
 
-In the skill body, the review phase is described as a single tool-call with 3 Agent sub-tool-uses (Claude Code idiom) or 3 parallel `task()` invocations (Copilot CLI idiom). Skills should specify intent ("spawn S + P + H in parallel; wait for all three to complete") and let the runtime execute per its primitives. If a runtime doesn't support parallel spawn, the skill still works — wall-clock cost increases but correctness is preserved.
+In the skill body, the review phase is described as a single tool-call that spawns 3 parallel sub-agents. Skills should specify intent ("spawn S + P + H in parallel; wait for all three to complete") and let the runtime execute per its primitives. If a runtime doesn't support parallel spawn, the skill still works — wall-clock cost increases but correctness is preserved.
 
