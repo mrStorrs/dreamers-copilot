@@ -33,5 +33,14 @@ Every plan must include test cases across all three layers. Think through each l
 
 If a layer cannot be covered automatically, flag it explicitly as a manual verification requirement with a reason.
 
+## Test benchmarks
+
+Each project that uses `dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
+
+- **File path:** `./test-benchmarks.md` at the project root (committed to version control).
+- **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
+- **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
+- Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
+
 ## Why this matters
 Writing explicit test cases prevents Probe from guessing intent. The Given/When/Then format forces specificity about preconditions and expected outcomes — reducing ambiguity at the handoff boundary.
