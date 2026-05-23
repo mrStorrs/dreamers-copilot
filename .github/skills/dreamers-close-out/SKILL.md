@@ -1,7 +1,7 @@
 ---
 name: dreamers-close-out
 description: 'Close-out phase of the Dreamers pipeline. Two modes — FULL (default): wraps docs + pr + retro + improvements append + plan archive + post-PR discipline (the milestone close-out). LIGHT (`--light`): docs (if applicable) + push + PR for ONE plan only; used by `/dreamers-full` between plans in incremental ship mode. Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
-argument-hint: '[--light <plan-path>]  (omit flags for full milestone close-out)'
+argument-hint: '[--light <plan-path>] [--issue <#|url>]  (omit flags for full milestone close-out with no issue close)'
 ---
 
 ## Two modes
@@ -86,7 +86,7 @@ Auto-detect:
 - Branch name + default branch (canonical two-step).
 - Plan paths: scan `.dreamers/plans/` for non-archived files referenced by `git log origin/<DEFAULT>..HEAD --format=%B | grep -E "^Plan:"`.
 - Sentinel summary: not available — pass placeholder.
-- Issue reference: ask the user (one-time).
+- Issue reference: parse from `$ARGUMENTS` only — accepts `--issue <#|url>` flag or a bare issue number / GitHub issue URL. If not provided, skip the issue close entirely. **Do not prompt the user.**
 
 Use standalone mode when shipping a hand-rolled change or when the orchestrator wasn't used end-to-end.
 

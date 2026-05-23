@@ -1,7 +1,7 @@
 ---
 name: dreamers-pr
 description: 'PR-creation phase of the Dreamers pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. Invokable standalone or composed from `/dreamers-close-out`. Triggers: /dreamers-pr, push and open PR, create pull request.'
-argument-hint: '(optional inputs auto-detected; orchestrator passes via composed mode)'
+argument-hint: '[--issue <#|url>]  (optional; orchestrator passes via composed mode)'
 ---
 
 ## What this skill does
@@ -81,7 +81,7 @@ Auto-detect:
 - Default branch: canonical two-step.
 - Plan paths: scan `.dreamers/plans/` for files matching the current branch's commit messages (`git log origin/<DEFAULT>..HEAD --format=%B | grep -E "^Plan:"`).
 - Sentinel summary: not available in standalone mode; PR body uses "Standalone PR creation — no Sentinel summary captured" placeholder.
-- Issue reference: ask the user before opening the PR. Format expected: number (e.g. `42`) or full URL.
+- Issue reference: parse from `$ARGUMENTS` only — accepts `--issue <#|url>` flag or a bare issue number / GitHub issue URL. If not provided, skip the issue close entirely. **Do not prompt the user.**
 
 ---
 
