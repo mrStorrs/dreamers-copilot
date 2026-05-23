@@ -76,16 +76,31 @@ When splitting, each plan MUST be:
 
 State your decision in chat: "Producing ONE plan: …" or "Producing N plans: …" with a one-sentence rationale.
 
-There is no umbrella plan. Multiple plans are siblings — the user sequences them at `/dreamers-full` invocation.
+### Phase 1d.1 — Decide whether to produce a feature manifest (multi-plan only)
+
+If producing multiple plans, decide whether they warrant a `feature-{slug}.md` manifest. **Produce a manifest if ANY of these hold:**
+
+- At least 2 shared constraints apply across all plans (e.g., "all plans must preserve API X's backward compat until plan-C ships")
+- Shared design decisions span plans (e.g., "all auth flows use the same state-machine abstraction")
+- Shared data models referenced by multiple plans (interface / type contracts)
+- End-to-end Acceptance Criteria exist (only verifiable after ALL plans ship)
+- Cross-plan risks (ordering dependencies, rollback coordination)
+
+**Skip the manifest if:** the multiple plans are essentially unrelated (e.g., 3 bug fixes shipped together but touching different subsystems). No shared context → manifest would be decorative.
+
+When produced, the manifest is the AI's hierarchical context anchor — research shows hierarchical task decomposition is significantly more effective for AI agents than flat plan lists. The manifest threads cross-plan context into each cycle's reviewer prompts.
+
+State your manifest decision: "Manifest: yes (because …)" or "Manifest: no (plans are independent)."
 
 ## Phase 1e — Write plan file(s)
 
 Plan filenames are `plan-{slug}.md` (no `-a`/`-b`/`-c` suffix — that convention is gone). Slug rules per `plan-rules.md`. Plans live in `./.dreamers/plans/`.
 
-Use the template as starting structure:
+Use the templates as starting structure:
 - `~/.copilot/dreamers/templates/plan.md` — every plan, one template.
+- `~/.copilot/dreamers/templates/feature.md` — manifest template (only when multi-plan + Phase 1d.1 says manifest=yes). Manifest naming: `feature-{slug}.md`, lives in `.dreamers/plans/` alongside the plan files.
 
-If producing multiple related plans, you may share a slug prefix purely for visual grouping (e.g., `plan-auth-login.md`, `plan-auth-logout.md`, `plan-auth-reset.md`). The shared prefix is cosmetic — each plan still stands alone.
+If producing multiple related plans, you may share a slug prefix purely for visual grouping (e.g., `plan-auth-login.md`, `plan-auth-logout.md`, `plan-auth-reset.md`). The shared prefix is cosmetic when there's no manifest. When a manifest is produced, its slug should match the shared prefix (e.g., `feature-auth.md` for the auth plans above).
 
 **Each plan must include:**
 - Metadata: Owner, Date, Scope, Status (Draft/Active/Completed/Superseded), Branch, User-testing-required (yes/no), Links
@@ -128,6 +143,11 @@ When multiple plans are produced, additionally verify:
 - [ ] Each plan has at least one machine-verifiable assertion testable in isolation
 - [ ] Splits fall at natural seams (not arbitrary line-count cuts)
 
+When a manifest is produced (from Phase 1d.1), additionally verify:
+- [ ] `feature-{slug}.md` exists in `.dreamers/plans/`
+- [ ] Manifest has a Plan sequence table listing all plans in the intended run order
+- [ ] At least one of: shared constraints, shared design decisions, shared data models, end-to-end ACs, or cross-plan risks is populated (manifest with all sections empty = decorative; either populate or skip the manifest)
+
 Any failure → halt and prompt the user with the specific item(s) that failed.
 
 ## Phase 1g — Implementation start approval gate (mandatory)
@@ -157,11 +177,13 @@ Call `ask_user` with choice `["Approved — start implementation"]` and allow in
 
 When called **standalone**, exit on Phase 1g approval. Tell the user:
 - The approved plan file path(s).
-- Next step: invoke `/dreamers-implement <path-to-plan>` (one plan) or `/dreamers-full <plan-a> <plan-b> ...` (multiple plans — orchestrator runs them in sequence).
+- If a manifest was produced: the manifest file path.
+- Next step: invoke `/dreamers-implement <path-to-plan>` (one plan), `/dreamers-full <plan-a> <plan-b> ...` (multiple plans, no manifest), or `/dreamers-full feature-{slug}.md` (multiple plans via manifest — threads shared context into reviewer prompts).
 
 When called **from `/dreamers-full`**, exit on Phase 1g approval. Return in chat output:
 - Plan count (one or multiple) + sequence order if multiple.
 - Plan file path(s).
+- Manifest file path (if a manifest was produced; omit if none).
 - Approval status.
 
 The orchestrator reads this chat output and proceeds to Phase 2 (`/dreamers-implement` once for a single plan, or once per plan in the sequence).

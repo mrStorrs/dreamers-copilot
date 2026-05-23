@@ -43,6 +43,8 @@ Plans must **not** include code snippets. Implementation is the orchestrator's d
 
 ## Multi-plan work
 
-When the scope of a piece of work is too large for one plan, the planning phase produces **multiple separate plans**, each independently shippable. There is no "umbrella" plan that groups them. Sequencing is by argument order at invocation: `/dreamers-full <plan-a> <plan-b> <plan-c>` runs them in that order on one branch.
+When the scope of a piece of work is too large for one plan, the planning phase produces **multiple separate plans**, each independently shippable. Sequencing is by argument order at invocation: `/dreamers-full <plan-a> <plan-b> <plan-c>` runs them in that order on one branch.
 
-See `feature-decomposition.md` for when to produce one plan vs many.
+For multi-plan work with **shared cross-plan context** (shared constraints, shared design decisions, shared data models, end-to-end ACs that only verify after all plans ship), the planning phase may also produce an OPTIONAL **feature manifest**: `feature-{slug}.md`. The manifest is the AI-effectiveness anchor — it threads cross-plan context into per-cycle reviewer prompts.
+
+See `feature-decomposition.md` § "Manifest pattern" for when to use a manifest and § "Splitting rules" for when to produce one plan vs many.

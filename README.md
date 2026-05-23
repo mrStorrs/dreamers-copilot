@@ -34,7 +34,7 @@ The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/d
 
 | Skill | Purpose | Invokable standalone? |
 |-------|---------|----------------------|
-| `dreamers-full` | Orchestrator — accepts variadic plan paths; runs them in sequence (one cycle per plan) on one branch + one PR. Owns branch setup and inline drift check between plans. | Yes — full pipeline |
+| `dreamers-full` | Orchestrator — accepts a task description (runs planning first), variadic plan paths, OR a `feature-{slug}.md` manifest. Runs cycles in sequence on one branch + one PR. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts. | Yes — full pipeline |
 | `dreamers-plan` | Phase 1 — three-phase planning conversation, writes plan files, hard-stops at the approval gate. | Yes — plan only |
 | `dreamers-plan-verify` | Inline drift check on a plan vs current code (no subagent). | Yes — sanity check before implement |
 | `dreamers-implement` | Phase 2 — per-cycle loop (tests-first → implement → run → coverage sweep → parallel review → optional user-test → commit). | Yes — with an approved plan |

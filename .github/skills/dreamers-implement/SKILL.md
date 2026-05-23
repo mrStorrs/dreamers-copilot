@@ -123,6 +123,7 @@ Common prompt context for all three:
 - Scope: list of changed files from `git status`
 - Branch + default branch names
 - What the orchestrator has done: written failing tests, implemented, type-checked, ran tests (passing), completed coverage sweep.
+- **Shared context (if applicable)** — when invoked from `/dreamers-full` in feature-manifest mode (Mode 3), the orchestrator passes the manifest's Shared constraints + Shared design decisions + Shared data models + End-to-end ACs. Include this verbatim in every reviewer's prompt under a "Feature context" header. Reviewers use this to evaluate the current plan in light of the full feature. Skip if no shared context was passed (Mode 2 variadic or standalone invocation).
 
 Per-reviewer prompt addition:
 
