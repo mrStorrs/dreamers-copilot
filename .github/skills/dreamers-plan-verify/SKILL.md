@@ -11,7 +11,7 @@ Re-reads a plan file and checks whether it still applies to the current codebase
 - Multiple plans were written together; an earlier one shipped and may have changed paths / signatures / data shapes the later plans depend on.
 - The user wants to confirm a plan is still actionable before invoking `/dreamers-implement`.
 
-Orchestrator does the check inline — no subagent spawn (Nova is no longer in the system; the inline pattern replaces it).
+The check runs in-skill (no subagent spawn).
 
 ## Pre-flight reads
 
@@ -33,6 +33,8 @@ At skill entry, declare via `manage_todo_list`:
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
+(When invoked in composed mode by `/dreamers-full`, do NOT declare a new list — update the parent's matching Phase 2 drift-check item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+
 ---
 
 ## The check
@@ -41,7 +43,7 @@ Read the plan file passed as `$ARGUMENTS`. If no plan path is provided, halt and
 
 For each element the plan references, verify against the current codebase:
 
-1. **File paths cited in the plan** — does each path exist? If a plan says "modify `src/auth/login.ts`," `ls` that file.
+1. **File paths cited in the plan** — does each path exist? If a plan says "modify `src/auth/login.ts`," check that the file is present.
 2. **Method / function signatures** — if the plan cites an existing function (e.g., "extend `loginUser(email, password)` to accept `mfaToken`"), read the function definition and verify the current signature matches the plan's assumption.
 3. **Data model shapes** — if the plan references a DB table, model class, or interface, read it and verify the plan's assumptions hold.
 4. **Test files / cases** — if the plan cites existing tests as a starting point, verify those tests exist and are scoped as the plan describes.
@@ -53,10 +55,10 @@ For each element the plan references, verify against the current codebase:
 Return ONE of:
 
 - **`No change — proceed`** — the plan still applies as written. The user / orchestrator can invoke `/dreamers-implement <plan>` confidently.
-- **`Drift detected — halt`** — list specific drift items in chat:
+- **`Drift detected — halt`** — list specific drift items in chat. Each item identifies WHERE in the plan (AC #, §Scope entry, Test Case ID, or line range) and WHAT diverged:
   ```
-  - <plan reference> — expected: <X> / actual: <Y>
-  - <plan reference> — expected: <A> / actual: <B>
+  - AC #3 — expected: filter by date range / actual: filter API removed in last cycle
+  - §Scope file list — expected: src/auth/session.ts / actual: file renamed to src/auth/sessionStore.ts
   ```
   The user decides whether to:
   - Revise the plan inline (and re-run `/dreamers-plan-verify`).
@@ -68,7 +70,7 @@ Return ONE of:
 - Does NOT modify the plan — only reports drift.
 - Does NOT modify any source files.
 - Does NOT run tests — verification is read-only.
-- Does NOT call any subagent (Nova / Sentinel / etc.) — fully inline.
+- Does NOT call any subagent — fully inline.
 
 ## Use cases
 

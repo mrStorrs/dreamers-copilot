@@ -33,7 +33,7 @@ Default scope (no flags): staged + unstaged changes.
 
 ## Spawn Probe
 
-Invoke via the Agent tool:
+Invoke via the runtime's subagent-spawn mechanism:
 
 ```
 agent_type: "probe"
@@ -46,8 +46,6 @@ prompt:
   Lens: test coverage (AC matrix is N/A here — no plan binding; focus on layer audit + edge cases + regression risks for the scope).
   Return: status line + severity-graded findings + observations + open questions.
 ```
-
-Wait for Probe to signal completion. Read its chat output.
 
 ## Output
 

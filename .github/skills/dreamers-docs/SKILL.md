@@ -62,13 +62,13 @@ For standalone mode, this skill:
    ```
 2. Resolves the changed-files list per the arg flag.
 3. Looks at `.dreamers/plans/` for plan files that correspond to the changed files (best-effort match — if uncertain, asks Echo to discover).
-4. There is no orchestrator-provided Sentinel summary in standalone mode; this skill passes `"Standalone invocation — no Sentinel summary available; review the changed-files list directly"` instead.
+4. There is no orchestrator-provided Sentinel summary in standalone mode; this skill passes `"Standalone invocation — no Sentinel summary available"` instead. Echo's prompt already directs it to use the changed-files list as its primary signal.
 
 ---
 
 ## Spawn Echo
 
-Invoke Echo via the Agent tool:
+Invoke Echo via the runtime's subagent-spawn mechanism:
 
 ```
 agent_type: "echo"
@@ -79,6 +79,7 @@ prompt:
   Changed files: <output of the resolved git diff per scope>
   Diff base: origin/<DEFAULT_BRANCH>
   Sentinel summary: <one-paragraph concatenation of Sentinel chat outputs across all cycles; or "Standalone invocation — no Sentinel summary available" in standalone mode>
+  When no Sentinel summary is available, use the changed-files list as the primary signal for what shipped.
   Scope: update Echo-owned sections of `.github/copilot-instructions.md` (Tech stack, Repo structure, Conventions, Key files, Test commands) plus any other project docs (README, CHANGELOG, TESTING.md, etc.) that need updates based on what shipped. Skip sections the change doesn't materially affect.
   Return: doc-changes log + open questions (use "none" if empty) in chat output.
 ```
@@ -91,7 +92,7 @@ Wait for Echo to signal completion. Read its chat output.
 
 - **`Docs updated — N files changed`** → skill complete. Pass Echo's chat output back to caller.
 - **`No doc updates needed`** → skill complete. Caller can skip the final commit step for docs.
-- **Open questions raised** → surface each question to the user before declaring complete. Capture user answers and either re-invoke Echo with clarification, or note the answers in the retro for the caller to handle.
+- **Open questions raised** → surface each question to the user before declaring complete. Capture user answers, then route by scope: if the answer changes what Echo should write (e.g., which docs to update, what wording to use) → re-invoke Echo with the clarification; if the answer is upstream policy or out-of-scope for docs (e.g., "should we add a deprecation flag in code") → note in the retro and report back to the caller without re-invoking Echo.
 
 Echo's staged edits remain in the working tree for the caller to commit.
 

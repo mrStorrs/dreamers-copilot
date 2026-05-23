@@ -33,7 +33,7 @@ Default scope (no flags): staged + unstaged changes.
 
 ## Spawn Sentinel
 
-Invoke via the Agent tool:
+Invoke via the runtime's subagent-spawn mechanism:
 
 ```
 agent_type: "sentinel"
@@ -47,8 +47,6 @@ prompt:
   Plan-alignment summary: mark N/A — no plan binding.
   Return: status line + severity-graded lane-labelled findings + open questions.
 ```
-
-Wait for Sentinel to signal completion. Read its chat output.
 
 ## Output
 

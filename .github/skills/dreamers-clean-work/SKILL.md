@@ -1,7 +1,7 @@
 ---
 name: dreamers-clean-work
 description: 'Between-milestone maintenance pass: prune stale files, archive merged plans, audit improvements.md, scan for project-state drift. All inline — no subagents. Triggers: /dreamers-clean-work, clean up, maintenance pass, between milestones.'
-argument-hint: '$ARGUMENTS'
+argument-hint: '(no args; full maintenance pass)'
 ---
 
 Run a between-milestone maintenance pass. No implementation, no planning, no subagents — do all of this directly.
@@ -9,6 +9,19 @@ Run a between-milestone maintenance pass. No implementation, no planning, no sub
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
 $ARGUMENTS
+
+---
+
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Step 1 — improvements audit
+- [ ] Step 2 — plan file archive
+- [ ] Step 3 — legacy workspace cleanup (recommend only)
+- [ ] Step 4 — project state contradiction scan
+- [ ] Step 5 — report
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
 ---
 
@@ -35,7 +48,13 @@ The legacy multi-agent pipeline wrote per-cycle workspace artifacts under `.drea
 If any of those directories exist, the user is welcome to delete them:
 
 ```bash
+# Unix / macOS
 rm -rf .dreamers/{forge,probe,hone,sentinel,echo}
+```
+
+```powershell
+# Windows PowerShell
+Remove-Item -Recurse -Force .dreamers\forge, .dreamers\probe, .dreamers\hone, .dreamers\sentinel, .dreamers\echo
 ```
 
 Do NOT auto-delete — surface as a recommendation. The user may want to keep historical workspace files for reference.
@@ -49,7 +68,7 @@ Read these durable surfaces and check for drift / contradictions:
 - Project-level `.github/copilot-instructions.md` Echo-owned sections (Tech stack, Repo structure, Conventions, Key files) — match the actual codebase?
 - Recent `git log` on the default branch — major shifts (tech stack, architecture, tooling) reflected in instruction files?
 
-**Propose** all changes to the user — do not auto-apply. Present a list and wait for approval. Exception: clearly stale entries pointing to nonexistent files can be removed without asking.
+**Propose** all changes to the user — do not auto-apply. Present a numbered list of proposed updates, then call `request_information` (multi-select) with one option per proposed change plus `"Apply none"` and `"Other"` for freeform direction. Apply only the items the user selects. Exception: clearly stale entries pointing to nonexistent files can be removed without asking.
 
 ## Step 5 — Report
 

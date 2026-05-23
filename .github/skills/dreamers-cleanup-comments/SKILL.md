@@ -60,9 +60,10 @@ Produce a count per category in chat + paths of the worst offenders.
 
 Present in chat: total comment removals, summary by category, list of files most-affected.
 
-Call `request_information` with `["Approved — apply cleanup"]` and allow inline freeform corrections (e.g., "preserve license headers in src/vendor/").
+Call `request_information` with `["Approved — apply cleanup", "Halt for now", "Other"]`. Freeform corrections (e.g., "preserve license headers in src/vendor/") go through Other.
 
-- Approval → proceed to Phase 3.
+- Approved → proceed to Phase 3.
+- Halt for now → output "Audit complete. No changes applied. Resume by re-invoking `/dreamers-cleanup-comments`." and stop.
 - Corrections → revise proposal; re-present.
 
 ## Phase 3 — Apply
@@ -73,7 +74,7 @@ Run the project's type-check command after edits (comments don't usually affect 
 
 ## Phase 4 — Optional Sentinel review
 
-Ask the user: *"Want a Sentinel review before commit?"* — Sentinel's maintainability lens catches anything the cleanup missed or any newly-introduced ambiguity.
+Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`. Sentinel's maintainability lens catches anything the cleanup missed or newly-introduced ambiguity.
 
 - Yes → invoke `agent_type: "sentinel"` with changed-files scope. Apply findings inline.
 - No → proceed to commit.
@@ -85,5 +86,5 @@ Ask the user: *"Want a Sentinel review before commit?"* — Sentinel's maintaina
 ## What this skill does NOT do
 
 - Does NOT modify code logic or behavior — comments only.
-- Does NOT touch comments in tests beyond rule violations (tests are code too; same rules apply).
+- Does NOT touch comments in tests beyond rule violations.
 - Does NOT auto-apply without Phase 2 approval.
