@@ -1,13 +1,13 @@
 ---
 name: dreamers-full
-description: 'Full Dreamers TDD pipeline orchestrator. Delegates to `/dreamers-plan` (Phase 1), `/dreamers-implement` (Phase 2 per cycle), `/dreamers-close-out` (Phase 3). Owns branch setup, umbrella-vs-cohesive routing, and the per-sub-plan loop with inline drift check. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'Full Dreamers pipeline orchestrator. Delegates to `/dreamers-plan` (Phase 1), `/dreamers-implement` (Phase 2 per cycle), `/dreamers-close-out` (Phase 3). Owns branch setup, umbrella-vs-cohesive routing, and the per-sub-plan loop with inline drift check. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 ---
 
 ## What this skill does
 
-A thin orchestrator that wires the three TDD-pipeline phases together. The orchestrator owns only cross-phase concerns: branch setup at Phase 2 entry, umbrella-vs-cohesive routing after Phase 1, the per-sub-plan loop with inline drift check between sub-plans (umbrella mode), and sequencing handoff from one sub-skill to the next.
+A thin orchestrator that wires the three pipeline phases together. The orchestrator owns only cross-phase concerns: branch setup at Phase 2 entry, umbrella-vs-cohesive routing after Phase 1, the per-sub-plan loop with inline drift check between sub-plans (umbrella mode), and sequencing handoff from one sub-skill to the next.
 
-Each phase delegates to a sub-skill that owns the actual work. The orchestrator does NOT embed implementation / test / docs / git rules — those live in the sub-skills, which cite `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md`.
+Each phase delegates to a sub-skill that owns the actual work. The orchestrator does NOT embed implementation / test / docs / git rules — those live in the sub-skills, which cite `~/.copilot/dreamers/refs/orchestrator-discipline.md`.
 
 ## Pre-flight reads
 

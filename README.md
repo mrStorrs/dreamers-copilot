@@ -1,6 +1,6 @@
 # Dreamers
 
-A TDD-pipeline agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → parallel-review → docs → PR flow with most work done inline by the orchestrator. Per cycle, three specialized read-only reviewers (Sentinel + Probe + Hone) spawn in parallel and return structured findings; the orchestrator applies fixes inline.
+An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → parallel-review → docs → PR flow with most work done inline by the orchestrator. Per cycle, three specialized read-only reviewers (Sentinel + Probe + Hone) spawn in parallel and return structured findings; the orchestrator applies fixes inline.
 
 ## Structure
 
@@ -11,7 +11,7 @@ Everything lives under `.github/`:
 ├── agents/           # Agent definitions (Sentinel, Probe, Hone, Echo, Sage)
 ├── skills/           # Skill entry points for each pipeline phase
 ├── dreamers/
-│   ├── refs/         # Shared reference docs (TDD orchestrator discipline, git workflow, planning, etc.)
+│   ├── refs/         # Shared reference docs (orchestrator discipline, git workflow, planning, etc.)
 │   └── templates/    # Plan templates, PR descriptions, logging standards
 └── instructions/     # Auto-injected instruction files (comment rules, etc.)
 ```
@@ -22,7 +22,7 @@ Everything lives under `.github/`:
 |-------|------|--------------|
 | **Sentinel** | Reviewer (read-only / report-only). Three lenses: correctness, security, maintainability. | Per cycle in `/dreamers-implement`, parallel with Probe + Hone |
 | **Probe** | Tester (read-only / report-only). Lens: test coverage (AC matrix, layer audit, edge + negative cases, regression risk). | Per cycle in `/dreamers-implement`, parallel with Sentinel + Hone |
-| **Hone** | Simplifier (read-only / report-only). Lens: simplicity / over-engineering / redundancy (behavior-preserving). | Per cycle in `/dreamers-implement`, parallel with Sentinel + Probe |
+| **Hone** | Architectural protector (read-only / report-only). Lens: simplicity / over-engineering / bad abstractions / architectural quality. Recommends full refactors when warranted. | Per cycle in `/dreamers-implement`, parallel with Sentinel + Probe |
 | **Echo** | Documentarian — updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, etc.). | At close-out via `/dreamers-docs` |
 | **Sage** | Researcher — deep multi-perspective research. | Standalone via `/dreamers-research` |
 
@@ -30,7 +30,7 @@ The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/d
 
 ## Skills (11 total)
 
-### TDD pipeline (composable phases)
+### Pipeline (composable phases)
 
 | Skill | Purpose | Invokable standalone? |
 |-------|---------|----------------------|

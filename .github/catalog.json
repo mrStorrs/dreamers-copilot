@@ -17,7 +17,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Simplifier of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, redundancy, and behavior-preserving cleanup opportunities. One of three parallel reviewers in the TDD pipeline's review phase.",
+      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad abstractions, and architectural quality. Recommends full refactors when warranted. One of three parallel reviewers in the Dreamers pipeline's review phase.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -30,7 +30,7 @@
       "type": "agent",
       "slug": "probe",
       "name": "probe",
-      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). One of three parallel reviewers in the TDD pipeline's review phase.",
+      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). One of three parallel reviewers in the Dreamers pipeline's review phase.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -56,7 +56,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. One of three parallel reviewers (with Probe and Hone) in the TDD pipeline's review phase. Returns structured findings; orchestrator applies fixes.",
+      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. One of three parallel reviewers (with Probe and Hone) in the Dreamers pipeline's review phase. Returns structured findings; orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -82,7 +82,7 @@
       "type": "skill",
       "slug": "dreamers-close-out",
       "name": "dreamers-close-out",
-      "description": "Close-out phase of the Dreamers TDD pipeline. Wraps `/dreamers-docs` + `/dreamers-pr` with the inline retro, improvements.md milestone-close append, final commit, post-PR discipline, and plan archive. User approval gate before push.",
+      "description": "Close-out phase of the Dreamers pipeline. Wraps `/dreamers-docs` + `/dreamers-pr` with the inline retro, improvements.md milestone-close append, final commit, post-PR discipline, and plan archive. User approval gate before push.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -95,7 +95,7 @@
       "type": "skill",
       "slug": "dreamers-docs",
       "name": "dreamers-docs",
-      "description": "Docs-update phase of the Dreamers TDD pipeline. Spawns Echo to update Echo-owned sections of .github/copilot-instructions.md plus other project docs. Invokable standalone (`--branch` or `--staged`) or composed from `/dreamers-close-out`.",
+      "description": "Docs-update phase of the Dreamers pipeline. Spawns Echo to update Echo-owned sections of .github/copilot-instructions.md plus other project docs. Invokable standalone (`--branch` or `--staged`) or composed from `/dreamers-close-out`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -108,7 +108,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "Full Dreamers TDD pipeline orchestrator. Delegates Phase 1 to /dreamers-plan, Phase 2 to /dreamers-implement (looped per sub-plan for umbrella mode), Phase 3 to /dreamers-close-out. Owns branch setup, umbrella-vs-cohesive routing, and the inline drift check between sub-plans.",
+      "description": "Full Dreamers pipeline orchestrator. Delegates Phase 1 to /dreamers-plan, Phase 2 to /dreamers-implement (looped per sub-plan for umbrella mode), Phase 3 to /dreamers-close-out. Owns branch setup, umbrella-vs-cohesive routing, and the inline drift check between sub-plans.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -121,7 +121,7 @@
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Implementation phase of the Dreamers TDD pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone or composed from `/dreamers-full`.",
+      "description": "Implementation phase of the Dreamers pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone or composed from `/dreamers-full`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -160,7 +160,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Planning phase of the Dreamers TDD pipeline. Three-phase requirements conversation → plan files → implementation-start approval gate. Hard-stops at the approval gate; does not implement. Invokable standalone or composed from `/dreamers-full`.",
+      "description": "Planning phase of the Dreamers pipeline. Three-phase requirements conversation → plan files → implementation-start approval gate. Hard-stops at the approval gate; does not implement. Invokable standalone or composed from `/dreamers-full`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -173,7 +173,7 @@
       "type": "skill",
       "slug": "dreamers-pr",
       "name": "dreamers-pr",
-      "description": "PR-creation phase of the Dreamers TDD pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. The single push of the milestone happens here.",
+      "description": "PR-creation phase of the Dreamers pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. The single push of the milestone happens here.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -214,7 +214,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Dreamers TDD pipeline — orchestrator (`/dreamers-full`) wrapping phase sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`). Inline implementation; tests-first per cycle. Review phase spawns three read-only reviewers in parallel: Sentinel (correctness/security/maintainability), Probe (test coverage), Hone (simplicity / over-engineering). Each returns structured findings; orchestrator applies fixes inline. Echo handles close-out docs; Sage covers orthogonal research.",
+      "description": "Dreamers pipeline — orchestrator (`/dreamers-full`) wrapping phase sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`). Inline implementation; tests-first per cycle. Review phase spawns three read-only reviewers in parallel: Sentinel (correctness/security/maintainability), Probe (test coverage), Hone (simplicity / over-engineering). Each returns structured findings; orchestrator applies fixes inline. Echo handles close-out docs; Sage covers orthogonal research.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -308,7 +308,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, git workflow, close-out procedure, TDD orchestrator discipline, etc.).",
+      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, git workflow, close-out procedure, orchestrator discipline, etc.).",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },

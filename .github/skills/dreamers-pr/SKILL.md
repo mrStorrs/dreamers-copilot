@@ -1,6 +1,6 @@
 ---
 name: dreamers-pr
-description: 'PR-creation phase of the Dreamers TDD pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. Invokable standalone or composed from `/dreamers-close-out`. Triggers: /dreamers-pr, push and open PR, create pull request.'
+description: 'PR-creation phase of the Dreamers pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. Invokable standalone or composed from `/dreamers-close-out`. Triggers: /dreamers-pr, push and open PR, create pull request.'
 argument-hint: '(optional inputs auto-detected; orchestrator passes via composed mode)'
 ---
 
@@ -22,7 +22,7 @@ Read these refs once at startup:
 - `~/.copilot/dreamers/refs/git-workflow.md` — push discipline (single push, no force, exactly at PR close-out)
 - `~/.copilot/dreamers/refs/close-out.md` — post-PR rules
 - `~/.copilot/dreamers/templates/pr-description.md` — body template
-- `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md` — discipline framing
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — discipline framing
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, any PR-creation constraints.
@@ -89,6 +89,16 @@ Use `~/.copilot/dreamers/templates/pr-description.md` as the base template. Fill
 - **Fixes applied** — severity-graded list from the Sentinel summary string (if present in composed mode).
 
 Title format: short (under 70 chars). Body details, not the title.
+
+### Co-authored attribution (mandatory)
+
+Any `Co-Authored-By:` line in the PR body, commit messages, or related output MUST be exactly:
+
+```
+Co-Authored: The Dreamers System
+```
+
+Do NOT use any specific AI model name (e.g., `Claude`, `Claude Opus`, `GPT-5.4`, `claude-opus-4-7`) as the co-author. The Dreamers system as a whole is the contributor; specific model implementations are detail that ages poorly. If a tool's default commit-attribution template includes a model name, override it.
 
 ## Step 3 — Open the PR
 

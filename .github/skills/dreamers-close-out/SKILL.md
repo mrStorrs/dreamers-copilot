@@ -1,6 +1,6 @@
 ---
 name: dreamers-close-out
-description: 'Close-out phase of the Dreamers TDD pipeline. Wraps `/dreamers-docs` (Echo) + `/dreamers-pr` (push + PR) with the inline retro, improvements.md milestone-close append, final commit, post-PR discipline, and plan archive. Invokable standalone (commits-on-branch state) or composed from `/dreamers-full` Phase 3. Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
+description: 'Close-out phase of the Dreamers pipeline. Wraps `/dreamers-docs` (Echo) + `/dreamers-pr` (push + PR) with the inline retro, improvements.md milestone-close append, final commit, post-PR discipline, and plan archive. Invokable standalone (commits-on-branch state) or composed from `/dreamers-full` Phase 3. Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
 argument-hint: '(inputs auto-detected; orchestrator passes via composed mode)'
 ---
 
@@ -25,7 +25,7 @@ Read these refs once at startup:
 
 - `~/.copilot/dreamers/refs/close-out.md` — full retro + PR + post-PR procedure
 - `~/.copilot/dreamers/refs/git-workflow.md` — commit + push discipline
-- `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md` — closeout-discipline section
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — closeout-discipline section
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions.
@@ -86,7 +86,7 @@ Write `.dreamers/retros/retro-d<N>-<name>.md` per `close-out.md`. Required secti
 Additionally, write inline summaries (these replace the Probe-era artifacts):
 - **AC coverage matrix** — which test covers which AC across all cycles.
 - **Bugs found during user-testing** (if any) — what was found and how it was fixed.
-- **Regression analysis** (if the originating task was a user-reported bug) — three questions per `tdd-orchestrator-discipline.md`: why wasn't it caught, what test was added, what else might be missing.
+- **Regression analysis** (if the originating task was a user-reported bug) — three questions per `orchestrator-discipline.md`: why wasn't it caught, what test was added, what else might be missing.
 
 ## Step 4 — Final commit (if needed)
 

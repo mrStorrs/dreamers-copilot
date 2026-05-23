@@ -1,6 +1,6 @@
 ---
 name: dreamers-plan
-description: 'Planning phase of the Dreamers TDD pipeline. Three-phase requirements conversation → plan files in `.dreamers/plans/` → implementation-start approval gate. Invokable standalone (plan-only) or composed from `/dreamers-full` Phase 1. Triggers: /dreamers-plan, plan this, create a plan, plan only.'
+description: 'Planning phase of the Dreamers pipeline. Three-phase requirements conversation → plan files in `.dreamers/plans/` → implementation-start approval gate. Invokable standalone (plan-only) or composed from `/dreamers-full` Phase 1. Triggers: /dreamers-plan, plan this, create a plan, plan only.'
 argument-hint: '$ARGUMENTS'
 ---
 
@@ -12,7 +12,7 @@ Drives the three-phase planning conversation (Hash-it-out → Approval → Decom
 
 Read these refs once at startup (use the `view` tool, full file — never `cat`/`head`/`tail`/`Select-String`, which truncate):
 
-- `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md` — the shared discipline cited by all TDD-pipeline sub-skills
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — the shared discipline cited by all pipeline sub-skills
 - `~/.copilot/dreamers/refs/plan-content.md` — plan section requirements
 - `~/.copilot/dreamers/refs/plan-rules.md` — plan naming + numbering
 - `~/.copilot/dreamers/refs/planning-protocol.md` — three-phase conversation rules

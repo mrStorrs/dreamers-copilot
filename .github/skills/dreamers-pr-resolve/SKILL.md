@@ -7,7 +7,7 @@ Resolve unresolved PR review comments. All work inline except a parallel review 
 
 ## Pre-flight reads
 
-- `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md` — implementation + comment + git discipline (orchestrator applies these to the inline fixes)
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — implementation + comment + git discipline (orchestrator applies these to the inline fixes)
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
@@ -39,7 +39,7 @@ For each thread, record:
 - Decision: **accept** or **reject**
 - Rationale: one sentence
 
-If **accept** → apply the fix inline (Edit the file). Stage with `git add`. Follow the comment + implementation discipline from `tdd-orchestrator-discipline.md`.
+If **accept** → apply the fix inline (Edit the file). Stage with `git add`. Follow the comment + implementation discipline from `orchestrator-discipline.md`.
 
 If **reject** → no edit. Note in chat for the final report.
 
@@ -53,7 +53,7 @@ If no threads were accepted, skip to Step 6.
 
 ## Step 5 — Parallel review of accepted changes (Sentinel + Probe + Hone)
 
-Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `tdd-orchestrator-discipline.md`. Scope is restricted to ONLY the files touched by accepted threads.
+Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. Scope is restricted to ONLY the files touched by accepted threads.
 
 Common prompt context for all three:
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A

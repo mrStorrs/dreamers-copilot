@@ -29,7 +29,7 @@ Use the right agent for the job:
 - **Forge** (Sonnet) — implementation, code changes. Type-checks before signaling done.
 - **Sentinel** (Sonnet) — code review. **Fix-on-sight in production-code lane.** No findings JSON; severity-graded fixes-applied list in chat output. Type-checks after fixes; does NOT run tests.
 - **Probe** (Sonnet) — test writing and strategy. **Fix-on-sight in test-files lane only.** Production bugs reported in `bugs.md` for orchestrator routing back to Sentinel.
-- **Hone** (Sonnet) — simplification: readability, maintainability, redundancy reduction. **Fix-on-sight in branch-diff scope, behavior-preserving.** Runs once after all sub-plan cycles complete via `/dreamers-simplify`.
+- **Hone** (Sonnet) — architectural protector: simplicity, over-engineering, bad abstractions, architectural quality. Recommends full refactors when warranted. **Fix-on-sight in branch-diff scope.** Runs once after all sub-plan cycles complete via `/dreamers-simplify`.
 - **Echo** (Haiku) — documentation. Reads orchestrator-passed change context + `git diff`; no longer reads dropped Forge/Sentinel artifacts.
 - **Nova** (Opus) — multi-mode planning specialist: `verify` (lightweight applicability check between sub-plans, called via `/dreamers-plan-verify`), `replan` (heavy drift recovery), `plan-new` (full new-feature planning conversation).
 - **Bolt** (Haiku) — mechanical execution: run tests, git push, PR creation, issue closing, build commands, type-checks. Use Bolt for anything that requires zero reasoning.
@@ -40,7 +40,7 @@ Use the right agent for the job:
 
 - **Sentinel** edits production code (and test-file comments only — comments are not test logic). Does NOT edit test logic.
 - **Probe** edits test files. Does NOT edit production code.
-- **Hone** edits files in `git diff origin/<DEFAULT>...HEAD`. Behavior-preserving only.
+- **Hone** edits files in `git diff origin/<DEFAULT>...HEAD`. May recommend structural refactors; conflict-resolution rule applies (correctness > simplicity).
 
 A sub-plan boundary runs Sentinel → Probe sequentially. Sentinel handles production fixes first; Probe handles test coverage and any test-file fixes against the settled production state.
 

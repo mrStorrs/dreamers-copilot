@@ -1,6 +1,6 @@
 ---
 name: dreamers-implement
-description: 'Implementation phase of the Dreamers TDD pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone (given a plan path) or composed from `/dreamers-full` Phase 2. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+description: 'Implementation phase of the Dreamers pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone (given a plan path) or composed from `/dreamers-full` Phase 2. Triggers: /dreamers-implement, implement this plan, execute the plan.'
 argument-hint: 'path/to/plan.md'
 ---
 
@@ -25,7 +25,7 @@ This skill does NOT push, does NOT open a PR, does NOT update docs. That's `/dre
 
 Read these refs once at startup (use the `view` tool, full file — never `cat`/`head`/`tail`/`Select-String`, which truncate):
 
-- `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md` — the shared discipline (implementation + comment + logging + test-writing + git rules)
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — the shared discipline (implementation + comment + logging + test-writing + git rules)
 - `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, staging, push discipline
 - `~/.copilot/dreamers/refs/comment-rules.md` — comment discipline
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations
@@ -107,7 +107,7 @@ Read the plan's Acceptance Criteria and Test Cases (Given/When/Then). For each A
 
 ### Step 2 — Implement
 
-Follow the **Implementation discipline** rules in `tdd-orchestrator-discipline.md`. Edit only files in the plan's scope. Stage with `git add` as you go.
+Follow the **Implementation discipline** rules in `orchestrator-discipline.md`. Edit only files in the plan's scope. Stage with `git add` as you go.
 
 ### Step 3 — Type-check + run tests
 
@@ -135,7 +135,7 @@ Any gap → write the test now. Re-run the test command. Loop until all checklis
 
 ### Step 5 — Parallel review (Sentinel + Probe + Hone)
 
-Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `tdd-orchestrator-discipline.md`. None of them edits files.
+Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. None of them edits files.
 
 Common prompt context for all three:
 - Plan file path
@@ -156,7 +156,7 @@ Per-reviewer prompt addition:
 - Return: structured findings per the spec, plus plan AC coverage table
 
 **Hone** (`agent_type: "hone"`, `mode: "sync"`):
-- Lens: simplicity / over-engineering / redundancy (behavior-preserving only)
+- Lens: simplicity / over-engineering / redundancy / architectural quality
 - Out of scope: correctness/security/maintainability (Sentinel's lane), test coverage (Probe's lane)
 - Return: structured findings per the spec
 
@@ -164,7 +164,7 @@ Wait for all three to signal completion. Read all three chat outputs.
 
 ### Step 6 — Apply findings inline (orchestrator-as-fixer)
 
-Concatenate findings from all three reviewers per the orchestrator-as-fixer behavior in `tdd-orchestrator-discipline.md`:
+Concatenate findings from all three reviewers per the orchestrator-as-fixer behavior in `orchestrator-discipline.md`:
 
 1. **Sort by severity** (critical → high → medium → low).
 2. **Resolve conflicts** per the conflict-resolution rule: correctness > simplicity. Genuine ambiguity → surface to user before applying.

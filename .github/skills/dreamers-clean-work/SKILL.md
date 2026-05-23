@@ -30,7 +30,7 @@ In `.dreamers/plans/` (repo-local), for each `plan-*.md` (excluding files alread
 
 ## Step 3 — Legacy workspace cleanup (one-time)
 
-The legacy multi-agent pipeline wrote per-cycle workspace artifacts under `.dreamers/{forge,probe,hone,sentinel,echo}/`. The current TDD pipeline writes none of those — Sentinel and Echo do not maintain workspace files.
+The legacy multi-agent pipeline wrote per-cycle workspace artifacts under `.dreamers/{forge,probe,hone,sentinel,echo}/`. The current pipeline writes none of those — Sentinel, Probe, Hone, and Echo do not maintain workspace files.
 
 If any of those directories exist, the user is welcome to delete them:
 

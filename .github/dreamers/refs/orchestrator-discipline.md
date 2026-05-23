@@ -1,12 +1,12 @@
-# TDD Orchestrator Discipline (mandatory)
+# Orchestrator Discipline (mandatory)
 
-When a Dreamers TDD-pipeline sub-skill is doing work that would normally be delegated to a subagent — implementation, test writing, comment writing, logging, git operations — the orchestrator MUST follow these rules. They are baked into this ref (rather than into each agent file) because the new pipeline collapses Forge / Probe / Bolt's roles into inline orchestrator work; the agent files for those roles no longer exist or are no longer invoked.
+When a Dreamers pipeline sub-skill is doing work the orchestrator handles inline — implementation, test writing, comment writing, logging, git operations — these rules apply.
 
-This ref is cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, and `/dreamers-pr`. The `/dreamers-full` orchestrator does NOT cite this ref directly — it trusts the sub-skills do.
+Cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`, and the three reviewer agents (Sentinel, Probe, Hone) for the structured findings format spec. `/dreamers-full` does NOT cite this ref directly — it trusts the sub-skills do.
 
 ---
 
-## Implementation discipline (replaces Forge)
+## Implementation discipline
 
 - **Plan adherence:** only edit files in the plan's scope (or that the plan's scope clearly entails). No "while I'm here" cleanup, no unrelated refactors mixed with feature work. If a refactor is genuinely needed for the plan's work, do it as a separate inline step and note it in chat.
 - **Incremental edits:** make changes in small, coherent steps. Stage with `git add` as work progresses.
@@ -51,7 +51,7 @@ Pulled from `logging-standards.md`. Key rules:
 
 ---
 
-## Test-writing discipline (replaces Probe)
+## Test-writing discipline
 
 - **Tests-first:** write failing tests against the plan's Acceptance Criteria and Test Cases (Given/When/Then) BEFORE implementing.
 - **AC coverage matrix:** for every plan AC, identify the test(s) that cover it. If an AC has no covering test, write one. Do not declare the cycle done based on test count alone — verify by AC.
@@ -79,7 +79,7 @@ Pulled from `logging-standards.md`. Key rules:
 
 ---
 
-## Git discipline (replaces Bolt mechanical steps)
+## Git discipline
 
 - Stage with `git add` as work progresses across all phases. Never commit mid-cycle.
 - **One commit per cycle** (cohesive plan = one commit total; umbrella = one commit per sub-plan).
@@ -94,7 +94,7 @@ The review phase in `/dreamers-implement` and `/dreamers-pr-resolve` spawns **th
 
 - **Sentinel** — correctness, security, maintainability lenses
 - **Probe** — test coverage lens (AC matrix, layer audit, edge cases, gaps)
-- **Hone** — simplicity / over-engineering / behavior-preserving simplification lens
+- **Hone** — simplicity / over-engineering / architectural quality lens
 
 **All three are read-only / report-only.** They identify findings and return them in the structured format below. **None of them edits files** — the orchestrator (which already has the code in context from implementation) applies fixes from the combined findings.
 
@@ -141,12 +141,3 @@ If the post-fix test run regresses (tests fail), the orchestrator diagnoses and 
 
 In the skill body, the review phase is described as a single tool-call with 3 Agent sub-tool-uses (Claude Code idiom) or 3 parallel `task()` invocations (Copilot CLI idiom). Skills should specify intent ("spawn S + P + H in parallel; wait for all three to complete") and let the runtime execute per its primitives. If a runtime doesn't support parallel spawn, the skill still works — wall-clock cost increases but correctness is preserved.
 
----
-
-## How sub-skills cite this ref
-
-Each TDD-pipeline sub-skill includes this ref in its pre-flight reads, alongside the always-load refs (`git-workflow.md`, `plan-content.md`, `comment-rules.md`, `logging-standards.md`, etc.). The sub-skill does NOT re-embed the rules — it cites the ref and follows them.
-
-The orchestrator (`/dreamers-full`) does NOT cite this ref directly; it trusts the sub-skills do. This avoids double-loading the discipline content in the orchestrator's context.
-
-The three reviewer agents (Sentinel, Probe, Hone) also cite this ref for the structured findings format spec.

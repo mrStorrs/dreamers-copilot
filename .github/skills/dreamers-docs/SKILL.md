@@ -1,6 +1,6 @@
 ---
 name: dreamers-docs
-description: 'Docs-update phase of the Dreamers TDD pipeline. Spawns Echo to update Echo-owned sections of `.github/copilot-instructions.md` plus any other project docs affected by the change. Invokable standalone (--branch or --staged scope) or composed from `/dreamers-close-out`. Triggers: /dreamers-docs, update docs, echo docs update.'
+description: 'Docs-update phase of the Dreamers pipeline. Spawns Echo to update Echo-owned sections of `.github/copilot-instructions.md` plus any other project docs affected by the change. Invokable standalone (--branch or --staged scope) or composed from `/dreamers-close-out`. Triggers: /dreamers-docs, update docs, echo docs update.'
 argument-hint: '[--branch | --staged] (composed mode passes full inputs)'
 ---
 
@@ -14,7 +14,7 @@ Echo stages its edits with `git add` but does NOT commit. The caller (orchestrat
 
 Read these refs once at startup:
 
-- `~/.copilot/dreamers/refs/tdd-orchestrator-discipline.md` — for the closeout-discipline section's framing of Echo's role.
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — for the closeout-discipline section's framing of Echo's role.
 - `~/.copilot/dreamers/refs/close-out.md` — Echo's contract within the close-out flow.
 
 Echo agent reads its own startup files internally — this skill does not duplicate them here.
@@ -61,7 +61,7 @@ Invoke Echo via the Agent tool:
 agent_type: "echo"
 mode: "sync"
 prompt:
-  Context: TDD pipeline docs update. The orchestrator did the implementation inline (no Forge involved).
+  Context: pipeline docs update. The orchestrator did the implementation inline.
   Plan file(s): <absolute paths to the plan(s) shipped this milestone; or "none — standalone invocation, discover from .dreamers/plans/" in standalone mode>
   Changed files: <output of the resolved git diff per scope>
   Diff base: origin/<DEFAULT_BRANCH>
