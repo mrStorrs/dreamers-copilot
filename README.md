@@ -28,7 +28,7 @@ Everything lives under `.github/`:
 
 The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/dreamers-implement` and `/dreamers-pr-resolve`. All three are read-only; they return structured findings; the orchestrator applies fixes inline. Conflict-resolution rule: correctness > simplicity. Ambiguity surfaces to user.
 
-## Skills (11 total)
+## Skills (19 total)
 
 ### Pipeline (composable phases)
 
@@ -36,17 +36,30 @@ The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/d
 |-------|---------|----------------------|
 | `dreamers-full` | Orchestrator — wires plan → implement → close-out together. Owns branch setup, umbrella-vs-cohesive routing, inline drift check between sub-plans. | Yes — full pipeline |
 | `dreamers-plan` | Phase 1 — three-phase planning conversation, writes plan files, hard-stops at the approval gate. | Yes — plan only |
-| `dreamers-implement` | Phase 2 — per-cycle loop (tests-first → implement → run → coverage sweep → Sentinel → optional user-test → commit). | Yes — with an approved plan |
+| `dreamers-plan-verify` | Inline drift check on a plan vs current code (no subagent). | Yes — sanity check before implement |
+| `dreamers-implement` | Phase 2 — per-cycle loop (tests-first → implement → run → coverage sweep → parallel review → optional user-test → commit). | Yes — with an approved plan |
 | `dreamers-close-out` | Phase 3 wrapper — improvements append + docs + retro + final commit + user gate + push + PR + post-PR discipline. | Yes — at end of a milestone |
 | `dreamers-docs` | Sub-phase — spawn Echo for project-doc updates. | Yes — ad-hoc doc update |
 | `dreamers-pr` | Sub-phase — push + `gh pr create` + optional issue close. The single push of the milestone. | Yes — push & PR a branch |
 
-### Orthogonal skills
+### Single-lens reviewer wrappers (read-only)
 
 | Skill | Purpose |
 |-------|---------|
+| `dreamers-review` | Spawn just **Sentinel** standalone (correctness / security / maintainability). Args: `--branch`, `--paths`, `--all`. |
+| `dreamers-test` | Spawn just **Probe** standalone (test coverage audit). Same arg pattern. |
+| `dreamers-simplify` | Spawn just **Hone** standalone (architectural quality / over-engineering / can recommend full refactors). Same arg pattern. |
+
+### Utility + orthogonal skills
+
+| Skill | Purpose |
+|-------|---------|
+| `dreamers-fix` | Bug-fix entry point. Routes to `/dreamers-full` with bug-fix framing in the planning conversation. |
+| `dreamers-add-logging` | Phased pass to add/improve project logging per `logging-standards.md`. Audit → propose → approve → apply → optional Sentinel review. |
+| `dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Same phased flow. |
+| `dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. For pre-PR sweep. |
 | `dreamers-research` | Deep research with phased workflow (Sage subagent). |
-| `dreamers-pr-resolve` | Resolve PR review comments inline + Sentinel review of accepted changes. |
+| `dreamers-pr-resolve` | Resolve PR review comments inline + parallel review of accepted changes. |
 | `dreamers-issue` | Create structured GitHub issues with acceptance criteria. |
 | `dreamers-new-project` | Bootstrap a brand new project (discovery → tech stack → brief → shell plans). |
 | `dreamers-clean-work` | Between-milestone maintenance (improvements audit, plan archive, drift scan). |

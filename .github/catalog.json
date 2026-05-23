@@ -67,6 +67,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-add-logging",
+      "name": "dreamers-add-logging",
+      "description": "Phased pass to add or improve project logging per `logging-standards.md`. Audit → propose → user approval → implement inline → optional Sentinel review.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-add-logging/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-clean-work",
       "name": "dreamers-clean-work",
       "description": "Between-milestone maintenance pass: prune stale files, archive merged plans, audit improvements.md, scan for project-state drift. All inline — no subagents.",
@@ -77,6 +90,32 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-clean-work/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-cleanup-comments",
+      "name": "dreamers-cleanup-comments",
+      "description": "Project-wide comment cleanup pass per `comment-rules.md`. Audit → propose → user approval → apply inline → optional Sentinel review.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-cleanup-comments/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-cleanup-comments-branch",
+      "name": "dreamers-cleanup-comments-branch",
+      "description": "Branch-scoped comment cleanup. Same audit-propose-apply-review flow as /dreamers-cleanup-comments, scoped to the current feature-branch diff. For use as a pre-PR comment sweep.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-cleanup-comments-branch/SKILL.md"
     },
     {
       "type": "skill",
@@ -103,6 +142,19 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-docs/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-fix",
+      "name": "dreamers-fix",
+      "description": "Bug-fix entry point. Routes to /dreamers-full with bug-fix framing in the planning conversation. Planning scales to bug complexity (minimal plan for trivial bugs, fuller plan for complex ones).",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-fix/SKILL.md"
     },
     {
       "type": "skill",
@@ -171,6 +223,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-plan-verify",
+      "name": "dreamers-plan-verify",
+      "description": "Inline drift check on a plan against current codebase reality. Reads the plan, verifies cited paths/signatures/data shapes still hold, reports drift items. No subagent.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-plan-verify/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-pr",
       "name": "dreamers-pr",
       "description": "PR-creation phase of the Dreamers pipeline. Pushes the current feature branch, opens a PR via `gh pr create` using the `pr-description.md` template, optionally closes a referenced issue. The single push of the milestone happens here.",
@@ -207,6 +272,45 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-research/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-review",
+      "name": "dreamers-review",
+      "description": "Standalone Sentinel review (correctness / security / maintainability). Read-only — returns structured findings without applying fixes. Args: --branch, --paths, --all.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-review/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-simplify",
+      "name": "dreamers-simplify",
+      "description": "Standalone Hone review (architectural quality / over-engineering / redundancy). Read-only — may recommend full refactors. Args: --branch, --paths, --all.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-simplify/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-test",
+      "name": "dreamers-test",
+      "description": "Standalone Probe review (test coverage audit). Read-only — returns structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-test/SKILL.md"
     }
   ],
   "collections": [
@@ -246,7 +350,19 @@
         },
         {
           "type": "skill",
+          "slug": "dreamers-add-logging"
+        },
+        {
+          "type": "skill",
           "slug": "dreamers-clean-work"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-cleanup-comments"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-cleanup-comments-branch"
         },
         {
           "type": "skill",
@@ -255,6 +371,10 @@
         {
           "type": "skill",
           "slug": "dreamers-docs"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-fix"
         },
         {
           "type": "skill",
@@ -278,6 +398,10 @@
         },
         {
           "type": "skill",
+          "slug": "dreamers-plan-verify"
+        },
+        {
+          "type": "skill",
           "slug": "dreamers-pr"
         },
         {
@@ -287,6 +411,18 @@
         {
           "type": "skill",
           "slug": "dreamers-research"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-review"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-simplify"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-test"
         },
         {
           "type": "folder",

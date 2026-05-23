@@ -1,0 +1,76 @@
+---
+name: dreamers-add-logging
+description: 'Phased pass to add or improve project logging per logging-standards.md. Audit current state → propose changes → user approval → implement inline → optional Sentinel review. Triggers: /dreamers-add-logging, add logging, improve logging, audit log calls.'
+argument-hint: '[--scope <path>] (defaults to project source root)'
+---
+
+## What this skill does
+
+Walks a project (or a subdirectory) and brings the logging up to `logging-standards.md`:
+
+- ERROR for unhandled failures with full stack traces
+- WARN for recoverable issues
+- INFO for lifecycle / business signal (startup config, request/response status+duration, auth events, business events)
+- DEBUG for traceability (function entry/exit on non-trivial fns, branch decisions, repo calls, retries, state transitions)
+- No secrets / PII / full request bodies logged
+
+The orchestrator does all the work inline — no Forge, no Bolt. Optionally spawns Sentinel at the end to review the changes.
+
+## Pre-flight reads
+
+- `~/.copilot/dreamers/templates/logging-standards.md` — the binding spec
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — logging discipline (NEVER-LOG rules, log level guidance)
+- `.github/copilot-instructions.md` (project, if present) — project-specific logging conventions (logger library, format)
+
+$ARGUMENTS
+
+---
+
+## Phase 1 — Audit
+
+Scope: project source root by default; `--scope <path>` to restrict.
+
+Walk the scope and identify:
+- Functions with no logging where DEBUG entry/exit would help.
+- Branches without log statements that affect business outcomes.
+- ERROR-level logs missing stack traces.
+- INFO logs that include secrets, PII, or full request bodies (NEVER-LOG violations — high priority).
+- DEBUG logs in high-frequency loops without `// high-freq` annotation.
+- Log calls using the wrong level (e.g., ERROR for recoverable issues; INFO for incoming requests with full bodies).
+
+Produce an audit summary in chat: file path → issues found.
+
+## Phase 2 — Proposal + user approval
+
+Present the proposed changes in chat:
+- List of files to modify, with one-line summary per file.
+- Net adds vs net changes (e.g., "12 new DEBUG calls, 3 ERROR-level fixes, 2 NEVER-LOG violations to remove").
+- Any logger-library / format conventions detected from existing code (so additions are consistent).
+
+Call `ask_user` with `["Approved — apply changes"]` and allow inline freeform corrections.
+
+- Approval → proceed to Phase 3.
+- Corrections → revise proposal; re-present. Loop until approved.
+
+## Phase 3 — Implement
+
+Apply the approved changes inline. Stage with `git add` as you go. Follow `orchestrator-discipline.md` implementation rules — only edit files in scope; no while-I'm-here cleanup.
+
+Run the project's type-check command after edits. Fix any type errors.
+
+## Phase 4 — Optional Sentinel review
+
+Ask the user: *"Want a Sentinel review of the logging changes before commit?"*
+
+- Yes → invoke `agent_type: "sentinel"` with the changed-files scope. Sentinel reviews under correctness/security/maintainability lenses; comment-rules + logging-standards violations surface here. Apply findings inline.
+- No → proceed to commit.
+
+## Phase 5 — Commit
+
+`git status` to confirm staged content. Commit message: `chore: improve logging per logging-standards.md` (or appropriate). Do NOT push (user pushes when ready, or via `/dreamers-pr`).
+
+## What this skill does NOT do
+
+- Does NOT add a new logger library or change the logger framework.
+- Does NOT add log calls in tests (tests don't need INFO/DEBUG log calls).
+- Does NOT auto-apply changes without Phase 2 user approval.
