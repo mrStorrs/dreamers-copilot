@@ -84,20 +84,23 @@ The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel
 
 ```
 /dreamers-full
-  ├─ Phase 1 → /dreamers-plan         (three-phase planning conversation, exit at Phase 1g approval)
-  ├─ Phase 2 → /dreamers-implement    (per cycle)
-  │             1. write failing tests
-  │             2. implement inline
-  │             3. type-check + run tests
-  │             4. coverage sweep
-  │             5. spawn Sentinel + Probe + Hone in PARALLEL  ← three read-only reviewers
-  │             6. apply combined findings inline; re-run tests
-  │             7. optional user-test pause
-  │             8. commit
-  │             ↳ when multiple plan paths are passed, loops once per plan in sequence with inline drift check between
-  └─ Phase 3 → /dreamers-close-out    (improvements append + retro + final commit + push + PR)
-                ├─ /dreamers-docs     (spawns Echo)
-                └─ /dreamers-pr       (single push + PR creation)
+  ├─ Phase 1   → /dreamers-plan       (three-phase planning conversation, exit at Phase 1g approval)
+  ├─ Phase 1.5 → Ship-strategy gate   (multi-plan only; recommends INCREMENTAL vs ATOMIC, user picks)
+  ├─ Phase 2   → /dreamers-implement  (per cycle)
+  │               1. write failing tests
+  │               2. implement inline
+  │               3. type-check + run tests
+  │               4. coverage sweep
+  │               5. spawn Sentinel + Probe + Hone in PARALLEL  ← three read-only reviewers
+  │               6. apply combined findings inline; re-run tests
+  │               7. optional user-test pause
+  │               8. commit
+  │               ↳ multi-plan loop with inline drift check between plans
+  │               ↳ INCREMENTAL: each plan ends with `/dreamers-close-out --light` (push + PR per plan)
+  │               ↳ ATOMIC: plans accumulate as commits; no push until Phase 3
+  └─ Phase 3   → /dreamers-close-out  (FULL: improvements append + retro + final commit + push + PR + plan archive)
+                  ├─ /dreamers-docs    (spawns Echo)
+                  └─ /dreamers-pr      (push + PR creation)
 ```
 
 Most work is inline in the orchestrator. Per cycle, three reviewers spawn in parallel; per milestone, Echo spawns once:

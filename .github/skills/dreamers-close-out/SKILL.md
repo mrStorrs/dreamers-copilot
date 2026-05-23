@@ -1,8 +1,19 @@
 ---
 name: dreamers-close-out
-description: 'Close-out phase of the Dreamers pipeline. Wraps `/dreamers-docs` (Echo) + `/dreamers-pr` (push + PR) with the inline retro, improvements.md milestone-close append, final commit, post-PR discipline, and plan archive. Invokable standalone (commits-on-branch state) or composed from `/dreamers-full` Phase 3. Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
-argument-hint: '(inputs auto-detected; orchestrator passes via composed mode)'
+description: 'Close-out phase of the Dreamers pipeline. Two modes — FULL (default): wraps docs + pr + retro + improvements append + plan archive + post-PR discipline (the milestone close-out). LIGHT (`--light`): docs (if applicable) + push + PR for ONE plan only; used by `/dreamers-full` between plans in incremental ship mode. Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
+argument-hint: '[--light <plan-path>]  (omit flags for full milestone close-out)'
 ---
+
+## Two modes
+
+| Mode | When | Steps |
+|---|---|---|
+| **FULL** (default) | Milestone end — all plans in the sequence are implemented. This includes the case where `/dreamers-full` ran INCREMENTAL mode: the final plan's close-out is always FULL, covering the retro + improvements append + plan archive that the per-plan LIGHT close-outs skipped. | Steps 1–8 below. |
+| **LIGHT** (`--light <plan-path>`) | Mid-sequence in INCREMENTAL ship mode — one plan complete, more remain. Invoked by `/dreamers-full` between plans. | Steps 2 + 4 + 5 + 6 only (docs if applicable + final commit + user gate + push + PR via `/dreamers-pr`). NO retro, NO improvements append, NO plan archive, NO post-PR discipline. |
+
+The light mode is intentionally minimal: per-plan retros would spam the retro history, and the milestone-level scan / improvements / plan-archive belong to the END of the sequence, not the middle.
+
+If `$ARGUMENTS` includes `--light` followed by a plan path, run LIGHT mode against that plan. Otherwise run FULL mode.
 
 ## What this skill does
 
@@ -187,4 +198,5 @@ This is the terminal phase of the milestone. No further work after Step 8.
 
 ## Push discipline (single source of truth)
 
-`git push` happens EXACTLY ONCE per milestone — Step 6 (`/dreamers-pr`'s push). Step 8.4 push only fires if the user explicitly approves a post-PR commit; that is a SEPARATE event from the milestone's single push.
+- **FULL mode (ATOMIC):** `git push` happens EXACTLY ONCE per milestone — Step 6 (`/dreamers-pr`'s push). Step 8.4 push only fires if the user explicitly approves a post-PR commit; that is a SEPARATE event from the milestone's single push.
+- **LIGHT mode (INCREMENTAL):** `git push` happens once per light close-out invocation — the equivalent of Step 6 for that plan only. No Step 8 post-PR discipline runs in LIGHT mode.

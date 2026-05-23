@@ -65,3 +65,37 @@ When multiple plans share genuine cross-plan context — constraints, design dec
 **Invocation:**
 - Variadic plans (no manifest): `/dreamers-full <plan-a> <plan-b> <plan-c>` — plans run in argument order; no shared context.
 - Manifest mode: `/dreamers-full feature-{slug}.md` — orchestrator reads the manifest, extracts the plan sequence, threads shared context into reviewer prompts at each cycle.
+
+## Ship strategy (multi-plan invocations)
+
+When `/dreamers-full` runs ≥ 2 plans, it presents a **Phase 1.5 ship-strategy gate** asking how to ship:
+
+- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final plan's close-out runs the milestone retro + improvements + plan archive.
+- **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans.
+
+The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the gate. Single-plan invocations skip this gate.
+
+### Recommendation heuristics
+
+The orchestrator reads the manifest (if any) and plan files; the strongest signal cited as the reasoning.
+
+**Recommend INCREMENTAL when ANY hold:**
+- ≥ 4 plans in the sequence (review burden of one big PR is high).
+- Plans touch significantly different file subsystems (low overlap in §Scope file lists).
+- Manifest's cross-plan Risks section does NOT mention "ordering dependency," "breaking change," or "coordinated revert."
+- Plans are substantial (≥ 5 ACs each, or test cases spanning multiple layers).
+- Plan A's value is observable to users without plans B+ (incremental value delivery).
+
+**Recommend ATOMIC when ANY hold:**
+- 2–3 plans only (small feature).
+- Plans touch overlapping files (same files edited by multiple plans).
+- Manifest's cross-plan Risks mentions "ordering dependency," "breaking change requiring shim," or "coordinated revert."
+- DB migrations or schema changes gated on prior plans.
+- End-to-end ACs require ALL plans to verify (no piecewise testability).
+- Feature-flag protected work where partial deployment leaves the system in a half-state.
+
+If signals conflict, default to ATOMIC (safer) and cite the conflicting signals.
+
+### Strategy is a runtime decision, not a manifest field
+
+The manifest itself does NOT declare a strategy. The decision happens at invocation time, at the Phase 1.5 gate, where the user can weigh current capacity, review bandwidth, and post-incident risk against the recommendation. Same manifest may ship atomically one cycle and incrementally the next.
