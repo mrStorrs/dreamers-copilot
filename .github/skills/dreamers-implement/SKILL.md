@@ -169,7 +169,7 @@ Check the plan's `User-testing-required` field.
 
 The `request_info` call MUST include every item below. Do not abbreviate — the user reads only what is in this prompt:
 
-- **Plan being tested:** ID + path (e.g. `plan-{slug}-a` → `.dreamers/plans/plan-{slug}-a.md`).
+- **Plan being tested:** ID + path (e.g. `plan-{slug}` → `.dreamers/plans/plan-{slug}.md`).
 - **Build / distribution details:** check for `.github/instructions/build.instructions.md` at the project root.
   - **If present:** follow it exactly. Execute only the steps it explicitly authorises the orchestrator to run. Surface every user-action step (install on device, launch app, open URL, version/build to verify) verbatim.
   - **If absent:** state plainly that there is no `build.instructions.md`. Ask the user to either (a) build/distribute the test build themselves and confirm when ready, or (b) provide the steps so a `build.instructions.md` can be created. Do not invent build steps.

@@ -10,7 +10,7 @@ Cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dream
 
 - **Plan adherence:** only edit files in the plan's scope (or that the plan's scope clearly entails). No "while I'm here" cleanup, no unrelated refactors mixed with feature work. If a refactor is genuinely needed for the plan's work, do it as a separate inline step and note it in chat.
 - **Incremental edits:** make changes in small, coherent steps. Stage with `git add` as work progresses.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern. If a section permits something, cite the exact section number. When in doubt, implement the cleanest separation and let Sentinel judge.
+- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern. If spec interpretation is non-obvious, document the reasoning in the PR description or commit message — never in code comments. When in doubt, implement the cleanest separation and let Sentinel judge.
 - **All imports at the top of the file.** Every `import` statement before any declaration, function, or expression. Never insert imports mid-file or at the bottom.
 - **Method signature changes:** when changing a signature (sync→async, parameter added/removed/renamed), grep the full codebase for every call site before staging. The plan's listed files are necessary but not sufficient.
 - **Zustand creator objects:** never use ES getters (they're evaluated once at creation time and baked as static values, never reactive). Define computed values as exported selector functions outside the store.

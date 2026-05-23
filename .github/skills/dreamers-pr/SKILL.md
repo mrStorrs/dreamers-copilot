@@ -92,13 +92,18 @@ Title format: short (under 70 chars). Body details, not the title.
 
 ### Co-authored attribution (mandatory)
 
-Any `Co-Authored-By:` line in the PR body, commit messages, or related output MUST be exactly:
+Any co-author trailer in commit messages MUST use the standard git trailer key + this exact author identity:
 
 ```
-Co-Authored: The Dreamers System
+Co-authored-by: The Dreamers System <noreply@dreamers.local>
 ```
 
-Do NOT use any specific AI model name (e.g., `Claude`, `Claude Opus`, `GPT-5.4`, `claude-opus-4-7`) as the co-author. The Dreamers system as a whole is the contributor; specific model implementations are detail that ages poorly. If a tool's default commit-attribution template includes a model name, override it.
+Notes:
+- The key is `Co-authored-by:` (lowercase with hyphens, ending in `by:`) — this is git's standard trailer key for co-authors, required so that `git interpret-trailers` and GitHub recognize it.
+- The author name is **`The Dreamers System`**. Do NOT use any specific AI model name (e.g., `Claude`, `Claude Opus`, `GPT-5.4`, `claude-opus-4-7`). The Dreamers system as a whole is the contributor; specific model implementations are detail that ages poorly. If a tool's default commit-attribution template includes a model name, override it.
+- The email `<noreply@dreamers.local>` is a placeholder. It won't link to a GitHub profile (no such user exists), but it satisfies the trailer's expected `Name <email>` format so git tooling treats the line as a real trailer.
+
+The PR body should NOT include a `Co-authored-by:` line — co-author trailers belong on commits, not on PR descriptions. The PR description summarises the change; commit messages carry attribution.
 
 ## Step 3 — Open the PR
 
