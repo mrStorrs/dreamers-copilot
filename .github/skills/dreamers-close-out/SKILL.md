@@ -162,11 +162,11 @@ After `gh pr create` succeeds via Step 6:
 2. **Surface improvements from this cycle's retro** — list each as one sentence and ask: *"Should I address any of these?"* Do not apply without user go-ahead.
 
 3. **Project state contradiction scan** (read durable surfaces, check for drift, surface — do NOT auto-apply):
-   - The just-opened PR description vs the umbrella plan (if umbrella mode was used).
+   - The just-opened PR description vs the plan files shipped (verify the PR accurately describes what shipped).
    - `git log origin/$DEFAULT -10 --format=%s` — recent merged work.
    - Project-level `.github/copilot-instructions.md` Echo-owned sections — does the codebase still match?
    - `.dreamers/improvements.md` — open items still relevant?
-   - Surviving Probe artifacts (if any from prior `/dreamers-full` runs — should be empty post-rewrite) — anything stale?
+   - `.dreamers/retros/` — any retro files for prior cycles that surface open improvements or stale items?
 
    Check for: tech stack drift, architecture pivots not reflected in instructions, milestone status drift, rule conflicts. **Propose all changes — do not auto-apply.** Exception: clearly stale entries pointing to nonexistent files can be removed without asking.
 

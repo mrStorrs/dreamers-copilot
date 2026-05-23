@@ -1,36 +1,48 @@
 # Plan Content Rules
 
-Use `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure for every sub-plan and standalone plan. Copy it, fill in the sections, remove any that don't apply.
+Every plan uses `~/.copilot/dreamers/templates/plan.md` as the starting structure. Copy it, fill in the sections, remove any that don't apply.
 
-Use `~/.copilot/dreamers/templates/plan-umbrella.md` as the starting structure for every umbrella plan (`plan-{slug}.md`).
+## Required fields
 
-## Umbrella plan (`plan-{slug}`) must include:
-- `# Plan — {Short Title} (Umbrella)`
-- Metadata: Owner, Date, Scope (repo/global), Status, Links
-- Sections: Summary, Problem/Motivation, Scope/Non-goals (shared), Sub-plans (ordered table: ID | File | Summary | Status), Constraints (shared), End-to-end Acceptance Criteria (verified after all sub-plans ship), Rollback/Observability strategy
-- Status field: Draft / Active / Completed / Superseded
+- `# Plan — {Short Title}`
+- Metadata: Owner, Date, Scope, Status (Draft / Active / Completed / Superseded), Branch (if applicable), User-testing-required (yes/no), Links
 
-## Sub-plan (`plan-{slug}-a`, `plan-{slug}-b`, …) must include:
-- `# Plan — {Short Title} ({Letter})`
-- Metadata: Owner, Date, Scope, Parent (link to umbrella), Depends-on (prior sub-plans if any), Status, User-testing-required (yes/no), Links
-- Sections: Summary, Scope/Non-goals, Constraints, Design Decisions, Acceptance Criteria, Test Cases for Probe, Rollback boundary, Risks/Mitigations
-- **User testing required:** `yes` if a human must manually verify before next sub-plan begins (UI flows, push notifications, payments, camera, permissions). `no` for purely backend, data-layer, or non-visible changes. When in doubt, default to `yes`.
-- Status field: Draft / Active / Completed / Superseded
+## Required sections
 
-### Design Decisions format (one entry per significant choice):
+- **Summary** — 1–2 sentences: what this plan delivers and why.
+- **Scope / Non-goals** — in-scope file list with one-line reasons; explicit non-goals.
+- **Constraints** — hard rules the implementation must not violate.
+- **Design Decisions** — one entry per significant choice, structured (see below).
+- **Acceptance Criteria** — numbered, measurable, verifiable.
+- **Test Cases** — Given/When/Then for non-trivial cases; one-liners acceptable for simple assertions.
+- **Rollback boundary** — which files can be reverted; cross-plan rollback implications if any.
+- **Risks / Mitigations** — risks identified, mitigation per risk.
+
+## Design Decisions format
+
+One entry per significant choice:
+
 - **Decision:** [what was chosen]
 - **Rationale:** [why — one sentence]
 - **Rejected:** [alternatives considered — one line each]
 
-## Standalone plan (atomic change, no decomposition needed):
-- `# Plan — {Short Title}`
-- Sections: Summary, Problem/Motivation, Scope/Non-goals, Constraints, Design Decisions, Acceptance Criteria, Test Cases for Probe, Risks/Mitigations, Rollback/Observability
-- Status field: Draft / Active / Completed / Superseded
+## User-testing required
+
+- `yes` if a human must manually verify before the cycle completes (UI flows, push notifications, payments, camera, permissions).
+- `no` for backend, data-layer, non-visible changes.
+- Default to `yes` when in doubt.
 
 ## Code in plans (mandatory)
-Plans must **not** include code snippets. Implementation is Forge's domain.
 
-**One exception:** interface and type contracts where the signature itself is the design decision (e.g., a new public API shape). In this case:
-- Include the interface/type signature only — no implementation bodies
-- State the file path and package where it will live
-- Keep it minimal: the contract, not the code
+Plans must **not** include code snippets. Implementation is the orchestrator's domain.
+
+**One exception:** interface and type contracts where the signature itself IS the design decision (e.g., a new public API shape). In this case:
+- Include the interface/type signature only — no implementation bodies.
+- State the file path and package where it will live.
+- Keep it minimal: the contract, not the code.
+
+## Multi-plan work
+
+When the scope of a piece of work is too large for one plan, the planning phase produces **multiple separate plans**, each independently shippable. There is no "umbrella" plan that groups them. Sequencing is by argument order at invocation: `/dreamers-full <plan-a> <plan-b> <plan-c>` runs them in that order on one branch.
+
+See `feature-decomposition.md` for when to produce one plan vs many.

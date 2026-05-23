@@ -34,7 +34,7 @@ The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/d
 
 | Skill | Purpose | Invokable standalone? |
 |-------|---------|----------------------|
-| `dreamers-full` | Orchestrator — wires plan → implement → close-out together. Owns branch setup, umbrella-vs-cohesive routing, inline drift check between sub-plans. | Yes — full pipeline |
+| `dreamers-full` | Orchestrator — accepts variadic plan paths; runs them in sequence (one cycle per plan) on one branch + one PR. Owns branch setup and inline drift check between plans. | Yes — full pipeline |
 | `dreamers-plan` | Phase 1 — three-phase planning conversation, writes plan files, hard-stops at the approval gate. | Yes — plan only |
 | `dreamers-plan-verify` | Inline drift check on a plan vs current code (no subagent). | Yes — sanity check before implement |
 | `dreamers-implement` | Phase 2 — per-cycle loop (tests-first → implement → run → coverage sweep → parallel review → optional user-test → commit). | Yes — with an approved plan |
@@ -78,7 +78,7 @@ The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/d
   │             6. apply combined findings inline; re-run tests
   │             7. optional user-test pause
   │             8. commit
-  │             ↳ loops per sub-plan in umbrella mode, with inline drift check between
+  │             ↳ when multiple plan paths are passed, loops once per plan in sequence with inline drift check between
   └─ Phase 3 → /dreamers-close-out    (improvements append + retro + final commit + push + PR)
                 ├─ /dreamers-docs     (spawns Echo)
                 └─ /dreamers-pr       (single push + PR creation)

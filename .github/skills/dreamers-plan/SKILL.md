@@ -18,9 +18,8 @@ Read these refs once at startup (use the `view` tool, full file — never `cat`/
 - `~/.copilot/dreamers/refs/planning-protocol.md` — three-phase conversation rules
 - `~/.copilot/dreamers/refs/citation-accuracy.md` — verify before citing existing artifacts
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations the plan must capture
-- `~/.copilot/dreamers/refs/feature-decomposition.md` — load only if umbrella mode is selected
-- `~/.copilot/dreamers/templates/plan-sub.md` — sub-plan / standalone template
-- `~/.copilot/dreamers/templates/plan-umbrella.md` — umbrella template
+- `~/.copilot/dreamers/refs/feature-decomposition.md` — when to write multiple plans
+- `~/.copilot/dreamers/templates/plan.md` — the single plan template
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, tech stack, test commands, source roots used by the component-usage check.
@@ -60,34 +59,36 @@ Present this proposal block in chat:
 
 Call `ask_user` with choice `["Approved"]` and allow inline freeform corrections in the same interaction. Treat any non-approval freeform response as corrections; revise and re-present until explicit approval.
 
-## Phase 1d — Decide plan shape
+## Phase 1d — Decide plan count (one or multiple)
 
-Single decision, default to cohesive:
+Default to ONE plan. If the work's scope is too large to land cleanly in a single cycle, produce MULTIPLE independent plans per `feature-decomposition.md` (each shippable on its own; sequenced via `/dreamers-full <plan-a> <plan-b> <plan-c>` at invocation time).
 
-- **Cohesive plan** (default) — one plan file, one PR. Use when the work can ship as a single coherent change.
-- **Umbrella + sub-plans** — multi-cycle, still one PR at end. Use ONLY when the work genuinely needs to land in stages (e.g., risky migration with backfill, breaking change requiring shim period, multi-screen feature that needs sub-plan boundaries for git-history hygiene).
+"Too large" thresholds:
+- More than ~300 lines of new/changed code across the touched files.
+- More than one data-layer change PLUS more than one UI surface in the same cycle.
+- Crosses natural seams (model → repository → viewmodel → screen → cloud function) such that one cycle's review would be unwieldy.
 
-State your choice in chat with a one-sentence rationale before proceeding.
+When splitting, each plan MUST be:
+- **Independently shippable** — can merge to main alone; no dependency on a later plan.
+- **Testable in isolation** — at least one machine-verifiable assertion per plan.
+- **Coherent scope** — touches at most one data-layer change + one UI surface (loose guideline).
+- **At a natural seam** — split at model/repo/viewmodel/screen/function boundary, not arbitrary line cuts.
 
-**If umbrella mode is selected, follow these decomposition criteria** (from `feature-decomposition.md`):
+State your decision in chat: "Producing ONE plan: …" or "Producing N plans: …" with a one-sentence rationale.
 
-- Each sub-plan can be merged to main independently — no sub-plan depends on an un-merged sibling.
-- A sub-plan touches at most one data-layer change + one UI surface.
-- Split at natural seams: model → repository → viewmodel → screen → cloud function. These are common split points.
-- If a sub-plan would take more than ~300 lines of new/changed code, split it further.
-- **Testability gate:** each sub-plan must have at least one machine-verifiable assertion that can be declared pass/fail in isolation, before the next sub-plan starts. If testability requires a sibling sub-plan not yet shipped, the split boundary is wrong — reslice.
-- **When NOT to decompose:** truly atomic changes (a single model field, a single bug fix, a single screen tweak) stay cohesive.
+There is no umbrella plan. Multiple plans are siblings — the user sequences them at `/dreamers-full` invocation.
 
 ## Phase 1e — Write plan file(s)
 
-Plan filenames follow `plan-{slug}.md` (umbrella or standalone) and `plan-{slug}-a.md`, `plan-{slug}-b.md`, … (sub-plans). Slug rules per `plan-rules.md`. Plans live in `./.dreamers/plans/`.
+Plan filenames are `plan-{slug}.md` (no `-a`/`-b`/`-c` suffix — that convention is gone). Slug rules per `plan-rules.md`. Plans live in `./.dreamers/plans/`.
 
-Use templates as starting structure:
-- `~/.copilot/dreamers/templates/plan-sub.md` — sub-plans and standalone (cohesive) plans
-- `~/.copilot/dreamers/templates/plan-umbrella.md` — umbrella plans only
+Use the template as starting structure:
+- `~/.copilot/dreamers/templates/plan.md` — every plan, one template.
+
+If producing multiple related plans, you may share a slug prefix purely for visual grouping (e.g., `plan-auth-login.md`, `plan-auth-logout.md`, `plan-auth-reset.md`). The shared prefix is cosmetic — each plan still stands alone.
 
 **Each plan must include:**
-- Metadata: Owner, Date, Scope, (Parent + Depends-on if sub-plan), Status (Draft/Active/Completed/Superseded), User-testing-required (yes/no), Links
+- Metadata: Owner, Date, Scope, Status (Draft/Active/Completed/Superseded), Branch, User-testing-required (yes/no), Links
 - Sections: Summary, Scope/Non-goals, Constraints, Design Decisions, Acceptance Criteria, Test Cases (Given/When/Then for non-trivial), Rollback boundary, Risks/Mitigations
 
 **Design Decisions format** (one entry per significant choice):
@@ -95,7 +96,7 @@ Use templates as starting structure:
 - **Rationale:** [why — one sentence]
 - **Rejected:** [alternatives considered — one line each]
 
-**User-testing required:** `yes` if a human must manually verify before the next cycle begins (UI flows, push notifications, payments, camera, permissions). `no` for backend, data-layer, non-visible. Default to `yes` when in doubt.
+**User-testing required:** `yes` if a human must manually verify before the cycle completes (UI flows, push notifications, payments, camera, permissions). `no` for backend, data-layer, non-visible. Default to `yes` when in doubt.
 
 **Plans MUST NOT include code snippets.** One exception: interface/type contracts where the signature itself is the design decision.
 
@@ -107,23 +108,25 @@ When a plan modifies a shared component, run `grep -r "ComponentName" .` (substi
 
 Before citing the behavior, structure, content, or API of any existing artifact in the plan — test file, test method, repository method, ViewModel property, Maestro YAML, UI assertion pattern, or any other code artifact — read and verify the source during this planning session. Claiming "method X does Y" or "test Z asserts W" without reading the file is a planning error; the plan becomes a liability when implementation builds against a wrong assumption.
 
-- **If the artifact cannot be read** (e.g., it belongs to a future sub-plan and doesn't exist yet): state explicitly in the plan that the citation is an assumption pending verification. Do not present it as confirmed fact.
+- **If the artifact cannot be read** (e.g., it belongs to a later plan in the same sequence and doesn't exist yet): state explicitly in the plan that the citation is an assumption pending verification. Do not present it as confirmed fact.
 - **Maestro `assertVisible` / `assertNotVisible` collision check** (mobile UI tests): when a plan specifies asserting on visible text, read the target screen's Compose code (or equivalent) and verify no OTHER persistent UI element (filter tabs, headers, navigation labels, bottom-bar items) shares that text. If a collision exists, the plan must specify a more-specific assertion string that matches only the intended element.
 
 ## Phase 1f — Plan quality self-check (mandatory)
 
-Before exiting Phase 1, verify the plan(s) against:
-- [ ] Filenames follow `plan-{slug}[-a..n].md`
-- [ ] Non-trivial features have an umbrella + sub-plans (not monolithic)
-- [ ] Every sub-plan / standalone has measurable Acceptance Criteria
-- [ ] Every sub-plan / standalone has Test Cases (Given/When/Then) for non-trivial cases
-- [ ] Every sub-plan / standalone has Design Decisions in the structured format
-- [ ] Every sub-plan / standalone has a Rollback Boundary
-- [ ] Every sub-plan / standalone has a Status field (Draft / Active / Completed / Superseded)
-- [ ] Plans reference only files/paths that exist (no invented paths)
-- [ ] Sub-plan splits at natural seams (not arbitrary line-count cuts)
-- [ ] No sub-plan's testability depends on a sibling not yet shipped
+Before exiting Phase 1, verify each plan against:
+- [ ] Filename follows `plan-{slug}.md`
+- [ ] Has measurable Acceptance Criteria
+- [ ] Has Test Cases (Given/When/Then) for non-trivial cases
+- [ ] Has Design Decisions in the structured format
+- [ ] Has a Rollback Boundary
+- [ ] Has a Status field (Draft / Active / Completed / Superseded)
+- [ ] References only files/paths that exist (no invented paths)
 - [ ] No code snippets (exception: interface/type contracts only)
+
+When multiple plans are produced, additionally verify:
+- [ ] Each plan is independently shippable (no plan depends on a later sibling)
+- [ ] Each plan has at least one machine-verifiable assertion testable in isolation
+- [ ] Splits fall at natural seams (not arbitrary line-count cuts)
 
 Any failure → halt and prompt the user with the specific item(s) that failed.
 
@@ -137,7 +140,7 @@ Present this block:
 **Plans written and ready for review:**
 
 - `path/to/plan-{slug}.md` — [one-line summary from plan Summary]
-- `path/to/plan-{slug}-a.md` — [one-line summary]  (if umbrella)
+- `path/to/plan-{related-slug}.md` — [one-line summary]  (if multiple plans were produced)
 - ...
 
 Please read the plan file(s) above. Reply "Approved — start implementation" to begin Phase 2, or describe any corrections needed.
@@ -154,14 +157,14 @@ Call `ask_user` with choice `["Approved — start implementation"]` and allow in
 
 When called **standalone**, exit on Phase 1g approval. Tell the user:
 - The approved plan file path(s).
-- Next step: invoke `/dreamers-implement <path-to-plan>` (cohesive) or `/dreamers-full` (umbrella — orchestrator handles the loop).
+- Next step: invoke `/dreamers-implement <path-to-plan>` (one plan) or `/dreamers-full <plan-a> <plan-b> ...` (multiple plans — orchestrator runs them in sequence).
 
 When called **from `/dreamers-full`**, exit on Phase 1g approval. Return in chat output:
-- Plan shape decision (cohesive vs umbrella).
+- Plan count (one or multiple) + sequence order if multiple.
 - Plan file path(s).
 - Approval status.
 
-The orchestrator reads this chat output and proceeds to Phase 2 (`/dreamers-implement` per cohesive or per sub-plan).
+The orchestrator reads this chat output and proceeds to Phase 2 (`/dreamers-implement` once for a single plan, or once per plan in the sequence).
 
 ## HARD STOP after Phase 1g
 
@@ -170,4 +173,4 @@ When plan files are written and the approval gate clears:
 - Do NOT delegate to any implementation agent or skill.
 - Do NOT make any code edits beyond plan files.
 
-If the user asks "start implementing" after approval, tell them to invoke `/dreamers-implement` (cohesive) or `/dreamers-full` (umbrella). This skill's lane is planning only.
+If the user asks "start implementing" after approval, tell them to invoke `/dreamers-implement <plan>` (one plan) or `/dreamers-full <plan-a> <plan-b> ...` (multiple plans). This skill's lane is planning only.

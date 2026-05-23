@@ -25,7 +25,7 @@ Cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dream
 
 Pulled from `comment-rules.md`. The orchestrator now writes comments inline, so these rules apply directly to every code edit:
 
-- **No plan/ticket references in source.** Never mention plan files, milestone names (e.g. `D25`, `plan-3`), ticket numbers, agent names, or sub-plan letters in source code (production OR test).
+- **No plan/ticket references in source.** Never mention plan files, milestone names (e.g. `D25`, `plan-3`), ticket numbers, or agent names in source code (production OR test).
 - **No separator comments.** Never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers.
 - **No spec rationalization comments.** Implement cleanly; let review judge.
 - **No redundant JSDoc/KDoc** that only repeats the function signature.
@@ -82,9 +82,9 @@ Pulled from `logging-standards.md`. Key rules:
 ## Git discipline
 
 - Stage with `git add` as work progresses across all phases. Never commit mid-cycle.
-- **One commit per cycle** (cohesive plan = one commit total; umbrella = one commit per sub-plan).
-- Commit message follows `.github/instructions/git.instructions.md` (if present) or the conventional-commits style used by recent commits on the default branch. Body MUST include `Plan: plan-{slug}` (or `Plan: plan-{slug}-a`).
-- **Push exactly once**, immediately before `gh pr create` at final close-out. Never push between sub-plans.
+- **One commit per cycle = one commit per plan.** Multi-plan milestones produce N commits on the branch (one per plan in the sequence).
+- Commit message follows `.github/instructions/git.instructions.md` (if present) or the conventional-commits style used by recent commits on the default branch. Body MUST include `Plan: plan-{slug}`.
+- **Push exactly once**, immediately before `gh pr create` at final close-out. Never push between cycles, never between plans.
 
 ---
 

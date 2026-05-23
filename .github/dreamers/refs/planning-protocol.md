@@ -33,9 +33,9 @@ If corrections are given, revise the proposal and re-present it. Repeat until ap
 
 ## Phase 3 — Decompose
 
-Only after explicit user approval: write the plan file(s) per the naming rules in `refs/plan-rules.md`, content rules in `refs/plan-content.md`, and decomposition rules in `refs/feature-decomposition.md`.
+Only after explicit user approval: write the plan file(s) per the naming rules in `refs/plan-rules.md`, content rules in `refs/plan-content.md`, and multi-plan rules in `refs/feature-decomposition.md`.
 
-Use the template at `~/.copilot/dreamers/templates/plan-sub.md` as the starting structure for every sub-plan and standalone plan. Use the template at `~/.copilot/dreamers/templates/plan-umbrella.md` as the starting structure for every umbrella plan (`plan-{slug}.md`).
+Use the template at `~/.copilot/dreamers/templates/plan.md` as the starting structure for every plan. If the work warrants multiple plans, produce multiple files (each `plan-{slug}.md`); the user sequences them at invocation via `/dreamers-full <plan-a> <plan-b> <plan-c>`.
 
 **Component usage check (mandatory):** When a plan modifies a shared component, run `grep -r "ComponentName" .` (substitute the project's actual source root from `.github/copilot-instructions.md`) before finalizing the scope file list — include all callers in scope to avoid build failures from missing prop updates.
 

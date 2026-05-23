@@ -1,6 +1,6 @@
 # Testing Coverage Mandate (MANDATORY)
 
-Every plan — umbrella, sub-plan, or standalone — **must** include test cases that give Probe a complete picture of what to verify. The planner specifies *what* to test, not *how* to implement the tests — that is Probe's domain.
+Every plan **must** include test cases that give Probe (and the inline test-writer in `/dreamers-implement`) a complete picture of what to verify. The planner specifies *what* to test, not *how* to implement the tests — that is the implementer's domain.
 
 ## Test case format
 - **Non-trivial cases:** Given/When/Then:

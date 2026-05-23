@@ -1,13 +1,20 @@
 ---
 name: dreamers-full
-description: 'Full Dreamers pipeline orchestrator. Delegates to `/dreamers-plan` (Phase 1), `/dreamers-implement` (Phase 2 per cycle), `/dreamers-close-out` (Phase 3). Owns branch setup, umbrella-vs-cohesive routing, and the per-sub-plan loop with inline drift check. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'Full Dreamers pipeline orchestrator. Delegates to `/dreamers-plan` (Phase 1), `/dreamers-implement` (Phase 2, one cycle per plan), `/dreamers-close-out` (Phase 3). Accepts variadic plan paths to run multiple plans in sequence on one branch + one PR. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+argument-hint: '[plan-path-a] [plan-path-b] [plan-path-c] ... — variadic; omit to run /dreamers-plan first'
 ---
 
 ## What this skill does
 
-A thin orchestrator that wires the three pipeline phases together. The orchestrator owns only cross-phase concerns: branch setup at Phase 2 entry, umbrella-vs-cohesive routing after Phase 1, the per-sub-plan loop with inline drift check between sub-plans (umbrella mode), and sequencing handoff from one sub-skill to the next.
+A thin orchestrator that wires the three pipeline phases together. Owns cross-phase concerns: branch setup, sequential plan loop, inline drift check between plans, sequencing handoff to sub-skills.
 
 Each phase delegates to a sub-skill that owns the actual work. The orchestrator does NOT embed implementation / test / docs / git rules — those live in the sub-skills, which cite `~/.copilot/dreamers/refs/orchestrator-discipline.md`.
+
+## Invocation modes
+
+**Mode 1 — no plan(s) yet:** `/dreamers-full <task description>` — orchestrator runs `/dreamers-plan` first; the planning conversation produces one or more plan files; user approves; orchestrator then runs Phase 2 for each plan in the order they were produced.
+
+**Mode 2 — plans already exist:** `/dreamers-full path/to/plan-a.md path/to/plan-b.md path/to/plan-c.md` — orchestrator skips Phase 1 planning (plans are already approved) and runs Phase 2 directly for each plan in argument order. One plan path = single-plan mode; multiple paths = sequential multi-plan mode.
 
 ## Pre-flight reads
 
@@ -27,28 +34,32 @@ $ARGUMENTS
 
 ---
 
-## Phase 1 — Planning (delegated)
+## Phase 1 — Planning (delegated; skipped in Mode 2)
+
+If `$ARGUMENTS` contains a task description (no plan paths supplied yet):
 
 Invoke `/dreamers-plan` with the user's task description forwarded as the argument.
 
-`/dreamers-plan` runs the three-phase requirements conversation (Hash-it-out → Approval → Decompose), writes plan files to `.dreamers/plans/`, and exits at the implementation-start approval gate (Phase 1g). It does NOT proceed to implementation.
+`/dreamers-plan` runs the three-phase requirements conversation (Hash-it-out → Approval → Decompose), writes one or more plan files to `.dreamers/plans/`, and exits at the implementation-start approval gate (Phase 1g). It does NOT proceed to implementation.
 
 From `/dreamers-plan`'s chat output, capture:
-- **Plan shape decision** — cohesive or umbrella.
+- **Plan count + sequence order** — one plan or multiple (and the order they should run if multiple).
 - **Plan file path(s)** — exact paths under `.dreamers/plans/`.
 - **Approval status** — confirmed at Phase 1g.
 
 If the user rejects at Phase 1c or 1g, `/dreamers-plan` loops until approved. The orchestrator does not bypass.
 
-After `/dreamers-plan` exits successfully, proceed to Phase 2.
+If `$ARGUMENTS` contains plan paths directly (Mode 2): skip Phase 1; treat the paths as the approved plan list in the order given.
+
+After Phase 1 (or its skip), proceed to Phase 2.
 
 ---
 
-## Phase 2 — Implementation (orchestrated loop)
+## Phase 2 — Implementation (orchestrated sequential loop)
 
 ### MANDATORY first actions (once at Phase 2 entry, before any cycle)
 
-1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (This is the orchestrator's responsibility — `/dreamers-implement` skips this when called from the orchestrator to avoid re-reading per sub-plan.)
+1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (This is the orchestrator's responsibility — `/dreamers-implement` skips this when called from the orchestrator to avoid re-reading per plan.)
 
 2. **Branch setup (inline, per `git-workflow.md`):**
    - Detect default branch (canonical two-step):
@@ -63,32 +74,31 @@ After `/dreamers-plan` exits successfully, proceed to Phase 2.
 
 3. **Branch identity check** — `git log --oneline -3`. Confirm branch + recent commits match the expected feature.
 
-### Per-cycle loop
+### Sequential plan loop
 
-The loop body is one invocation of `/dreamers-implement` per plan / sub-plan. The orchestrator does NOT run the per-cycle steps directly — `/dreamers-implement` owns the loop (failing tests → implement → run tests → coverage sweep → Sentinel review → optional user-test → commit).
+For each plan in the approved list (argument order from Mode 2, or order produced by Phase 1):
 
-**Cohesive mode (one cycle total):**
-- Invoke `/dreamers-implement <path-to-plan>` once with the cohesive plan file path.
-- Wait for it to complete (one commit lands on the branch).
-- Proceed to Phase 3.
+1. **Invoke `/dreamers-implement <path-to-plan>`.**
+2. Wait for it to complete (one commit lands on the branch).
+3. **If more plans remain — inline drift check before the next plan.** Re-read the next plan and ask explicitly:
+   - Does it still apply against the codebase as it now stands?
+   - Did anything in the just-completed plan change file paths, function signatures, or data shapes the next plan references?
+   - Are the next plan's Acceptance Criteria still measurable against the current code?
+4. **If yes to all three** → loop to step 1 with the next plan.
+5. **If any drift detected** → surface drift items to the user. Options:
+   - User revises the next plan inline (re-run quality self-check from `/dreamers-plan` Phase 1f mentally, then continue).
+   - User skips the affected plan (proceed without it; the user accepts the consequences).
+   - User halts the orchestrator entirely for manual recovery.
 
-**Umbrella mode (one cycle per sub-plan):**
-- For each sub-plan file in order (`plan-{slug}-a.md`, `plan-{slug}-b.md`, …):
-  1. Invoke `/dreamers-implement <path-to-sub-plan>`.
-  2. Wait for it to complete (one commit lands on the branch).
-  3. **Inline drift check before next sub-plan.** Re-read the NEXT sub-plan file and ask explicitly:
-     - Does it still apply against the codebase as it now stands?
-     - Did anything in this just-completed sub-plan change file paths, function signatures, or data shapes the next sub-plan references?
-     - Are the next sub-plan's Acceptance Criteria still measurable against the current code?
-  4. **If yes to all three** → loop to step 1 with the next sub-plan.
-  5. **If any drift detected** → surface drift items to the user. Either:
-     - User revises the next sub-plan inline (then re-run Phase 1f quality check, then loop), OR
-     - User halts the orchestrator for manual recovery.
-- After the last sub-plan's cycle completes (and no remaining sub-plans), proceed to Phase 3.
+After the last plan's cycle completes, proceed to Phase 3.
+
+### Single-plan mode
+
+If only one plan path was provided (Mode 2 with one path, or Mode 1 producing one plan), the sequential loop runs exactly once. No drift check (no next plan). Proceed to Phase 3.
 
 ### Push discipline (no push in Phase 2)
 
-Neither the orchestrator nor `/dreamers-implement` pushes during Phase 2. Each sub-plan / cycle ends with a local commit. Push happens once in Phase 3 via `/dreamers-pr`.
+Neither the orchestrator nor `/dreamers-implement` pushes during Phase 2. Each plan's cycle ends with a local commit. Push happens once in Phase 3 via `/dreamers-pr`.
 
 ---
 
@@ -96,10 +106,10 @@ Neither the orchestrator nor `/dreamers-implement` pushes during Phase 2. Each s
 
 Invoke `/dreamers-close-out` with the inputs captured from Phases 1 and 2:
 
-- **Plan file paths** — list shipped this milestone (cohesive: 1 file; umbrella: umbrella + all sub-plans).
+- **Plan file paths** — full list of plans shipped this milestone.
 - **Branch name** — current feature branch (`git branch --show-current`).
 - **Default branch name** — `$DEFAULT` from Phase 2 first actions.
-- **Sentinel summary string** — concatenated chat outputs from Sentinel across all cycles. Pull from the orchestrator's captured per-cycle summaries.
+- **Sentinel summary string** — concatenated chat outputs from Sentinel + Probe + Hone across all cycles. Pull from the orchestrator's captured per-cycle summaries.
 - **Issue reference** — if the originating user task referenced a GitHub issue number / URL, pass it.
 
 `/dreamers-close-out` runs the 8-step close-out sequence (improvements append → docs via `/dreamers-docs` → retro → final commit → user approval gate → push + PR via `/dreamers-pr` → plan archive → post-PR discipline).
@@ -114,9 +124,9 @@ After `/dreamers-close-out` returns the PR URL, the milestone is complete.
 
 Return in chat output:
 - PR URL.
-- Plan files shipped.
-- Per-cycle commits (hashes + summaries) across all sub-plans.
-- Final Sentinel summary (concatenated across cycles).
+- Plan files shipped (in order).
+- Per-plan commits (hashes + summaries).
+- Final reviewer summary (concatenated across cycles).
 - Open improvements surfaced by `/dreamers-close-out`'s Step 8 post-PR scan.
 
 No further work after Phase 3 completes. Post-PR changes (review comments, CI fixes) are user-driven — the orchestrator does not auto-commit per `close-out.md`.
@@ -128,20 +138,20 @@ No further work after Phase 3 completes. Post-PR changes (review comments, CI fi
 If any sub-skill returns a `Blocked` status or fails:
 - Surface the block to the user with the sub-skill's chat output.
 - Do not proceed to subsequent phases until the block is resolved.
-- Common cases: `/dreamers-plan` Phase 1f quality check failure (plan revision needed); `/dreamers-implement` Sentinel `Blocked` (plan AC missing); `/dreamers-pr` push rejected (non-fast-forward).
+- Common cases: `/dreamers-plan` Phase 1f quality check failure (plan revision needed); `/dreamers-implement` reviewer `Blocked` (plan AC missing); `/dreamers-pr` push rejected (non-fast-forward).
 - The orchestrator does not auto-retry; it relies on the sub-skill's own recovery path or user input.
 
-If a subagent spawned by a sub-skill (Sentinel or Echo) crashes mid-run, the sub-skill handles recovery per `agent-recovery.md`. The orchestrator does not intervene unless the sub-skill itself fails.
+If a subagent spawned by a sub-skill (Sentinel / Probe / Hone / Echo) crashes mid-run, the sub-skill handles recovery per `agent-recovery.md`. The orchestrator does not intervene unless the sub-skill itself fails.
 
 ---
 
 ## Subagent inventory (in this skill)
 
 - **None directly.** The orchestrator does not spawn agents.
-- `/dreamers-implement` spawns Sentinel (per cycle).
+- `/dreamers-implement` spawns Sentinel + Probe + Hone in parallel (per cycle).
 - `/dreamers-close-out` → `/dreamers-docs` spawns Echo (once per milestone).
 
-Two agent spawns per milestone in cohesive mode; N+1 in umbrella mode where N = number of sub-plans (each sub-plan spawns Sentinel once, plus the single Echo at close-out).
+Per milestone: (3 × N) reviewer spawns + 1 Echo spawn, where N = number of plans in the sequence.
 
 ## Push discipline (single source of truth)
 

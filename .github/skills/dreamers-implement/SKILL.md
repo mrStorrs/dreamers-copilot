@@ -17,7 +17,7 @@ Takes an approved plan file as input and runs one implementation cycle:
 7. User-testing pause (if plan requires)
 8. Commit the cycle
 
-**One cycle per invocation.** For a cohesive plan, one invocation = one commit = the whole feature. For an umbrella plan, the user (or `/dreamers-full` orchestrator) invokes this skill once per sub-plan, looping.
+**One cycle per invocation.** One plan = one invocation = one commit. For multi-plan work, the user (or `/dreamers-full` orchestrator) invokes this skill once per plan in the sequence.
 
 This skill does NOT push, does NOT open a PR, does NOT update docs. That's `/dreamers-close-out`'s job.
 
@@ -46,28 +46,9 @@ $ARGUMENTS
 
 ---
 
-## Umbrella vs cohesive — input handling
-
-Inspect the plan file passed in:
-
-- **Standalone or sub-plan** (`plan-{slug}.md` cohesive, or `plan-{slug}-a.md` style) → proceed to MANDATORY first actions.
-- **Umbrella** (`plan-{slug}.md` with a `## Sub-plans` table and no Acceptance Criteria of its own) → halt. Tell the user:
-
-  ```
-  This is an umbrella plan. /dreamers-implement processes one plan/sub-plan per invocation.
-
-  Options:
-  - Invoke `/dreamers-full` to run the umbrella loop end-to-end.
-  - Or invoke `/dreamers-implement <path-to-sub-plan>` once per sub-plan, in order, with inline drift check between.
-  ```
-
-  Exit cleanly. No further work in this skill.
-
----
-
 ## MANDATORY first actions (in order, once at skill entry)
 
-1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (Skip if called from `/dreamers-full` — orchestrator handles this at Phase 2 entry, not per sub-plan.)
+1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (Skip if called from `/dreamers-full` — orchestrator handles this at Phase 2 entry, not per plan.)
 
 2. **Branch setup (inline, per `git-workflow.md`):** (Skip if called from `/dreamers-full` — orchestrator handles this at Phase 2 entry.)
    - Detect default branch (canonical two-step):
@@ -205,7 +186,7 @@ The `request_info` call MUST include every item below. Do not abbreviate — the
 
 ### Step 8 — Commit the cycle
 
-Run `git status` to confirm staged content. Run `git commit` with a message following the project's commit-message style (see `.github/instructions/git.instructions.md` if present). Message body MUST include `Plan: plan-{slug}` (or `Plan: plan-{slug}-a` for sub-plans).
+Run `git status` to confirm staged content. Run `git commit` with a message following the project's commit-message style (see `.github/instructions/git.instructions.md` if present). Message body MUST include `Plan: plan-{slug}`.
 
 One commit per cycle. Do not push.
 
@@ -217,7 +198,7 @@ When called **standalone**, exit on Step 8 commit. Tell the user:
 - Commit hash + summary.
 - AC coverage matrix.
 - Reviewer status (Sentinel + Probe + Hone).
-- Next step (their choice): more cycles (next sub-plan), or `/dreamers-close-out` if the feature is complete.
+- Next step (their choice): more cycles (next plan in sequence, via another `/dreamers-implement` invocation or by running `/dreamers-full` with multiple plan paths), or `/dreamers-close-out` if all plans are shipped.
 
 When called **from `/dreamers-full`**, exit on Step 8 commit. Return in chat output:
 - Commit hash.
@@ -225,7 +206,7 @@ When called **from `/dreamers-full`**, exit on Step 8 commit. Return in chat out
 - Reviewer chat output summary (Sentinel + Probe + Hone combined, for the orchestrator to concatenate across cycles into the Echo prompt).
 - User-testing notes (if applicable).
 
-The orchestrator reads this chat output, runs the inline drift check (if more sub-plans remain), and either loops to the next sub-plan or proceeds to Phase 3.
+The orchestrator reads this chat output, runs the inline drift check (if more plans remain in the sequence), and either loops to the next plan or proceeds to Phase 3.
 
 ## Push discipline
 

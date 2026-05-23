@@ -160,7 +160,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "Full Dreamers pipeline orchestrator. Delegates Phase 1 to /dreamers-plan, Phase 2 to /dreamers-implement (looped per sub-plan for umbrella mode), Phase 3 to /dreamers-close-out. Owns branch setup, umbrella-vs-cohesive routing, and the inline drift check between sub-plans.",
+      "description": "Full Dreamers pipeline orchestrator. Accepts variadic plan paths (one or many). Delegates Phase 1 to /dreamers-plan (when no plan paths supplied), Phase 2 to /dreamers-implement (one cycle per plan in sequence), Phase 3 to /dreamers-close-out. Owns branch setup and the inline drift check between plans.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -452,7 +452,7 @@
       "type": "folder",
       "slug": "dreamers-templates",
       "name": "Dreamers Templates",
-      "description": "Shared templates used by Dreamers skills (plan umbrella/sub, GitHub issue, PR description, project brief, logging standards, etc.).",
+      "description": "Shared templates used by Dreamers skills (plan, GitHub issue, PR description, project brief, logging standards, etc.).",
       "sourcePath": ".github/dreamers/templates",
       "destSubpath": "dreamers/templates"
     },
