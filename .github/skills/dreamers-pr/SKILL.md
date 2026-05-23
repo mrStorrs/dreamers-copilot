@@ -126,9 +126,9 @@ Co-authored-by: The Dreamers System <noreply@dreamers.local>
 ```
 
 Notes:
-- The key is `Co-authored-by:` (lowercase with hyphens, ending in `by:`) — this is git's standard trailer key for co-authors, required so that `git interpret-trailers` and GitHub recognize it.
-- The author name is **`The Dreamers System`**. Do NOT use any specific AI model name (e.g., `Claude`, `Claude Opus`, `GPT-5.4`, `claude-opus-4-7`). The Dreamers system as a whole is the contributor; specific model implementations are detail that ages poorly. If a tool's default commit-attribution template includes a model name, override it.
-- The email `<noreply@dreamers.local>` is a placeholder. It won't link to a GitHub profile (no such user exists), but it satisfies the trailer's expected `Name <email>` format so git tooling treats the line as a real trailer.
+- Key must be exactly `Co-authored-by:` (git's standard trailer key) so `git interpret-trailers` and GitHub recognize the line.
+- Author name is always `The Dreamers System` — never a specific model name. The system is the contributor; model identity ages poorly. Override any default commit-attribution template that injects a model name.
+- The `<noreply@dreamers.local>` email is a placeholder — it won't link to a GitHub profile, but it satisfies the trailer's required `Name <email>` format.
 
 The PR body should NOT include a `Co-authored-by:` line — co-author trailers belong on commits, not on PR descriptions. The PR description summarises the change; commit messages carry attribution.
 
@@ -173,6 +173,3 @@ When called **standalone**, tell the user:
 - The PR URL.
 - Reminder of post-PR discipline (no auto-commit, ask before pushing additional changes) — which lives in `/dreamers-close-out` if they want to invoke that wrapper; otherwise the user follows the discipline manually.
 
-## Push discipline (reiteration)
-
-This skill is the SINGLE point where `git push` runs in the whole milestone. After this skill exits, any further changes (review-comment fixes, CI failures) must be committed + pushed only with explicit user approval per `close-out.md` post-PR rules.

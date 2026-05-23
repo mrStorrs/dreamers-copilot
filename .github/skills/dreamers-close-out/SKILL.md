@@ -118,8 +118,8 @@ Write `.dreamers/retros/retro-d<N>-<name>.md` per `close-out.md`. Required secti
 - **Friction points** — weak output, rework, places the inline discipline slipped.
 - **Proposed improvements** — specific, actionable edits to the skill set, agent files, or refs. Reference the exact section to change and why.
 
-Additionally, write inline summaries (these replace the Probe-era artifacts):
-- **AC coverage matrix** — which test covers which AC across all cycles.
+Additionally, write inline summaries:
+- **AC coverage matrix** — which test covers which AC across all cycles. Roll up from each cycle's `/dreamers-implement` chat output (captured by the orchestrator); concatenate per-cycle entries into one matrix.
 - **Bugs found during user-testing** (if any) — what was found and how it was fixed.
 - **Regression analysis** (if the originating task was a user-reported bug) — three questions per `orchestrator-discipline.md`: why wasn't it caught, what test was added, what else might be missing.
 
@@ -157,13 +157,17 @@ Final commit: <hash + message, or "no final commit — nothing pending">
 
 Issue reference: <number/URL, or "none">
 
-Reply "Approved — push + PR" to proceed, or describe corrections needed.
+Options:
+- Approved — push + PR (proceed to Step 6)
+- Halt for now (stop here; resume manually later — partial state preserved on the branch, no push)
+- Freeform corrections (treated as not-yet-approved)
 ```
 
-Call `request_information` with choice `["Approved — push + PR"]` and allow inline freeform corrections.
+Call `request_information` with choices `["Approved — push + PR", "Halt for now", "Other"]`. Freeform corrections are accepted via Other.
 
-- Approval → proceed to Step 6.
-- Corrections → apply the corrections inline, re-run any affected steps (e.g. re-invoke `/dreamers-docs` if Echo missed something), and re-present this gate. Loop until approved.
+- Approved → proceed to Step 6.
+- Halt for now → output "Resume by re-invoking `/dreamers-close-out`. Branch state is preserved on `<branch-name>`." and stop. No push.
+- Corrections → apply inline, re-run any affected steps (e.g. re-invoke `/dreamers-docs` if Echo missed something), and re-present this gate. Loop until approved.
 
 This is the LAST point where the user can halt before the PR goes live.
 
@@ -181,7 +185,7 @@ Wait for `/dreamers-pr` to signal completion. Capture the PR URL.
 
 ## Step 7 — Plan archive
 
-For any merged prior PR's plan file in `.dreamers/plans/` (NOT the current cycle's plan — that stays until ITS PR merges):
+For any plan file in `.dreamers/plans/` whose PR is already merged (excluding the PR just opened in Step 6, which is unmerged):
 
 - Verify the prior PR is merged: `gh pr view <number> --json state -q .state` returns `MERGED`.
 - `mv` the plan file to `.dreamers/plans/archive/` (create dir if needed). Never delete.
@@ -234,5 +238,5 @@ The continuation prompt (whether to proceed to the next plan or halt) fires in `
 
 ## Push discipline (single source of truth)
 
-- **FULL mode (ATOMIC):** `git push` happens EXACTLY ONCE per milestone — Step 6 (`/dreamers-pr`'s push). Step 8.4 push only fires if the user explicitly approves a post-PR commit; that is a SEPARATE event from the milestone's single push.
-- **LIGHT mode (INCREMENTAL):** `git push` happens once per light close-out invocation — the equivalent of Step 6 for that plan only. No Step 8 post-PR discipline runs in LIGHT mode.
+- **FULL mode:** `git push` happens EXACTLY ONCE per close-out invocation — Step 6 (`/dreamers-pr`'s push). This applies whether FULL is running as a milestone-end close-out for an ATOMIC strategy OR as the FINAL plan's close-out in an INCREMENTAL strategy. Step 8.4 post-PR push only fires if the user explicitly approves a post-PR commit; that is a SEPARATE event from the close-out's single push.
+- **LIGHT mode:** `git push` happens once per light close-out invocation — the equivalent of Step 6 for one plan. No Step 8 post-PR discipline runs in LIGHT mode.

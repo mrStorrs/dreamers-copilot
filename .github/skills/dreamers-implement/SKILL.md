@@ -23,7 +23,7 @@ This skill does NOT push, does NOT open a PR, does NOT update docs. That's `/dre
 
 ## Pre-flight reads
 
-Read these refs once at startup (use the `view` tool, full file — never `cat`/`head`/`tail`/`Select-String`, which truncate):
+Read these refs once at startup (full file, no truncation):
 
 - `~/.copilot/dreamers/refs/orchestrator-discipline.md` — the shared discipline (implementation + comment + logging + test-writing + git rules)
 - `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, staging, push discipline
@@ -38,7 +38,7 @@ Also check for project-level files:
 - `.github/instructions/build.instructions.md` (root, if present) — user-testing build/distribute playbook.
 - `.github/instructions/git.instructions.md` (root, if present) — commit message style.
 
-Read the plan file passed as `$ARGUMENTS`. If no plan path is provided, halt and ask the user — do not invent or skip the plan.
+If no plan path is provided in `$ARGUMENTS`, halt and ask the user — do not invent or skip the plan. (Plan content is read in Step 1, AFTER the MANDATORY first actions below establish anchored remote state.)
 
 Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
 
@@ -84,20 +84,22 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 
 ---
 
-## Subagent failure recovery (applies to Sentinel invocation below)
+## Subagent failure recovery (applies to any reviewer invocation below)
 
-Per `agent-recovery.md`: if Sentinel hits a rate limit, crashes, or times out mid-run:
+Per `agent-recovery.md`: if Sentinel, Probe, or Hone hits a rate limit, crashes, or times out mid-run:
 
-1. Read whatever the agent managed to write before failing (chat output, any staged files via `git status`).
-2. Determine which checks/fixes completed and which remain.
-3. Complete remaining work inline (this skill has Read/Write/Edit/Bash) OR re-spawn Sentinel scoped to only the remaining work.
+1. Read whatever the failing reviewer managed to write before failing (chat output, any staged files via `git status`).
+2. Determine which checks completed and which remain.
+3. Complete remaining work inline (this skill has Read/Write/Edit/Bash) OR re-spawn the affected reviewer scoped to only the remaining work. The other two reviewers' outputs are unaffected — do not re-spawn them.
 4. Do not re-run steps that already completed — build on partial progress.
 
 ---
 
 ## Per-cycle loop (one invocation of this skill = one cycle)
 
-### Step 1 — Write failing tests
+### Step 1 — Read plan + write failing tests
+
+Read the plan file passed as `$ARGUMENTS` now (deferred from pre-flight so the anchor-to-remote-truth step above runs first against stale-prone `.dreamers/` content).
 
 Read the plan's Acceptance Criteria and Test Cases (Given/When/Then). For each AC, write at least one test that would verify it. Cover the Given/When/Then scenarios as written.
 
@@ -135,7 +137,7 @@ Any gap → write the test now. Re-run the test command. Loop until all checklis
 
 ### Step 5 — Parallel review (Sentinel + Probe + Hone)
 
-Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. None of them edits files.
+Spawn **three reviewers in parallel** in a single batched tool call (whatever the runtime surfaces for parallel agent spawning). All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. None of them edits files.
 
 Common prompt context for all three:
 - Plan file path
@@ -160,8 +162,6 @@ Per-reviewer prompt addition:
 - Lens: simplicity / over-engineering / redundancy / architectural quality
 - Out of scope: correctness/security/maintainability (Sentinel's lane), test coverage (Probe's lane)
 - Return: structured findings per the spec
-
-Wait for all three to signal completion. Read all three chat outputs.
 
 ### Step 6 — Apply findings inline (orchestrator-as-fixer)
 

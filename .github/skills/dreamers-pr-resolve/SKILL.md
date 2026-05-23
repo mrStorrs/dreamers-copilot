@@ -1,6 +1,7 @@
 ---
 name: dreamers-pr-resolve
 description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel + Probe + Hone in parallel for review of accepted changes, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
 Resolve unresolved PR review comments. All work inline except a parallel review pass (Sentinel + Probe + Hone) over the accepted changes.
@@ -30,7 +31,7 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 
 ## Step 1 — Discover open PRs
 
-Run `gh pr list --state open` to find all live PRs. If a specific PR is provided in the arguments, use that one. If multiple are open and none is specified, ask the user which PR to target before proceeding.
+Run `gh pr list --state open` to find all live PRs. If a specific PR is provided in `$ARGUMENTS`, use that one. If multiple are open and none is specified, call `request_information` with each open PR as a choice (format: `#NUM — <title>`) plus `"Other"` for freeform input. If exactly one is open, use it without prompting.
 
 ## Step 2 — Pull unresolved review threads (GraphQL only)
 
@@ -66,7 +67,7 @@ If no threads were accepted, skip to Step 6.
 
 ## Step 5 — Parallel review of accepted changes (Sentinel + Probe + Hone)
 
-Spawn **three reviewers in parallel** via a single tool-call containing 3 Agent sub-tool-uses. All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. Scope is restricted to ONLY the files touched by accepted threads.
+Spawn **three reviewers in parallel** in a single batched tool call (whatever the runtime surfaces for parallel agent spawning). All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. Scope is restricted to ONLY the files touched by accepted threads.
 
 Common prompt context for all three:
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
@@ -82,7 +83,7 @@ Per-reviewer prompt addition:
 
 **Hone** (`agent_type: "hone"`, `mode: "sync"`) — simplicity lens (did the fixes introduce over-engineering or redundancy?).
 
-Wait for all three to signal completion. Apply findings inline per the orchestrator-as-fixer behavior:
+Apply findings inline per the orchestrator-as-fixer behavior:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness > simplicity).
@@ -105,11 +106,9 @@ git commit -m "fix: address PR feedback"
 
 Use a single commit covering all the PR-feedback fixes. Commit message per `.github/instructions/git.instructions.md` if present.
 
-Per `close-out.md` post-PR discipline: **do not push yet.** Ask the user before pushing:
+Per `close-out.md` post-PR discipline: **do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count).
 
-> *I have a commit ready addressing the accepted PR comments. Should I push it to the PR?*
-
-Only push after explicit user approval: `git push`.
+Only push after explicit `Push to PR` approval: `git push`. On `Hold` → stop with status; the commit stays on the branch for the user to push manually.
 
 ## Step 7 — Resolve accepted threads via gh api
 

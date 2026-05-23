@@ -1,13 +1,14 @@
 ---
 name: dreamers-cleanup-comments-branch
-description: 'Branch-scoped comment cleanup. Same as /dreamers-cleanup-comments but scoped to the current feature-branch diff. For use inside parent pipelines as a pre-PR comment sweep. Triggers: /dreamers-cleanup-comments-branch, comment cleanup branch scope, pre-PR comment sweep.'
+description: 'Branch-scoped comment cleanup. Same as /dreamers-cleanup-comments but scoped to the current feature-branch diff. Standalone pre-PR comment sweep. Triggers: /dreamers-cleanup-comments-branch, comment cleanup branch scope, pre-PR comment sweep.'
+argument-hint: '(no args; scope is automatic from the current branch diff)'
 ---
 
 ## What this skill does
 
 Branch-scoped variant of `/dreamers-cleanup-comments`. Audits and cleans comment-rules violations on the feature-branch diff only (files in `git diff origin/<DEFAULT>...HEAD --name-only`). Identical phase structure: audit → propose → user approval → apply inline → optional Sentinel review → commit.
 
-Intended for use inside larger pipelines (e.g., between `/dreamers-implement` cycles and `/dreamers-close-out`) when the user wants a comment sweep limited to the changes this branch introduced.
+Standalone utility — invoke directly when you want a comment sweep limited to the changes this branch introduced (typical use: pre-PR polish on a feature branch).
 
 ## Pre-flight reads
 
@@ -64,7 +65,7 @@ Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch
 
 ## When this skill is the right tool
 
-- Mid-pipeline sweep — between implementation and close-out, when you want comments tidied without re-running the full review phase.
 - Pre-PR polish — after a feature is done, before opening the PR, when you want the branch's comments inspected before they ship.
+- Targeted clean-up scoped to the changes a single feature branch introduced, without auditing the entire project.
 
 For project-wide cleanup (not branch-scoped), use `/dreamers-cleanup-comments`.

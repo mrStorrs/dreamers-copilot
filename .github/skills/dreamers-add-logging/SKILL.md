@@ -14,7 +14,7 @@ Walks a project (or a subdirectory) and brings the logging up to `logging-standa
 - DEBUG for traceability (function entry/exit on non-trivial fns, branch decisions, repo calls, retries, state transitions)
 - No secrets / PII / full request bodies logged
 
-The orchestrator does all the work inline — no Forge, no Bolt. Optionally spawns Sentinel at the end to review the changes.
+All work runs inline (no implementation subagent). Optionally spawns Sentinel at the end to review the changes.
 
 ## Pre-flight reads
 
@@ -60,9 +60,10 @@ Present the proposed changes in chat:
 - Net adds vs net changes (e.g., "12 new DEBUG calls, 3 ERROR-level fixes, 2 NEVER-LOG violations to remove").
 - Any logger-library / format conventions detected from existing code (so additions are consistent).
 
-Call `request_information` with `["Approved — apply changes"]` and allow inline freeform corrections.
+Call `request_information` with `["Approved — apply changes", "Halt for now", "Other"]`. Freeform corrections go through Other.
 
-- Approval → proceed to Phase 3.
+- Approved → proceed to Phase 3.
+- Halt for now → output "Audit complete. No changes applied. Resume by re-invoking `/dreamers-add-logging`." and stop.
 - Corrections → revise proposal; re-present. Loop until approved.
 
 ## Phase 3 — Implement
@@ -73,7 +74,7 @@ Run the project's type-check command after edits. Fix any type errors.
 
 ## Phase 4 — Optional Sentinel review
 
-Ask the user: *"Want a Sentinel review of the logging changes before commit?"*
+Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`.
 
 - Yes → invoke `agent_type: "sentinel"` with the changed-files scope. Sentinel reviews under correctness/security/maintainability lenses; comment-rules + logging-standards violations surface here. Apply findings inline.
 - No → proceed to commit.

@@ -32,7 +32,7 @@ Default scope (no flags): staged + unstaged changes.
 
 ## Spawn Hone
 
-Invoke via the Agent tool:
+Invoke via the runtime's subagent-spawn mechanism:
 
 ```
 agent_type: "hone"
@@ -45,8 +45,6 @@ prompt:
   Lens: simplicity / over-engineering / redundancy / bad architecture. Recommend full refactors when warranted.
   Return: status line + severity-graded findings + observations + open questions.
 ```
-
-Wait for Hone to signal completion. Read its chat output.
 
 ## Output
 

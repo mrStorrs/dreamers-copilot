@@ -1,7 +1,7 @@
 ---
 name: dreamers-issue
 description: 'Create a structured GitHub issue with acceptance criteria from a task description. Triggers: /dreamers-issue, create an issue, open a GitHub issue, file an issue.'
-argument-hint: '$ARGUMENTS'
+argument-hint: '[#]<task description>  (# prefix triggers discussion mode with clarifying questions)'
 ---
 
 Create a GitHub issue for the following request:
@@ -25,7 +25,7 @@ If the arguments do NOT start with `#`, enter **direct mode**:
 ---
 
 **Step 1 — Repo detection**
-Run `gh repo view --json nameWithOwner` to confirm the current repo. If not in a git repo or no remote is set, ask the user which repo to target.
+Run `gh repo view --json nameWithOwner` to confirm the current repo. If not in a git repo or no remote is set, call `request_information` asking the user which repo to target (`OWNER/REPO` format) before proceeding.
 
 **Step 2 — Label check**
 Run `gh label list` to see available labels. Pick the most appropriate existing label(s) — do not invent labels. Common mappings:

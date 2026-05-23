@@ -1,7 +1,7 @@
 ---
 name: dreamers-plan
 description: 'Planning phase of the Dreamers pipeline. Three-phase requirements conversation → plan files in `.dreamers/plans/` → implementation-start approval gate. Invokable standalone (plan-only) or composed from `/dreamers-full` Phase 1. Triggers: /dreamers-plan, plan this, create a plan, plan only.'
-argument-hint: '$ARGUMENTS'
+argument-hint: '<task description>'
 ---
 
 ## What this skill does
@@ -10,7 +10,7 @@ Drives the three-phase planning conversation (Hash-it-out → Approval → Decom
 
 ## Pre-flight reads
 
-Read these refs once at startup (use the `view` tool, full file — never `cat`/`head`/`tail`/`Select-String`, which truncate):
+Read these refs once at startup (full file, no truncation):
 
 - `~/.copilot/dreamers/refs/orchestrator-discipline.md` — the shared discipline cited by all pipeline sub-skills
 - `~/.copilot/dreamers/refs/plan-content.md` — plan section requirements
@@ -52,10 +52,11 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 
 1. Write a one-paragraph **understanding summary** of the goal.
 2. Identify all ambiguities, gaps, open decisions.
-3. Ask every clarifying question — use the `request_information` tool one question at a time within a single round. Do not trickle questions across multiple message turns.
-4. Wait for the user's responses before proceeding.
+3. Ask every clarifying question in one round via `request_information`. Do not trickle questions across multiple message turns.
 
 If the task is fully unambiguous, skip to Phase 1b with a brief "I understand the goal as: …" confirmation.
+
+After clarifications are received, proceed to Phase 1b.
 
 ## Phase 1b — User Input Audit (gate)
 
@@ -106,7 +107,7 @@ If producing multiple plans, decide whether they warrant a `feature-{slug}.md` m
 
 **Skip the manifest if:** the multiple plans are essentially unrelated (e.g., 3 bug fixes shipped together but touching different subsystems). No shared context → manifest would be decorative.
 
-When produced, the manifest is the AI's hierarchical context anchor — research shows hierarchical task decomposition is significantly more effective for AI agents than flat plan lists. The manifest threads cross-plan context into each cycle's reviewer prompts.
+When produced, the manifest is the cross-plan context anchor. It threads shared constraints / design / data / end-to-end ACs / risks into each cycle's reviewer prompts.
 
 State your manifest decision: "Manifest: yes (because …)" or "Manifest: no (plans are independent)."
 
@@ -116,7 +117,7 @@ Plan filenames are `plan-{slug}.md` (no `-a`/`-b`/`-c` suffix — that conventio
 
 Use the templates as starting structure:
 - `~/.copilot/dreamers/templates/plan.md` — every plan, one template.
-- `~/.copilot/dreamers/templates/feature.md` — manifest template (only when multi-plan + Phase 1d.1 says manifest=yes). Manifest naming: `feature-{slug}.md`, lives in `.dreamers/plans/` alongside the plan files.
+- `~/.copilot/dreamers/templates/feature.md` — manifest template. Manifest naming: `feature-{slug}.md`, lives in `.dreamers/plans/` alongside the plan files.
 
 If producing multiple related plans, you may share a slug prefix purely for visual grouping (e.g., `plan-auth-login.md`, `plan-auth-logout.md`, `plan-auth-reset.md`). The shared prefix is cosmetic when there's no manifest. When a manifest is produced, its slug should match the shared prefix (e.g., `feature-auth.md` for the auth plans above).
 
@@ -135,14 +136,14 @@ If producing multiple related plans, you may share a slug prefix purely for visu
 
 ### Phase 1e.1 — Component usage check (mandatory)
 
-When a plan modifies a shared component, run `grep -r "ComponentName" .` (substitute the project's source root from `.github/copilot-instructions.md`) before finalizing the scope file list — include all callers.
+When a plan modifies a shared component, search for all references to it across the project's source root (from `.github/copilot-instructions.md`) before finalizing the scope file list — include all callers.
 
 ### Phase 1e.2 — Citation accuracy
 
 Before citing the behavior, structure, content, or API of any existing artifact in the plan — test file, test method, repository method, ViewModel property, Maestro YAML, UI assertion pattern, or any other code artifact — read and verify the source during this planning session. Claiming "method X does Y" or "test Z asserts W" without reading the file is a planning error; the plan becomes a liability when implementation builds against a wrong assumption.
 
 - **If the artifact cannot be read** (e.g., it belongs to a later plan in the same sequence and doesn't exist yet): state explicitly in the plan that the citation is an assumption pending verification. Do not present it as confirmed fact.
-- **Maestro `assertVisible` / `assertNotVisible` collision check** (mobile UI tests): when a plan specifies asserting on visible text, read the target screen's Compose code (or equivalent) and verify no OTHER persistent UI element (filter tabs, headers, navigation labels, bottom-bar items) shares that text. If a collision exists, the plan must specify a more-specific assertion string that matches only the intended element.
+- **UI assertion-string collision check** (when applicable): when a plan asserts on visible text, verify no other persistent UI element shares that text. If a collision exists, specify a more-specific assertion that matches only the intended element. Project-specific assertion conventions (e.g., Maestro for mobile) live in `.github/copilot-instructions.md`.
 
 ## Phase 1f — Plan quality self-check (mandatory)
 

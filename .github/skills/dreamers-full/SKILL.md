@@ -25,7 +25,7 @@ Each phase delegates to a sub-skill that owns the actual work. The orchestrator 
 
 ## Pre-flight reads
 
-Read these refs once at startup (use the `view` tool, full file):
+Read these refs once at startup:
 
 - `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, push discipline (orchestrator handles branch setup; sub-skills handle commits)
 - `~/.copilot/dreamers/refs/close-out.md` — the close-out flow `/dreamers-close-out` runs
@@ -50,7 +50,7 @@ At skill entry, declare via `manage_todo_list`:
 - [ ] Phase 2 cycle 1 — implement plan 1 (`/dreamers-implement`)
 - [ ] Phase 3 — close-out (`/dreamers-close-out`)
 
-**Declaration point:** declare initial items at skill entry (Phase 1, Phase 1.5, Phase 3). In Mode 1, the Phase 2 cycle items are added once `/dreamers-plan` produces the plan list (Phase 1g approval) — this is the FIRST point the plan count is known. In Modes 2 and 3, all Phase 2 cycle items are declared at skill entry.
+**Declaration point:** declare initial items at skill entry. In Mode 1, Phase 2 cycle items are added after Phase 1g produces the plan list. In Modes 2 and 3, all Phase 2 cycle items are declared upfront.
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
@@ -95,7 +95,7 @@ Options:
 - label: Other — freeform redirect
 ```
 
-On `No` (Halt): output "Resume by re-invoking `/dreamers-full` with the approved plan paths: <paths>" and stop. Do not proceed.
+On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the approved plan paths: <paths>" and stop. Do not proceed.
 
 Modes 2 and 3 skip Phase 1 entirely; no continuation prompt fires here for those modes.
 
@@ -149,9 +149,10 @@ Manifest: [feature-{slug}.md path, or "none"]
 How do you want to ship?
 - INCREMENTAL — PR per plan; main advances incrementally.
 - ATOMIC — one PR at end; all plans ship together.
+- Halt for now — stop here; I will resume later.
 ```
 
-Call `request_information` with choices `["Incremental", "Atomic"]` and allow inline freeform corrections (e.g., "Atomic for plans A and B together; incremental for C").
+Call `request_information` with choices `["Incremental", "Atomic", "Halt for now", "Other"]`. Freeform corrections are allowed (e.g., "Atomic for plans A and B together; incremental for C"). On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the approved plan paths: <paths>" and stop.
 
 Capture the user's choice as the **strategy** value for Phase 2.
 
@@ -201,18 +202,15 @@ For each plan in the approved list (argument order from Mode 2, plan sequence fr
      - label: Other — freeform redirect
      ```
 
-     On `No` (Halt): output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <paths>" and stop.
-     On `Yes`: proceed to wait for merge (below).
-   - Wait for the PR to merge OR for the user to confirm they want to proceed without merge (rare; usually you wait for merge to land plan A's content on main before plan B's cycle starts so drift check has accurate input).
-   - After merge: switch to default branch + pull + re-cut feature branch for the next plan (light close-out's PR squashed main; need fresh branch for next plan).
+     On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <paths>" and stop.
+     On `Continue`: proceed to wait for merge (below).
+   - **Wait for merge — explicit confirmation, not polling.** Ask the user: "Confirm PR <url> has merged before I start the next plan." When they confirm, run `git fetch origin && git log origin/$DEFAULT --oneline -5` to verify the squash commit is on the default branch. If the commit isn't visible, surface and ask again. (Do NOT poll in a loop; do NOT proceed without confirmation.)
+   - After confirmed merge: switch to default branch + pull + re-cut feature branch for the next plan (light close-out's PR squashed main; need fresh branch for next plan).
 4. **If strategy is INCREMENTAL** AND this is the LAST plan in the sequence:
    - Skip the light close-out. Fall through to Phase 3 (full close-out) — the final plan's commit is the last thing on the current branch and gets the milestone retro + improvements + PR.
 5. **If strategy is ATOMIC**: do NOT push, do NOT close out per plan. The commit stays on the current branch. Proceed to drift check if more plans remain.
-6. **If more plans remain — inline drift check before the next plan.** Re-read the next plan and ask explicitly:
-   - Does it still apply against the codebase as it now stands?
-   - Did anything in the just-completed plan change file paths, function signatures, or data shapes the next plan references?
-   - Are the next plan's Acceptance Criteria still measurable against the current code?
-   - (Manifest modes) Does the manifest's shared context still hold given the just-completed cycle? If a shared constraint or end-to-end AC is now invalid, surface to user.
+6. **If more plans remain — drift check before the next plan.** Invoke `/dreamers-plan-verify <next-plan-path>`. The skill returns `No change — proceed` or `Drift detected — halt` with specific drift items.
+   - (Manifest modes only) Additionally check whether the manifest's shared context still holds given the just-completed cycle. If a shared constraint or end-to-end AC is now invalid, surface to user.
 7. **If yes to all three (or four)** → call `request_information` (ATOMIC mode only, when more plans remain):
 
    **Precondition: if drift was detected in the prior step, skip this continuation prompt — surface drift items to the user per step 8 instead.**
@@ -228,18 +226,14 @@ For each plan in the approved list (argument order from Mode 2, plan sequence fr
    - label: Other — freeform redirect
    ```
 
-   On `No` (Halt): output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <remaining paths>" and stop.
-   On `Yes`: loop to step 1 with the next plan.
+   On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <remaining paths>" and stop.
+   On `Continue`: loop to step 1 with the next plan.
 8. **If any drift detected** → surface drift items to the user. Options:
    - User revises the next plan or the manifest inline (re-run quality self-check from `/dreamers-plan` Phase 1f mentally, then continue).
    - User skips the affected plan (proceed without it; the user accepts the consequences).
    - User halts the orchestrator entirely for manual recovery.
 
 After the last plan's cycle completes, proceed to Phase 3.
-
-### Single-plan mode
-
-If only one plan path was provided (Mode 2 with one path, or Mode 1 producing one plan), the sequential loop runs exactly once. Phase 1.5 was skipped. No drift check (no next plan). Proceed to Phase 3.
 
 ### Push discipline
 
@@ -262,7 +256,7 @@ Invoke `/dreamers-close-out` with the inputs captured from Phases 1 and 2:
 
 `/dreamers-close-out` runs the 8-step close-out sequence (improvements append → docs via `/dreamers-docs` → retro → final commit → user approval gate → push + PR via `/dreamers-pr` → plan archive → post-PR discipline).
 
-The user approval gate inside `/dreamers-close-out` (Step 5) is the LAST point where the user can halt before the PR goes live. The orchestrator does not bypass it.
+The user approval gate inside `/dreamers-close-out` is the LAST point where the user can halt before the PR goes live. The orchestrator does not bypass it.
 
 After `/dreamers-close-out` returns the PR URL, the milestone is complete.
 
@@ -296,12 +290,5 @@ If a subagent spawned by a sub-skill (Sentinel / Probe / Hone / Echo) crashes mi
 ## Subagent inventory (in this skill)
 
 - **None directly.** The orchestrator does not spawn agents.
-- `/dreamers-implement` spawns Sentinel + Probe + Hone in parallel (per cycle).
-- `/dreamers-close-out` → `/dreamers-docs` spawns Echo (once per milestone).
-
-Per milestone: (3 × N) reviewer spawns + 1 Echo spawn, where N = number of plans in the sequence.
-
-## Push discipline (single source of truth)
-
-- **ATOMIC:** `git push` happens EXACTLY ONCE per milestone — inside `/dreamers-pr` (invoked by `/dreamers-close-out` Step 6). Never between cycles, never in Phase 2.
-- **INCREMENTAL:** `git push` happens once per plan — inside `/dreamers-pr` invoked by `/dreamers-close-out --light` for every plan except the last; the last plan's push is via Phase 3's full close-out. Never push more than once per close-out event.
+- `/dreamers-implement` spawns Sentinel + Probe + Hone in parallel (per cycle): `3 × N` reviewer spawns where N = plans in the sequence.
+- Echo (docs) spawns vary by strategy: ATOMIC = 1 (final close-out only); INCREMENTAL = up to N (each light close-out plus the final full close-out, when docs are applicable).
