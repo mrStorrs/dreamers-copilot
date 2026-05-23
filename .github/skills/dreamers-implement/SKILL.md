@@ -37,6 +37,7 @@ Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, **test commands** (binding), build commands.
 - `.github/instructions/build.instructions.md` (root, if present) — user-testing build/distribute playbook.
 - `.github/instructions/git.instructions.md` (root, if present) — commit message style.
+- `./test-benchmarks.md` (project root, if present) — read the `Recommended Timeout` column for each test command and use those values as the timeout when running tests in Steps 3 and 6. If this file is absent, no timeout adjustment is made.
 
 If no plan path is provided in `$ARGUMENTS`, halt and ask the user — do not invent or skip the plan. (Plan content is read in Step 1, AFTER the MANDATORY first actions below establish anchored remote state.)
 
@@ -121,6 +122,8 @@ If tests fail:
 - Re-run. Repeat up to 3 attempts.
 - If still failing after 3 attempts, stop and surface to the user. Do not loosen the tests to make them pass.
 
+After tests pass, update `./test-benchmarks.md`: find the row matching the test command and update `Last Run Time`, `Last Updated` (today's date), and `Recommended Timeout` (using the formula `max(last_run_time × 2, 30s)`). If `./test-benchmarks.md` does not exist, create it from `.github/dreamers/templates/test-benchmarks.md` and populate the row for the test command that just ran.
+
 ### Step 4 — Coverage sweep (mandatory, unskippable checklist)
 
 After tests are green, run the coverage sweep before invoking the reviewers. Work through item by item, do not collapse to "looks fine":
@@ -174,8 +177,23 @@ Concatenate findings from all three reviewers per the orchestrator-as-fixer beha
 
 Handle non-finding outputs:
 - Any reviewer returns **`Blocked — <reason>`** → halt cycle; surface; resolve; re-spawn the affected reviewer only.
-- Any reviewer returns **open questions** → present each to the user before proceeding. Capture decisions; apply; if implementation changes meaningfully, re-run Steps 3 + 4 + 5 for the affected scope.
+- Any reviewer returns **open questions** → present each to the user before proceeding. Capture decisions; apply inline. The follow-up is re-run tests only — NOT a re-spawn of Steps 3 + 4 + 5. See the re-verification rule below.
 - All three return **`Approved — no findings`** → proceed to Step 7 directly. No fix application needed.
+
+**Re-verification after fixes (mandatory):**
+
+Before applying any review findings, snapshot staged state: `git diff --cached --name-only` and `git diff --cached --stat`. After all fixes are applied and staged, diff against that snapshot to measure the fix-pass delta.
+
+Re-run the project's test command (using the `Recommended Timeout` from `./test-benchmarks.md` if present). After tests pass, update `./test-benchmarks.md` with the new run time and date (same formula as Step 3).
+
+If the post-fix test run regresses, diagnose and re-fix inline — up to 3 attempts, then surface to the user.
+
+After re-verification, check the significant-refactor criteria (defined in `orchestrator-discipline.md`):
+- If no criterion fires → proceed to Step 7.
+- If any criterion fires → call `request_information` with: (a) which criterion fired and the measured values, (b) one sentence explaining why a second 3-parallel pass is recommended, (c) choices `["Run second 3-parallel pass", "Skip — commit as-is", "Other"]`. Handling per choice:
+  - `Skip — commit as-is` → proceed to Step 7 and commit as-is.
+  - `Run second 3-parallel pass` → re-spawn Sentinel + Probe + Hone in parallel (Step 5 again), re-apply findings, re-run tests, and update `./test-benchmarks.md` again with the second-pass run time (same formula as Step 3) before proceeding to Step 7.
+  - `Other` → present the user's freeform response back to them as a redirect and halt the cycle. Do not auto-commit and do not auto-spawn reviewers.
 
 After fix application (or skip), proceed to Step 7.
 
