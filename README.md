@@ -8,7 +8,7 @@ Everything lives under `.github/`:
 
 ```
 .github/
-├── agents/           # Agent definitions (Sentinel, Probe, Hone, Echo, Sage)
+├── agents/           # Agent definitions (Forge, Nova personas; Sentinel, Probe, Hone, Echo, Sage subagents)
 ├── skills/           # Skill entry points for each pipeline phase
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (orchestrator discipline, git workflow, planning, etc.)
@@ -16,17 +16,33 @@ Everything lives under `.github/`:
 └── instructions/     # Auto-injected instruction files (comment rules, etc.)
 ```
 
-## Agents (5 total)
+## Agents (7 total — 2 personas + 5 subagents)
 
-| Agent | Role | When invoked |
-|-------|------|--------------|
+Agents come in two flavours, used differently:
+
+- **Personas (session-level)** — entered via Copilot CLI's `/agents <name>` slash command. The user inhabits the persona for a multi-turn session. Pipeline knowledge + coding standards are pre-loaded.
+- **Subagents (spawned)** — invoked by skills via the Agent tool. Run in their own context, return findings or output, exit.
+
+### Personas
+
+| Persona | Role | How to enter |
+|---------|------|--------------|
+| **Forge** | Implementation orchestrator. Knows the pipeline, enforces `orchestrator-discipline.md`, routes work through plan → implement → close-out, spawns the reviewer triad at the right points. | `/agents forge` — for any multi-turn session where you're ready to ship |
+| **Nova** | Planning specialist. Runs the three-phase requirements conversation; produces plan file(s) and optional feature manifest; hard-stops at Phase 1g approval gate. Never implements / commits / pushes. | `/agents nova` — for any multi-turn planning session |
+
+The personas complement (do NOT replace) `/dreamers-full` and `/dreamers-plan`. The skills remain available as one-shot invocations.
+
+### Subagents
+
+| Subagent | Role | When invoked |
+|----------|------|--------------|
 | **Sentinel** | Reviewer (read-only / report-only). Three lenses: correctness, security, maintainability. | Per cycle in `/dreamers-implement`, parallel with Probe + Hone |
 | **Probe** | Tester (read-only / report-only). Lens: test coverage (AC matrix, layer audit, edge + negative cases, regression risk). | Per cycle in `/dreamers-implement`, parallel with Sentinel + Hone |
 | **Hone** | Architectural protector (read-only / report-only). Lens: simplicity / over-engineering / bad abstractions / architectural quality. Recommends full refactors when warranted. | Per cycle in `/dreamers-implement`, parallel with Sentinel + Probe |
 | **Echo** | Documentarian — updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, etc.). | At close-out via `/dreamers-docs` |
 | **Sage** | Researcher — deep multi-perspective research. | Standalone via `/dreamers-research` |
 
-The three reviewers (Sentinel + Probe + Hone) are spawned **in parallel** by `/dreamers-implement` and `/dreamers-pr-resolve`. All three are read-only; they return structured findings; the orchestrator applies fixes inline. Conflict-resolution rule: correctness > simplicity. Ambiguity surfaces to user.
+The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel** by `/dreamers-implement` and `/dreamers-pr-resolve`. All three are read-only; they return structured findings; the orchestrator applies fixes inline. Conflict-resolution rule: correctness > simplicity. Ambiguity surfaces to user.
 
 ## Skills (19 total)
 

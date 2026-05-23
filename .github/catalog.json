@@ -15,6 +15,20 @@
     },
     {
       "type": "agent",
+      "slug": "forge",
+      "name": "forge",
+      "description": "Coder of the Dreamers — implementation orchestrator persona. Enter via `/agents forge` for a multi-turn session pre-loaded with pipeline knowledge + coding standards. Routes work through plan → implement → close-out and enforces orchestrator-discipline.md. NOT a spawned subagent.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "agent",
+        "persona"
+      ],
+      "path": ".github/agents/forge.agent.md"
+    },
+    {
+      "type": "agent",
       "slug": "hone",
       "name": "hone",
       "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad abstractions, and architectural quality. Recommends full refactors when warranted. One of three parallel reviewers in the Dreamers pipeline's review phase.",
@@ -25,6 +39,20 @@
         "agent"
       ],
       "path": ".github/agents/hone.agent.md"
+    },
+    {
+      "type": "agent",
+      "slug": "nova",
+      "name": "nova",
+      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the three-phase requirements conversation, writes plan file(s) (and optional `feature-{slug}.md` manifest), hard-stops at Phase 1g approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "agent",
+        "persona"
+      ],
+      "path": ".github/agents/nova.agent.md"
     },
     {
       "type": "agent",
@@ -334,7 +362,15 @@
         },
         {
           "type": "agent",
+          "slug": "forge"
+        },
+        {
+          "type": "agent",
           "slug": "hone"
+        },
+        {
+          "type": "agent",
+          "slug": "nova"
         },
         {
           "type": "agent",
