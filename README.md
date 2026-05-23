@@ -103,6 +103,8 @@ The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel
                   └─ /dreamers-pr      (push + PR creation)
 ```
 
+Continuation prompts fire at every natural pause (post-Phase-1g, between ATOMIC cycles, between INCREMENTAL close-outs), and a todo list is visible throughout the run so the user always knows what phase the orchestrator is in.
+
 Most work is inline in the orchestrator. Per cycle, three reviewers spawn in parallel; per milestone, Echo spawns once:
 - **Sentinel + Probe + Hone** — parallel review, each on one lens. Read-only / report-only. Orchestrator applies the combined findings.
 - **Echo** — once per milestone, updates project docs.

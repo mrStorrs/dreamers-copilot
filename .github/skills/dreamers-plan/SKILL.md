@@ -20,6 +20,7 @@ Read these refs once at startup (use the `view` tool, full file — never `cat`/
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations the plan must capture
 - `~/.copilot/dreamers/refs/feature-decomposition.md` — when to write multiple plans
 - `~/.copilot/dreamers/templates/plan.md` — the single plan template
+- `~/.copilot/dreamers/refs/orchestration-flow.md` — continuation principle, todo-list protocol, tool-name pseudonyms
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, tech stack, test commands, source roots used by the component-usage check.
@@ -30,11 +31,28 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Phase 1a — hash it out (clarifying questions)
+- [ ] Phase 1b — user input audit
+- [ ] Phase 1c — approval gate
+- [ ] Phase 1d — decide plan count (and manifest)
+- [ ] Phase 1e — write plan file(s)
+- [ ] Phase 1f — plan quality self-check
+- [ ] Phase 1g — implementation-start approval gate
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+(When invoked in composed mode by `/dreamers-full`, do NOT declare a new list — update the parent's matching Phase 1 item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+
+---
+
 ## Phase 1a — Hash it out
 
 1. Write a one-paragraph **understanding summary** of the goal.
 2. Identify all ambiguities, gaps, open decisions.
-3. Ask every clarifying question — use the `ask_user` tool one question at a time within a single round. Do not trickle questions across multiple message turns.
+3. Ask every clarifying question — use the `request_information` tool one question at a time within a single round. Do not trickle questions across multiple message turns.
 4. Wait for the user's responses before proceeding.
 
 If the task is fully unambiguous, skip to Phase 1b with a brief "I understand the goal as: …" confirmation.
@@ -57,7 +75,7 @@ Present this proposal block in chat:
 …
 ```
 
-Call `ask_user` with choice `["Approved"]` and allow inline freeform corrections in the same interaction. Treat any non-approval freeform response as corrections; revise and re-present until explicit approval.
+Call `request_information` with choice `["Approved"]` and allow inline freeform corrections in the same interaction. Treat any non-approval freeform response as corrections; revise and re-present until explicit approval.
 
 ## Phase 1d — Decide plan count (one or multiple)
 
@@ -166,7 +184,7 @@ Present this block:
 Please read the plan file(s) above. Reply "Approved — start implementation" to begin Phase 2, or describe any corrections needed.
 ```
 
-Call `ask_user` with choice `["Approved — start implementation"]` and allow inline freeform corrections.
+Call `request_information` with choice `["Approved — start implementation"]` and allow inline freeform corrections.
 
 - Approval → exit this skill with success status.
 - Corrections → revise plan files, re-run Phase 1f, re-present this gate. Loop until approved.

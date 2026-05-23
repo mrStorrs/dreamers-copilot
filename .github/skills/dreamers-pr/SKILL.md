@@ -32,6 +32,22 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Pre-push verification (branch identity, clean working tree, branch ahead of remote)
+- [ ] Step 1 — push branch
+- [ ] Step 2 — draft PR body
+- [ ] Step 3 — open PR
+- [ ] Step 4 — issue close (if applicable)
+- [ ] Report PR URL to caller
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+(When invoked in composed mode by `/dreamers-close-out`, do NOT declare a new list — update the parent's matching Step 6 item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+
+---
+
 ## Invocation modes
 
 ### Composed mode (called by `/dreamers-close-out`)

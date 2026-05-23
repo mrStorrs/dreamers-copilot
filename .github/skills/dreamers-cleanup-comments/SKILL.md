@@ -29,6 +29,19 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Phase 1 — audit comment-rules violations
+- [ ] Phase 2 — proposal + user approval
+- [ ] Phase 3 — apply cleanup inline
+- [ ] Phase 4 — optional Sentinel review (if requested)
+- [ ] Phase 5 — commit
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+---
+
 ## Phase 1 — Audit
 
 Scope: project source root by default; `--scope <path>` to restrict.
@@ -47,7 +60,7 @@ Produce a count per category in chat + paths of the worst offenders.
 
 Present in chat: total comment removals, summary by category, list of files most-affected.
 
-Call `ask_user` with `["Approved — apply cleanup"]` and allow inline freeform corrections (e.g., "preserve license headers in src/vendor/").
+Call `request_information` with `["Approved — apply cleanup"]` and allow inline freeform corrections (e.g., "preserve license headers in src/vendor/").
 
 - Approval → proceed to Phase 3.
 - Corrections → revise proposal; re-present.

@@ -18,6 +18,19 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Phase 1 — audit branch-diff scope for comment-rules violations
+- [ ] Phase 2 — proposal + user approval
+- [ ] Phase 3 — apply cleanup inline
+- [ ] Phase 4 — optional Sentinel review (if requested)
+- [ ] Phase 5 — commit
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+---
+
 ## Scope detection
 
 Detect default branch (canonical two-step):
@@ -44,7 +57,7 @@ If the working tree is on the default branch (no feature-branch diff), halt with
 Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch-diff file list:
 
 1. **Audit** the branch-diff scope; categorize comment-rules violations.
-2. **Propose** changes; `ask_user` for approval.
+2. **Propose** changes; `request_information` for approval.
 3. **Apply** changes inline; stage with `git add`.
 4. **Optional Sentinel review** of changed files.
 5. **Commit** with message `chore: comment cleanup on feature branch`. Do NOT push.
