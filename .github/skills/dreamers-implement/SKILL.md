@@ -46,6 +46,25 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Read plan file
+- [ ] Write failing tests
+- [ ] Implement
+- [ ] Type-check + run tests
+- [ ] Coverage sweep
+- [ ] Spawn parallel review (Sentinel + Probe + Hone)
+- [ ] Apply reviewer findings + re-run tests
+- [ ] User-test pause (if plan requires it)
+- [ ] Commit the cycle
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+(When invoked in composed mode by `/dreamers-full`, do NOT declare a new list — update the parent's matching Phase 2 cycle item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+
+---
+
 ## MANDATORY first actions (in order, once at skill entry)
 
 1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (Skip if called from `/dreamers-full` — orchestrator handles this at Phase 2 entry, not per plan.)
@@ -165,9 +184,9 @@ After fix application (or skip), proceed to Step 7.
 Check the plan's `User-testing-required` field.
 
 - **`no`** → proceed directly to step 8.
-- **`yes`** → pause the cycle by calling `request_info`. Do not commit until the user explicitly approves.
+- **`yes`** → pause the cycle by calling `request_information`. Do not commit until the user explicitly approves.
 
-The `request_info` call MUST include every item below. Do not abbreviate — the user reads only what is in this prompt:
+The `request_information` call MUST include every item below. Do not abbreviate — the user reads only what is in this prompt:
 
 - **Plan being tested:** ID + path (e.g. `plan-{slug}` → `.dreamers/plans/plan-{slug}.md`).
 - **Build / distribution details:** check for `.github/instructions/build.instructions.md` at the project root.
@@ -178,12 +197,12 @@ The `request_info` call MUST include every item below. Do not abbreviate — the
 - **Known limitations / out-of-scope:** anything the user might try that this cycle deliberately doesn't cover.
 - **How to respond:**
   - `Approved — continue` (skill proceeds to commit)
-  - `Bug: <description>` (skill fixes inline, re-runs tests, re-distributes per `build.instructions.md` rules, re-calls `request_info` with refreshed test steps)
+  - `Bug: <description>` (skill fixes inline, re-runs tests, re-distributes per `build.instructions.md` rules, re-calls `request_information` with refreshed test steps)
   - Freeform notes / corrections are also accepted and treated as bugs unless clearly approving.
 
 **Resume rules:**
 - On `Approved — continue` → proceed to step 8.
-- On any bug or correction → **fix inline.** No Sentinel re-invocation: during user-testing rounds, the user IS the test layer. Steps: diagnose → fix in production code → re-run the test command to confirm no regression → re-build/distribute per `build.instructions.md` (or ask the user if no file) → re-call `request_info` with refreshed test steps that reproduce the original bug scenario plus any other steps still requiring user verification. Do NOT commit until explicit approval.
+- On any bug or correction → **fix inline.** No Sentinel re-invocation: during user-testing rounds, the user IS the test layer. Steps: diagnose → fix in production code → re-run the test command to confirm no regression → re-build/distribute per `build.instructions.md` (or ask the user if no file) → re-call `request_information` with refreshed test steps that reproduce the original bug scenario plus any other steps still requiring user verification. Do NOT commit until explicit approval.
 
 ### Step 8 — Commit the cycle
 

@@ -23,6 +23,18 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Read plan file
+- [ ] Read current code (cited paths, signatures, data models, test files)
+- [ ] Drift assessment (compare plan assertions against current state)
+- [ ] Report (no change or drift-detected list)
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+---
+
 ## The check
 
 Read the plan file passed as `$ARGUMENTS`. If no plan path is provided, halt and ask the user.

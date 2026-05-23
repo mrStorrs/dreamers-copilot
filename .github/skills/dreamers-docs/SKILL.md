@@ -23,6 +23,19 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Spawn Echo with changed-files context
+- [ ] Capture doc changes and open questions from Echo output
+- [ ] Report completion (doc-changes log + open questions) to caller
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+(When invoked in composed mode by `/dreamers-close-out`, do NOT declare a new list — update the parent's matching Step 2 item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+
+---
+
 ## Invocation modes
 
 ### Composed mode (called by `/dreamers-close-out`)

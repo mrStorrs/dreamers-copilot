@@ -29,6 +29,7 @@ Read these refs once at startup (use the `view` tool, full file):
 
 - `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, push discipline (orchestrator handles branch setup; sub-skills handle commits)
 - `~/.copilot/dreamers/refs/close-out.md` — the close-out flow `/dreamers-close-out` runs
+- `~/.copilot/dreamers/refs/orchestration-flow.md` — continuation principle, todo-list protocol, tool-name pseudonyms
 
 Sub-skills cite the discipline ref themselves. The orchestrator does not duplicate that read.
 
@@ -38,6 +39,22 @@ Also check for project-level files:
 Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
 
 $ARGUMENTS
+
+---
+
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Phase 1 — planning (`/dreamers-plan`)
+- [ ] Phase 1.5 — ship strategy gate
+- [ ] Phase 2 cycle 1 — implement plan 1 (`/dreamers-implement`)
+- [ ] Phase 3 — close-out (`/dreamers-close-out`)
+
+**Declaration point:** declare initial items at skill entry (Phase 1, Phase 1.5, Phase 3). In Mode 1, the Phase 2 cycle items are added once `/dreamers-plan` produces the plan list (Phase 1g approval) — this is the FIRST point the plan count is known. In Modes 2 and 3, all Phase 2 cycle items are declared at skill entry.
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+Directly composed sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`) MUST NOT declare their own todo lists when invoked by this orchestrator. They update this orchestrator's matching items instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`. Indirect children invoked by `/dreamers-close-out` (e.g. `/dreamers-docs`, `/dreamers-pr`) follow the same rule transitively — they update `/dreamers-close-out`'s items, which roll up to this orchestrator's Phase 3 item.
 
 ---
 
@@ -62,6 +79,25 @@ If `$ARGUMENTS` contains plan paths directly (Mode 2): skip Phase 1; treat the p
 If `$ARGUMENTS` contains a manifest path (Mode 3): skip Phase 1; read the manifest's "Plan sequence" table to extract the ordered plan list. Capture the manifest content (shared constraints, design decisions, data models, end-to-end ACs, cross-plan risks) as the **shared context payload** for later use in Phase 2.
 
 After Phase 1 (or its skip), proceed to Phase 1.5.
+
+**Continuation prompt — post Phase 1g (Mode 1 only):**
+
+After `/dreamers-plan` exits at Phase 1g approval (Mode 1), before entering Phase 1.5 or Phase 2, call `request_information`:
+
+```
+Phase 1 complete. Plan(s) approved and written.
+
+Proceeding will enter Phase 1.5 (ship strategy gate, if multi-plan) then Phase 2 (implementation).
+
+Options:
+- label: Continue — proceed to Phase 1.5 / Phase 2
+- label: Halt for now — stop here; I will resume later
+- label: Other — freeform redirect
+```
+
+On `No` (Halt): output "Resume by re-invoking `/dreamers-full` with the approved plan paths: <paths>" and stop. Do not proceed.
+
+Modes 2 and 3 skip Phase 1 entirely; no continuation prompt fires here for those modes.
 
 ---
 
@@ -115,7 +151,7 @@ How do you want to ship?
 - ATOMIC — one PR at end; all plans ship together.
 ```
 
-Call `ask_user` with choices `["Incremental", "Atomic"]` and allow inline freeform corrections (e.g., "Atomic for plans A and B together; incremental for C").
+Call `request_information` with choices `["Incremental", "Atomic"]` and allow inline freeform corrections (e.g., "Atomic for plans A and B together; incremental for C").
 
 Capture the user's choice as the **strategy** value for Phase 2.
 
@@ -152,6 +188,21 @@ For each plan in the approved list (argument order from Mode 2, plan sequence fr
 2. Wait for `/dreamers-implement` to complete (one commit lands on the branch).
 3. **If strategy is INCREMENTAL** AND more plans remain:
    - Invoke `/dreamers-close-out --light <plan-path>` for the just-completed plan. The light close-out: docs update (if applicable) + push + PR for THIS plan only. NO retro, NO improvements append (those run at the final plan only).
+   - After `/dreamers-close-out --light` returns the PR URL, call `request_information`:
+
+     ```
+     Plan {n} of {N} shipped as PR {url}.
+
+     Next: wait for that PR to merge, then re-cut the feature branch and start the implementation cycle for plan {n+1} ({next-path}).
+
+     Options:
+     - label: Continue — wait for merge then start next cycle
+     - label: Halt for now — stop here; I will resume manually
+     - label: Other — freeform redirect
+     ```
+
+     On `No` (Halt): output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <paths>" and stop.
+     On `Yes`: proceed to wait for merge (below).
    - Wait for the PR to merge OR for the user to confirm they want to proceed without merge (rare; usually you wait for merge to land plan A's content on main before plan B's cycle starts so drift check has accurate input).
    - After merge: switch to default branch + pull + re-cut feature branch for the next plan (light close-out's PR squashed main; need fresh branch for next plan).
 4. **If strategy is INCREMENTAL** AND this is the LAST plan in the sequence:
@@ -162,7 +213,23 @@ For each plan in the approved list (argument order from Mode 2, plan sequence fr
    - Did anything in the just-completed plan change file paths, function signatures, or data shapes the next plan references?
    - Are the next plan's Acceptance Criteria still measurable against the current code?
    - (Manifest modes) Does the manifest's shared context still hold given the just-completed cycle? If a shared constraint or end-to-end AC is now invalid, surface to user.
-7. **If yes to all three (or four)** → loop to step 1 with the next plan.
+7. **If yes to all three (or four)** → call `request_information` (ATOMIC mode only, when more plans remain):
+
+   **Precondition: if drift was detected in the prior step, skip this continuation prompt — surface drift items to the user per step 8 instead.**
+
+   ```
+   Plan {n} of {N} complete ({path}). Drift check passed.
+
+   Next: start implementation cycle for plan {n+1} ({next-path}).
+
+   Options:
+   - label: Continue — start next cycle
+   - label: Halt for now — stop here; I will resume later
+   - label: Other — freeform redirect
+   ```
+
+   On `No` (Halt): output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <remaining paths>" and stop.
+   On `Yes`: loop to step 1 with the next plan.
 8. **If any drift detected** → surface drift items to the user. Options:
    - User revises the next plan or the manifest inline (re-run quality self-check from `/dreamers-plan` Phase 1f mentally, then continue).
    - User skips the affected plan (proceed without it; the user accepts the consequences).

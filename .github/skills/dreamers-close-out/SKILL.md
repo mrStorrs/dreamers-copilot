@@ -45,6 +45,30 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+**FULL mode** — at skill entry, declare via `manage_todo_list`:
+- [ ] Step 1 — improvements.md milestone-close append
+- [ ] Step 2 — docs update (`/dreamers-docs`)
+- [ ] Step 3 — retro write
+- [ ] Step 4 — final commit (if needed)
+- [ ] Step 5 — user approval gate
+- [ ] Step 6 — push + PR (`/dreamers-pr`)
+- [ ] Step 7 — plan archive
+- [ ] Step 8 — post-PR discipline
+
+**LIGHT mode** — at skill entry, declare via `manage_todo_list`:
+- [ ] Docs update (if applicable)
+- [ ] Final commit (if needed)
+- [ ] User approval gate
+- [ ] Push + PR via `/dreamers-pr`
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+(When invoked in composed mode by `/dreamers-full`, do NOT declare a new list — update the parent's matching Phase 3 item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+
+---
+
 ## Invocation modes
 
 ### Composed mode (called by `/dreamers-full`)
@@ -136,7 +160,7 @@ Issue reference: <number/URL, or "none">
 Reply "Approved — push + PR" to proceed, or describe corrections needed.
 ```
 
-Call `ask_user` with choice `["Approved — push + PR"]` and allow inline freeform corrections.
+Call `request_information` with choice `["Approved — push + PR"]` and allow inline freeform corrections.
 
 - Approval → proceed to Step 6.
 - Corrections → apply the corrections inline, re-run any affected steps (e.g. re-invoke `/dreamers-docs` if Echo missed something), and re-present this gate. Loop until approved.
@@ -195,6 +219,18 @@ Return in chat output:
 - Project state scan summary (drift items found, or "none").
 
 This is the terminal phase of the milestone. No further work after Step 8.
+
+## LIGHT mode exit
+
+After Step 6 completes (`/dreamers-pr` signals PR opened), return to the caller with this status block:
+
+```
+LIGHT close-out complete.
+Plan: <plan-path>
+PR: <PR URL>
+```
+
+The continuation prompt (whether to proceed to the next plan or halt) fires in `/dreamers-full`, not here. LIGHT mode's job is to return clean status.
 
 ## Push discipline (single source of truth)
 

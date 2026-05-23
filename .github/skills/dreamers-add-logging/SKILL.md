@@ -26,6 +26,19 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Phase 1 — audit current logging state
+- [ ] Phase 2 — proposal + user approval
+- [ ] Phase 3 — implement approved changes
+- [ ] Phase 4 — optional Sentinel review
+- [ ] Phase 5 — commit
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+---
+
 ## Phase 1 — Audit
 
 Scope: project source root by default; `--scope <path>` to restrict.
@@ -47,7 +60,7 @@ Present the proposed changes in chat:
 - Net adds vs net changes (e.g., "12 new DEBUG calls, 3 ERROR-level fixes, 2 NEVER-LOG violations to remove").
 - Any logger-library / format conventions detected from existing code (so additions are consistent).
 
-Call `ask_user` with `["Approved — apply changes"]` and allow inline freeform corrections.
+Call `request_information` with `["Approved — apply changes"]` and allow inline freeform corrections.
 
 - Approval → proceed to Phase 3.
 - Corrections → revise proposal; re-present. Loop until approved.

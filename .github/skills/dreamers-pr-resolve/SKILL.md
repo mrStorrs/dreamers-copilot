@@ -15,6 +15,19 @@ $ARGUMENTS
 
 ---
 
+## Todo list
+
+At skill entry, declare via `manage_todo_list`:
+- [ ] Read review comments (discover PR + pull unresolved threads via GraphQL)
+- [ ] Categorize threads (accept/reject decision per thread)
+- [ ] Apply accepted fixes inline + run tests
+- [ ] Spawn parallel review of accepted changes (Sentinel + Probe + Hone)
+- [ ] Resolve accepted threads + commit + report
+
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+
+---
+
 ## Step 1 — Discover open PRs
 
 Run `gh pr list --state open` to find all live PRs. If a specific PR is provided in the arguments, use that one. If multiple are open and none is specified, ask the user which PR to target before proceeding.
