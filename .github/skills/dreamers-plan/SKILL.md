@@ -20,6 +20,7 @@ Read these refs once at startup (full file, no truncation):
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations the plan must capture
 - `~/.copilot/dreamers/refs/feature-decomposition.md` — when to write multiple plans
 - `~/.copilot/dreamers/templates/plan.md` — the single plan template
+- `~/.copilot/dreamers/templates/manifest.md` — the feature manifest template (used in multi-plan work)
 - `~/.copilot/dreamers/refs/orchestration-flow.md` — continuation principle, todo-list protocol, tool-name pseudonyms
 
 Also check for project-level files:
@@ -80,7 +81,7 @@ Call `request_information` with choice `["Approved"]` and allow inline freeform 
 
 ## Phase 1d — Decide plan count (one or multiple)
 
-Default to ONE plan. If the work's scope is too large to land cleanly in a single cycle, produce MULTIPLE independent plans per `feature-decomposition.md` (each shippable on its own; sequenced via `/dreamers-full <plan-a> <plan-b> <plan-c>` at invocation time).
+Default to ONE plan inside a feature directory. If the work's scope is too large to land cleanly in a single cycle, produce MULTIPLE independent plans inside the same feature directory per `feature-decomposition.md` (each shippable on its own; sequenced via `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` at invocation time, or via `/dreamers-full feature-<slug>/manifest.md` when a manifest is produced).
 
 "Too large" thresholds:
 - More than ~300 lines of new/changed code across the touched files.
@@ -97,35 +98,74 @@ State your decision in chat: "Producing ONE plan: …" or "Producing N plans: �
 
 ### Phase 1d.1 — Decide whether to produce a feature manifest (multi-plan only)
 
-If producing multiple plans, decide whether they warrant a `feature-{slug}.md` manifest. **Produce a manifest if ANY of these hold:**
+If producing multiple plans, decide whether they warrant a `manifest.md` at `.dreamers/plans/feature-<slug>/manifest.md`. **Produce a manifest if ANY of these hold:**
 
-- At least 2 shared constraints apply across all plans (e.g., "all plans must preserve API X's backward compat until plan-C ships")
+- At least 2 shared constraints apply across all plans (e.g., "all plans must preserve API X's backward compat until plan-03 ships")
 - Shared design decisions span plans (e.g., "all auth flows use the same state-machine abstraction")
 - Shared data models referenced by multiple plans (interface / type contracts)
 - End-to-end Acceptance Criteria exist (only verifiable after ALL plans ship)
-- Cross-plan risks (ordering dependencies, rollback coordination)
+- Cross-plan rollback rules (ordering dependencies, coordinated revert — folded into shared constraints)
 
 **Skip the manifest if:** the multiple plans are essentially unrelated (e.g., 3 bug fixes shipped together but touching different subsystems). No shared context → manifest would be decorative.
 
-When produced, the manifest is the cross-plan context anchor. It threads shared constraints / design / data / end-to-end ACs / risks into each cycle's reviewer prompts.
+When produced, the manifest is the cross-plan context anchor. It threads shared constraints / design / data / end-to-end ACs into each cycle's reviewer prompts.
 
 State your manifest decision: "Manifest: yes (because …)" or "Manifest: no (plans are independent)."
 
+### Phase 1d.2 — Manifest backfill detection (mandatory)
+
+Before writing plans in Phase 1e, check: does a feature directory already exist for this work at `.dreamers/plans/feature-<slug>/`?
+
+- **If NO:** new feature dir — proceed normally (will be created in Phase 1e).
+- **If YES, and the existing dir contains `plan-01-*.md` but NO `manifest.md`:** this is the backfill scenario. The current work is producing what will become `plan-02-*.md` (or later) for the SAME feature. A manifest MUST be created in Phase 1e — even if Phase 1d.1's normal heuristics said "skip the manifest." The backfill rule overrides: when a feature has multiple plans, it has a manifest, period.
+  - Use plan-01's content as seed context for the manifest's Shared constraints / Shared design decisions / Shared data models sections.
+  - Surface this to the user in chat: "Feature dir already exists with plan-01; creating manifest as part of plan-02 (backfill rule)."
+- **If YES, and `manifest.md` already exists:** normal multi-plan continuation. Read the existing manifest. The new plan goes in the same dir with the next `plan-NN-*.md` number.
+
 ## Phase 1e — Write plan file(s)
 
-Plan filenames are `plan-{slug}.md` (no `-a`/`-b`/`-c` suffix — that convention is gone). Slug rules per `plan-rules.md`. Plans live in `./.dreamers/plans/`.
+Plan paths follow the per-feature directory convention from `plan-rules.md`:
+
+- **Plan file:** `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` where NN is zero-padded order within the feature dir (`01`, `02`, ..., `99`).
+- **Manifest (optional, multi-plan only):** `.dreamers/plans/feature-<slug>/manifest.md`.
+
+The flat layout (`plan-{slug}.md` directly in `.dreamers/plans/`) and the lettered suffix (`plan-a-...`, `plan-b-...`) are RETIRED. Do not use either.
+
+Create the feature directory if it does not exist: `mkdir -p .dreamers/plans/feature-<slug>/`. If the directory already exists with prior plans, see Phase 1d.2 for the manifest backfill rule.
 
 Use the templates as starting structure:
-- `~/.copilot/dreamers/templates/plan.md` — every plan, one template.
-- `~/.copilot/dreamers/templates/feature.md` — manifest template. Manifest naming: `feature-{slug}.md`, lives in `.dreamers/plans/` alongside the plan files.
+- `~/.copilot/dreamers/templates/plan.md` — every plan.
+- `~/.copilot/dreamers/templates/manifest.md` — feature manifest.
 
-If producing multiple related plans, you may share a slug prefix purely for visual grouping (e.g., `plan-auth-login.md`, `plan-auth-logout.md`, `plan-auth-reset.md`). The shared prefix is cosmetic when there's no manifest. When a manifest is produced, its slug should match the shared prefix (e.g., `feature-auth.md` for the auth plans above).
+**Each plan must include (per `plan-content.md`):**
+- Metadata block: Date, Status (Draft/Active/Completed/Superseded), Branch, User-testing-required (yes/no). No Owner, no Scope, no Links — those belong in the PR description.
+- Sections in order: Goal, Context (≤200 words), Acceptance Criteria (XML-wrapped, numbered G/W/T with Layer annotations), Out of Scope, Constraints (XML-wrapped), Design Decisions (optional), UI (optional, 3-layer), Verification (last, commands only).
 
-**Each plan must include:**
-- Metadata: Owner, Date, Scope, Status (Draft/Active/Completed/Superseded), Branch, User-testing-required (yes/no), Links
-- Sections: Summary, Scope/Non-goals, Constraints, Design Decisions, Acceptance Criteria, Test Cases (Given/When/Then for non-trivial), Rollback boundary, Risks/Mitigations
+**Acceptance Criteria — XML wrapping + Layer annotation (mandatory):**
 
-**Design Decisions format** (one entry per significant choice):
+```
+<acceptance_criteria>
+1. Given <state>, when <trigger>, then <observable outcome>.
+   *Layer: unit.*
+2. ...
+</acceptance_criteria>
+```
+
+Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed.
+
+**Constraints — XML wrapping (mandatory):**
+
+```
+<constraints>
+- **Technical:** ...
+- **Process:** ...
+- **Hard rules:** ...
+</constraints>
+```
+
+**XML escaping:** if literal `</acceptance_criteria>` or `</constraints>` text needs to appear inside a wrapped block (e.g., quoting another plan's structure), use HTML entity escapes: `&lt;` / `&gt;` / `&amp;`. Phase 1f's parser is entity-aware.
+
+**Design Decisions format** (optional section, one entry per significant choice — include only when non-obvious):
 - **Decision:** [what was chosen]
 - **Rationale:** [why — one sentence]
 - **Rejected:** [alternatives considered — one line each]
@@ -133,6 +173,10 @@ If producing multiple related plans, you may share a slug prefix purely for visu
 **User-testing required:** `yes` if a human must manually verify before the cycle completes (UI flows, push notifications, payments, camera, permissions). `no` for backend, data-layer, non-visible. Default to `yes` when in doubt.
 
 **Plans MUST NOT include code snippets.** One exception: interface/type contracts where the signature itself is the design decision.
+
+**Plans MUST NOT contain an "Open Questions" section.** Per `planning-protocol.md`, all open questions are resolved in Phase 1 (Hash it out) BEFORE plan generation. If you discover a new question during Phase 1e, halt, surface it to the user via `request_information`, get the answer, then resume.
+
+**Plan length:** target 200–400 lines. Hard cap 600. If a plan exceeds 600 lines, split it into two plans within the feature directory.
 
 ### Phase 1e.1 — Component usage check (mandatory)
 
@@ -148,26 +192,48 @@ Before citing the behavior, structure, content, or API of any existing artifact 
 ## Phase 1f — Plan quality self-check (mandatory)
 
 Before exiting Phase 1, verify each plan against:
-- [ ] Filename follows `plan-{slug}.md`
-- [ ] Has measurable Acceptance Criteria
-- [ ] Has Test Cases (Given/When/Then) for non-trivial cases
-- [ ] Has Design Decisions in the structured format
-- [ ] Has a Rollback Boundary
-- [ ] Has a Status field (Draft / Active / Completed / Superseded)
+
+**Structural checks:**
+- [ ] File path matches `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (numbered, zero-padded; inside a feature directory)
+- [ ] Metadata block present with Date / Status / Branch / User-testing-required
+- [ ] All mandatory sections present in order: Goal, Context, Acceptance Criteria, Out of Scope, Constraints, Verification
+- [ ] Verification section is at the bottom (Anthropic recency-bias rule)
+- [ ] No "Open Questions" section exists (all questions resolved in Phase 1)
+- [ ] No "Risks / Mitigations" section exists (real risks folded into Constraints)
+- [ ] No standalone "Test Cases" section exists (test layer captured via `*Layer: ...*` annotation on each AC)
+
+**Content checks:**
+- [ ] Goal is one paragraph stating the done-state
+- [ ] Context is ≤ 200 words, bullet links only (no motivation prose)
+- [ ] At least 2 Acceptance Criteria (soft warning if fewer — overridable with user confirmation)
+- [ ] Every AC has a Layer annotation (`*Layer: unit.*` / `integration` / `E2E` / `perf`, compounds allowed)
+- [ ] ACs are XML-wrapped in `<acceptance_criteria>...</acceptance_criteria>`
+- [ ] Constraints are XML-wrapped in `<constraints>...</constraints>`
+- [ ] XML is structurally valid (parser is entity-aware — `&lt;`/`&gt;` in content is allowed; only unmatched STRUCTURAL tags fail)
+- [ ] Out of Scope has explicit "Will NOT" bullets
+- [ ] Verification is 5–8 lines: test command + type-check command + files to inspect + smoke check (no AC narrative restatement)
 - [ ] References only files/paths that exist (no invented paths)
 - [ ] No code snippets (exception: interface/type contracts only)
+- [ ] Plan length ≤ 600 lines (hard cap)
 
-When multiple plans are produced, additionally verify:
+**UI section checks (only when UI section exists):**
+- [ ] Layer 1 ASCII layout in code-fenced block
+- [ ] Layer 2 component spec (table OR per-component subsections)
+- [ ] Layer 3 Mermaid (optional)
+
+**Multi-plan checks (when multiple plans are produced):**
 - [ ] Each plan is independently shippable (no plan depends on a later sibling)
-- [ ] Each plan has at least one machine-verifiable assertion testable in isolation
+- [ ] Each plan has at least one machine-verifiable AC testable in isolation
 - [ ] Splits fall at natural seams (not arbitrary line-count cuts)
+- [ ] All plans share the same `feature-<slug>/` directory
 
-When a manifest is produced (from Phase 1d.1), additionally verify:
-- [ ] `feature-{slug}.md` exists in `.dreamers/plans/`
+**Manifest checks (when a manifest is produced):**
+- [ ] `feature-<slug>/manifest.md` exists at the feature directory root
 - [ ] Manifest has a Plan sequence table listing all plans in the intended run order
-- [ ] At least one of: shared constraints, shared design decisions, shared data models, end-to-end ACs, or cross-plan risks is populated (manifest with all sections empty = decorative; either populate or skip the manifest)
+- [ ] At least one of: shared constraints, shared design decisions, shared data models, or end-to-end ACs is populated (manifest with all sections empty = decorative; either populate or skip the manifest)
+- [ ] Manifest does NOT have a separate "Risks / Mitigations (cross-plan)" or "Rollback strategy (cross-plan)" section (those are folded into Shared constraints)
 
-Any failure → halt and prompt the user with the specific item(s) that failed.
+Any failure → halt and prompt the user with the specific item(s) that failed. Soft-warning items (fewer than 2 ACs) may be overridden with explicit user confirmation; all other items are hard fails.
 
 ## Phase 1g — Implementation start approval gate (mandatory)
 
@@ -178,9 +244,11 @@ Present this block:
 ```
 **Plans written and ready for review:**
 
-- `path/to/plan-{slug}.md` — [one-line summary from plan Summary]
-- `path/to/plan-{related-slug}.md` — [one-line summary]  (if multiple plans were produced)
+- `.dreamers/plans/feature-<slug>/plan-01-<name>.md` — [one-line summary from plan Goal]
+- `.dreamers/plans/feature-<slug>/plan-02-<name>.md` — [one-line summary]  (if multiple plans were produced)
 - ...
+
+Manifest (if produced): `.dreamers/plans/feature-<slug>/manifest.md`
 
 Please read the plan file(s) above. Reply "Approved — start implementation" to begin Phase 2, or describe any corrections needed.
 ```
@@ -195,9 +263,9 @@ Call `request_information` with choice `["Approved — start implementation"]` a
 ## Exit behavior
 
 When called **standalone**, exit on Phase 1g approval. Tell the user:
-- The approved plan file path(s).
-- If a manifest was produced: the manifest file path.
-- Next step: invoke `/dreamers-implement <path-to-plan>` (one plan), `/dreamers-full <plan-a> <plan-b> ...` (multiple plans, no manifest), or `/dreamers-full feature-{slug}.md` (multiple plans via manifest — threads shared context into reviewer prompts).
+- The approved plan file path(s) — `.dreamers/plans/feature-<slug>/plan-NN-<name>.md`.
+- If a manifest was produced: `.dreamers/plans/feature-<slug>/manifest.md`.
+- Next step: invoke `/dreamers-implement <plan-path>` (one plan), `/dreamers-full <plan-a> <plan-b> ...` with the feature-dir-prefixed paths (multiple plans, no manifest), or `/dreamers-full feature-<slug>/manifest.md` (multiple plans via manifest — threads shared context into reviewer prompts).
 
 When called **from `/dreamers-full`**, exit on Phase 1g approval. Return in chat output:
 - Plan count (one or multiple) + sequence order if multiple.
@@ -214,4 +282,4 @@ When plan files are written and the approval gate clears:
 - Do NOT delegate to any implementation agent or skill.
 - Do NOT make any code edits beyond plan files.
 
-If the user asks "start implementing" after approval, tell them to invoke `/dreamers-implement <plan>` (one plan) or `/dreamers-full <plan-a> <plan-b> ...` (multiple plans). This skill's lane is planning only.
+If the user asks "start implementing" after approval, tell them to invoke `/dreamers-implement <feature-<slug>/plan-NN-<name>.md>` (one plan) or `/dreamers-full <feature-<slug>/plan-01-...> <feature-<slug>/plan-02-...> ...` (multiple plans). This skill's lane is planning only.

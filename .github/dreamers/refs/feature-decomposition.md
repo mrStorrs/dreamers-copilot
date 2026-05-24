@@ -1,6 +1,6 @@
 # When to write multiple plans (mandatory)
 
-Default to one plan. Split into multiple plans only when one plan's scope is genuinely too large to land cleanly in a single cycle.
+Default to one plan inside a feature directory. Split into multiple plans only when one plan's scope is genuinely too large to land cleanly in a single cycle.
 
 ## What counts as "too large"
 
@@ -19,33 +19,29 @@ When you do split into multiple plans, each plan MUST satisfy:
 
 ## Sequencing
 
-Multiple related plans run sequentially on the same branch via:
+Multiple plans within a feature directory run sequentially via:
 
 ```
-/dreamers-full <plan-a> <plan-b> <plan-c>
+/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md feature-<slug>/plan-03-<name>.md
 ```
 
-The orchestrator runs cycle-A → inline drift check → cycle-B → inline drift check → cycle-C → close-out + single PR.
+OR, when a manifest exists:
 
-If plan-B references state that plan-A modified (paths, signatures, data shapes), the inline drift check between cycles surfaces any mismatch before cycle-B starts. The user can revise plan-B and continue, or halt.
+```
+/dreamers-full feature-<slug>/manifest.md
+```
+
+The orchestrator runs cycle-A → inline drift check → cycle-B → inline drift check → cycle-C → close-out + single PR (or per-plan PRs in INCREMENTAL ship strategy).
+
+If plan-02 references state that plan-01 modified (paths, signatures, data shapes), the inline drift check between cycles surfaces any mismatch before cycle-02 starts.
 
 ## When NOT to split
 
-Truly atomic changes (a single model field, a single bug fix, a single screen tweak) stay as one plan. Splitting an atomic change adds ceremony without benefit.
-
-## Grouping related plans (optional)
-
-If multiple plans cover the same feature area, you may share a slug prefix purely for visual grouping:
-
-- `plan-auth-login.md`
-- `plan-auth-logout.md`
-- `plan-auth-reset.md`
-
-This is cosmetic. Each plan still stands alone; the prefix doesn't create semantics.
+Truly atomic changes (a single model field, a single bug fix, a single screen tweak) stay as one plan inside a single-plan feature directory. Splitting an atomic change adds ceremony without benefit.
 
 ## Manifest pattern (optional, for multi-plan with shared context)
 
-When multiple plans share genuine cross-plan context — constraints, design decisions, data models, or end-to-end ACs that span all plans — produce a **feature manifest** alongside the plan files: `feature-{slug}.md`.
+When multiple plans share genuine cross-plan context — constraints, design decisions, data models, or end-to-end ACs that span all plans — produce a **manifest** at the feature directory's root: `feature-<slug>/manifest.md`.
 
 **Why:** research on AI coding agents shows hierarchical task decomposition is significantly more effective than flat plan lists (58% faster on complex tasks; ~2× success rate on long-horizon work in published benchmarks). The manifest carries the cross-plan context into each cycle's reviewer prompts so the AI reasons with full-feature awareness, not just the single plan in isolation.
 
@@ -54,24 +50,34 @@ When multiple plans share genuine cross-plan context — constraints, design dec
 - Shared design decisions span plans (e.g., a common abstraction every plan uses).
 - Shared data models / interface contracts referenced by multiple plans.
 - End-to-end ACs only verifiable after ALL plans ship.
-- Cross-plan risks (ordering dependencies, rollback coordination).
+- Cross-plan rollback rules (folded into shared constraints — separate rollback section is retired).
 
-**Skip the manifest if:** the multiple plans are independent (e.g., 3 unrelated bug fixes shipped together). A manifest with all sections empty is decorative — either populate it or skip it.
+**Skip the manifest if:** the multiple plans are independent (e.g., 3 unrelated changes shipped together). A manifest with all sections empty is decorative — either populate it or skip it.
 
-**Naming:** `feature-{slug}.md`. Slug should match the prefix shared by the related plans (e.g., `feature-auth.md` for `plan-auth-login.md` + `plan-auth-logout.md` + `plan-auth-reset.md`).
+**Path:** `feature-<slug>/manifest.md` (lives inside the feature directory, not at the plans/ root).
 
-**Template:** `~/.copilot/dreamers/templates/feature.md`.
+**Template:** `~/.copilot/dreamers/templates/manifest.md`.
 
 **Invocation:**
-- Variadic plans (no manifest): `/dreamers-full <plan-a> <plan-b> <plan-c>` — plans run in argument order; no shared context.
-- Manifest mode: `/dreamers-full feature-{slug}.md` — orchestrator reads the manifest, extracts the plan sequence, threads shared context into reviewer prompts at each cycle.
+- Variadic plans (no manifest): `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` — plans run in argument order; no shared context.
+- Manifest mode: `/dreamers-full feature-<slug>/manifest.md` — orchestrator reads the manifest, extracts the plan sequence, threads shared context into reviewer prompts at each cycle.
+
+## Manifest backfill (mandatory)
+
+A feature directory may start with a single plan and no manifest. When a SECOND plan is added to the same feature directory (because work grew beyond one plan's scope), the manifest is created during the planning conversation that produces plan-02:
+
+- **Trigger:** `/dreamers-plan` Phase 1d.1 detects: feature dir already exists, contains `plan-01-*.md`, no `manifest.md` present, and the current conversation is producing what will become `plan-02-*.md` for the same feature.
+- **Responsibility:** `/dreamers-plan` creates `manifest.md` in that same Phase 1d.1 step. Uses the existing plan-01 as seed context for the manifest's shared sections.
+- **Timing:** before plan-02 implementation starts.
+
+This avoids the edge case where a feature has multiple plans but no manifest, and reviewer agents can't see the cross-plan shared context.
 
 ## Ship strategy (multi-plan invocations)
 
 When `/dreamers-full` runs ≥ 2 plans, it presents a **Phase 1.5 ship-strategy gate** asking how to ship:
 
-- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final plan's close-out runs the milestone retro + improvements + plan archive.
-- **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans.
+- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final plan's close-out runs the milestone retro + improvements + plan-archive (whole feature dir moves to archive at that point).
+- **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans; whole feature dir moves to archive after the single PR merges.
 
 The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the gate. Single-plan invocations skip this gate.
 
@@ -81,15 +87,15 @@ The orchestrator reads the manifest (if any) and plan files; the strongest signa
 
 **Recommend INCREMENTAL when ANY hold:**
 - ≥ 4 plans in the sequence (review burden of one big PR is high).
-- Plans touch significantly different file subsystems (low overlap in §Scope file lists).
-- Manifest's cross-plan Risks section does NOT mention "ordering dependency," "breaking change," or "coordinated revert."
+- Plans touch significantly different file subsystems (low overlap in plan Context file lists).
+- Manifest's shared constraints do NOT mention "ordering dependency," "breaking change," or "coordinated revert."
 - Plans are substantial (≥ 5 ACs each, or test cases spanning multiple layers).
 - Plan A's value is observable to users without plans B+ (incremental value delivery).
 
 **Recommend ATOMIC when ANY hold:**
 - 2–3 plans only (small feature).
 - Plans touch overlapping files (same files edited by multiple plans).
-- Manifest's cross-plan Risks mentions "ordering dependency," "breaking change requiring shim," or "coordinated revert."
+- Manifest's shared constraints mention "ordering dependency," "breaking change requiring shim," or "coordinated revert."
 - DB migrations or schema changes gated on prior plans.
 - End-to-end ACs require ALL plans to verify (no piecewise testability).
 - Feature-flag protected work where partial deployment leaves the system in a half-state.

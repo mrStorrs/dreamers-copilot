@@ -44,7 +44,7 @@
       "type": "agent",
       "slug": "nova",
       "name": "nova",
-      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the three-phase requirements conversation, writes plan file(s) (and optional `feature-{slug}.md` manifest), hard-stops at Phase 1g approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
+      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the three-phase requirements conversation, writes plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), hard-stops at Phase 1g approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -188,7 +188,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "Full Dreamers pipeline orchestrator. Accepts a task description, variadic plan paths (one or many), or a feature manifest (`feature-{slug}.md`). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts for hierarchical AI context. Delegates Phase 1 to /dreamers-plan, Phase 2 to /dreamers-implement (one cycle per plan in sequence), Phase 3 to /dreamers-close-out.",
+      "description": "Full Dreamers pipeline orchestrator. Accepts a task description, variadic plan paths (one or many, all inside per-feature directories), or a feature manifest (`feature-<slug>/manifest.md`). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts for hierarchical AI context. Delegates Phase 1 to /dreamers-plan, Phase 2 to /dreamers-implement (one cycle per plan in sequence), Phase 3 to /dreamers-close-out.",
       "author": "CJ Storrs",
       "tags": [
         "code",

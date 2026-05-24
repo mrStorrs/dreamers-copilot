@@ -84,7 +84,7 @@ The orchestrator passes:
 
 Auto-detect:
 - Branch name + default branch (canonical two-step).
-- Plan paths: scan `.dreamers/plans/` for non-archived files referenced by `git log origin/<DEFAULT>..HEAD --format=%B | grep -E "^Plan:"`.
+- Plan paths: extract via `git log origin/<DEFAULT>..HEAD --format=%B | grep -E "^Plan:"` and resolve each value to `.dreamers/plans/<value>.md`. The commit body format produced by `/dreamers-implement` Step 8 is `Plan: feature-<slug>/plan-NN-<name>` — repo-relative, no `.md`, no `.dreamers/plans/` prefix. Skip lines that don't resolve to an existing file (these may be stale commits or merge artifacts).
 - Sentinel summary: not available — pass placeholder.
 - Issue reference: parse from `$ARGUMENTS` only — accepts `--issue <#|url>` flag or a bare issue number / GitHub issue URL. If not provided, skip the issue close entirely. **Do not prompt the user.**
 
@@ -143,7 +143,7 @@ Before invoking `/dreamers-pr`, present this block:
 **Milestone ready to ship.**
 
 Plan(s) shipped:
-- path/to/plan-{slug}.md — one-line summary
+- .dreamers/plans/feature-<slug>/plan-NN-<name>.md — one-line summary
 
 AC coverage: <N>/<N> ACs covered (or list any uncovered with reason)
 
@@ -183,14 +183,23 @@ Invoke `/dreamers-pr` in composed mode. Pass:
 
 Wait for `/dreamers-pr` to signal completion. Capture the PR URL.
 
-## Step 7 — Plan archive
+## Step 7 — Plan archive (whole feature directory)
 
-For any plan file in `.dreamers/plans/` whose PR is already merged (excluding the PR just opened in Step 6, which is unmerged):
+The archive unit is the **whole feature directory** (`.dreamers/plans/feature-<slug>/`), not individual plan files. Mid-feature archiving (file-by-file) is NOT allowed — it would leave partially-emptied directories.
 
-- Verify the prior PR is merged: `gh pr view <number> --json state -q .state` returns `MERGED`.
-- `mv` the plan file to `.dreamers/plans/archive/` (create dir if needed). Never delete.
+**Trigger:** the feature is complete when ALL plans in `feature-<slug>/` have shipped (their PRs merged to main). For single-plan features this is one PR; for multi-plan features this is the last plan's PR.
 
-Skip silently if no merged prior plan files exist.
+**Procedure:**
+
+1. Identify any feature directories at `.dreamers/plans/feature-<slug>/` whose plans are all referenced by merged PRs (excluding the PR just opened in Step 6, which is unmerged).
+2. For each such complete feature, verify every plan's PR is merged via `gh pr view <number> --json state -q .state` returning `MERGED`. If ANY plan's PR is still open or in-flight, skip this feature — it is not yet ready to archive.
+3. Move the entire feature directory: `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/` (create the archive dir if needed). Never delete files.
+
+Skip silently if no complete feature directories are ready to archive.
+
+**Note:** this is the primary archive trigger. `git-workflow.md` Step 4 (run at the start of the next milestone in `/dreamers-implement` branch setup) is a fallback for prior features whose close-out never ran — if Step 7 already archived this feature, the source directory won't exist and Step 4 is a no-op.
+
+**Legacy note:** legacy flat-format plan files (`.dreamers/plans/plan-<slug>.md` without a feature directory) created before the format overhaul are not auto-archived by this step — they stay where they are. If you need to archive a legacy plan, do it manually.
 
 ## Step 8 — Post-PR discipline (from `close-out.md`)
 

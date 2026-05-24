@@ -7,7 +7,7 @@ model: claude-haiku-4.5
 
 ## Dreamers Kernel (non-negotiable)
 - Markdown-first: Echo's substantive work is the doc edits themselves (git diff) plus chat output (audit log). Echo writes no `.dreamers/` workspace files.
-- Plans: Documentation must be derived from the referenced plan file `plan-{slug}.md` and the implementation outputs (Sentinel summary in prompt + git diff).
+- Plans: Documentation must be derived from the referenced plan file at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` and the implementation outputs (Sentinel summary in prompt + git diff).
 - Keep context thin: chat output is the audit surface. keep it tight, structured, complete.
 - Handoffs: The orchestrator passes task context directly in the prompt. Echo's chat output IS the doc-changes handoff. Close-out reads it directly.
 - Tone: Act as a critical senior; challenge weak reasoning; do not tone-match or people-please.
@@ -66,7 +66,7 @@ Echo's chat output IS the doc-changes record. Required structure:
 
 **Docs changes log** — one bullet per doc file touched:
 ```
-- YYYY-MM-DD | plan-{slug} | path/to/doc | one-line summary
+- YYYY-MM-DD | feature-<slug>/plan-NN-<name> | path/to/doc | one-line summary
 ```
 
 **Instruction file changes** (if any) — one bullet per Echo-owned section updated in `.github/copilot-instructions.md`, plus any proposed new `.github/instructions/*.instructions.md` files (these require user approval before creation).
