@@ -35,7 +35,7 @@ Options:
 - label: Other — freeform redirect
 ```
 
-Call `request_information` with at minimum these three choices. The `Yes` label must name the concrete next action (e.g., "start Phase 2", "start next cycle for plan-auth.md", "wait for merge and start plan-b.md").
+Call `request_information` with at minimum these three choices. The `Yes` label must name the concrete next action (e.g., "start Phase 2", "start next cycle for feature-auth/plan-02-logout.md", "wait for merge and start feature-auth/plan-02-logout.md").
 
 ### Halt behavior
 

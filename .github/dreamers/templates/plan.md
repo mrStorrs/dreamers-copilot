@@ -1,101 +1,111 @@
-# Plan — [Short Description]
+# Plan-NN: [short title]
 
-**Owner:** [Owner]
 **Date:** YYYY-MM-DD
-**Scope:** repo-local
 **Status:** Draft
-**Branch:** feat/d<N>-<name>
+**Branch:** feat/<slug>
 **User-testing-required:** yes/no
-**Links:** *(list any key refs or related files, or omit if none)*
 
 ---
 
-## Summary
+## Goal
 
-[1-2 sentences: what this plan delivers and why it is needed]
-
----
-
-## Scope / Non-goals
-
-**In scope:**
-- [file or component being changed, with one-line reason]
-
-**Non-goals:**
-- [what this deliberately does NOT cover]
+[One paragraph. What is true when this plan is done that wasn't true before. No motivation prose ("this is important because..."); state the goal directly.]
 
 ---
 
-## Constraints
+## Context
 
-- [hard rules the implementation must not violate]
+[≤ 200 words. Bullet links to relevant files / prior plans / PRs. No explanation prose — just orient the implementer to what already exists.]
 
----
-
-## Design Decisions
-
-**Decision:** [what was chosen]
-**Rationale:** [why — the specific trade-off or constraint that drove it]
-**Rejected:** [alternatives considered and why they lost]
-
-### Race conditions and ordering
-*(Required when the data flow involves async operations, shared mutable state, or concurrent writes — e.g., seq counters, catch-up protocols, event replay, optimistic UI updates. Omit only if this plan has no async flows with shared state.)*
-
-| Scenario | Risk | Resolution |
-|---|---|---|
-| [concurrent operation A and B] | [what can go wrong] | [how the design prevents it] |
+- `path/to/relevant-file.ext` — one-line role
+- `[Prior plan or PR](path-or-url)` — what it established that this plan builds on
 
 ---
 
 ## Acceptance Criteria
 
-1. [Numbered, measurable, implementation-verifiable — not vague]
-2. ...
+<acceptance_criteria>
+1. Given [precondition], when [trigger], then [observable outcome].
+   *Layer: unit.*
+2. Given ..., when ..., then ...
+   *Layer: integration.*
+3. Given ..., when ..., then ...
+   *Layer: E2E.*
+</acceptance_criteria>
 
 ---
 
-## Post-merge gates
+## Out of Scope
 
-*(Remove this section if all ACs are verifiable before PR merge. Use it only for ACs that require the branch to be merged to main first — e.g., auto-deploy triggers, production DNS propagation, webhook callbacks from external services.)*
-
-| AC | Verification step | Who verifies |
-|---|---|---|
-| [AC number] | [exact check to perform after merge] | [human / automated] |
+- Will NOT touch [X].
+- Will NOT change [Y].
+- Will NOT introduce [Z].
 
 ---
 
-## Test Cases
+## Constraints
 
-**TC-1 ([short name]):**
-Given [precondition] /
-When [action] /
-Then [expected outcome]
-
-**TC-2 ([short name]):**
-Given ... / When ... / Then ...
+<constraints>
+- **Technical:** [stack, perf, libraries, runtime requirements]
+- **Process:** [gates, review requirements, test commands]
+- **Hard rules:** [things the implementation must NEVER do, with the rationale that prevents the agent from relaxing the rule]
+</constraints>
 
 ---
 
-## § Deferred Items
+## Design Decisions  (optional — include only if there are non-obvious choices)
 
-[Any known defects or scope items punted from this plan]
+**Decision:** [what was chosen]
+**Rationale:** [why — one sentence]
+**Rejected:** [alternatives considered — one line each]
 
-| Item | Why deferred | Target milestone |
-|---|---|---|
-| — | — | — |
-
-*(Remove this section entirely if there are no deferred items.)*
+[Add more entries as needed. Omit this section entirely on trivial plans.]
 
 ---
 
-## Rollback Boundary
+## UI  (only if this plan has a user-visible surface)
 
-[Which files can be reverted, and whether rollback affects other plans in the same sequence or features]
+**Layer 1 — ASCII layout** (mandatory when UI section exists):
+
+```
+┌─ [Component / screen / panel name] ──────────────────┐
+│  [Header / title row]                                 │
+│                                                       │
+│  [Body content — describe spatial arrangement here]   │
+│                                                       │
+│  [Footer / action row]                                │
+└───────────────────────────────────────────────────────┘
+```
+
+**Layer 2 — Component spec** (mandatory; pick ONE format):
+
+Table form (good for ≤ 5 components, short cells):
+
+| Component | Type | Behavior | Source data |
+|---|---|---|---|
+| [Name] | [UI primitive] | [what it does + disabled rules] | [data source] |
+
+OR per-component subsections (good when behavior descriptions are long):
+
+### [ComponentName]
+- **Type:** [UI primitive]
+- **Behavior:** [what it does, when it's disabled, error states, loading states]
+- **Source data:** [where the data comes from]
+
+**Layer 3 — Mermaid state/flow** (optional, only if interactive):
+
+```mermaid
+stateDiagram-v2
+    [*] --> InitialState
+    InitialState --> NextState : trigger
+    NextState --> Done
+```
 
 ---
 
-## Risks / Mitigations
+## Verification
 
-| Risk | Mitigation |
-|---|---|
-| [risk] | [mitigation] |
+- **Test command:** [command from `.github/copilot-instructions.md`]
+- **Type-check command:** [command from `.github/copilot-instructions.md`]
+- **Files to inspect after implementation:** [list specific paths]
+- **Smoke check:** [one or two specific manual or automated checks not covered by the test command]

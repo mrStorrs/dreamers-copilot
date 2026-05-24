@@ -48,7 +48,7 @@ For each element the plan references, verify against the current codebase:
 3. **Data model shapes** — if the plan references a DB table, model class, or interface, read it and verify the plan's assumptions hold.
 4. **Test files / cases** — if the plan cites existing tests as a starting point, verify those tests exist and are scoped as the plan describes.
 5. **Acceptance Criteria measurability** — re-evaluate whether each AC is still measurable against the current code. (An AC like "user can filter by date" requires a filter mechanism to exist or be plannable; if the underlying API has changed, the AC may need rewording.)
-6. **Constraints + Risks** — re-check whether stated constraints still hold (e.g., "must not change the existing API" — does the API still look as the plan described?).
+6. **Constraints** — re-check whether stated constraints (technical, process, hard rules) still hold (e.g., "must not change the existing API" — does the API still look as the plan described?). Note: in the new plan format, risks are folded into Constraints as hard rules; there is no separate Risks section to verify.
 
 ## Output
 

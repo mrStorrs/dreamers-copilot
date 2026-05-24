@@ -53,7 +53,7 @@ Pulled from `logging-standards.md`. Key rules:
 
 ## Test-writing discipline
 
-- **Tests-first:** write failing tests against the plan's Acceptance Criteria and Test Cases (Given/When/Then) BEFORE implementing.
+- **Tests-first:** write failing tests against the plan's Acceptance Criteria (Given/When/Then with Layer annotations per `plan-content.md`) BEFORE implementing. There is no separate Test Cases section in the new plan format — the ACs are the test specification.
 - **AC coverage matrix:** for every plan AC, identify the test(s) that cover it. If an AC has no covering test, write one. Do not declare the cycle done based on test count alone — verify by AC.
 - **Layer audit (mandatory after implementation):** for the changed code, ask explicitly per layer:
   - *Unit:* Are there functions, branches, or error paths in the changed code with no unit test?
@@ -83,7 +83,7 @@ Pulled from `logging-standards.md`. Key rules:
 
 - Stage with `git add` as work progresses across all phases. Never commit mid-cycle.
 - **One commit per cycle = one commit per plan.** Multi-plan milestones produce N commits on the branch (one per plan in the sequence).
-- Commit message follows `.github/instructions/git.instructions.md` (if present) or the conventional-commits style used by recent commits on the default branch. Body MUST include `Plan: plan-{slug}`.
+- Commit message follows `.github/instructions/git.instructions.md` (if present) or the conventional-commits style used by recent commits on the default branch. Body MUST include `Plan: feature-<slug>/plan-NN-<name>` — the repo-relative plan path without the `.md` extension and without the `.dreamers/plans/` prefix. Example: `Plan: feature-plan-quality-scoring/plan-01-section-scorer`.
 - **Push exactly once**, immediately before `gh pr create` at final close-out. Never push between cycles, never between plans.
 
 ---

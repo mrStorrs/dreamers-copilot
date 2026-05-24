@@ -15,9 +15,10 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
-4. **Archive prior feature's plan files** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
-   - **Merged:** move all plan files for that feature from `.dreamers/plans/` to `.dreamers/plans/archive/` (create the dir if it doesn't exist). The PR description is the lasting public record; the archived plan files are preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files.
-   - **Not merged:** leave plan files in place.
+4. **Archive prior feature's plan directory** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
+   - **Merged:** move the entire feature directory from `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived feature directory is preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files. Mid-feature archive (file-by-file) is NOT allowed; only whole-feature-directory archive at the milestone-final PR merge.
+   - **Not merged:** leave the feature directory in place.
+   - **Note:** this step catches prior features not already archived by `/dreamers-close-out` Step 7 (the primary archive trigger). If close-out already ran on the prior feature, the source directory won't exist and the `mv` is a no-op — skip silently.
 5. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
 ## Commit discipline (non-negotiable)
@@ -36,7 +37,7 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
   - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: plan-add-auth`)
+  - Body: reference the plan file (e.g. `Plan: feature-auth/plan-01-login-flow`) — repo-relative path without `.md`, without `.dreamers/plans/` prefix
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 

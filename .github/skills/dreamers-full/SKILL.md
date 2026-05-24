@@ -1,7 +1,7 @@
 ---
 name: dreamers-full
 description: 'Full Dreamers pipeline orchestrator. Delegates to `/dreamers-plan` (Phase 1), `/dreamers-implement` (Phase 2, one cycle per plan), `/dreamers-close-out` (Phase 3). Accepts variadic plan paths OR a feature-manifest path to run multiple plans in sequence on one branch + one PR. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
-argument-hint: '<task description> | <plan-path> [more plan paths] | <feature-{slug}.md>'
+argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more plan paths] | feature-<slug>/manifest.md'
 ---
 
 ## What this skill does
@@ -14,14 +14,16 @@ Each phase delegates to a sub-skill that owns the actual work. The orchestrator 
 
 **Mode 1 — no plan(s) yet:** `/dreamers-full <task description>` — orchestrator runs `/dreamers-plan` first; the planning conversation produces one or more plan files (and optionally a feature manifest); user approves; orchestrator then runs Phase 2.
 
-**Mode 2 — plans already exist (variadic):** `/dreamers-full path/to/plan-a.md path/to/plan-b.md path/to/plan-c.md` — orchestrator skips Phase 1 planning and runs Phase 2 directly for each plan in argument order. One plan path = single-plan mode; multiple paths = sequential multi-plan mode. No shared-context manifest in this mode.
+**Mode 2 — plans already exist (variadic):** `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` — orchestrator skips Phase 1 planning and runs Phase 2 directly for each plan in argument order. One plan path = single-plan mode; multiple paths = sequential multi-plan mode. No shared-context manifest in this mode. All plan paths are expected to follow the per-feature directory layout from `plan-rules.md`.
 
-**Mode 3 — feature manifest:** `/dreamers-full path/to/feature-{slug}.md` — orchestrator reads the manifest, extracts the plan sequence from its "Plan sequence" table, and runs cycles in that order. The manifest's shared constraints / design decisions / data models / end-to-end ACs / cross-plan risks are loaded as **shared context** and threaded into each cycle's reviewer prompts. This is the hierarchical-AI-context mode, used when cross-plan context warrants it.
+**Mode 3 — feature manifest:** `/dreamers-full feature-<slug>/manifest.md` (or a path resolving to a manifest file) — orchestrator reads the manifest, extracts the plan sequence from its "Plan sequence" table, and runs cycles in that order. The manifest's shared constraints / design decisions / data models / end-to-end ACs are loaded as **shared context** and threaded into each cycle's reviewer prompts. This is the hierarchical-AI-context mode, used when cross-plan context warrants it.
 
 **Argument disambiguation:** the orchestrator checks the first argument:
-- First argument filename matches `feature-*.md` → Mode 3 (manifest).
-- First argument ends in `.md` but does NOT match `feature-*.md` → Mode 2 (variadic plan paths; remaining args are additional plan paths if provided).
+- First argument basename is exactly `manifest.md` (typically `feature-<slug>/manifest.md` or `.dreamers/plans/feature-<slug>/manifest.md`) → Mode 3 (manifest).
+- First argument ends in `.md`, basename matches `plan-NN-*.md`, lives inside a `feature-<slug>/` directory → Mode 2 (variadic plan paths; remaining args are additional plan paths if provided, all expected to live inside `feature-<slug>/` directories).
 - Otherwise → Mode 1 (task description).
+
+**Legacy flat-format compatibility:** old-format plans (`.dreamers/plans/plan-<slug>.md` without a feature directory) and old-format manifests (`feature-<slug>.md` at the plans/ root) are NOT supported by this skill after the plan-format overhaul. Plans must follow the per-feature directory layout from `plan-rules.md`.
 
 ## Pre-flight reads
 
@@ -64,12 +66,12 @@ If `$ARGUMENTS` contains a task description (Mode 1):
 
 Invoke `/dreamers-plan` with the user's task description forwarded as the argument.
 
-`/dreamers-plan` runs the three-phase requirements conversation (Hash-it-out → Approval → Decompose), writes one or more plan files to `.dreamers/plans/` (and optionally a `feature-{slug}.md` manifest if cross-plan context warrants), and exits at the implementation-start approval gate (Phase 1g). It does NOT proceed to implementation.
+`/dreamers-plan` runs the three-phase requirements conversation (Hash-it-out → Approval → Decompose), writes one or more plan files to `.dreamers/plans/feature-<slug>/` (and optionally a `manifest.md` in the same directory if cross-plan context warrants), and exits at the implementation-start approval gate (Phase 1g). It does NOT proceed to implementation.
 
 From `/dreamers-plan`'s chat output, capture:
 - **Plan count + sequence order** — one plan or multiple.
 - **Plan file path(s)** — exact paths under `.dreamers/plans/`.
-- **Manifest path** — if a `feature-{slug}.md` was produced, capture its path.
+- **Manifest path** — if a manifest was produced, capture its path (typically `.dreamers/plans/feature-<slug>/manifest.md`).
 - **Approval status** — confirmed at Phase 1g.
 
 If the user rejects at Phase 1c or 1g, `/dreamers-plan` loops until approved. The orchestrator does not bypass.
@@ -117,14 +119,14 @@ Read the manifest (if any) and the plan files. Score against the heuristics belo
 **Recommend INCREMENTAL when any hold:**
 - ≥ 4 plans in the sequence (review burden of one big PR is high).
 - Plans touch significantly different file subsystems (low overlap in plan §Scope file lists).
-- Manifest's cross-plan Risks section does NOT mention "ordering dependency," "breaking change," or "coordinated revert."
+- Manifest's Shared constraints section does NOT mention "ordering dependency," "breaking change," or "coordinated revert."
 - Plans are estimated as substantial (≥ 5 ACs each, or test cases spanning multiple layers).
 - Plan A's value is observable to users without plans B+ (incremental value delivery).
 
 **Recommend ATOMIC when any hold:**
 - 2–3 plans only (small feature).
 - Plans touch overlapping files (same files edited by multiple plans).
-- Manifest's cross-plan Risks mentions "ordering dependency," "breaking change requiring shim," or "coordinated revert."
+- Manifest's Shared constraints section mentions "ordering dependency," "breaking change requiring shim," or "coordinated revert."
 - DB migrations or schema changes gated on prior plans.
 - End-to-end ACs require ALL plans to verify (no piecewise testability).
 - Feature-flag protected work where partial deployment leaves the system in a half-state.
@@ -137,11 +139,11 @@ If signals point both ways, default to ATOMIC (safer) and cite the conflicting s
 **Phase 1.5 — Ship strategy**
 
 Plans in sequence:
-- path/to/plan-a.md — [one-line summary]
-- path/to/plan-b.md — [one-line summary]
-- path/to/plan-c.md — [one-line summary]
+- .dreamers/plans/feature-<slug>/plan-01-<name>.md — [one-line summary]
+- .dreamers/plans/feature-<slug>/plan-02-<name>.md — [one-line summary]
+- .dreamers/plans/feature-<slug>/plan-03-<name>.md — [one-line summary]
 
-Manifest: [feature-{slug}.md path, or "none"]
+Manifest: [.dreamers/plans/feature-<slug>/manifest.md path, or "none"]
 
 **Recommended strategy:** [INCREMENTAL | ATOMIC]
 **Reasoning:** [one sentence citing the strongest heuristic signal]

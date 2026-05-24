@@ -102,7 +102,7 @@ Per `agent-recovery.md`: if Sentinel, Probe, or Hone hits a rate limit, crashes,
 
 Read the plan file passed as `$ARGUMENTS` now (deferred from pre-flight so the anchor-to-remote-truth step above runs first against stale-prone `.dreamers/` content).
 
-Read the plan's Acceptance Criteria and Test Cases (Given/When/Then). For each AC, write at least one test that would verify it. Cover the Given/When/Then scenarios as written.
+Read the plan's Acceptance Criteria (numbered Given/When/Then with `*Layer: ...*` annotations per `plan-content.md`). For each AC, write at least one failing test that would verify it, at the layer the annotation specifies. There is no separate Test Cases section in the new plan format — the ACs are the test specification.
 
 - Tests live wherever the project's test convention specifies (consult `.github/copilot-instructions.md`).
 - Stage with `git add`.
@@ -206,12 +206,12 @@ Check the plan's `User-testing-required` field.
 
 The `request_information` call MUST include every item below. Do not abbreviate — the user reads only what is in this prompt:
 
-- **Plan being tested:** ID + path (e.g. `plan-{slug}` → `.dreamers/plans/plan-{slug}.md`).
+- **Plan being tested:** ID + full path (e.g. `plan-01-section-scorer` → `.dreamers/plans/feature-plan-quality-scoring/plan-01-section-scorer.md`).
 - **Build / distribution details:** check for `.github/instructions/build.instructions.md` at the project root.
   - **If present:** follow it exactly. Execute only the steps it explicitly authorises the orchestrator to run. Surface every user-action step (install on device, launch app, open URL, version/build to verify) verbatim.
   - **If absent:** state plainly that there is no `build.instructions.md`. Ask the user to either (a) build/distribute the test build themselves and confirm when ready, or (b) provide the steps so a `build.instructions.md` can be created. Do not invent build steps.
 - **What changed in this cycle:** 1–3 bullets summarising the user-visible behaviour delivered.
-- **Step-by-step test steps:** numbered, concrete, reproducible. Derive directly from the plan's Acceptance Criteria and Test Cases (Given/When/Then). Each step states the action and the expected observation.
+- **Step-by-step test steps:** numbered, concrete, reproducible. Derive directly from the plan's Acceptance Criteria (Given/When/Then with Layer annotations). Each step states the action and the expected observation.
 - **Known limitations / out-of-scope:** anything the user might try that this cycle deliberately doesn't cover.
 - **How to respond:**
   - `Approved — continue` (skill proceeds to commit)
@@ -224,7 +224,19 @@ The `request_information` call MUST include every item below. Do not abbreviate 
 
 ### Step 8 — Commit the cycle
 
-Run `git status` to confirm staged content. Run `git commit` with a message following the project's commit-message style (see `.github/instructions/git.instructions.md` if present). Message body MUST include `Plan: plan-{slug}`.
+Run `git status` to confirm staged content. Run `git commit` with a message following the project's commit-message style (see `.github/instructions/git.instructions.md` if present).
+
+**Plan reference (mandatory):** the commit body MUST include a line of the form:
+
+```
+Plan: feature-<slug>/plan-NN-<name>
+```
+
+This is the repo-relative path of the plan file WITHOUT the `.md` extension and WITHOUT the leading `.dreamers/plans/` prefix. Example: `Plan: feature-plan-quality-scoring/plan-01-section-scorer`.
+
+For multi-plan cycles, each cycle's commit references only its own plan path.
+
+`/dreamers-close-out` standalone auto-detection greps for `^Plan:` lines in `git log` and resolves each to `.dreamers/plans/<value>.md` — the format above is required for that resolution to work.
 
 One commit per cycle. Do not push.
 
