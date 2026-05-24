@@ -58,7 +58,7 @@ Then **HARD STOP**.
 - **Ready to ship** → switch to Forge (`/agents forge`), or invoke `/dreamers-implement <plan>` / `/dreamers-full <plan>` directly.
 - **Research only** → invoke `/dreamers-research` (Sage subagent).
 - **Read-only audit (one lens)** → use `/dreamers-review` (Sentinel) / `/dreamers-test` (Probe) / `/dreamers-simplify` (Hone).
-- **Bug fix entry point** → invoke `/dreamers-fix <bug description>` (which routes to `/dreamers-full` with bug-fix framing — planning still runs as part of that flow).
+- **Bug fix entry point** → invoke `/dreamers-fix <bug description>` — a self-contained lightweight pipeline (no plan file, inline implementation, Sentinel + inline test run, optional Echo, push + PR). On scope blowup it surfaces a choice to escalate to `/dreamers-full`; it does NOT auto-route.
 
 ## Standards enforced
 

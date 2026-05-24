@@ -34,7 +34,7 @@ Every constraint in those files is binding. The project-level `.github/copilot-i
 
 When the user describes work in chat:
 
-1. **No plan exists yet** → invoke `/dreamers-plan` to produce one or more plans, OR invoke `/dreamers-full <task description>` (Mode 1) to combine planning + implementation in one flow. **Bug fix entry point:** invoke `/dreamers-fix <bug description>` — this routes to `/dreamers-full` with bug-fix framing and still runs the planning phase (with planning scaled to the bug's complexity).
+1. **No plan exists yet** → invoke `/dreamers-plan` to produce one or more plans, OR invoke `/dreamers-full <task description>` (Mode 1) to combine planning + implementation in one flow. **Bug fix entry point:** invoke `/dreamers-fix <bug description>` — a self-contained lightweight pipeline (no plan file, inline implementation, Sentinel + inline test run, optional Echo, push + PR). On scope blowup, `/dreamers-fix` surfaces the choice to escalate to `/dreamers-full`; it does NOT auto-route.
 2. **A plan exists** → invoke one of:
    - `/dreamers-implement <plan-path>` for single-plan work in isolation
    - `/dreamers-full <plan-path>` for the full plan + close-out flow
