@@ -70,7 +70,7 @@ The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel
 
 | Skill | Purpose |
 |-------|---------|
-| `dreamers-fix` | Bug-fix entry point. Routes to `/dreamers-full` with bug-fix framing in the planning conversation. |
+| `dreamers-fix` | Lightweight bug-fix pipeline. Self-contained: fresh `fix/<slug>` branch → inline implement → Sentinel + test run (parallel) → optional Echo → push + PR. No plan file, no Probe, no Hone. On scope blowup, surfaces a choice to escalate to `/dreamers-full`. |
 | `dreamers-add-logging` | Phased pass to add/improve project logging per `logging-standards.md`. Audit → propose → approve → apply → optional Sentinel review. |
 | `dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Same phased flow. |
 | `dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. For pre-PR sweep. |

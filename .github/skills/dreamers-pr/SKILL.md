@@ -72,7 +72,16 @@ The caller passes a set of inputs in the prompt. Inputs vary by which close-out 
 - Issue number / URL (if applicable)
 - Final commit hash (if docs were committed by light close-out)
 
-PR body drafting (Step 2 below) handles both: when retro path is provided, the body references it; when not provided, the body omits the retro section entirely. The PR title and Summary section adapt — milestone PR titles describe the feature, per-plan PR titles describe the single plan.
+**From BUG-FIX (called by `/dreamers-fix`):**
+- Current branch name (`fix/<slug>`)
+- Default branch name
+- Plan file paths: the sentinel string `none — bug fix, no plan file` (literal value — `/dreamers-fix` passes this verbatim; do NOT attempt to treat it as a filesystem path)
+- Retro file path: **omitted** (no retro in bug-fix flow)
+- Sentinel summary string (single Sentinel review from `/dreamers-fix` Step 4)
+- Issue number / URL (if applicable)
+- Final commit hash (the bug-fix commit)
+
+PR body drafting (Step 2 below) handles all three: when retro path is provided, the body references it; when omitted, the body omits the retro section entirely. The PR title and Summary section adapt — milestone PR titles describe the feature, per-plan PR titles describe the single plan, bug-fix PR titles use the `fix:` conventional-commits prefix and derive Summary from the commit body's `Bug:` line.
 
 ### Standalone mode (user invokes directly)
 
@@ -112,10 +121,11 @@ This is the ONLY push in the whole milestone pipeline. If push fails:
 Use `~/.copilot/dreamers/templates/pr-description.md` as the base template. Fill in:
 
 - **Summary** — one paragraph: plan title + 1–3 bullets of what was delivered + why.
+  - **Bug-fix fallback (plan paths sentinel = `none — bug fix, no plan file`, OR plan paths absent in standalone mode):** derive the Summary from the most recent commit's body — specifically the `Bug:` line written by `/dreamers-fix` Step 8 — plus 1–2 bullets drawn from the Sentinel summary string describing what changed and why. Do NOT attempt to read the sentinel string as a filesystem path. Do NOT scan `.dreamers/plans/` looking for a matching file.
 - **Test counts** — only if test platforms are touched. Otherwise omit the section.
 - **Fixes applied** — severity-graded list from the Sentinel summary string (if present in composed mode).
 
-Title format: short (under 70 chars). Body details, not the title.
+Title format: short (under 70 chars). Body details, not the title. Bug-fix invocations use the `fix:` prefix; milestone / plan invocations use the appropriate prefix per `.github/instructions/git.instructions.md` (if present).
 
 ### Co-authored attribution (mandatory)
 

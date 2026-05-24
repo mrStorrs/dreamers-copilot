@@ -175,7 +175,7 @@
       "type": "skill",
       "slug": "dreamers-fix",
       "name": "dreamers-fix",
-      "description": "Bug-fix entry point. Routes to /dreamers-full with bug-fix framing in the planning conversation. Planning scales to bug complexity (minimal plan for trivial bugs, fuller plan for complex ones).",
+      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, implements inline, runs project tests + Sentinel review in parallel, optionally invokes Echo for docs, pushes + opens PR. No plan file, no Probe, no Hone, no /dreamers-full call. On scope blowup, surfaces choice to escalate to /dreamers-full; does not auto-route.",
       "author": "CJ Storrs",
       "tags": [
         "code",
