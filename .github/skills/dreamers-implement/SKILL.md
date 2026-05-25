@@ -32,21 +32,9 @@ If no plan path is provided in `$ARGUMENTS`, halt and ask the user — do not in
 
 <orchestration-flow>
 <!-- GENERATED from .github/dreamers/refs/orchestration-flow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Orchestration flow — ref delivery, single-owner todo, continuation principle
+# Orchestration flow — single-owner todo, continuation principle
 
-Single source of truth for three orchestration principles that apply across all Dreamers skills.
-
----
-
-## Ref delivery (HARD RULE)
-
-Refs are delivered to skills and agents via **build-time inlining**, not runtime `view` reads. Each consumer file (skill or agent) declares the refs it depends on by placing XML marker pairs (`<NAME>...</NAME>`) at the appropriate position in its body. `scripts/sync-refs.ps1` regenerates the content between the markers from `.github/dreamers/refs/NAME.md` on every sync. CI's `verify-refs` workflow fails any PR whose inlined ref content drifts from the source.
-
-**Implications:**
-- Skills and agents no longer need to "load this ref before Step 1" instructions — the ref content is already in the prompt body, between the markers.
-- To change a rule that appears in a ref, edit only the source file at `.github/dreamers/refs/NAME.md`. Run `pwsh -File scripts/sync-refs.ps1 -Sync`. Commit the regenerated consumer files alongside the ref edit.
-- NEVER edit content between marker tags by hand. The auto-inserted `<!-- GENERATED ... -->` warning comment makes this visible to humans and agents.
-- A consumer file MAY still reference templates, project-level files, or other non-ref artifacts at runtime — those remain runtime `view` reads (not in scope for ref inlining).
+Single source of truth for the orchestration principles that apply across all Dreamers skills.
 
 ---
 

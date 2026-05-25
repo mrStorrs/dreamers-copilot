@@ -118,8 +118,6 @@ function Get-ExpectedInner {
     return $lines
 }
 
-# First pass over every consumer: discover markers, validate, build per-file
-# action plan. No writes happen here.
 $errors = @()
 $plan = @()
 
@@ -154,11 +152,11 @@ foreach ($consumer in $consumers) {
                 $errors += "  ${relPath} line $($i + 1): closing tag </$name> without matching opening tag."
                 continue
             }
-            # Same-name duplicate: detect when sealing a pair whose name was
-            # already sealed earlier in this file.
             if ($pairs.Where({ $_.Name -eq $name }).Count -gt 0) {
                 $existing = ($pairs | Where-Object { $_.Name -eq $name } | Select-Object -First 1).OpenLine
                 $errors += "  ${relPath}: ref '$name' appears in more than one marker pair (lines $($existing + 1) and $($openStack[$name] + 1)). Same-name duplication is forbidden."
+                $openStack.Remove($name)
+                continue
             }
             $pairs += @{
                 Name      = $name
@@ -193,9 +191,6 @@ if ($errors.Count -gt 0) {
     exit 3
 }
 
-# Second pass: rebuild each file's content and compare. For verify, attribute
-# drift per-pair (a single drifted block names only that block, not every
-# block in the file).
 $updatedFiles = @()
 $staleFiles = @()
 
@@ -210,8 +205,6 @@ foreach ($entry in $plan) {
         }
         $expectedInner = Get-ExpectedInner -Ref $refs[$p.Name]
 
-        # Per-pair drift: compare what's currently between the tags against
-        # what we'd write.
         $currentInner = @()
         if ($p.CloseLine - $p.OpenLine -gt 1) {
             $currentInner = $entry.Lines[($p.OpenLine + 1)..($p.CloseLine - 1)]
@@ -239,10 +232,10 @@ foreach ($entry in $plan) {
         }
         else {
             if ($stalePairs.Count -eq 0) {
-                # Defensive: file diff fired but no per-pair diff — likely a
-                # surrounding-prose tracking issue. Report all pair names so
-                # the developer can investigate.
-                $stalePairs = $entry.Pairs.Name
+                # File-level diff fired without per-pair diff. Should not happen
+                # given correct logic; surface as a warning rather than swallow.
+                Write-Warning "verify-refs: $($entry.RelPath) — file-level diff detected but no per-pair diff identified. Flagging all pairs as a conservative fallback; please report this case so the drift logic can be tightened."
+                $stalePairs = $entry.Pairs | ForEach-Object { $_.Name }
             }
             $staleFiles += @{ Path = $entry.RelPath; Refs = ($stalePairs | Select-Object -Unique) }
         }
