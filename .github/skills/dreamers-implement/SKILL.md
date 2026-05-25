@@ -1,83 +1,81 @@
 ---
 name: dreamers-implement
-description: 'Implementation phase of the Dreamers pipeline. Reads an approved plan file and runs the per-cycle loop (failing tests → implement → run tests → coverage sweep → parallel review (Sentinel + Probe + Hone) → optional user-test → commit). Invokable standalone (given a plan path) or composed from `/dreamers-full` Phase 2. Triggers: /dreamers-implement, implement this plan, execute the plan.'
-argument-hint: 'path/to/plan.md'
+description: 'Implementation-only entry point. Runs the canonical implementation procedure (`implementation-procedure.md`) for one plan. Exits at the cycle commit. Does NOT push or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+argument-hint: 'feature-<slug>/plan-NN-<name>.md'
 ---
 
 ## What this skill does
 
-Takes an approved plan file as input and runs one implementation cycle:
+Standalone entry point for implementing a single existing plan. The user invokes this when they want to run one implementation cycle and stop — to inspect the result before shipping, or to chain manually.
 
-1. Write failing tests against the plan's AC + G/W/T
-2. Implement per the plan
-3. Type-check + run tests
-4. Coverage sweep
-5. Spawn Sentinel + Probe + Hone in parallel for fresh-eyes review
-6. Apply findings from all three reviewers inline
-7. User-testing pause (if plan requires)
-8. Commit the cycle
+This skill follows `~/.copilot/dreamers/refs/implementation-procedure.md` end-to-end (Step 1 → Step 8) and exits cleanly at the commit. It does NOT push, does NOT open a PR, does NOT update docs. Those belong to close-out (`/dreamers-close-out` or `/dreamers-full`'s Phase 3).
 
-**One cycle per invocation.** One plan = one invocation = one commit. For multi-plan work, the user (or `/dreamers-full` orchestrator) invokes this skill once per plan in the sequence.
+This skill does NOT invoke any other skill. The user is in control of what runs next.
 
-This skill does NOT push, does NOT open a PR, does NOT update docs. That's `/dreamers-close-out`'s job.
+If the user wants the full pipeline (planning + implementation + close-out), they should run `/dreamers-full` instead.
 
-## Pre-flight reads
+---
 
-Read these refs once at startup (full file, no truncation):
+## Pre-flight reads (MUST READ IN FULL — no globbing, no grepping)
 
-- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — the shared discipline (implementation + comment + logging + test-writing + git rules)
+Read these refs in full using the `view` tool at skill entry. Top to bottom. Pattern-skipping is forbidden per `orchestration-flow.md` § "Must-read refs rule."
+
+- `~/.copilot/dreamers/refs/orchestration-flow.md` — single-owner todo + continuation principle + must-read rule
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — implementation + comment + logging + test-writing + git rules
+- `~/.copilot/dreamers/refs/delegation.md` — subagent allowlist + forbidden list + protocol for invoking reviewers
 - `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, staging, push discipline
+- `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel/Probe/Hone crash mid-run
+- `~/.copilot/dreamers/refs/implementation-procedure.md` — the procedure this skill follows
+- `~/.copilot/dreamers/refs/plan-content.md` — plan structure (so the implementer knows what to expect)
 - `~/.copilot/dreamers/refs/comment-rules.md` — comment discipline
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations
 - `~/.copilot/dreamers/templates/logging-standards.md` — logging discipline
-- `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel crashes mid-run
-- `~/.copilot/dreamers/refs/delegation.md` — protocol for invoking reviewers (Sentinel, Probe, Hone)
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, **test commands** (binding), build commands.
 - `.github/instructions/build.instructions.md` (root, if present) — user-testing build/distribute playbook.
 - `.github/instructions/git.instructions.md` (root, if present) — commit message style.
-- `./test-benchmarks.md` (project root, if present) — read the `Recommended Timeout` column for each test command and use those values as the timeout when running tests in Steps 3 and 6. If this file is absent, no timeout adjustment is made.
+- `./test-benchmarks.md` (root, if present) — test run-time benchmarks for timeout selection.
 
-If no plan path is provided in `$ARGUMENTS`, halt and ask the user — do not invent or skip the plan. (Plan content is read in Step 1, AFTER the MANDATORY first actions below establish anchored remote state.)
-
-Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
+If no plan path is provided in `$ARGUMENTS`, halt and ask the user — do not invent or skip the plan.
 
 $ARGUMENTS
 
 ---
 
-## Todo list
+## Todo list (single owner: this skill)
 
 At skill entry, declare via `manage_todo_list`:
+
+- [ ] Read implementation-procedure.md
 - [ ] Read plan file
-- [ ] Write failing tests
-- [ ] Implement
-- [ ] Type-check + run tests
-- [ ] Coverage sweep
-- [ ] Spawn parallel review (Sentinel + Probe + Hone)
-- [ ] Apply reviewer findings + re-run tests
-- [ ] User-test pause (if plan requires it)
-- [ ] Commit the cycle
+- [ ] Step 1 — write failing tests
+- [ ] Step 2 — implement (inline)
+- [ ] Step 3 — type-check + run tests
+- [ ] Step 4 — coverage sweep
+- [ ] Step 5 — parallel review (Sentinel + Probe + Hone)
+- [ ] Step 6 — apply reviewer findings + re-run tests
+- [ ] Step 7 — user testing (if plan requires it)
+- [ ] Step 8 — commit the cycle
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
-(When invoked in composed mode by `/dreamers-full`, do NOT declare a new list — update the parent's matching Phase 2 cycle item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+**Subagent prompt rule:** when this skill spawns Sentinel / Probe / Hone in Step 5, include the line "Do NOT call `manage_todo_list`. The orchestrator owns the todo." in each subagent's prompt. Per `orchestration-flow.md` § "Single-owner todo."
 
 ---
 
 ## MANDATORY first actions (in order, once at skill entry)
 
-1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (Skip if called from `/dreamers-full` — orchestrator handles this at Phase 2 entry, not per plan.)
+1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note.
 
-2. **Branch setup (inline, per `git-workflow.md`):** (Skip if called from `/dreamers-full` — orchestrator handles this at Phase 2 entry.)
+2. **Branch setup (inline, per `git-workflow.md`):**
    - Detect default branch (canonical two-step):
      ```bash
      DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
      [ -z "$DEFAULT" ] && DEFAULT=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
      ```
-   - **Anchor to remote truth (mandatory before reading any `.dreamers/` files):** `git fetch origin && git log origin/$DEFAULT --oneline -5`. Workspace files in `.dreamers/` are local-only and may be stale; `origin/$DEFAULT` is the authoritative record of what is actually shipped.
-   - If currently on default branch: `git checkout $DEFAULT && git pull origin $DEFAULT`, then cut `feat/d<N>-<name>` from `$DEFAULT`.
+   - **Anchor to remote truth (mandatory before reading any `.dreamers/` files):** `git fetch origin && git log origin/$DEFAULT --oneline -5`.
+   - If currently on default branch: `git checkout $DEFAULT && git pull origin $DEFAULT`, then cut `feat/<slug>` from `$DEFAULT`.
    - If already on a feature branch: confirm via `git branch --show-current`. Stay on it.
    - Confirm `.dreamers/` is in `.gitignore`. If not, add it before any further edits.
 
@@ -85,187 +83,45 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 
 ---
 
-## Subagent failure recovery (applies to any reviewer invocation below)
+## Procedure
 
-Per `agent-recovery.md`: if Sentinel, Probe, or Hone hits a rate limit, crashes, or times out mid-run:
+Follow `~/.copilot/dreamers/refs/implementation-procedure.md` Step 1 through Step 8, exactly as written. The procedure handles:
 
-1. Read whatever the failing reviewer managed to write before failing (chat output, any staged files via `git status`).
-2. Determine which checks completed and which remain.
-3. Complete remaining work inline (this skill has Read/Write/Edit/Bash) OR re-spawn the affected reviewer scoped to only the remaining work. The other two reviewers' outputs are unaffected — do not re-spawn them.
-4. Do not re-run steps that already completed — build on partial progress.
+- Writing failing tests against the plan's ACs (Step 1)
+- Inline implementation with the HARD STOP block on agent spawning (Step 2)
+- Type-checking + running tests (Step 3)
+- Coverage sweep (Step 4)
+- Parallel Sentinel + Probe + Hone review (Step 5)
+- Orchestrator-as-fixer applying findings (Step 6)
+- User-testing pause if `User-testing-required: yes` in the plan (Step 7)
+- Final commit with the `Plan: feature-<slug>/plan-NN-<name>` body line (Step 8)
 
----
-
-## Per-cycle loop (one invocation of this skill = one cycle)
-
-### Step 1 — Read plan + write failing tests
-
-Read the plan file passed as `$ARGUMENTS` now (deferred from pre-flight so the anchor-to-remote-truth step above runs first against stale-prone `.dreamers/` content).
-
-Read the plan's Acceptance Criteria (numbered Given/When/Then with `*Layer: ...*` annotations per `plan-content.md`). For each AC, write at least one failing test that would verify it, at the layer the annotation specifies. There is no separate Test Cases section in the new plan format — the ACs are the test specification.
-
-- Tests live wherever the project's test convention specifies (consult `.github/copilot-instructions.md`).
-- Stage with `git add`.
-- Do not run yet — they should fail.
-
-### Step 2 — Implement
-
-**HARD STOP — implementation is inline.** The orchestrator (this skill, running in your context) edits files directly using Edit / Write / Bash tools. **Do NOT spawn any subagent to write code.** Specifically:
-- ❌ `agent_type: "general-purpose"` → FORBIDDEN. There is no general-purpose fallback for implementation.
-- ❌ `agent_type: "claude"` or any other host-runtime agent → FORBIDDEN.
-- ❌ `agent_type: "forge"` / `"nova"` / `"bolt"` → FORBIDDEN (these are not subagents in this system — see `delegation.md`).
-- ✅ The only `agent_type` values you may spawn from this skill are `sentinel` / `probe` / `hone` in Step 5 (parallel review). Nothing else.
-
-If you reach the implementation step and find yourself thinking "let me delegate this to an agent," that's the bug. The orchestrator does the implementation. Read the plan, edit the files inline, run the test command inline, stage with `git add`.
-
-Follow the **Implementation discipline** rules in `orchestrator-discipline.md`. Edit only files in the plan's scope. Stage with `git add` as you go.
-
-### Step 3 — Type-check + run tests
-
-1. Run the project's type-check command. Fix any errors before proceeding.
-2. Run the project's test command (scoped to the new tests if the runner supports it; else full suite).
-
-If tests fail:
-- Diagnose. Fix inline (production code, not the tests — the tests express the spec).
-- Re-run. Repeat up to 3 attempts.
-- If still failing after 3 attempts, stop and surface to the user. Do not loosen the tests to make them pass.
-
-After tests pass, update `./test-benchmarks.md`: find the row matching the test command and update `Last Run Time`, `Last Updated` (today's date), and `Recommended Timeout` (using the formula `max(last_run_time × 2, 30s)`). If `./test-benchmarks.md` does not exist, create it from `.github/dreamers/templates/test-benchmarks.md` and populate the row for the test command that just ran.
-
-### Step 4 — Coverage sweep (mandatory, unskippable checklist)
-
-After tests are green, run the coverage sweep before invoking the reviewers. Work through item by item, do not collapse to "looks fine":
-
-- [ ] **AC coverage matrix:** for every plan AC, name the test(s) that cover it. Any AC without a covering test → write one now.
-- [ ] **Layer audit — Unit:** for each changed file, are there functions, branches, or error paths with no unit test?
-- [ ] **Layer audit — Integration:** are there layer boundaries (repo↔DB, service↔API, function↔trigger) exercised by this change without an integration test?
-- [ ] **Layer audit — UI / E2E:** are there user-facing flows, screen states, or navigation paths introduced or changed without a UI / E2E test? (If a navigation element changed: E2E coverage is required, not optional.)
-- [ ] **Negative + edge cases:** for each piece of non-trivial logic, is there a test for invalid input, boundary values, empty/null/max, error states?
-- [ ] **Regression risks:** anything in the change that touches existing behavior — is the most likely regression covered?
-- [ ] **Final missed-AC check:** re-read the plan's Acceptance Criteria one last time and confirm every AC has a green test. Any AC without a covering test → write the test before signaling cycle complete. Hard gate.
-
-Any gap → write the test now. Re-run the test command. Loop until all checklist items pass.
-
-### Step 5 — Parallel review (Sentinel + Probe + Hone)
-
-Spawn **three reviewers in parallel** in a single batched tool call (whatever the runtime surfaces for parallel agent spawning). All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. None of them edits files.
-
-Common prompt context for all three:
-- Plan file path
-- Scope: list of changed files from `git status`
-- Branch + default branch names
-- What the orchestrator has done: written failing tests, implemented, type-checked, ran tests (passing), completed coverage sweep.
-- **Shared context (if applicable)** — when invoked from `/dreamers-full` in feature-manifest mode (Mode 3), the orchestrator passes the manifest's Shared constraints + Shared design decisions + Shared data models + End-to-end ACs. Include this verbatim in every reviewer's prompt under a "Feature context" header. Reviewers use this to evaluate the current plan in light of the full feature. Skip if no shared context was passed (Mode 2 variadic or standalone invocation).
-
-Per-reviewer prompt addition:
-
-**Sentinel** (`agent_type: "sentinel"`, `mode: "sync"`):
-- Lenses: correctness, security, maintainability
-- Out of scope: test coverage (Probe's lane), simplicity (Hone's lane)
-- Return: structured findings per the spec, plus plan-alignment summary
-
-**Probe** (`agent_type: "probe"`, `mode: "sync"`):
-- Lens: test coverage (AC matrix, layer audit, edge cases, gaps)
-- Out of scope: correctness/security/maintainability (Sentinel's lane), simplicity (Hone's lane)
-- Return: structured findings per the spec, plus plan AC coverage table
-
-**Hone** (`agent_type: "hone"`, `mode: "sync"`):
-- Lens: simplicity / over-engineering / redundancy / architectural quality
-- Out of scope: correctness/security/maintainability (Sentinel's lane), test coverage (Probe's lane)
-- Return: structured findings per the spec
-
-### Step 6 — Apply findings inline (orchestrator-as-fixer)
-
-Concatenate findings from all three reviewers per the orchestrator-as-fixer behavior in `orchestrator-discipline.md`:
-
-1. **Sort by severity** (critical → high → medium → low).
-2. **Resolve conflicts** per the conflict-resolution rule: correctness > simplicity. Genuine ambiguity → surface to user before applying.
-3. **Apply each fix inline** as a targeted Edit. Stage with `git add` as you go.
-4. **Re-run type-check + tests** after all fixes applied. If regressions appear, diagnose + re-fix inline (up to 3 attempts, then surface to user).
-
-Handle non-finding outputs:
-- Any reviewer returns **`Blocked — <reason>`** → halt cycle; surface; resolve; re-spawn the affected reviewer only.
-- Any reviewer returns **open questions** → present each to the user before proceeding. Capture decisions; apply inline. The follow-up is re-run tests only — NOT a re-spawn of Steps 3 + 4 + 5. See the re-verification rule below.
-- All three return **`Approved — no findings`** → proceed to Step 7 directly. No fix application needed.
-
-**Re-verification after fixes (mandatory):**
-
-Before applying any review findings, snapshot staged state: `git diff --cached --name-only` and `git diff --cached --stat`. After all fixes are applied and staged, diff against that snapshot to measure the fix-pass delta.
-
-Re-run the project's test command (using the `Recommended Timeout` from `./test-benchmarks.md` if present). After tests pass, update `./test-benchmarks.md` with the new run time and date (same formula as Step 3).
-
-If the post-fix test run regresses, diagnose and re-fix inline — up to 3 attempts, then surface to the user.
-
-After re-verification, check the significant-refactor criteria (defined in `orchestrator-discipline.md`):
-- If no criterion fires → proceed to Step 7.
-- If any criterion fires → call `request_information` with: (a) which criterion fired and the measured values, (b) one sentence explaining why a second 3-parallel pass is recommended, (c) choices `["Run second 3-parallel pass", "Skip — commit as-is", "Other"]`. Handling per choice:
-  - `Skip — commit as-is` → proceed to Step 7 and commit as-is.
-  - `Run second 3-parallel pass` → re-spawn Sentinel + Probe + Hone in parallel (Step 5 again), re-apply findings, re-run tests, and update `./test-benchmarks.md` again with the second-pass run time (same formula as Step 3) before proceeding to Step 7.
-  - `Other` → present the user's freeform response back to them as a redirect and halt the cycle. Do not auto-commit and do not auto-spawn reviewers.
-
-After fix application (or skip), proceed to Step 7.
-
-### Step 7 — User testing (if required)
-
-Check the plan's `User-testing-required` field.
-
-- **`no`** → proceed directly to step 8.
-- **`yes`** → pause the cycle by calling `request_information`. Do not commit until the user explicitly approves.
-
-The `request_information` call MUST include every item below. Do not abbreviate — the user reads only what is in this prompt:
-
-- **Plan being tested:** ID + full path (e.g. `plan-01-section-scorer` → `.dreamers/plans/feature-plan-quality-scoring/plan-01-section-scorer.md`).
-- **Build / distribution details:** check for `.github/instructions/build.instructions.md` at the project root.
-  - **If present:** follow it exactly. Execute only the steps it explicitly authorises the orchestrator to run. Surface every user-action step (install on device, launch app, open URL, version/build to verify) verbatim.
-  - **If absent:** state plainly that there is no `build.instructions.md`. Ask the user to either (a) build/distribute the test build themselves and confirm when ready, or (b) provide the steps so a `build.instructions.md` can be created. Do not invent build steps.
-- **What changed in this cycle:** 1–3 bullets summarising the user-visible behaviour delivered.
-- **Step-by-step test steps:** numbered, concrete, reproducible. Derive directly from the plan's Acceptance Criteria (Given/When/Then with Layer annotations). Each step states the action and the expected observation.
-- **Known limitations / out-of-scope:** anything the user might try that this cycle deliberately doesn't cover.
-- **How to respond:**
-  - `Approved — continue` (skill proceeds to commit)
-  - `Bug: <description>` (skill fixes inline, re-runs tests, re-distributes per `build.instructions.md` rules, re-calls `request_information` with refreshed test steps)
-  - Freeform notes / corrections are also accepted and treated as bugs unless clearly approving.
-
-**Resume rules:**
-- On `Approved — continue` → proceed to step 8.
-- On any bug or correction → **fix inline.** No Sentinel re-invocation: during user-testing rounds, the user IS the test layer. Steps: diagnose → fix in production code → re-run the test command to confirm no regression → re-build/distribute per `build.instructions.md` (or ask the user if no file) → re-call `request_information` with refreshed test steps that reproduce the original bug scenario plus any other steps still requiring user verification. Do NOT commit until explicit approval.
-
-### Step 8 — Commit the cycle
-
-Run `git status` to confirm staged content. Run `git commit` with a message following the project's commit-message style (see `.github/instructions/git.instructions.md` if present).
-
-**Plan reference (mandatory):** the commit body MUST include a line of the form:
-
-```
-Plan: feature-<slug>/plan-NN-<name>
-```
-
-This is the repo-relative path of the plan file WITHOUT the `.md` extension and WITHOUT the leading `.dreamers/plans/` prefix. Example: `Plan: feature-plan-quality-scoring/plan-01-section-scorer`.
-
-For multi-plan cycles, each cycle's commit references only its own plan path.
-
-`/dreamers-close-out` standalone auto-detection greps for `^Plan:` lines in `git log` and resolves each to `.dreamers/plans/<value>.md` — the format above is required for that resolution to work.
-
-One commit per cycle. Do not push.
+Update this skill's todo as each step completes.
 
 ---
 
 ## Exit behavior
 
-When called **standalone**, exit on Step 8 commit. Tell the user:
+On Step 8 commit, exit with success. Tell the user:
 - Commit hash + summary.
 - AC coverage matrix.
 - Reviewer status (Sentinel + Probe + Hone).
-- Next step (their choice): more cycles (next plan in sequence, via another `/dreamers-implement` invocation or by running `/dreamers-full` with multiple plan paths), or `/dreamers-close-out` if all plans are shipped.
+- Next step (their choice): more cycles (next plan, another `/dreamers-implement` invocation), OR `/dreamers-close-out` if all plans are shipped.
 
-When called **from `/dreamers-full`**, exit on Step 8 commit. Return in chat output:
-- Commit hash.
-- AC coverage matrix.
-- Reviewer chat output summary (Sentinel + Probe + Hone combined, for the orchestrator to concatenate across cycles into the Echo prompt).
-- User-testing notes (if applicable).
+This skill does NOT proceed to close-out automatically. The user is in control.
 
-The orchestrator reads this chat output, runs the inline drift check (if more plans remain in the sequence), and either loops to the next plan or proceeds to Phase 3.
+---
 
 ## Push discipline
 
-`git push` does NOT happen in this skill. Push happens exactly once at PR close-out via `/dreamers-pr`.
+`git push` does NOT happen in this skill. Push happens exactly once at PR close-out via `pr-procedure.md` (invoked from `close-out-procedure.md` Step 6).
+
+---
+
+## What this skill does NOT do
+
+- Does NOT push.
+- Does NOT open a PR.
+- Does NOT update docs (Echo is invoked at close-out, not here).
+- Does NOT invoke `/dreamers-close-out` or any other skill. The user runs close-out themselves when ready.
+- Does NOT spawn agents outside the 5-item allowlist (`sentinel`, `probe`, `hone`, `echo`, `sage`). In this skill, only Sentinel + Probe + Hone are used (in Step 5).

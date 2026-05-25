@@ -50,7 +50,7 @@ When multiple plans share genuine cross-plan context — constraints, design dec
 - Shared design decisions span plans (e.g., a common abstraction every plan uses).
 - Shared data models / interface contracts referenced by multiple plans.
 - End-to-end ACs only verifiable after ALL plans ship.
-- Cross-plan rollback rules (folded into shared constraints — separate rollback section is retired).
+- Cross-plan rollback rules — captured as hard rules inside Shared constraints, not in a separate rollback section.
 
 **Skip the manifest if:** the multiple plans are independent (e.g., 3 unrelated changes shipped together). A manifest with all sections empty is decorative — either populate it or skip it.
 

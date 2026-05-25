@@ -2,7 +2,7 @@
 
 ## Directory layout (mandatory)
 
-All plans live under `.dreamers/plans/<feature-dir>/`. The flat layout (`.dreamers/plans/plan-{slug}.md`) is RETIRED.
+All plans live under `.dreamers/plans/feature-<slug>/`. Flat layouts directly under `.dreamers/plans/` are not used.
 
 ```
 .dreamers/plans/
@@ -48,14 +48,14 @@ Examples:
 - `feature-auth/plan-03-password-reset.md`
 - `feature-plan-format-overhaul/plan-01-refs-and-templates.md`
 
-The lettered convention (`plan-a-...`, `plan-b-...`) is RETIRED. Do not use it.
+Do not use lettered conventions (`plan-a-...`, `plan-b-...`) — numbered ordering is the only naming pattern.
 
 ## Manifest naming
 
 - Path: `feature-<slug>/manifest.md`
 - The manifest is OPTIONAL. Produce one only when multiple plans in the feature share cross-plan context (constraints, design decisions, data models, end-to-end ACs). See `feature-decomposition.md` for the trigger rules.
 
-The old `feature-<slug>.md` (at the plans/ root) is RETIRED. Manifests now live INSIDE the feature directory.
+Manifests live inside the feature directory (`feature-<slug>/manifest.md`), not at the plans/ root.
 
 ## Manifest backfill (mandatory rule)
 

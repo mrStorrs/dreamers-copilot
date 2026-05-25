@@ -76,9 +76,7 @@ Skip if no shared data models cross plan boundaries.
 
 ---
 
-## Sections explicitly dropped from earlier manifest formats
+## Sections NOT to include in a manifest
 
-The following sections appeared in the prior `feature.md` template and have been removed:
-
-- **Risks / Mitigations (cross-plan)** — real cross-plan risks become hard rules in Shared constraints with rationale. Decorative risk enumeration is gone.
-- **Rollback strategy (cross-plan)** — cross-plan rollback rules belong in Shared constraints (with the conditions and order spelled out as hard rules), not in a separate prose section.
+- **Risks / Mitigations (cross-plan)** — real cross-plan risks belong in Shared constraints as hard rules with rationale. Decorative risk enumeration adds no execution value.
+- **Rollback strategy (cross-plan)** — cross-plan rollback rules belong in Shared constraints, with the conditions and order spelled out as hard rules. No separate prose section.

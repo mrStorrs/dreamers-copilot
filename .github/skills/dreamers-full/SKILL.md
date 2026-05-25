@@ -1,137 +1,115 @@
 ---
 name: dreamers-full
-description: 'Full Dreamers pipeline orchestrator. Delegates to `/dreamers-plan` (Phase 1), `/dreamers-implement` (Phase 2, one cycle per plan), `/dreamers-close-out` (Phase 3). Accepts variadic plan paths OR a feature-manifest path to run multiple plans in sequence on one branch + one PR. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Runs planning → implementation → close-out inline, following the canonical procedure refs. Does NOT invoke other skills as sub-routines. Owns a single todo for the entire run. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more plan paths] | feature-<slug>/manifest.md'
 ---
 
 ## What this skill does
 
-A thin orchestrator that wires the three pipeline phases together. Owns cross-phase concerns: branch setup, sequential plan loop, inline drift check between plans, sequencing handoff to sub-skills, and (in manifest mode) threading shared context into reviewer prompts.
+This is the canonical end-to-end Dreamers pipeline. The orchestrator follows three procedure refs inline, in sequence:
 
-Each phase delegates to a sub-skill that owns the actual work. The orchestrator does NOT embed implementation / test / docs / git rules — those live in the sub-skills, which cite `~/.copilot/dreamers/refs/orchestrator-discipline.md`.
+1. **Planning** — `~/.copilot/dreamers/refs/planning-procedure.md` (Phase 1a–1g).
+2. **Implementation** — `~/.copilot/dreamers/refs/implementation-procedure.md` (Steps 1–8, repeated per plan in multi-plan runs).
+3. **Close-out** — `~/.copilot/dreamers/refs/close-out-procedure.md` (Steps 1–8, which itself reads `pr-procedure.md` at Step 6).
 
-## Invocation modes
+This skill does NOT invoke other skills (no `Invoke /dreamers-plan`, no `Invoke /dreamers-implement`, no `Invoke /dreamers-close-out`). Every phase runs inline in this skill's context. There is one todo, owned by this skill, covering the whole pipeline.
 
-**Mode 1 — no plan(s) yet:** `/dreamers-full <task description>` — orchestrator runs `/dreamers-plan` first; the planning conversation produces one or more plan files (and optionally a feature manifest); user approves; orchestrator then runs Phase 2.
+Subagents are spawned where the procedure refs call for them: Sentinel + Probe + Hone (parallel review in implementation-procedure Step 5), and Echo (docs in close-out-procedure Step 2). These are the ONLY subagent types this skill spawns — per `delegation.md` § "Subagent allowlist."
 
-**Mode 2 — plans already exist (variadic):** `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` — orchestrator skips Phase 1 planning and runs Phase 2 directly for each plan in argument order. One plan path = single-plan mode; multiple paths = sequential multi-plan mode. No shared-context manifest in this mode. All plan paths are expected to follow the per-feature directory layout from `plan-rules.md`.
+---
 
-**Mode 3 — feature manifest:** `/dreamers-full feature-<slug>/manifest.md` (or a path resolving to a manifest file) — orchestrator reads the manifest, extracts the plan sequence from its "Plan sequence" table, and runs cycles in that order. The manifest's shared constraints / design decisions / data models / end-to-end ACs are loaded as **shared context** and threaded into each cycle's reviewer prompts. This is the hierarchical-AI-context mode, used when cross-plan context warrants it.
+## Pre-flight reads (MUST READ IN FULL — no globbing, no grepping)
 
-**Argument disambiguation:** the orchestrator checks the first argument:
-- First argument basename is exactly `manifest.md` (typically `feature-<slug>/manifest.md` or `.dreamers/plans/feature-<slug>/manifest.md`) → Mode 3 (manifest).
-- First argument ends in `.md`, basename matches `plan-NN-*.md`, lives inside a `feature-<slug>/` directory → Mode 2 (variadic plan paths; remaining args are additional plan paths if provided, all expected to live inside `feature-<slug>/` directories).
-- Otherwise → Mode 1 (task description).
+Read these refs in full using the `view` tool at skill entry. Top to bottom. Pattern-skipping is forbidden per `orchestration-flow.md` § "Must-read refs rule."
 
-**Legacy flat-format compatibility:** old-format plans (`.dreamers/plans/plan-<slug>.md` without a feature directory) and old-format manifests (`feature-<slug>.md` at the plans/ root) are NOT supported by this skill after the plan-format overhaul. Plans must follow the per-feature directory layout from `plan-rules.md`.
-
-## Pre-flight reads
-
-Read these refs once at startup:
-
-- `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, push discipline (orchestrator handles branch setup; sub-skills handle commits)
-- `~/.copilot/dreamers/refs/close-out.md` — the close-out flow `/dreamers-close-out` runs
-- `~/.copilot/dreamers/refs/orchestration-flow.md` — continuation principle, todo-list protocol, tool-name pseudonyms
-
-Sub-skills cite the discipline ref themselves. The orchestrator does not duplicate that read.
+- `~/.copilot/dreamers/refs/orchestration-flow.md` — single-owner todo + continuation principle + must-read rule
+- `~/.copilot/dreamers/refs/orchestrator-discipline.md` — implementation + comment + logging + test-writing + git rules
+- `~/.copilot/dreamers/refs/delegation.md` — subagent allowlist + forbidden list + delegation protocol
+- `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, staging, push discipline
+- `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel/Probe/Hone/Echo crash mid-run
+- `~/.copilot/dreamers/refs/feature-decomposition.md` — when to write multiple plans + manifest pattern
+- `~/.copilot/dreamers/refs/plan-content.md` — plan section requirements + format
+- `~/.copilot/dreamers/refs/plan-rules.md` — plan naming + directory layout
+- `~/.copilot/dreamers/refs/planning-procedure.md` — Phase 1 procedure (will be followed in Phase 1)
+- `~/.copilot/dreamers/refs/implementation-procedure.md` — Phase 2 procedure (will be followed per plan in Phase 2)
+- `~/.copilot/dreamers/refs/close-out-procedure.md` — Phase 3 procedure (will be followed in Phase 3)
+- `~/.copilot/dreamers/refs/pr-procedure.md` — PR-creation procedure (read by close-out Step 6)
+- `~/.copilot/dreamers/refs/citation-accuracy.md` — verify before citing existing artifacts (used in planning)
+- `~/.copilot/dreamers/refs/testing-mandate.md` — coverage layer expectations
+- `~/.copilot/dreamers/refs/comment-rules.md` — comment discipline
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, test commands.
-
-Follow the Dreamers Kernel and Output Discipline from `~/.copilot/copilot-instructions.md`.
+- `.github/instructions/git.instructions.md` (root, if present) — commit message style.
+- `./test-benchmarks.md` (root, if present) — test run-time benchmarks for timeout selection.
 
 $ARGUMENTS
 
 ---
 
-## Todo list
+## Invocation modes
 
-At skill entry, declare via `manage_todo_list`:
-- [ ] Phase 1 — planning (`/dreamers-plan`)
-- [ ] Phase 1.5 — ship strategy gate
-- [ ] Phase 2 cycle 1 — implement plan 1 (`/dreamers-implement`)
-- [ ] Phase 3 — close-out (`/dreamers-close-out`)
+**Mode 1 — no plan(s) yet:** `/dreamers-full <task description>` — orchestrator runs the planning procedure first, producing one or more plan files (and optionally a manifest), then proceeds to implementation.
 
-**Declaration point:** declare initial items at skill entry. In Mode 1, Phase 2 cycle items are added after Phase 1g produces the plan list. In Modes 2 and 3, all Phase 2 cycle items are declared upfront.
+**Mode 2 — plans already exist (variadic):** `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` — orchestrator skips planning and runs implementation directly for each plan in argument order. One plan path = single-plan mode; multiple paths = sequential multi-plan mode. No shared-context manifest in this mode. All plan paths must follow the per-feature directory layout from `plan-rules.md`.
 
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+**Mode 3 — feature manifest:** `/dreamers-full feature-<slug>/manifest.md` — orchestrator reads the manifest, extracts the plan sequence from its "Plan sequence" table, and runs implementation in that order. The manifest's shared constraints / design decisions / data models / end-to-end ACs are loaded as **shared context** and threaded into each cycle's reviewer prompts.
 
-Directly composed sub-skills (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`) MUST NOT declare their own todo lists when invoked by this orchestrator. They update this orchestrator's matching items instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`. Indirect children invoked by `/dreamers-close-out` (e.g. `/dreamers-docs`, `/dreamers-pr`) follow the same rule transitively — they update `/dreamers-close-out`'s items, which roll up to this orchestrator's Phase 3 item.
+**Argument disambiguation:** the orchestrator checks the first argument:
+- First argument basename is exactly `manifest.md` → Mode 3.
+- First argument ends in `.md`, basename matches `plan-NN-*.md`, lives inside a `feature-<slug>/` directory → Mode 2.
+- Otherwise → Mode 1 (task description).
+
+**Legacy flat-format compatibility:** old-format plans (`.dreamers/plans/plan-<slug>.md` without a feature directory) and old-format manifests (`feature-<slug>.md` at the plans/ root) are NOT supported. Plans must follow the per-feature directory layout from `plan-rules.md`.
 
 ---
 
-## Phase 1 — Planning (delegated; skipped in Modes 2 and 3)
+## Todo list (declared upfront — single owner: this skill)
 
-If `$ARGUMENTS` contains a task description (Mode 1):
+At skill entry, declare via `manage_todo_list`:
 
-Invoke `/dreamers-plan` with the user's task description forwarded as the argument.
+- [ ] Phase 1 — planning (follow planning-procedure.md)
+- [ ] Phase 1.5 — ship-strategy gate (multi-plan only; skipped if single-plan)
+- [ ] Phase 2 cycle 1 — implement plan 1 (follow implementation-procedure.md)
+- [ ] Phase 3 — close-out (follow close-out-procedure.md; includes push + PR via pr-procedure.md)
 
-`/dreamers-plan` runs the three-phase requirements conversation (Hash-it-out → Approval → Decompose), writes one or more plan files to `.dreamers/plans/feature-<slug>/` (and optionally a `manifest.md` in the same directory if cross-plan context warrants), and exits at the implementation-start approval gate (Phase 1g). It does NOT proceed to implementation.
+For Modes 2 and 3, declare all Phase 2 cycle items upfront based on the known plan count. For Mode 1, declare the initial items above and add Phase 2 cycle items after planning produces the plan list.
 
-From `/dreamers-plan`'s chat output, capture:
-- **Plan count + sequence order** — one plan or multiple.
-- **Plan file path(s)** — exact paths under `.dreamers/plans/`.
-- **Manifest path** — if a manifest was produced, capture its path (typically `.dreamers/plans/feature-<slug>/manifest.md`).
-- **Approval status** — confirmed at Phase 1g.
+Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
-If the user rejects at Phase 1c or 1g, `/dreamers-plan` loops until approved. The orchestrator does not bypass.
+**This skill is the sole owner of the todo.** Subagents spawned during the run (Sentinel / Probe / Hone / Echo) MUST NOT touch `manage_todo_list` — their prompts explicitly forbid it. See `orchestration-flow.md` § "Single-owner todo rule."
 
-If `$ARGUMENTS` contains plan paths directly (Mode 2): skip Phase 1; treat the paths as the approved plan list in the order given.
+---
 
-If `$ARGUMENTS` contains a manifest path (Mode 3): skip Phase 1; read the manifest's "Plan sequence" table to extract the ordered plan list. Capture the manifest content (shared constraints, design decisions, data models, end-to-end ACs, cross-plan risks) as the **shared context payload** for later use in Phase 2.
+## Phase 1 — Planning (follow planning-procedure.md inline)
 
-After Phase 1 (or its skip), proceed to Phase 1.5.
+**Skipped in Modes 2 and 3** (plans already exist).
 
-**Continuation prompt — post Phase 1g (Mode 1 only):**
+In Mode 1:
+1. Mark "Phase 1 — planning" in_progress.
+2. Read `planning-procedure.md` in full (already done in pre-flight, but re-confirm the file is loaded).
+3. Follow the procedure from Phase 1a (Hash it out) through Phase 1g (Implementation start approval gate). The procedure includes its own approval gates (Phase 1c, Phase 1g). On Phase 1g's `Approved — start implementation` answer, proceed directly to Phase 1.5 / Phase 2 — do NOT issue an additional continuation prompt. Phase 1g's "Approved" is itself the proceed signal; the canonical pauses are listed in `orchestration-flow.md` § "Pause-point list."
+4. Mark "Phase 1 — planning" completed.
 
-After `/dreamers-plan` exits at Phase 1g approval (Mode 1), before entering Phase 1.5 or Phase 2, call `request_information`:
+On Phase 1g `Halt — planning only`: stop the whole pipeline cleanly. Surface the saved plan paths to the user. Do not proceed to Phase 1.5 or Phase 2.
 
-```
-Phase 1 complete. Plan(s) approved and written.
+On Phase 1c / Phase 1g `Other` (corrections): the planning procedure handles the loop internally.
 
-Proceeding will enter Phase 1.5 (ship strategy gate, if multi-plan) then Phase 2 (implementation).
+In Modes 2 and 3: skip Phase 1 entirely. Mark its todo item completed at startup ("skipped — plans pre-existing"). Capture plan paths from `$ARGUMENTS` (Mode 2) or from the manifest's Plan sequence table (Mode 3).
 
-Options:
-- label: Continue — proceed to Phase 1.5 / Phase 2
-- label: Halt for now — stop here; I will resume later
-- label: Other — freeform redirect
-```
-
-On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the approved plan paths: <paths>" and stop. Do not proceed.
-
-Modes 2 and 3 skip Phase 1 entirely; no continuation prompt fires here for those modes.
+For Mode 3, capture the manifest content (Shared constraints, Shared design decisions, Shared data models, End-to-end ACs) as the **shared context payload** for use in Phase 2 reviewer prompts.
 
 ---
 
 ## Phase 1.5 — Ship strategy gate (multi-plan only)
 
-**If only one plan is in the sequence: skip Phase 1.5 entirely.** Single-plan = one cycle = one PR no matter the strategy.
+**Skipped if only one plan is in the sequence.** Single-plan = one cycle = one PR regardless of strategy.
 
-**If two or more plans are in the sequence**, the orchestrator decides ship strategy:
-
-- **Incremental** — each plan's cycle ends with a light close-out (docs if applicable + push + PR for that plan). Plans land on `main` incrementally; subsequent plans branch off the updated main as they go. Milestone-level retro + improvements append happens at the end of the LAST plan only.
-- **Atomic** — current behavior. Plans land as commits on one branch; ONE full close-out at the end with retro + improvements + PR covering all plans.
+For 2+ plans, the orchestrator decides ship strategy: **Incremental** (PR per plan) or **Atomic** (one PR at end).
 
 ### Recommend a strategy
 
-Read the manifest (if any) and the plan files. Score against the heuristics below. Pick the strongest signal and form a one-sentence cited reason.
-
-**Recommend INCREMENTAL when any hold:**
-- ≥ 4 plans in the sequence (review burden of one big PR is high).
-- Plans touch significantly different file subsystems (low overlap in plan §Scope file lists).
-- Manifest's Shared constraints section does NOT mention "ordering dependency," "breaking change," or "coordinated revert."
-- Plans are estimated as substantial (≥ 5 ACs each, or test cases spanning multiple layers).
-- Plan A's value is observable to users without plans B+ (incremental value delivery).
-
-**Recommend ATOMIC when any hold:**
-- 2–3 plans only (small feature).
-- Plans touch overlapping files (same files edited by multiple plans).
-- Manifest's Shared constraints section mentions "ordering dependency," "breaking change requiring shim," or "coordinated revert."
-- DB migrations or schema changes gated on prior plans.
-- End-to-end ACs require ALL plans to verify (no piecewise testability).
-- Feature-flag protected work where partial deployment leaves the system in a half-state.
-
-If signals point both ways, default to ATOMIC (safer) and cite the conflicting signals in the reasoning.
+Read the manifest (if any) and the plan files. Score against the heuristics from `feature-decomposition.md` § "Recommendation heuristics." Pick the strongest signal and form a one-sentence cited reason.
 
 ### Present the gate
 
@@ -154,17 +132,17 @@ How do you want to ship?
 - Halt for now — stop here; I will resume later.
 ```
 
-Call `request_information` with choices `["Incremental", "Atomic", "Halt for now", "Other"]`. Freeform corrections are allowed (e.g., "Atomic for plans A and B together; incremental for C"). On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the approved plan paths: <paths>" and stop.
+Call `request_information` with choices `["Incremental", "Atomic", "Halt for now", "Other"]`. On `Halt for now`: stop with the resume command. Capture the user's choice as the **strategy** value for Phase 2.
 
-Capture the user's choice as the **strategy** value for Phase 2.
+Mark "Phase 1.5 — ship-strategy gate" completed.
 
 ---
 
-## Phase 2 — Implementation (orchestrated sequential loop)
+## Phase 2 — Implementation (sequential per plan, following implementation-procedure.md inline)
 
 ### MANDATORY first actions (once at Phase 2 entry, before any cycle)
 
-1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note. (This is the orchestrator's responsibility — `/dreamers-implement` skips this when called from the orchestrator to avoid re-reading per plan.)
+1. **Read `.dreamers/improvements.md`** if it exists. For every open improvement item, action it or explicitly re-defer with a note.
 
 2. **Branch setup (inline, per `git-workflow.md`):**
    - Detect default branch (canonical two-step):
@@ -172,30 +150,31 @@ Capture the user's choice as the **strategy** value for Phase 2.
      DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
      [ -z "$DEFAULT" ] && DEFAULT=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
      ```
-   - **Anchor to remote truth (mandatory before reading any `.dreamers/` files):** `git fetch origin && git log origin/$DEFAULT --oneline -5`. Workspace files in `.dreamers/` are local-only and may be stale; `origin/$DEFAULT` is the authoritative record of what is actually shipped.
+   - **Anchor to remote truth (mandatory before reading any `.dreamers/` files):** `git fetch origin && git log origin/$DEFAULT --oneline -5`.
    - `git checkout $DEFAULT && git pull origin $DEFAULT` — never build off a stale local default branch.
-   - Cut `feat/d<N>-<name>` from `$DEFAULT`.
+   - Cut `feat/<slug>` from `$DEFAULT`.
    - Confirm `.dreamers/` is in `.gitignore`. If not, add it before any further edits.
 
 3. **Branch identity check** — `git log --oneline -3`. Confirm branch + recent commits match the expected feature.
 
 ### Sequential plan loop
 
-The loop branches on the **strategy** captured in Phase 1.5 (single-plan invocations: strategy is irrelevant; loop runs once and proceeds to Phase 3).
-
 For each plan in the approved list (argument order from Mode 2, plan sequence from Mode 1 or Mode 3 manifest):
 
-1. **Invoke `/dreamers-implement <path-to-plan>`.**
-   - When a manifest is available (Mode 3, or Mode 1 where `/dreamers-plan` produced a manifest), ALSO pass the captured **shared context payload** from the manifest. The shared context is threaded into the per-cycle reviewer prompts (Sentinel + Probe + Hone) so they reason with full feature context, not just the single plan's contents. This is the hierarchical AI-context lever.
-   - When no manifest exists (Mode 2 variadic, or Mode 1 where no manifest was produced), no shared context is passed — plans run in isolation.
-2. Wait for `/dreamers-implement` to complete (one commit lands on the branch).
-3. **If strategy is INCREMENTAL** AND more plans remain:
-   - Invoke `/dreamers-close-out --light <plan-path>` for the just-completed plan. The light close-out: docs update (if applicable) + push + PR for THIS plan only. NO retro, NO improvements append (those run at the final plan only).
-   - After `/dreamers-close-out --light` returns the PR URL, call `request_information`:
+1. **Mark "Phase 2 cycle N — implement plan N" in_progress.**
 
+2. **Read `implementation-procedure.md` in full** (already loaded in pre-flight; confirm).
+
+3. **Follow `implementation-procedure.md` Steps 1–8 inline** with this plan's path as the input. When manifest-mode is in effect (Mode 3 OR Mode 1 where planning produced a manifest), pass the captured **shared context payload** into Step 5's reviewer prompts under a "Feature context" header — this is the hierarchical-AI-context lever.
+
+4. **Mark "Phase 2 cycle N" completed** once the cycle's commit lands (Step 8).
+
+5. **If strategy is INCREMENTAL AND more plans remain:**
+   - Read `close-out-procedure.md` in full (already loaded).
+   - Follow `close-out-procedure.md` in LIGHT mode (Steps 2 + 4 + 5 + 6 only) for THIS plan: docs if applicable + final commit + user gate + push + PR.
+   - After Step 6's PR URL is returned, call `request_information`:
      ```
      Plan {n} of {N} shipped as PR {url}.
-
      Next: wait for that PR to merge, then re-cut the feature branch and start the implementation cycle for plan {n+1} ({next-path}).
 
      Options:
@@ -203,64 +182,39 @@ For each plan in the approved list (argument order from Mode 2, plan sequence fr
      - label: Halt for now — stop here; I will resume manually
      - label: Other — freeform redirect
      ```
+   - On `Halt for now`: stop with resume command.
+   - On `Continue`: wait for explicit user confirmation that PR has merged (do NOT poll). Then switch to default branch + pull + re-cut feature branch for the next plan.
 
-     On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <paths>" and stop.
-     On `Continue`: proceed to wait for merge (below).
-   - **Wait for merge — explicit confirmation, not polling.** Ask the user: "Confirm PR <url> has merged before I start the next plan." When they confirm, run `git fetch origin && git log origin/$DEFAULT --oneline -5` to verify the squash commit is on the default branch. If the commit isn't visible, surface and ask again. (Do NOT poll in a loop; do NOT proceed without confirmation.)
-   - After confirmed merge: switch to default branch + pull + re-cut feature branch for the next plan (light close-out's PR squashed main; need fresh branch for next plan).
-4. **If strategy is INCREMENTAL** AND this is the LAST plan in the sequence:
+6. **If strategy is INCREMENTAL AND this is the LAST plan:**
    - Skip the light close-out. Fall through to Phase 3 (full close-out) — the final plan's commit is the last thing on the current branch and gets the milestone retro + improvements + PR.
-5. **If strategy is ATOMIC**: do NOT push, do NOT close out per plan. The commit stays on the current branch. Proceed to drift check if more plans remain.
-6. **If more plans remain — drift check before the next plan.** Invoke `/dreamers-plan-verify <next-plan-path>`. The skill returns `No change — proceed` or `Drift detected — halt` with specific drift items.
-   - (Manifest modes only) Additionally check whether the manifest's shared context still holds given the just-completed cycle. If a shared constraint or end-to-end AC is now invalid, surface to user.
-7. **If yes to all three (or four)** → call `request_information` (ATOMIC mode only, when more plans remain):
 
-   **Precondition: if drift was detected in the prior step, skip this continuation prompt — surface drift items to the user per step 8 instead.**
+7. **If strategy is ATOMIC:** do NOT push, do NOT close out per plan. The commit stays on the current branch. If more plans remain, proceed to drift check.
 
-   ```
-   Plan {n} of {N} complete ({path}). Drift check passed.
-
-   Next: start implementation cycle for plan {n+1} ({next-path}).
-
-   Options:
-   - label: Continue — start next cycle
-   - label: Halt for now — stop here; I will resume later
-   - label: Other — freeform redirect
-   ```
-
-   On `Halt for now`: output "Resume by re-invoking `/dreamers-full` with the remaining plan paths: <remaining paths>" and stop.
-   On `Continue`: loop to step 1 with the next plan.
-8. **If any drift detected** → surface drift items to the user. Options:
-   - User revises the next plan or the manifest inline (re-run quality self-check from `/dreamers-plan` Phase 1f mentally, then continue).
-   - User skips the affected plan (proceed without it; the user accepts the consequences).
-   - User halts the orchestrator entirely for manual recovery.
-
-After the last plan's cycle completes, proceed to Phase 3.
+8. **Drift check (if more plans remain, ATOMIC strategy or pre-merge in INCREMENTAL):**
+   - Run inline drift check against the next plan path: read the next plan, verify cited file paths still exist, signatures still match, etc. (Per `feature-decomposition.md`-style verification.)
+   - If drift: surface specific drift items to the user; user may revise the next plan, skip it, or halt.
+   - If no drift: call `request_information` with `["Continue", "Halt for now", "Other"]`. On Continue, loop to step 1 with the next plan.
 
 ### Push discipline
 
-- **ATOMIC strategy:** no push during Phase 2. Single push at Phase 3 via `/dreamers-pr` covering all plans.
-- **INCREMENTAL strategy:** ONE push per plan via `/dreamers-close-out --light` (which invokes `/dreamers-pr` under the hood). The FINAL plan's push happens at Phase 3 (full close-out).
-
-Net push count = ATOMIC: 1 per milestone | INCREMENTAL: N per milestone (one per plan).
+- **ATOMIC strategy:** no push during Phase 2. Single push at Phase 3 covering all plans.
+- **INCREMENTAL strategy:** ONE push per plan during Phase 2 (via close-out's LIGHT mode at each plan). The FINAL plan's push happens at Phase 3 (full close-out).
 
 ---
 
-## Phase 3 — Close-out (delegated)
+## Phase 3 — Close-out (follow close-out-procedure.md inline)
 
-Invoke `/dreamers-close-out` with the inputs captured from Phases 1 and 2:
-
-- **Plan file paths** — full list of plans shipped this milestone.
-- **Branch name** — current feature branch (`git branch --show-current`).
-- **Default branch name** — `$DEFAULT` from Phase 2 first actions.
-- **Sentinel summary string** — concatenated chat outputs from Sentinel + Probe + Hone across all cycles. Pull from the orchestrator's captured per-cycle summaries.
-- **Issue reference** — if the originating user task referenced a GitHub issue number / URL, pass it.
-
-`/dreamers-close-out` runs the 8-step close-out sequence (improvements append → docs via `/dreamers-docs` → retro → final commit → user approval gate → push + PR via `/dreamers-pr` → plan archive → post-PR discipline).
-
-The user approval gate inside `/dreamers-close-out` is the LAST point where the user can halt before the PR goes live. The orchestrator does not bypass it.
-
-After `/dreamers-close-out` returns the PR URL, the milestone is complete.
+1. Mark "Phase 3 — close-out" in_progress.
+2. Read `close-out-procedure.md` in full (already loaded; confirm).
+3. Follow the procedure in FULL mode (Steps 1–8) with these inputs:
+   - **Plan file paths** — full list shipped this milestone.
+   - **Branch name** — current feature branch.
+   - **Default branch name** — `$DEFAULT`.
+   - **Sentinel summary string** — concatenated chat outputs from Sentinel + Probe + Hone across all Phase 2 cycles.
+   - **Issue reference** — if the originating user task referenced a GitHub issue number / URL.
+4. At Step 6, the close-out procedure directs you to read `pr-procedure.md` in full and follow it inline. Capture the PR URL.
+5. At Step 8 (post-PR discipline), surface the project-state scan findings to the user — do not auto-apply.
+6. Mark "Phase 3 — close-out" completed once the PR URL is captured and post-PR scan is done.
 
 ---
 
@@ -271,28 +225,43 @@ Return in chat output:
 - Plan files shipped (in order).
 - Per-plan commits (hashes + summaries).
 - Final reviewer summary (concatenated across cycles).
-- Open improvements surfaced by `/dreamers-close-out`'s Step 8 post-PR scan.
+- Open improvements surfaced by close-out Step 8 post-PR scan.
 
-No further work after Phase 3 completes. Post-PR changes (review comments, CI fixes) are user-driven — the orchestrator does not auto-commit per `close-out.md`.
+No further work after Phase 3 completes. Post-PR changes (review comments, CI fixes) are user-driven — the pipeline does not auto-commit per `close-out-procedure.md` Step 8.
 
 ---
 
 ## Failure handling
 
-If any sub-skill returns a `Blocked` status or fails:
-- Surface the block to the user with the sub-skill's chat output.
-- Do not proceed to subsequent phases until the block is resolved.
-- Common cases: `/dreamers-plan` Phase 1f quality check failure (plan revision needed); `/dreamers-implement` reviewer `Blocked` (plan AC missing); `/dreamers-pr` push rejected (non-fast-forward).
-- The orchestrator does not auto-retry; it relies on the sub-skill's own recovery path or user input.
+If a subagent returns a `Blocked` status or fails: surface the block to the user with the subagent's chat output. Do not proceed to subsequent phases until the block is resolved.
 
-If a subagent spawned by a sub-skill (Sentinel / Probe / Hone / Echo) crashes mid-run, the sub-skill handles recovery per `agent-recovery.md`. The orchestrator does not intervene unless the sub-skill itself fails.
+Common failure cases:
+- Planning Phase 1f quality check failure (plan revision needed).
+- Implementation Step 5 reviewer `Blocked` (plan AC missing or ambiguous).
+- pr-procedure Step 1 push rejected (non-fast-forward).
+
+The pipeline does not auto-retry; it relies on the procedure refs' own recovery paths or user input.
+
+If a subagent (Sentinel / Probe / Hone / Echo) crashes mid-run, follow `agent-recovery.md`. The orchestrator does not intervene unless recovery itself fails.
 
 ---
 
 ## Subagent inventory (in this skill)
 
-- **None directly.** This orchestrator skill does not spawn any subagents. Sub-skills do.
-- `/dreamers-implement` spawns Sentinel + Probe + Hone in parallel (per cycle): `3 × N` reviewer spawns where N = plans in the sequence.
-- Echo (docs) spawns vary by strategy: ATOMIC = 1 (final close-out only); INCREMENTAL = up to N (each light close-out plus the final full close-out, when docs are applicable).
+**Subagent allowlist (hard rule from `delegation.md`):** the only `agent_type` values that appear anywhere in this skill's pipeline are:
 
-**Subagent allowlist (hard rule, from `delegation.md`):** the only `agent_type` values that appear anywhere in the pipeline this orchestrator runs are `sentinel`, `probe`, `hone`, `echo`, `sage`. NEVER `general-purpose`, NEVER `claude`, NEVER any other host-runtime agent. Implementation, git ops, file edits, test runs, and PR creation are done INLINE by the orchestrator in each sub-skill — never delegated to a general-purpose fallback. If you (the orchestrator running this skill) find yourself about to invoke a non-Dreamers agent for any reason, STOP and re-read `delegation.md` § "Subagent allowlist".
+- `sentinel`, `probe`, `hone` — parallel review in implementation-procedure Step 5 (3 spawns per cycle = 3 × N for N plans)
+- `echo` — docs in close-out-procedure Step 2 (1–N spawns depending on strategy: ATOMIC = 1 final; INCREMENTAL = up to N per-plan plus final)
+
+**NEVER** `general-purpose`, `claude`, `forge`, `nova`, `bolt`, or any other agent_type. Implementation, git ops, file edits, test runs, and PR creation are done INLINE by the orchestrator (this skill, running in your context) using its own Edit / Write / Bash tools. If you find yourself about to invoke a non-allowlist agent for any reason, STOP and re-read `delegation.md` § "Subagent allowlist."
+
+**Subagent prompt rule (every spawn):** include the line "Do NOT call `manage_todo_list`. The orchestrator owns the todo." in each subagent's prompt. Per `orchestration-flow.md` § "Single-owner todo."
+
+---
+
+## What this skill does NOT do
+
+- Does NOT invoke `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, or `/dreamers-pr` as sub-skills. Every phase runs inline by following the procedure refs.
+- Does NOT manage multiple todo lists. ONE todo, owned by this skill.
+- Does NOT spawn agents outside the 5-item allowlist.
+- Does NOT auto-push between cycles in ATOMIC mode. Single push at PR creation only.
