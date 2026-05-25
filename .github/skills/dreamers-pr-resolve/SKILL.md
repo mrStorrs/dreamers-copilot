@@ -75,7 +75,8 @@ If no threads were accepted, skip to Step 6.
 
 Spawn **three reviewers in parallel** in a single batched tool call (whatever the runtime surfaces for parallel agent spawning). All three are read-only / report-only; each returns structured findings in the format from `orchestrator-discipline.md`. Scope is restricted to ONLY the files touched by accepted threads.
 
-Common prompt context for all three:
+Common prompt context for all three (subagent prompt rule — include verbatim):
+- **Todo discipline:** "Do NOT call `manage_todo_list`. The orchestrator owns the todo." (per `~/.copilot/dreamers/refs/orchestration-flow.md` § "Single-owner todo rule")
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
 - Scope: list of files changed by accepted threads from `git status`
 - Branch + default branch names
@@ -112,7 +113,7 @@ git commit -m "fix: address PR feedback"
 
 Use a single commit covering all the PR-feedback fixes. Commit message per `.github/instructions/git.instructions.md` if present.
 
-Per `close-out.md` post-PR discipline: **do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count).
+Per `close-out-procedure.md` Step 8 post-PR discipline: **do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count).
 
 Only push after explicit `Push to PR` approval: `git push`. On `Hold` → stop with status; the commit stays on the branch for the user to push manually.
 

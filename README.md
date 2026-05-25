@@ -39,24 +39,24 @@ The personas complement (do NOT replace) `/dreamers-full` and `/dreamers-plan`. 
 | **Sentinel** | Reviewer (read-only / report-only). Three lenses: correctness, security, maintainability. | Per cycle in `/dreamers-implement`, parallel with Probe + Hone |
 | **Probe** | Tester (read-only / report-only). Lens: test coverage (AC matrix, layer audit, edge + negative cases, regression risk). | Per cycle in `/dreamers-implement`, parallel with Sentinel + Hone |
 | **Hone** | Architectural protector (read-only / report-only). Lens: simplicity / over-engineering / bad abstractions / architectural quality. Recommends full refactors when warranted. | Per cycle in `/dreamers-implement`, parallel with Sentinel + Probe |
-| **Echo** | Documentarian — updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, etc.). | At close-out via `/dreamers-docs` |
+| **Echo** | Documentarian — updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, etc.). | Spawned inline at `close-out-procedure.md` Step 2 |
 | **Sage** | Researcher — deep multi-perspective research. | Standalone via `/dreamers-research` |
 
 The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel** by `/dreamers-implement` and `/dreamers-pr-resolve`. All three are read-only; they return structured findings; the orchestrator applies fixes inline. Conflict-resolution rule: correctness > simplicity. Ambiguity surfaces to user.
 
-## Skills (19 total)
+## Skills (17 total)
 
-### Pipeline (composable phases)
+### Pipeline entry points
+
+Every skill below is self-contained — no skill invokes another skill at runtime. Each follows shared procedure refs (`planning-procedure.md`, `implementation-procedure.md`, `close-out-procedure.md`, `pr-procedure.md`) inline. Single-owner todo per run.
 
 | Skill | Purpose | Invokable standalone? |
 |-------|---------|----------------------|
-| `dreamers-full` | Orchestrator — accepts a task description (runs planning first), variadic plan paths (under per-feature directories), OR a `feature-<slug>/manifest.md`. Runs cycles in sequence on one branch + one PR. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts. | Yes — full pipeline |
-| `dreamers-plan` | Phase 1 — three-phase planning conversation, writes plan files, hard-stops at the approval gate. | Yes — plan only |
+| `dreamers-full` | End-to-end pipeline. Accepts a task description (runs planning first), variadic plan paths (under per-feature directories), OR a `feature-<slug>/manifest.md`. Runs planning → implementation → close-out inline by following the procedure refs. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts. | Yes — full pipeline |
+| `dreamers-plan` | Planning only — follows `planning-procedure.md` and exits at Phase 1g approval. Surfaces the next-step command to the user; does NOT auto-invoke any other skill. | Yes — plan only |
 | `dreamers-plan-verify` | Inline drift check on a plan vs current code (no subagent). | Yes — sanity check before implement |
-| `dreamers-implement` | Phase 2 — per-cycle loop (tests-first → implement → run → coverage sweep → parallel review → optional user-test → commit). | Yes — with an approved plan |
-| `dreamers-close-out` | Phase 3 wrapper — improvements append + docs + retro + final commit + user gate + push + PR + post-PR discipline. | Yes — at end of a milestone |
-| `dreamers-docs` | Sub-phase — spawn Echo for project-doc updates. | Yes — ad-hoc doc update |
-| `dreamers-pr` | Sub-phase — push + `gh pr create` + optional issue close. The single push of the milestone. | Yes — push & PR a branch |
+| `dreamers-implement` | Implementation only — follows `implementation-procedure.md` for one plan and exits at the commit. Does NOT push or open a PR. | Yes — with an approved plan |
+| `dreamers-close-out` | Close-out only — follows `close-out-procedure.md` (FULL or LIGHT). Spawns Echo inline at Step 2; follows `pr-procedure.md` inline at Step 6 for push + PR. | Yes — at end of a milestone |
 
 ### Single-lens reviewer wrappers (read-only)
 
@@ -83,10 +83,11 @@ The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel
 ## Pipeline shape
 
 ```
-/dreamers-full
-  ├─ Phase 1   → /dreamers-plan       (three-phase planning conversation, exit at Phase 1g approval)
-  ├─ Phase 1.5 → Ship-strategy gate   (multi-plan only; recommends INCREMENTAL vs ATOMIC, user picks)
-  ├─ Phase 2   → /dreamers-implement  (per cycle)
+/dreamers-full  (single skill, end-to-end, single-owner todo)
+  ├─ Phase 1   → follows planning-procedure.md inline
+  │               (Phase 1a–1g: hash-it-out → approval → decompose → quality gate → approve plan)
+  ├─ Phase 1.5 → Ship-strategy gate (multi-plan only; recommends INCREMENTAL vs ATOMIC, user picks)
+  ├─ Phase 2   → follows implementation-procedure.md inline per plan
   │               1. write failing tests
   │               2. implement inline
   │               3. type-check + run tests
@@ -96,14 +97,14 @@ The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel
   │               7. optional user-test pause
   │               8. commit
   │               ↳ multi-plan loop with inline drift check between plans
-  │               ↳ INCREMENTAL: each plan ends with `/dreamers-close-out --light` (push + PR per plan)
+  │               ↳ INCREMENTAL: each plan goes through close-out-procedure LIGHT mode (push + PR per plan)
   │               ↳ ATOMIC: plans accumulate as commits; no push until Phase 3
-  └─ Phase 3   → /dreamers-close-out  (FULL: improvements append + retro + final commit + push + PR + plan archive)
-                  ├─ /dreamers-docs    (spawns Echo)
-                  └─ /dreamers-pr      (push + PR creation)
+  └─ Phase 3   → follows close-out-procedure.md inline (FULL mode)
+                   ├─ Step 2 spawns Echo subagent inline for docs
+                   └─ Step 6 follows pr-procedure.md inline for push + PR creation
 ```
 
-Continuation prompts fire at every natural pause (post-Phase-1g, between ATOMIC cycles, between INCREMENTAL close-outs), and a todo list is visible throughout the run so the user always knows what phase the orchestrator is in.
+No skill-calls-skill anywhere. Procedure refs are read in full at startup (must-read rule per `orchestration-flow.md`). Continuation prompts fire at the canonical natural pauses (between ATOMIC cycles, between INCREMENTAL close-outs), and a single todo is visible throughout the run so the user always knows what phase the orchestrator is in.
 
 Most work is inline in the orchestrator. Per cycle, three reviewers spawn in parallel; per milestone, Echo spawns once:
 - **Sentinel + Probe + Hone** — parallel review, each on one lens. Read-only / report-only. Orchestrator applies the combined findings.

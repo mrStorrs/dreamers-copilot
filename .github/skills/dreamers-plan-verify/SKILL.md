@@ -33,7 +33,7 @@ At skill entry, declare via `manage_todo_list`:
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
-(When invoked in composed mode by `/dreamers-full`, do NOT declare a new list — update the parent's matching Phase 2 drift-check item instead. See `~/.copilot/dreamers/refs/orchestration-flow.md`.)
+This skill is always invoked standalone — declare its own todo. There is no composed mode (per `~/.copilot/dreamers/refs/orchestration-flow.md` § "Single-owner todo rule": skills do not invoke other skills as sub-routines in this system).
 
 ---
 

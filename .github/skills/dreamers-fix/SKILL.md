@@ -13,21 +13,23 @@ Lightweight, self-contained pipeline for bug fixes:
 3. Writes a failing regression test (if test infra exists), then implements the fix inline.
 4. Spawns Sentinel review + runs the project test command in a single parallel batch.
 5. Applies Sentinel findings inline; re-runs tests (hard cap: 3 fix attempts).
-6. AI-judgment Echo gate — invokes `/dreamers-docs` only if the change touches user-facing behavior, public API, config/setup, or test commands.
+6. AI-judgment Echo gate — spawns Echo subagent inline only if the change touches user-facing behavior, public API, config/setup, or test commands.
 7. User approval gate before push.
-8. Commits, then invokes `/dreamers-pr` for push + PR creation (with `--issue` forwarded if provided).
+8. Commits, then follows `pr-procedure.md` inline for push + PR creation (with `--issue` forwarded if provided).
 
 **No plan file is written.** No retro, no improvements append, no plan archive, no Probe spawn, no Hone spawn. This skill is the entire pipeline for trivial-to-moderate bug fixes.
 
-## Pre-flight reads
+## Pre-flight reads (MUST READ IN FULL — no globbing, no grepping)
 
-Read these refs once at startup (full file, no truncation):
+Read these refs in full using the `view` tool at skill entry. Top to bottom. Pattern-skipping is forbidden per `orchestration-flow.md` § "Must-read refs rule."
 
+- `~/.copilot/dreamers/refs/orchestration-flow.md` — single-owner todo + continuation principle + must-read rule
 - `~/.copilot/dreamers/refs/orchestrator-discipline.md` — implementation + comment + logging + test-writing + git rules
 - `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, staging, push discipline
 - `~/.copilot/dreamers/refs/testing-mandate.md` — coverage expectations + benchmark contract
-- `~/.copilot/dreamers/refs/delegation.md` — Sentinel + Echo invocation protocol
+- `~/.copilot/dreamers/refs/delegation.md` — Sentinel + Echo invocation protocol + subagent allowlist
 - `~/.copilot/dreamers/refs/agent-recovery.md` — recovery if Sentinel crashes mid-run
+- `~/.copilot/dreamers/refs/pr-procedure.md` — push + PR procedure (followed inline in Step 8)
 
 Also check for project-level files:
 - `.github/copilot-instructions.md` (root) — project conventions, **test commands** (binding).
@@ -45,7 +47,7 @@ $ARGUMENTS
 Parse `$ARGUMENTS`:
 
 - Bare text up to (but not including) any `--<flag>` token → **bug description** (required).
-- `--issue <#|url>` → **issue reference**; forwarded verbatim to `/dreamers-pr` at Step 8. Accepts a bare issue number or a full GitHub issue URL.
+- `--issue <#|url>` → **issue reference**; forwarded verbatim into `pr-procedure.md` Step 4 at Step 8. Accepts a bare issue number or a full GitHub issue URL.
 - If `$ARGUMENTS` is empty or contains only flags → halt: "Usage: /dreamers-fix <bug description> [--issue <#|url>]." Do not invent a description.
 
 Derive **slug** from the bug description: lowercase, kebab-case, drop articles and trailing punctuation, truncate to ~5–7 meaningful words. Example: "navbar misaligned on mobile after rotation" → `navbar-misaligned-mobile-rotation`.
@@ -198,7 +200,7 @@ Tests must be green before Step 6. If they cannot be made green within 3 attempt
 
 ## Step 6 — Echo gate (judgment-based docs invocation)
 
-Inspect `git diff --cached` (the staged change). Decide whether to invoke `/dreamers-docs`.
+Inspect `git diff --cached` (the staged change). Decide whether to spawn Echo as a subagent inline.
 
 **Invoke Echo if ANY of these hold:**
 
@@ -210,13 +212,15 @@ Inspect `git diff --cached` (the staged change). Decide whether to invoke `/drea
 
 **Skip Echo if NONE hold** — cosmetic-only fixes, internal logic fixes with no surface change, error-log-string adjustments not user-visible, etc.
 
-If invoking, call `/dreamers-docs` in composed mode. Pass:
+If invoking, spawn Echo via the `task` tool (`agent_type: "echo"`, `mode: "sync"`). Pass in the prompt (per `delegation.md`):
 - Plan file paths: `none — bug fix, no plan file; use changed-files list as sole signal`.
 - Changed files: output of `git diff --name-only origin/$DEFAULT...HEAD`.
 - Diff base: `origin/$DEFAULT`.
 - Sentinel summary string: the chat output from Step 4 (with severity counts).
 
-Wait for `/dreamers-docs` to signal completion. Capture Echo's doc-changes log + any open questions. Resolve open questions before proceeding.
+Echo's prompt MUST include: "Do NOT call `manage_todo_list`. The orchestrator owns the todo." (per `orchestration-flow.md` § "Single-owner todo").
+
+Wait for Echo to signal completion. Capture Echo's doc-changes log + any open questions. Resolve open questions before proceeding.
 
 Stage any new doc edits with `git add`.
 
@@ -226,7 +230,7 @@ If skipping, record the decision (one-line: "Echo skipped — <reason>") for the
 
 ## Step 7 — User approval gate (MANDATORY)
 
-Before invoking `/dreamers-pr`, present this block:
+Before following `pr-procedure.md` inline, present this block:
 
 ```
 **Bug fix ready to ship.**
@@ -271,19 +275,21 @@ This is the last point where the user can halt before the PR goes live.
    - After staging, re-run `git status` to confirm a clean working tree (only staged content remaining).
 
 2. **Final commit (inline).**
-   - `git commit` with message per `.github/instructions/git.instructions.md` (if present) or conventional-commits style. Subject: `fix: <one-line summary derived from bug description>`. Body MUST include `Bug: <description>` line so the fix is traceable without a plan file (downstream `/dreamers-pr` reads this).
+   - `git commit` with message per `.github/instructions/git.instructions.md` (if present) or conventional-commits style. Subject: `fix: <one-line summary derived from bug description>`. Body MUST include `Bug: <description>` line so the fix is traceable without a plan file (downstream `pr-procedure.md` reads this).
    - Commit trailer (mandatory per `orchestrator-discipline.md` git rules): `Co-authored-by: The Dreamers System <noreply@dreamers.local>`.
 
-3. **Invoke `/dreamers-pr` in composed mode.** Pass:
+3. **Follow `~/.copilot/dreamers/refs/pr-procedure.md` inline** (read the full ref via the `view` tool — must-read rule per `orchestration-flow.md`). Pass these inputs to the procedure:
    - Branch name: `fix/<slug>` (from `git branch --show-current`).
    - Default branch name: `$DEFAULT`.
-   - Plan file paths: explicit `none — bug fix, no plan file` — this is a recognized sentinel value that `/dreamers-pr` Step 2 handles via its bug-fix Summary fallback (derived from the commit body's `Bug:` line + Sentinel summary instead of a plan title).
+   - Plan file paths: explicit `none — bug fix, no plan file` — this is a recognized sentinel value that `pr-procedure.md` Step 2 handles via its bug-fix Summary fallback (derived from the commit body's `Bug:` line + Sentinel summary instead of a plan title).
    - Retro file path: **omitted** (no retro in fix flow).
    - Sentinel summary string: the structured-findings output from Step 4 (with severity counts and the fixes applied).
    - Issue reference: forwarded from `$ARGUMENTS`'s `--issue` flag if provided; else omitted.
    - Final commit hash: from the commit just created.
 
-Wait for `/dreamers-pr` to return the PR URL.
+The procedure runs inline (pre-push verification → Step 1 push → Step 2 draft body → Step 3 open PR → Step 4 issue close if applicable). Capture the PR URL it returns.
+
+This skill does NOT invoke a separate `/dreamers-pr` skill (that skill has been retired — its content lives in `pr-procedure.md`).
 
 ---
 
@@ -309,7 +315,7 @@ Tell the user: post-PR discipline applies — no auto-commit of further changes 
 - Does NOT spawn Probe or Hone. Sentinel is the only reviewer; the regression test (Step 3) covers what Probe would have spawned for.
 - Does NOT auto-escalate to `/dreamers-full`. On scope blowup, Step 2 surfaces the choice and stops — user re-invokes the other skill themselves.
 - Does NOT touch `.dreamers/improvements.md` or write a retro file. Lightweight by design.
-- Does NOT push between steps — there is only one push, via `/dreamers-pr` at Step 8.
+- Does NOT push between steps — there is only one push, via `pr-procedure.md` Step 1 (invoked inline at Step 8).
 
 ---
 

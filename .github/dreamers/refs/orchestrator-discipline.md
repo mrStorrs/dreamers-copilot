@@ -2,7 +2,7 @@
 
 When a Dreamers pipeline sub-skill is doing work the orchestrator handles inline — implementation, test writing, comment writing, logging, git operations — these rules apply.
 
-Cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-docs`, `/dreamers-pr`, and the three reviewer agents (Sentinel, Probe, Hone) for the structured findings format spec. `/dreamers-full` does NOT cite this ref directly — it trusts the sub-skills do.
+Cited by `/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`, `/dreamers-fix`, `/dreamers-pr-resolve`, `/dreamers-full`, and the three reviewer agents (Sentinel, Probe, Hone) for the structured findings format spec. All skills cite this ref in their pre-flight reads.
 
 ---
 
@@ -75,8 +75,8 @@ Pulled from `logging-standards.md`. Key rules:
 
 ## Closeout / retro discipline
 
-- **Retro file:** `.dreamers/retros/retro-d<N>-<name>.md` per `close-out.md`. Orchestrator writes this inline.
-- **Echo-owned section updates** to `.github/copilot-instructions.md` (Tech stack, Repo structure, Conventions, Key files, Test commands): delegated to the Echo subagent — see `/dreamers-docs` for the invocation contract.
+- **Retro file:** `.dreamers/retros/retro-d<N>-<name>.md` per `close-out-procedure.md` Step 3. Orchestrator writes this inline (FULL close-out mode only).
+- **Echo-owned section updates** to `.github/copilot-instructions.md` (Tech stack, Repo structure, Conventions, Key files, Test commands): delegated to the Echo subagent — see `close-out-procedure.md` Step 2 for the inline invocation contract.
 
 ---
 
