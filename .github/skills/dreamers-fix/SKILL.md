@@ -130,6 +130,14 @@ If NO escalation criterion holds, proceed directly to Step 3.
 
 ## Step 3 — Implement fix inline + regression test
 
+**HARD STOP — implementation is inline.** The orchestrator (this skill, running in your context) edits files directly using Edit / Write / Bash tools. **Do NOT spawn any subagent to write code, write tests, or run tests for the fix.** Specifically:
+- ❌ `agent_type: "general-purpose"` → FORBIDDEN. There is no general-purpose fallback for implementation.
+- ❌ `agent_type: "claude"` or any other host-runtime agent → FORBIDDEN.
+- ❌ `agent_type: "forge"` / `"nova"` / `"bolt"` → FORBIDDEN (these are not subagents in this system — see `delegation.md`).
+- ✅ The only `agent_type` values you may spawn from this skill are `sentinel` in Step 4 (parallel with the inline test run) and `echo` in Step 6 (only if the Echo gate fires). Nothing else.
+
+If you reach the implementation step and find yourself thinking "let me delegate this to an agent," that's the bug. The orchestrator does the implementation. Write the regression test inline, edit the file inline, run the test command inline, stage with `git add`.
+
 Follow the **Implementation discipline** rules from `orchestrator-discipline.md`.
 
 1. **Regression test first** (if test infra exists per `.github/copilot-instructions.md`):
