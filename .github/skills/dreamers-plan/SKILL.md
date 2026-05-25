@@ -250,36 +250,53 @@ Present this block:
 
 Manifest (if produced): `.dreamers/plans/feature-<slug>/manifest.md`
 
-Please read the plan file(s) above. Reply "Approved — start implementation" to begin Phase 2, or describe any corrections needed.
+Please read the plan file(s) above. Choose how to proceed.
 ```
 
-Call `request_information` with choice `["Approved — start implementation"]` and allow inline freeform corrections.
+Call `request_information` with choices `["Approved — start implementation", "Halt — planning only", "Other"]`.
 
-- Approval → exit this skill with success status.
-- Corrections → revise plan files, re-run Phase 1f, re-present this gate. Loop until approved.
+### Approval handling
+
+- **Approved — start implementation:**
+  - **Standalone mode:** invoke `/dreamers-full <plan-paths>` directly to begin Phase 2 (implementation) — do NOT just tell the user to run it. Invoke it. The argument(s) to pass depend on what was produced:
+    - Single plan → `/dreamers-full .dreamers/plans/feature-<slug>/plan-01-<name>.md`
+    - Multiple plans, no manifest → `/dreamers-full .dreamers/plans/feature-<slug>/plan-01-<name>.md .dreamers/plans/feature-<slug>/plan-02-<name>.md ...`
+    - Multiple plans WITH manifest → `/dreamers-full .dreamers/plans/feature-<slug>/manifest.md` (Mode 3 — threads shared context into reviewer prompts)
+  - **Composed mode (called from `/dreamers-full`):** exit this skill with success status. The parent orchestrator already owns Phase 2 — do NOT re-invoke `/dreamers-full` from inside a `/dreamers-full` call (would create a recursion loop). The parent reads the approval status from this skill's chat output and proceeds.
+- **Halt — planning only:** exit this skill with success status. Output: `Planning complete. Plan file(s) saved. To begin implementation later, invoke /dreamers-full <plan-paths>.` Do NOT invoke any further skill. Use this when the user wants the plan but is not ready to ship yet.
+- **Corrections (Other):** revise plan files inline, re-run Phase 1f, re-present this gate. Loop until the user picks Approved or Halt.
 
 ---
 
 ## Exit behavior
 
-When called **standalone**, exit on Phase 1g approval. Tell the user:
-- The approved plan file path(s) — `.dreamers/plans/feature-<slug>/plan-NN-<name>.md`.
-- If a manifest was produced: `.dreamers/plans/feature-<slug>/manifest.md`.
-- Next step: invoke `/dreamers-implement <plan-path>` (one plan), `/dreamers-full <plan-a> <plan-b> ...` with the feature-dir-prefixed paths (multiple plans, no manifest), or `/dreamers-full feature-<slug>/manifest.md` (multiple plans via manifest — threads shared context into reviewer prompts).
+### Standalone invocation
 
-When called **from `/dreamers-full`**, exit on Phase 1g approval. Return in chat output:
+Three exit paths from Phase 1g (per the approval-handling rules above):
+
+1. **Approved — start implementation:** the skill INVOKES `/dreamers-full <plan-paths>` directly. From the user's perspective, the planning skill hands off seamlessly to the full pipeline — no extra command typed, no extra step.
+2. **Halt — planning only:** exit cleanly. Tell the user:
+   - The approved plan file path(s) — `.dreamers/plans/feature-<slug>/plan-NN-<name>.md`.
+   - If a manifest was produced: `.dreamers/plans/feature-<slug>/manifest.md`.
+   - To resume later: invoke `/dreamers-full <plan-paths>` (single plan, multiple plans, or manifest path).
+3. **Other / corrections:** does not exit. Loops back to revise the plan and re-present the gate.
+
+### Composed invocation (called from `/dreamers-full`)
+
+Exit on Phase 1g approval (or halt). Return in chat output:
 - Plan count (one or multiple) + sequence order if multiple.
 - Plan file path(s).
 - Manifest file path (if a manifest was produced; omit if none).
-- Approval status.
+- Approval status: `Approved` or `Halted`.
 
-The orchestrator reads this chat output and proceeds to Phase 2 (`/dreamers-implement` once for a single plan, or once per plan in the sequence).
+The parent orchestrator (`/dreamers-full`) reads this chat output and proceeds to Phase 2 if approved. This skill does NOT re-invoke `/dreamers-full` in composed mode — that would recurse.
 
-## HARD STOP after Phase 1g
+## Phase 1g exit semantics — what this skill does and does NOT do
 
-When plan files are written and the approval gate clears:
-- Do NOT proceed to implementation.
-- Do NOT delegate to any implementation agent or skill.
-- Do NOT make any code edits beyond plan files.
+This skill writes plan files. It does NOT implement plan content. The Phase 1g approval gate determines what happens NEXT:
 
-If the user asks "start implementing" after approval, tell them to invoke `/dreamers-implement <feature-<slug>/plan-NN-<name>.md>` (one plan) or `/dreamers-full <feature-<slug>/plan-01-...> <feature-<slug>/plan-02-...> ...` (multiple plans). This skill's lane is planning only.
+- **Approved (standalone):** invoke `/dreamers-full <plan-paths>` directly per the approval-handling rules above. The skill hands off; `/dreamers-full` takes over Phase 2 (implementation), Phase 3 (close-out), and PR. This skill does not write code, run tests, or commit beyond the plan files themselves — those actions belong to the skills `/dreamers-full` orchestrates.
+- **Approved (composed mode, called from `/dreamers-full`):** exit with success status. The parent orchestrator owns Phase 2. Do NOT re-invoke `/dreamers-full` from inside `/dreamers-full` — that would recurse.
+- **Halt — planning only:** exit cleanly without invoking the next phase. The user resumes later by invoking `/dreamers-full <plan-paths>` themselves.
+
+The "lane" rule (this skill never makes production code edits, never runs tests, never commits) still applies — it just no longer prevents seamless handoff to `/dreamers-full` when the user explicitly says "start implementation."
