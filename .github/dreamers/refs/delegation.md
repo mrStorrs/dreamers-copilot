@@ -18,17 +18,40 @@ For the parallel reviewer triad in `/dreamers-implement` Step 5 and `/dreamers-p
 
 **All refs and templates MUST be read in full using the `view` tool.**  Never use shell commands (`cat`, `head`, `tail`, `Select-String`) to read refs or templates — they truncate. Every line matters.
 
-## Agent selection
+## Subagent allowlist (HARD RULE — read this twice)
 
-Use the right agent for the job:
+The ONLY subagent types a Dreamers skill may spawn are the five below. Any other agent type is FORBIDDEN. There is no fallback, no "general-purpose for when nothing fits" escape hatch.
 
-- **Sentinel** — read-only review of correctness, security, maintainability. Returns structured findings; the orchestrator applies fixes. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-review`.
-- **Probe** — read-only review of test coverage (AC matrix, layer audit, edge cases, regression risk). Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-test`.
-- **Hone** — read-only review of simplicity, over-engineering, redundancy, bad architecture. May recommend full refactors. Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-simplify`.
-- **Echo** — documentation. Updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs after a cycle. Invoked once per milestone via `/dreamers-docs` inside `/dreamers-close-out`.
-- **Sage** — deep multi-perspective research. Used by `/dreamers-research`. Orthogonal to the pipeline.
+### Allowed (the only types you may pass as `agent_type` in a `task` / Agent tool call)
 
-Implementation (writing code, writing tests, running tests, git operations, doc updates, PR creation) is the orchestrator's lane — there is no Forge / Bolt / Nova subagent. The agents above are all read-only reporters (or in Echo's case, scoped to Echo-owned doc sections only).
+- **`sentinel`** — read-only review of correctness, security, maintainability. Returns structured findings; the orchestrator applies fixes. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-review`.
+- **`probe`** — read-only review of test coverage (AC matrix, layer audit, edge cases, regression risk). Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-test`.
+- **`hone`** — read-only review of simplicity, over-engineering, redundancy, bad architecture. May recommend full refactors. Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-simplify`.
+- **`echo`** — documentation. Updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs after a cycle. Invoked once per milestone via `/dreamers-docs` inside `/dreamers-close-out`.
+- **`sage`** — deep multi-perspective research. Used by `/dreamers-research`. Orthogonal to the pipeline.
+
+### Forbidden (must NEVER appear as `agent_type` from a Dreamers skill)
+
+- **`general-purpose`** — NEVER. If you reach for general-purpose to "implement," "edit a file," "run a test," or "do git work," that is a bug. Implementation is INLINE by the orchestrator. There is no fallback.
+- **`claude`**, **`claude-code-guide`**, **`Explore`**, **`Plan`** (capital-P architect agent), **`statusline-setup`**, **`vercel:*`** — host-runtime agents from other systems. NEVER spawn from a Dreamers skill.
+- **`forge`**, **`nova`** — these are USER-ENTERED personas (via `/agents forge` or `/agents nova`). Skills do NOT spawn them as subagents.
+- **`bolt`** — does not exist as a subagent in this Dreamers system. Implementation, git ops, and PR creation are done INLINE by the orchestrator.
+- **Anything not in the 5-item allowlist above** — NEVER.
+
+### Runtime hard stop
+
+Before EVERY `task` / Agent tool call, check the `agent_type` argument:
+
+- ✅ If `agent_type` is one of `sentinel` / `probe` / `hone` / `echo` / `sage` → proceed.
+- ❌ If `agent_type` is anything else → STOP. Do not spawn. The action you're about to delegate either:
+  - (a) belongs to the orchestrator INLINE (writing code, writing tests, running tests, git operations, doc updates, file edits, PR creation), OR
+  - (b) needs the right Dreamers agent — re-evaluate which of Sentinel / Probe / Hone / Echo / Sage fits.
+
+There is no third option. There is no "general-purpose because I'm not sure which agent to use" path.
+
+## What implementation looks like (NO subagent)
+
+Implementation (writing production code, writing tests, running tests, type-checking, running build / lint / format, git operations including `add` / `commit` / `push` / `mv` / `rm`, branch setup, doc updates, PR creation via `gh`) is the orchestrator's lane — done inline using the orchestrator's Edit / Write / Bash tools. The five allowed subagents are read-only reporters (Sentinel / Probe / Hone return findings) or scoped doc-writers (Echo edits docs only) — none of them write production code or run the build.
 
 ## Read-only reviewer lanes
 

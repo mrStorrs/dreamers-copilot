@@ -291,6 +291,8 @@ If a subagent spawned by a sub-skill (Sentinel / Probe / Hone / Echo) crashes mi
 
 ## Subagent inventory (in this skill)
 
-- **None directly.** The orchestrator does not spawn agents.
+- **None directly.** This orchestrator skill does not spawn any subagents. Sub-skills do.
 - `/dreamers-implement` spawns Sentinel + Probe + Hone in parallel (per cycle): `3 × N` reviewer spawns where N = plans in the sequence.
 - Echo (docs) spawns vary by strategy: ATOMIC = 1 (final close-out only); INCREMENTAL = up to N (each light close-out plus the final full close-out, when docs are applicable).
+
+**Subagent allowlist (hard rule, from `delegation.md`):** the only `agent_type` values that appear anywhere in the pipeline this orchestrator runs are `sentinel`, `probe`, `hone`, `echo`, `sage`. NEVER `general-purpose`, NEVER `claude`, NEVER any other host-runtime agent. Implementation, git ops, file edits, test runs, and PR creation are done INLINE by the orchestrator in each sub-skill — never delegated to a general-purpose fallback. If you (the orchestrator running this skill) find yourself about to invoke a non-Dreamers agent for any reason, STOP and re-read `delegation.md` § "Subagent allowlist".

@@ -45,6 +45,12 @@ Extract only threads where `isResolved: false`. Capture each thread's `id`, `pat
 
 ## Step 3 — Decide accept / reject per thread (inline)
 
+**HARD STOP — fix application is inline.** The orchestrator (this skill) edits files directly using Edit / Write / Bash tools to apply accepted PR-feedback fixes. **Do NOT spawn any subagent to write the fix code.** Specifically:
+- ❌ `agent_type: "general-purpose"` → FORBIDDEN. There is no general-purpose fallback for implementation.
+- ❌ `agent_type: "claude"` or any other host-runtime agent → FORBIDDEN.
+- ❌ `agent_type: "forge"` / `"nova"` / `"bolt"` → FORBIDDEN (these are not subagents in this system — see `delegation.md`).
+- ✅ The only `agent_type` values you may spawn from this skill are `sentinel`, `probe`, `hone` in Step 5 (parallel review of the applied fixes). Nothing else.
+
 For each unresolved thread, judge whether to accept or reject the comment. You are the implementation expert and have full authority. **Do not feel obligated to accept every comment** — if a suggestion conflicts with the plan, the architecture, or is simply wrong, reject it and say why.
 
 For each thread, record:
