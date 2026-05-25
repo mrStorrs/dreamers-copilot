@@ -188,7 +188,8 @@ Per the **Orchestrator-as-fixer** rules in `orchestrator-discipline.md`:
 1. **If Sentinel returns `Approved — no findings`** AND tests passed in Step 4 → skip fix application; proceed to Step 6.
 2. **If Sentinel returns `Findings reported — N items`:**
    - Sort findings by severity (critical → high → medium → low).
-   - Apply each fix as a targeted Edit. Stage with `git add`.
+   - **Evaluate each finding against the Major-refactor finding gate** per `orchestrator-discipline.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the bug-fix surface / Hone-style "tear out X" scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — create follow-up plan` / `Other`) and route per the user's answer. On `Defer`, create the stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per the canonical stub template; do NOT apply the deferred fix. The bug-fix surface is the set of files identified during Step 2 scope survey + any file the regression test touches.
+   - Apply each (non-deferred) fix as a targeted Edit. Stage with `git add`.
    - Re-run the test command after all fixes applied. Update the benchmark row.
    - If tests regress after fix application → diagnose + re-fix inline. **Hard cap: 3 fix attempts total.** On the 3rd failure, halt and surface to the user — do not auto-loop.
 3. **If Sentinel returns `Blocked — <reason>`** → halt the cycle; surface the block; resolve (user input if needed); re-spawn Sentinel scoped only to the affected area.

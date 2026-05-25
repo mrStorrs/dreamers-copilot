@@ -131,12 +131,123 @@ After all three reviewers return their chat output, the orchestrator:
 2. **Resolves conflicts.** If two findings touch the same `file:line` with contradicting fixes — e.g., Sentinel `[correctness] add defensive check` vs Hone `[simplicity] remove this as over-engineering` — apply the **conflict-resolution rule**:
    - **Correctness > simplicity always.** When in conflict, the correctness/security/maintainability finding wins.
    - **Genuine ambiguity surfaces to user.** If both arguments are equally strong (rare), present the conflict to the user before applying either.
-3. **Applies fixes inline.** The orchestrator has Edit + Write tools; agents don't. Apply each finding's suggested fix as a targeted edit. Stage with `git add`.
-4. **Re-runs type-check + tests after applying fixes** (to catch any regression introduced by fix application).
-5. **Handles `Blocked` status from any reviewer** by halting the cycle and surfacing the block to the user. Resolve, then re-spawn the affected reviewer.
-6. **Handles open questions** from any reviewer by presenting them to the user before declaring the review phase complete. Open questions still surface to the user; captured decisions still apply inline. The follow-up is re-run tests only — NOT a full re-spawn of Steps 3 + 4 + 5.
+3. **Evaluates each finding against the Major-refactor finding gate** (see sub-section below). For each finding, check the closed criteria checklist. If ANY criterion fires, route through the gate: call `request_information` with the 3-choice template; apply or defer per the user's answer. If no criterion fires, the finding is small — fall through to step 4 and apply inline. The orchestrator NEVER silently applies a finding that meets gate criteria, regardless of severity.
+4. **Applies fixes inline** (only for findings that didn't trigger the gate, or that the user opted to apply via the gate). The orchestrator has Edit + Write tools; agents don't. Apply each finding's suggested fix as a targeted edit. Stage with `git add`.
+5. **Re-runs type-check + tests after applying fixes** (to catch any regression introduced by fix application).
+6. **Handles `Blocked` status from any reviewer** by halting the cycle and surfacing the block to the user. Resolve, then re-spawn the affected reviewer.
+7. **Handles open questions** from any reviewer by presenting them to the user before declaring the review phase complete. Open questions still surface to the user; captured decisions still apply inline. The follow-up is re-run tests only — NOT a full re-spawn of Steps 3 + 4 + 5.
 
 If the post-fix test run regresses (tests fail), the orchestrator diagnoses and re-fixes inline — up to 3 attempts, then surfaces to the user.
+
+### Major-refactor finding gate
+
+The orchestrator MUST NOT silently apply a finding that triggers any of the criteria below. The user decides whether to apply now in the current cycle, defer to a follow-up plan, or redirect. This is the mechanism that keeps performance and end-state code quality first-class — Hone (and any other reviewer) surfaces architectural issues without softening; the user disposes via this gate.
+
+**The gate fires regardless of severity.** Critical / high severity findings still go through the gate when they meet the criteria — the user decides apply-now vs defer.
+
+#### Closed criteria checklist (any ONE fires the gate)
+
+A finding is "major-refactor scope" if its suggested fix meets ANY of:
+
+1. **New module or top-level directory.** The fix adds a new module, package, or directory that doesn't exist in the plan's scope.
+2. **Schema / data-model change.** The fix modifies a database schema, persisted shape, migration, or core data-model interface.
+3. **Cross-cutting refactor.** The fix touches multiple unrelated subsystems (e.g., auth + cache + UI in one fix).
+4. **New public exported symbols.** The fix introduces new exported functions, classes, types, or API endpoints not specified in the plan.
+5. **Files outside the plan's scope.** The fix touches files not listed in the current plan's §Context or §Out of Scope. Bug-fix flows (`/dreamers-fix`) substitute "files outside the bug-fix surface" — same intent.
+6. **Hone-recommended full refactor.** The suggested fix uses scope language like "tear out X across N files," "rewrite Y module," "remove Z abstraction and inline at N call sites" — indicating a refactor that goes beyond the immediate fix site.
+
+The criteria are evaluated by reading the finding's suggested-fix text. If ambiguous, treat as major-refactor (fire the gate). The orchestrator does NOT invent new criteria at runtime; the checklist is closed.
+
+#### Gate prompt template
+
+For each finding (or batched group sharing the same refactor scope), call `request_information` with this block:
+
+```
+**Major-refactor finding surfaced.**
+
+Reviewer: <sentinel | probe | hone>
+Severity: <critical | high | medium | low>
+Lens: <correctness | security | maintainability | test-coverage | simplicity>
+Location: <file:line>
+
+Finding:
+<what was wrong>
+
+Suggested fix:
+<suggested fix verbatim>
+
+Triggered criterion: <N — short label of which criterion fired>
+Rationale: <one sentence explaining why criterion N fired for THIS specific finding — e.g., "This fix touches `src/auth/session.ts`, which is not listed in the current plan's scope" or "The suggested fix tears out the cache module across 12 files; meets criterion 6 (Hone-recommended full refactor)">
+Breadth estimate: <files touched count, ~LOC, in-plan-scope: yes/no>
+
+Options:
+- label: Apply now — refactor in this cycle
+- label: Defer — create follow-up plan
+- label: Other
+```
+
+#### Routing per user's answer
+
+- **`Apply now — refactor in this cycle`** → apply the fix inline at step 4 of orchestrator-as-fixer behavior; re-run tests at step 5; stage with `git add`. The current cycle continues — note this may expand cycle scope significantly; the user has accepted that.
+
+- **`Defer — create follow-up plan`** → do NOT apply the fix. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` using the canonical plan format from `plan-content.md`. The `<deferred-slug>` is derived from the finding's topic (kebab-case, ≤ 40 chars; e.g., "simplify-notification-factory"). The stub captures the finding verbatim but leaves real ACs / constraints / verification as TODO placeholders for the user to fill in via `/dreamers-plan` later. Stub format:
+
+  ```
+  # Plan-01: <short title derived from finding>
+
+  **Date:** <today, YYYY-MM-DD>
+  **Status:** Draft
+  **Branch:** (TBD — fill in when starting work)
+  **User-testing-required:** (TBD)
+
+  ## Goal
+
+  [Finding surfaced during review of <original-plan-path>. Captured for follow-up — fill in concrete done-state when ready to work on it.]
+
+  ## Context
+
+  - Surfaced by: <reviewer agent name>
+  - During cycle of: <original-plan-path>
+  - Finding verbatim:
+    > [severity] [lens-tag] file:line — what was wrong → suggested fix
+  - Triggered criterion: <criterion N>
+  - Breadth estimate: <files / LOC / in-scope status>
+
+  ## Acceptance Criteria
+
+  <acceptance_criteria>
+  1. (TBD — convert the finding's suggested fix into a verifiable AC.)
+     *Layer: ___.*
+  </acceptance_criteria>
+
+  ## Out of Scope
+
+  - (TBD)
+
+  ## Constraints
+
+  <constraints>
+  - (TBD)
+  </constraints>
+
+  ## Verification
+
+  - (TBD — fill in commands + files when planning this work)
+  ```
+
+  After writing the stub, surface the stub path to the user in chat and continue with the remaining findings. Do NOT mark the deferred finding as applied; do not edit the current cycle's code based on it.
+
+- **`Other`** (freeform) → treat the response as a redirect. If the user clarifies "yes apply", route to Apply now. If they clarify "no defer", route to Defer. If they want something else (e.g., halt the cycle, revise the plan first), follow that direction. The orchestrator never silently applies or defers on `Other`.
+
+#### Batching shared-scope findings
+
+When multiple findings share the same refactor scope (e.g., 3 Hone findings all pointing at the same module), the orchestrator MAY combine them into a single gate call. The prompt lists all findings under one "Triggered criterion" block. The user's single answer applies to all batched findings.
+
+Batching criteria: findings share scope when their suggested fixes touch the same module/directory AND would be implemented as a single refactor. When in doubt, do NOT batch — one gate call per finding is safe; over-batching loses granularity.
+
+#### Severity does NOT bypass the gate
+
+Critical and high severity findings still go through the gate when they meet the criteria. The user decides whether to apply now or defer, regardless of severity. The orchestrator surfaces; the user disposes. Use case: a critical security finding whose fix requires rewriting the entire auth module may be best deferred to a focused follow-up plan rather than mid-cycle, depending on the user's risk model. That's the user's call.
 
 ### Re-verification after fixes (mandatory)
 
