@@ -14,9 +14,9 @@ All agents MUST be invoked with `mode: "sync"`. The agent blocks until completio
 
 For the parallel reviewer triad in `/dreamers-implement` Step 5 and `/dreamers-pr-resolve` Step 5: spawn Sentinel + Probe + Hone in a single tool-call with 3 Agent sub-tool-uses. All three run concurrently; the orchestrator waits for all three before applying findings.
 
-## MANDATORY — Reading refs and templates
+## MANDATORY — Reading templates and project files at runtime
 
-**All refs and templates MUST be read in full using the `view` tool.**  Never use shell commands (`cat`, `head`, `tail`, `Select-String`) to read refs or templates — they truncate. Every line matters.
+Refs are inlined into every consumer at build time by `scripts/sync-refs.ps1`; they are part of the live prompt and do not require a runtime read. Templates (`~/.copilot/dreamers/templates/*.md`) and project files (`.github/copilot-instructions.md`, `.github/instructions/*.md`) are NOT inlined and MUST be read in full using the `view` tool when a skill or agent reaches them. Never use shell commands (`cat`, `head`, `tail`, `Select-String`) to read templates or project files — they truncate. Every line matters.
 
 ## Subagent allowlist (HARD RULE — read this twice)
 

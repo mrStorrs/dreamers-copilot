@@ -1,26 +1,18 @@
-# Orchestration flow — must-read refs, single-owner todo, continuation principle
+# Orchestration flow — ref delivery, single-owner todo, continuation principle
 
 Single source of truth for three orchestration principles that apply across all Dreamers skills.
 
 ---
 
-## Must-read refs rule (HARD RULE)
+## Ref delivery (HARD RULE)
 
-Every ref a skill cites in its pre-flight reads MUST be loaded in full using the `view` tool — every line, from top to bottom, before the skill begins its first action.
+Refs are delivered to skills and agents via **build-time inlining**, not runtime `view` reads. Each consumer file (skill or agent) declares the refs it depends on by placing XML marker pairs (`<NAME>...</NAME>`) at the appropriate position in its body. `scripts/sync-refs.ps1` regenerates the content between the markers from `.github/dreamers/refs/NAME.md` on every sync. CI's `verify-refs` workflow fails any PR whose inlined ref content drifts from the source.
 
-**Forbidden:**
-- Using `grep` / `Grep` / pattern-matching to scan a ref for the "relevant" section.
-- Using `head` / `tail` / `Bash cat` to read partial content.
-- Using `Glob` or any filesystem-listing tool as a substitute for reading.
-- Reading "just the section I think I need" — refs are written as wholes; later sections cite earlier ones; partial reads miss cross-references.
-- Skimming — quick top-to-bottom scan without actually loading the content into context.
-
-**Required:**
-- Each pre-flight ref is loaded via the `view` tool at skill startup.
-- Each procedural ref (`planning-procedure.md`, `implementation-procedure.md`, `close-out-procedure.md`, `pr-procedure.md`) that the skill reaches during execution MUST also be loaded in full via `view` before its content is followed.
-- No exceptions for "the file is long" — long procedural refs (200–600 lines) are designed to be read whole. Pattern-skipping on procedure documents is a documented LLM failure mode and this rule explicitly forbids it.
-
-This rule exists because pattern-matching shortcuts cause the orchestrator to miss critical hard rules, exit conditions, or sub-steps that live outside the section it grep'd for.
+**Implications:**
+- Skills and agents no longer need to "load this ref before Step 1" instructions — the ref content is already in the prompt body, between the markers.
+- To change a rule that appears in a ref, edit only the source file at `.github/dreamers/refs/NAME.md`. Run `pwsh -File scripts/sync-refs.ps1 -Sync`. Commit the regenerated consumer files alongside the ref edit.
+- NEVER edit content between marker tags by hand. The auto-inserted `<!-- GENERATED ... -->` warning comment makes this visible to humans and agents.
+- A consumer file MAY still reference templates, project-level files, or other non-ref artifacts at runtime — those remain runtime `view` reads (not in scope for ref inlining).
 
 ---
 

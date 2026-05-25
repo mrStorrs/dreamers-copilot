@@ -6,11 +6,133 @@ argument-hint: '(no args; discovery is conversational)'
 
 Bootstrap a brand new project from scratch. Work through the phases in order. Do not skip ahead or write anything permanent until the user explicitly approves the brief.
 
-Read these refs:
-- `~/.copilot/dreamers/refs/project-bootstrap.md`
-- `~/.copilot/dreamers/refs/plan-rules.md`
-
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
+
+## Inlined ref content
+
+Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
+
+
+<project-bootstrap>
+<!-- GENERATED from .github/dreamers/refs/project-bootstrap.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
+# Project Bootstrap
+
+## Bootstrap checklist for new repos
+1. Ensure `.dreamers/` is in the project's `.gitignore`
+2. Create the project-level `.github/copilot-instructions.md` (see ownership below)
+3. Create `.dreamers/plans/` directory
+4. Install instruction files to `.github/instructions/`:
+   - Copy `comment-rules.instructions.md` from the Dreamers repo's `.github/instructions/` directory into `.github/instructions/` at the project root. This auto-injects comment rules whenever Copilot touches source files.
+5. **Optional but recommended. (Ask user if they want this created or not):** create `.github/instructions/build.instructions.md` if the project has a defined build/distribution flow for test builds. The file is the authoritative playbook the orchestrator follows during user-testing pauses. It should specify:
+   - Which commands (if any) the orchestrator is authorised to run itself
+   - Which steps must be performed by the user (install on device, launch app, version/build number to verify, etc.)
+   - Where the build artifact lives (link, path, store listing) and how to fetch it
+   - How to recover from a failed build/distribution
+   If this file is absent, the orchestrator will pause user-testing rounds and ask the user to build/distribute manually.
+
+## Project copilot-instructions.md ownership (split)
+
+The project-level `.github/copilot-instructions.md` is the shared briefing all agents read on startup.
+
+**Skill/orchestrator owns (initial creation + ongoing):**
+- **Constraints** — anything agents must never do (e.g., no direct DB writes, no breaking public API)
+- **Distribution** — short pointer to `.github/instructions/build.instructions.md` if it exists (the authoritative playbook), or a brief note that the orchestrator should ask the user to build/distribute when no playbook is present
+- **Links** — plan directory, global workspace, related repos
+
+**Echo owns (updated after each cycle):**
+- **Tech stack** — languages, frameworks, major dependencies
+- **Repo structure** — key directories and what lives where
+- **Conventions** — naming, formatting, branching, commit style, test commands
+- **Key files** — entry points, config files, CI/CD definitions
+
+Do not touch Echo-owned sections during orchestration — those updates come from Echo after each cycle.
+</project-bootstrap>
+
+<plan-rules>
+<!-- GENERATED from .github/dreamers/refs/plan-rules.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
+# Plan Naming + Location Rules
+
+## Directory layout (mandatory)
+
+All plans live under `.dreamers/plans/feature-<slug>/`. Flat layouts directly under `.dreamers/plans/` are not used.
+
+```
+.dreamers/plans/
+├── feature-<slug>/
+│   ├── manifest.md              (optional — only when multi-plan with shared context)
+│   ├── plan-01-<name>.md
+│   ├── plan-02-<name>.md
+│   └── plan-NN-<name>.md
+├── feature-<other>/
+│   └── plan-01-<name>.md        (single-plan feature: no manifest needed)
+└── archive/
+    └── feature-<old>/           (archived features: whole dir moves at milestone-final PR merge)
+```
+
+## Feature directory naming
+
+- Directory name: `feature-<slug>`
+- Slug rules (same as before):
+  - lowercase
+  - replace non-alphanumerics with single hyphen
+  - trim leading/trailing hyphens
+  - collapse repeated hyphens
+  - if empty, use `misc`
+
+Examples:
+- `feature-auth` (authentication overhaul)
+- `feature-plan-format-overhaul` (the work currently in flight)
+- `feature-checkout-flow` (e-commerce checkout)
+
+## Plan filename naming
+
+- Filename: `plan-NN-<name>.md`
+  - `NN` is zero-padded two-digit order within the feature directory: `01`, `02`, ..., `99`.
+  - `<name>` is a slug describing the plan's specific scope (NOT the whole feature).
+- Numbered ordering reasons:
+  - Survives insertion (`plan-01.5-foo` is uglier than splitting into a new feature, but at least parseable).
+  - Lexically sortable when zero-padded.
+  - BMad-precedented; no 26-letter cap like `-a` / `-b` / `-c`.
+
+Examples:
+- `feature-auth/plan-01-login-flow.md`
+- `feature-auth/plan-02-logout.md`
+- `feature-auth/plan-03-password-reset.md`
+- `feature-plan-format-overhaul/plan-01-refs-and-templates.md`
+
+Do not use lettered conventions (`plan-a-...`, `plan-b-...`) — numbered ordering is the only naming pattern.
+
+## Manifest naming
+
+- Path: `feature-<slug>/manifest.md`
+- The manifest is OPTIONAL. Produce one only when multiple plans in the feature share cross-plan context (constraints, design decisions, data models, end-to-end ACs). See `feature-decomposition.md` for the trigger rules.
+
+Manifests live inside the feature directory (`feature-<slug>/manifest.md`), not at the plans/ root.
+
+## Manifest backfill (mandatory rule)
+
+A feature directory starts with a single plan and no manifest. When a SECOND plan is added to the same feature (because the work grew beyond one plan's scope), the manifest is created at that moment.
+
+- **Trigger:** `/dreamers-plan` Phase 1d.1 detects the feature dir already exists with `plan-01-*.md` and no `manifest.md`, AND the current planning conversation is producing what will become `plan-02-*.md` for the same feature.
+- **Responsibility:** `/dreamers-plan` creates `manifest.md` during the same planning conversation that produces plan-02. Uses the existing plan-01 as the seed context.
+- **Timing:** before any implementation of plan-02 starts.
+
+## Archive rules
+
+When a feature's plans are all shipped (single-plan: that plan; multi-plan: all plans merged), the WHOLE feature directory moves to `.dreamers/plans/archive/`:
+
+```
+.dreamers/plans/feature-auth/  →  .dreamers/plans/archive/feature-auth/
+```
+
+Never file-by-file mid-feature. Mid-feature archive would leave partially-emptied directories.
+
+Trigger: `/dreamers-close-out` Step 7 archives the feature directory at the milestone-final PR merge — i.e., the last plan in the feature has merged to main.
+
+## Backward compatibility
+
+None. The new format applies to all plans written from the moment this convention ships. Existing flat plans in `.dreamers/plans/` (e.g., `plan-tdd-rewrite-a.md`) remain where they are; they are not auto-migrated. If you need to edit one, you may either rewrite it into the new format manually or leave it as legacy.
+</plan-rules>
 
 $ARGUMENTS
 
