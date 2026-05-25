@@ -36,7 +36,7 @@ Per `agent-recovery.md`: if Sentinel, Probe, or Hone hits a rate limit, crashes,
 
 Read the plan file passed as input.
 
-Read the plan's Acceptance Criteria (numbered Given/When/Then with `*Layer: ...*` annotations per `plan-content.md`). For each AC, write at least one failing test that would verify it, at the layer the annotation specifies. There is no separate Test Cases section in the new plan format — the ACs are the test specification.
+Read the plan's Acceptance Criteria (numbered Given/When/Then with `*Layer: ...*` annotations per `plan-writing-guide.md`). For each AC, write at least one failing test that would verify it, at the layer the annotation specifies. There is no separate Test Cases section in the new plan format — the ACs are the test specification.
 
 - Tests live wherever the project's test convention specifies (consult `.github/copilot-instructions.md`).
 - Stage with `git add`.
