@@ -118,6 +118,7 @@ Per-reviewer prompt addition:
 - Lens: simplicity / over-engineering / redundancy / architectural quality.
 - Out of scope: correctness/security/maintainability (Sentinel's lane), test coverage (Probe's lane).
 - Return: structured findings per the spec.
+- **Mandate reinforcement (include in Hone's prompt verbatim):** "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor — do not soften, hedge, or omit findings because the fix is big. When the suggested fix has architectural scope (touches files outside the plan, requires a new module, requires schema or symbol changes, or amounts to a full refactor of a subsystem), state the scope explicitly in the suggested-fix text. The orchestrator's major-refactor finding gate (per `orchestrator-discipline.md`) routes those findings through the user for apply-now vs defer decisions. Your job is to surface; the gate handles disposition."
 
 ## Step 6 — Apply findings inline (orchestrator-as-fixer)
 
@@ -125,15 +126,16 @@ Concatenate findings from all three reviewers per the orchestrator-as-fixer beha
 
 1. **Sort by severity** (critical → high → medium → low).
 2. **Resolve conflicts** per the conflict-resolution rule: correctness > simplicity. Genuine ambiguity → surface to user before applying.
-3. **Apply each fix inline** as a targeted Edit. Stage with `git add` as you go.
-4. **Re-run type-check + tests** after all fixes applied. If regressions appear, diagnose + re-fix inline (up to 3 attempts, then surface to user).
+3. **Evaluate each finding against the Major-refactor finding gate** per `orchestrator-discipline.md` § "Major-refactor finding gate." For each finding, check the closed 6-criterion checklist (new module / schema change / cross-cutting refactor / new exported symbols / files outside plan scope / Hone-recommended full refactor). If ANY criterion fires, call `request_information` with the 3-choice template from the canonical rule (`Apply now — refactor in this cycle` / `Defer — create follow-up plan` / `Other`) and route per the user's answer. On `Defer`, create the stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per the canonical template; do NOT apply the fix. The orchestrator NEVER silently applies a gate-triggering finding, regardless of severity.
+4. **Apply each (non-deferred) fix inline** as a targeted Edit. Stage with `git add` as you go. Findings that didn't trigger the gate, OR that the user opted to `Apply now` via the gate, apply here.
+5. **Re-run type-check + tests** after all fixes applied. If regressions appear, diagnose + re-fix inline (up to 3 attempts, then surface to user).
 
 Handle non-finding outputs:
 - Any reviewer returns **`Blocked — <reason>`** → halt cycle; surface; resolve; re-spawn the affected reviewer only.
 - Any reviewer returns **open questions** → present each to the user before proceeding. Capture decisions; apply.
 - All three return **`Approved — no findings`** → proceed to Step 7 directly. No fix application needed.
 
-After fix application (or skip), proceed to Step 7.
+After fix application (or skip + any deferred stubs written), proceed to Step 7.
 
 ## Step 7 — User testing (if required)
 

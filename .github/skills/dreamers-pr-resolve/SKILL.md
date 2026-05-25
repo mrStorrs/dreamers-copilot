@@ -89,13 +89,15 @@ Per-reviewer prompt addition:
 **Probe** (`agent_type: "probe"`, `mode: "sync"`) — test coverage lens (did the PR-feedback fixes break or weaken test coverage?).
 
 **Hone** (`agent_type: "hone"`, `mode: "sync"`) — simplicity lens (did the fixes introduce over-engineering or redundancy?).
+- **Mandate reinforcement (include in Hone's prompt verbatim):** "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor — do not soften, hedge, or omit findings because the fix is big. When the suggested fix has architectural scope (touches files outside the PR-feedback surface, requires a new module, requires schema or symbol changes, or amounts to a full refactor of a subsystem), state the scope explicitly in the suggested-fix text. The orchestrator's major-refactor finding gate (per `orchestrator-discipline.md`) routes those findings through the user for apply-now vs defer decisions. Your job is to surface; the gate handles disposition."
 
-Apply findings inline per the orchestrator-as-fixer behavior:
+Apply findings inline per the orchestrator-as-fixer behavior in `orchestrator-discipline.md`:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness > simplicity).
-3. Apply each fix inline; stage with `git add`.
-4. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
+3. **Evaluate each finding against the Major-refactor finding gate** per `orchestrator-discipline.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Hone-style "tear out X" scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — create follow-up plan` / `Other`) and route per the user's answer. On `Defer`, create the stub plan file per the canonical template; do NOT apply the deferred fix.
+4. Apply each (non-deferred) fix inline; stage with `git add`.
+5. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
 
 Handle non-finding outputs:
 - Any reviewer returns `Blocked` → halt; surface; resolve; re-spawn that reviewer.

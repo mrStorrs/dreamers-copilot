@@ -31,7 +31,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad abstractions, and architectural quality. Recommends full refactors when warranted. One of three parallel reviewers in the Dreamers pipeline's review phase.",
+      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. One of three parallel reviewers in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval per `orchestrator-discipline.md` § 'Major-refactor finding gate'.",
       "author": "CJ Storrs",
       "tags": [
         "code",
