@@ -289,7 +289,7 @@ This is the last point where the user can halt before the PR goes live.
 
 The procedure runs inline (pre-push verification → Step 1 push → Step 2 draft body → Step 3 open PR → Step 4 issue close if applicable). Capture the PR URL it returns.
 
-This skill does NOT invoke a separate `/dreamers-pr` skill (that skill has been retired — its content lives in `pr-procedure.md`).
+This skill does NOT invoke any other skill — the PR-creation procedure runs inline from `pr-procedure.md`.
 
 ---
 

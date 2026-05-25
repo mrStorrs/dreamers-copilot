@@ -44,7 +44,7 @@ The personas complement (do NOT replace) `/dreamers-full` and `/dreamers-plan`. 
 
 The three reviewer subagents (Sentinel + Probe + Hone) are spawned **in parallel** by `/dreamers-implement` and `/dreamers-pr-resolve`. All three are read-only; they return structured findings; the orchestrator applies fixes inline. Conflict-resolution rule: correctness > simplicity. Ambiguity surfaces to user.
 
-## Skills (17 total)
+## Skills (18 total)
 
 ### Pipeline entry points
 
@@ -57,6 +57,7 @@ Every skill below is self-contained — no skill invokes another skill at runtim
 | `dreamers-plan-verify` | Inline drift check on a plan vs current code (no subagent). | Yes — sanity check before implement |
 | `dreamers-implement` | Implementation only — follows `implementation-procedure.md` for one plan and exits at the commit. Does NOT push or open a PR. | Yes — with an approved plan |
 | `dreamers-close-out` | Close-out only — follows `close-out-procedure.md` (FULL or LIGHT). Spawns Echo inline at Step 2; follows `pr-procedure.md` inline at Step 6 for push + PR. | Yes — at end of a milestone |
+| `dreamers-docs` | Standalone ad-hoc docs update. Spawns Echo for the current branch diff (`--branch`) or staged changes (`--staged`). Echo stages doc edits; user commits after review. | Yes — ad-hoc doc sync |
 
 ### Single-lens reviewer wrappers (read-only)
 

@@ -4,7 +4,7 @@
       "type": "agent",
       "slug": "echo",
       "name": "echo",
-      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), project-level instruction files (.github/copilot-instructions.md Echo-owned sections), and project-specific docs from completed implementation and review outputs. Spawned inline by close-out-procedure.md Step 2 (no separate /dreamers-docs skill — it has been retired).",
+      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), project-level instruction files (.github/copilot-instructions.md Echo-owned sections), and project-specific docs from completed implementation and review outputs. Spawned inline at `close-out-procedure.md` Step 2 and by the `/dreamers-docs` standalone skill.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -157,6 +157,19 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-close-out/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-docs",
+      "name": "dreamers-docs",
+      "description": "Standalone docs-update entry point. Spawns Echo to update Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, project-specific docs). Resolves diff scope via `--branch` (vs origin/<default>) or `--staged`. Echo stages edits; user commits after review. Does not push or open a PR.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-docs/SKILL.md"
     },
     {
       "type": "skill",
@@ -377,6 +390,10 @@
         {
           "type": "skill",
           "slug": "dreamers-close-out"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-docs"
         },
         {
           "type": "skill",

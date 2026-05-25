@@ -164,20 +164,20 @@ Plans must NOT include code snippets. Implementation is the orchestrator's domai
 
 Research evidence ([Sage report §verbosity U-curve](.dreamers/sage/plan-format-research/report.md)) shows execution accuracy degrades past 600 lines for LLM consumers; technical-writing literature shows human readers disengage past ~400.
 
-## Sections explicitly DROPPED (do not include)
+## Sections NOT to include in a plan
 
-The following sections appeared in earlier plan formats and have been removed:
+The following are explicitly out — do not add them to plans even if you think they'd help. Each item lists where the equivalent information goes instead.
 
-- **Summary** — renamed to **Goal**.
-- **Scope / Non-goals** — split into **Context** (links to relevant code) and **Out of Scope** (explicit "will NOT" bullets).
-- **Test Cases** — merged into **Acceptance Criteria** via Layer annotation per AC. Do NOT create a separate Test Cases section.
-- **Rollback Boundary** — relocated to PR description / commit body. The orchestrator doesn't act on this at plan-time.
-- **Risks / Mitigations** — folded into **Constraints** as hard rules. If a risk is real and actionable, it becomes a "never do Z" constraint. Human-comfort risk enumeration is gone.
-- **Post-merge gates** — relocated to PR description.
-- **Deferred Items** — relocated to PR description.
-- **Owner / Stakeholders / Links** metadata — relocated to PR description.
-- **Open Questions** — banned entirely. All open questions must be resolved in the planning conversation BEFORE plan generation. A plan with open questions is not ready to ship.
-- **Race conditions sub-table** — folded into Constraints when relevant.
+- **Summary** — write a **Goal** paragraph instead.
+- **Scope / Non-goals** — split across **Context** (bullet links to relevant code) and **Out of Scope** (explicit "will NOT" bullets).
+- **Test Cases** as a standalone section — embed in **Acceptance Criteria** as `*Layer: ...*` annotations on each AC.
+- **Rollback Boundary** — write in PR description / commit body. Not a plan section.
+- **Risks / Mitigations** — write real risks as hard rules inside **Constraints** ("never do Z"). Decorative risk enumeration adds no execution value.
+- **Post-merge gates** — write in PR description.
+- **Deferred Items** — write in PR description.
+- **Owner / Stakeholders / Links** metadata — write in PR description.
+- **Open Questions** — banned. All open questions must be resolved in the planning conversation BEFORE plan generation. A plan with open questions is not ready to ship.
+- **Race conditions sub-table** — write into Constraints when relevant.
 
 ## Multi-plan work
 

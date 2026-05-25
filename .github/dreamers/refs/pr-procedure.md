@@ -1,10 +1,10 @@
 # PR-Creation Procedure (canonical — read in full, no skipping)
 
-This ref is the SOLE source of truth for the push + PR-creation step in the Dreamers pipeline. It is the canonical replacement for the former `/dreamers-pr` skill. Consumers:
+This ref is the SOLE source of truth for the push + PR-creation step in the Dreamers pipeline. Consumers read it in full and follow it inline:
 
-- `close-out-procedure.md` Step 6 (FULL or LIGHT close-out) reads this in full and follows it inline.
-- `/dreamers-fix` Step 8 reads this in full and follows it inline.
-- `/dreamers-pr-resolve` does NOT use this (it pushes existing PR updates, not new PRs).
+- `close-out-procedure.md` Step 6 (FULL or LIGHT close-out).
+- `/dreamers-fix` Step 8.
+- `/dreamers-pr-resolve` does NOT use this — it pushes updates to an existing PR, not creates a new one.
 
 **MUST-READ rule:** any skill or procedure citing this ref MUST load this file in full using the `view` tool from top to bottom — no `grep`, no `head`, no pattern-matching shortcut. Read every line before starting the procedure.
 

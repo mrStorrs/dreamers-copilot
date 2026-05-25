@@ -8,7 +8,7 @@ argument-hint: '[--light <plan-path>] [--issue <#|url>]  (omit flags for full mi
 
 Standalone entry point for the close-out phase. The user invokes this when they have completed implementation (manually or via `/dreamers-implement`) and want to ship — push + PR + docs + retro + archive.
 
-This skill follows `~/.copilot/dreamers/refs/close-out-procedure.md` end-to-end. The procedure absorbs what was formerly the `/dreamers-docs` skill (Echo invocation is now inlined at Step 2) and reads `pr-procedure.md` at Step 6 for the push + PR creation.
+This skill follows `~/.copilot/dreamers/refs/close-out-procedure.md` end-to-end. Echo is spawned as a subagent inline at Step 2 for project-doc updates. `pr-procedure.md` is followed inline at Step 6 for push + PR creation.
 
 This skill does NOT invoke any other skill. Echo is spawned as a subagent inline (per close-out-procedure Step 2). PR creation is handled inline (per pr-procedure.md).
 
@@ -107,6 +107,5 @@ For LIGHT mode, exit with the per-plan PR URL and a one-line status block per cl
 
 ## What this skill does NOT do
 
-- Does NOT invoke `/dreamers-docs` or `/dreamers-pr` — both have been retired. Their content lives in `close-out-procedure.md` (docs at Step 2) and `pr-procedure.md` (read by Step 6).
-- Does NOT invoke any other skill. Echo is spawned as a subagent inline; PR creation is inline.
+- Does NOT invoke any other skill. Echo is spawned as a subagent inline at Step 2; PR creation runs inline at Step 6 per `pr-procedure.md`.
 - Does NOT spawn agents outside the 5-item allowlist. Only Echo is used in this skill.

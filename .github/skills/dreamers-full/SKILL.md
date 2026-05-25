@@ -88,7 +88,7 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 In Mode 1:
 1. Mark "Phase 1 — planning" in_progress.
 2. Read `planning-procedure.md` in full (already done in pre-flight, but re-confirm the file is loaded).
-3. Follow the procedure from Phase 1a (Hash it out) through Phase 1g (Implementation start approval gate). The procedure includes its own approval gates (Phase 1c, Phase 1g). On Phase 1g's `Approved — start implementation` answer, proceed directly to Phase 1.5 / Phase 2 — do NOT issue an additional continuation prompt (per `orchestration-flow.md` § "Pause-point list," the post-Phase-1g prompt is retired).
+3. Follow the procedure from Phase 1a (Hash it out) through Phase 1g (Implementation start approval gate). The procedure includes its own approval gates (Phase 1c, Phase 1g). On Phase 1g's `Approved — start implementation` answer, proceed directly to Phase 1.5 / Phase 2 — do NOT issue an additional continuation prompt. Phase 1g's "Approved" is itself the proceed signal; the canonical pauses are listed in `orchestration-flow.md` § "Pause-point list."
 4. Mark "Phase 1 — planning" completed.
 
 On Phase 1g `Halt — planning only`: stop the whole pipeline cleanly. Surface the saved plan paths to the user. Do not proceed to Phase 1.5 or Phase 2.

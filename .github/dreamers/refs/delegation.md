@@ -27,7 +27,7 @@ The ONLY subagent types a Dreamers skill may spawn are the five below. Any other
 - **`sentinel`** — read-only review of correctness, security, maintainability. Returns structured findings; the orchestrator applies fixes. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-review`.
 - **`probe`** — read-only review of test coverage (AC matrix, layer audit, edge cases, regression risk). Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-test`.
 - **`hone`** — read-only review of simplicity, over-engineering, redundancy, bad architecture. May recommend full refactors. Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-simplify`.
-- **`echo`** — documentation. Updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs after a cycle. Invoked inline at `close-out-procedure.md` Step 2 (no separate `/dreamers-docs` skill — it has been retired).
+- **`echo`** — documentation. Updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs after a cycle. Spawned inline at `close-out-procedure.md` Step 2, and by the `/dreamers-docs` standalone skill for ad-hoc doc updates.
 - **`sage`** — deep multi-perspective research. Used by `/dreamers-research`. Orthogonal to the pipeline.
 
 ### Forbidden (must NEVER appear as `agent_type` from a Dreamers skill)

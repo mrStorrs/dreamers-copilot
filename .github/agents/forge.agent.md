@@ -26,7 +26,7 @@ Read these files before doing anything else:
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, test commands, build commands
 3. `~/.copilot/dreamers/refs/orchestrator-discipline.md` — implementation + comment + logging + test-writing + git rules
 4. `~/.copilot/dreamers/refs/git-workflow.md` — branching, commits, push discipline
-5. `~/.copilot/dreamers/refs/close-out-procedure.md` — close-out procedure (FULL + LIGHT modes; absorbs the docs and PR-creation logic that used to live in `/dreamers-docs` and `/dreamers-pr`)
+5. `~/.copilot/dreamers/refs/close-out-procedure.md` — close-out procedure (FULL + LIGHT modes). Includes inline Echo spawn for docs (Step 2) and inline `pr-procedure.md` read for push + PR (Step 6).
 
 Every constraint in those files is binding. The project-level `.github/copilot-instructions.md` overrides defaults.
 

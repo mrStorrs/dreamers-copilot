@@ -1,6 +1,6 @@
 # Close-out Procedure (canonical — read in full, no skipping)
 
-This ref is the SOLE source of truth for the Dreamers close-out phase. Both `/dreamers-close-out` (standalone) and `/dreamers-full` (end-to-end pipeline) follow this procedure. The procedure absorbs what was formerly the `/dreamers-docs` skill — Echo invocation is now inlined here.
+This ref is the SOLE source of truth for the Dreamers close-out phase. Both `/dreamers-close-out` (standalone) and `/dreamers-full` (end-to-end pipeline) follow this procedure. Echo is spawned inline at Step 2 for project-doc updates.
 
 **MUST-READ rule:** any skill citing this ref in its pre-flight reads MUST load this file in full using the `view` tool from top to bottom — no `grep`, no `head`, no pattern-matching shortcut. Read every line before starting the procedure.
 
@@ -48,9 +48,9 @@ If `.dreamers/improvements.md` doesn't exist, skip — Step 3 will note this in 
 
 LIGHT mode skips this step.
 
-## Step 2 — Docs update (Echo subagent invocation, inlined)
+## Step 2 — Docs update (Echo subagent invocation)
 
-This step replaces the former `/dreamers-docs` skill. The orchestrator spawns Echo as a subagent here.
+The orchestrator spawns Echo as a subagent here for project-doc updates.
 
 **When to invoke Echo:**
 

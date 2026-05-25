@@ -19,7 +19,7 @@ Plan ACs are numbered Given/When/Then statements with a Layer annotation per AC.
 
 Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
 
-**There is no standalone "Test Cases" section in the new plan format.** That section was retired — having both ACs and Test Cases created two sources of truth that drifted. The Layer annotation on each AC is the test layer indicator.
+**Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
 
 ## Coverage requirement (every plan)
 
