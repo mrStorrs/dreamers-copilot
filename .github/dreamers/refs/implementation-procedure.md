@@ -1,8 +1,6 @@
-# Implementation Procedure (canonical — read in full, no skipping)
+# Implementation Procedure (canonical)
 
 This ref is the SOLE source of truth for the Dreamers implementation phase (one cycle per plan). Both `/dreamers-implement` (standalone) and `/dreamers-full` (end-to-end pipeline) follow this procedure for each plan in their sequence. There is no composed-mode branching.
-
-**MUST-READ rule:** any skill citing this ref in its pre-flight reads MUST load this file in full using the `view` tool from top to bottom — no `grep`, no `head`, no pattern-matching shortcut. Pattern-skipping on procedural refs is a documented failure mode. Read every line before starting the procedure.
 
 ---
 

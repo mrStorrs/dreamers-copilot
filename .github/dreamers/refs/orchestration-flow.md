@@ -1,26 +1,6 @@
-# Orchestration flow — must-read refs, single-owner todo, continuation principle
+# Orchestration flow — single-owner todo, continuation principle
 
-Single source of truth for three orchestration principles that apply across all Dreamers skills.
-
----
-
-## Must-read refs rule (HARD RULE)
-
-Every ref a skill cites in its pre-flight reads MUST be loaded in full using the `view` tool — every line, from top to bottom, before the skill begins its first action.
-
-**Forbidden:**
-- Using `grep` / `Grep` / pattern-matching to scan a ref for the "relevant" section.
-- Using `head` / `tail` / `Bash cat` to read partial content.
-- Using `Glob` or any filesystem-listing tool as a substitute for reading.
-- Reading "just the section I think I need" — refs are written as wholes; later sections cite earlier ones; partial reads miss cross-references.
-- Skimming — quick top-to-bottom scan without actually loading the content into context.
-
-**Required:**
-- Each pre-flight ref is loaded via the `view` tool at skill startup.
-- Each procedural ref (`planning-procedure.md`, `implementation-procedure.md`, `close-out-procedure.md`, `pr-procedure.md`) that the skill reaches during execution MUST also be loaded in full via `view` before its content is followed.
-- No exceptions for "the file is long" — long procedural refs (200–600 lines) are designed to be read whole. Pattern-skipping on procedure documents is a documented LLM failure mode and this rule explicitly forbids it.
-
-This rule exists because pattern-matching shortcuts cause the orchestrator to miss critical hard rules, exit conditions, or sub-steps that live outside the section it grep'd for.
+Single source of truth for the orchestration principles that apply across all Dreamers skills.
 
 ---
 

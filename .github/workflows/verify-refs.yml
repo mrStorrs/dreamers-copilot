@@ -1,0 +1,24 @@
+name: verify-refs
+
+on:
+  pull_request:
+    paths:
+      - '.github/**/*.md'
+      - 'scripts/sync-refs.ps1'
+      - '.github/workflows/verify-refs.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/**/*.md'
+      - 'scripts/sync-refs.ps1'
+      - '.github/workflows/verify-refs.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Verify inlined refs match source
+        shell: pwsh
+        run: pwsh -File scripts/sync-refs.ps1 -Verify

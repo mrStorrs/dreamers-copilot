@@ -1,10 +1,8 @@
-# Close-out Procedure (canonical — read in full, no skipping)
+# Close-out Procedure (canonical)
 
 This ref is the SOLE source of truth for the Dreamers close-out phase. Both `/dreamers-close-out` (standalone) and `/dreamers-full` (end-to-end pipeline) follow this procedure. Echo is spawned inline at Step 2 for project-doc updates.
 
-**MUST-READ rule:** any skill citing this ref in its pre-flight reads MUST load this file in full using the `view` tool from top to bottom — no `grep`, no `head`, no pattern-matching shortcut. Read every line before starting the procedure.
-
-The PR-creation half of close-out lives in `pr-procedure.md`. Step 6 below directs the orchestrator to follow that ref inline.
+The PR-creation half of close-out lives in `pr-procedure.md`. Step 6 below directs the orchestrator to follow that ref inline (the PR procedure is also inlined into the same consumer).
 
 ---
 
@@ -131,7 +129,7 @@ This is the LAST point where the user can halt before the PR goes live.
 
 ## Step 6 — Push + PR (follow `pr-procedure.md` inline)
 
-Read `pr-procedure.md` in full (must-read rule) and execute its procedure inline with the following inputs:
+Execute the `pr-procedure.md` content inline with the following inputs (the ref is inlined elsewhere in this consumer file via the sync markers — refer to that block, not a runtime `view`):
 
 - Branch name + default branch name (from procedure inputs).
 - Plan file paths (from procedure inputs).

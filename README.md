@@ -105,7 +105,7 @@ Every skill below is self-contained — no skill invokes another skill at runtim
                    └─ Step 6 follows pr-procedure.md inline for push + PR creation
 ```
 
-No skill-calls-skill anywhere. Procedure refs are read in full at startup (must-read rule per `orchestration-flow.md`). Continuation prompts fire at the canonical natural pauses (between ATOMIC cycles, between INCREMENTAL close-outs), and a single todo is visible throughout the run so the user always knows what phase the orchestrator is in.
+No skill-calls-skill anywhere. Procedure refs and other shared rules are inlined into every consumer (skill or agent) at build time via `scripts/sync-refs.ps1`, so the rules are part of the agent's live prompt rather than a runtime read. CI's `verify-refs` workflow fails any PR whose inlined content drifts from the source ref. Continuation prompts fire at the canonical natural pauses (between ATOMIC cycles, between INCREMENTAL close-outs), and a single todo is visible throughout the run so the user always knows what phase the orchestrator is in.
 
 Most work is inline in the orchestrator. Per cycle, three reviewers spawn in parallel; per milestone, Echo spawns once:
 - **Sentinel + Probe + Hone** — parallel review, each on one lens. Read-only / report-only. Orchestrator applies the combined findings.
