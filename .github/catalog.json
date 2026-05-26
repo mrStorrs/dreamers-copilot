@@ -17,7 +17,7 @@
       "type": "agent",
       "slug": "forge",
       "name": "forge",
-      "description": "Coder of the Dreamers — implementation orchestrator persona. Enter via `/agents forge` for a multi-turn session pre-loaded with pipeline knowledge + coding standards. Routes work through plan → implement → close-out and enforces orchestrator-discipline.md. NOT a spawned subagent.",
+      "description": "Coder of the Dreamers — implementation orchestrator persona. Enter via `/agents forge` for a multi-turn session pre-loaded with pipeline knowledge + coding standards. Routes work through plan → implement → close-out and enforces dreamers-kernel.md. NOT a spawned subagent.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -31,7 +31,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. One of three parallel reviewers in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval per `orchestrator-discipline.md` § 'Major-refactor finding gate'.",
+      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. One of three parallel reviewers in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval per `dreamers-review.md` § 'Phase 3 — Major-refactor finding gate'.",
       "author": "CJ Storrs",
       "tags": [
         "code",

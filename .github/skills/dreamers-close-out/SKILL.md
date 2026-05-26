@@ -135,13 +135,22 @@ Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, 
 
 Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
 
-## Mandatory subagent prompt line
+## Subagent prompt — required content
 
-Every `task()` invocation MUST include this line in the prompt:
+Every `task()` invocation MUST include in the prompt:
+- **Context** — what this agent is being asked to do and why
+- **Prior work** — what was done previously, with absolute paths to any output files
+- **What is needed** — specific deliverable
+- **Constraints** — hard rules the agent must not violate
+- **Definition of Done** — how to know the work is complete
+- **Plan file path** — absolute path to the relevant plan file (if applicable)
+- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
-```
-Do NOT call `manage_todo_list`. The skill that invoked you owns its todo.
-```
+All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
+
+## Continuation principle
+
+At every natural pause between phases — where the skill has produced a meaningful result and the user could redirect — call `request_information` with three choices: `Continue` / `Halt for now` / `Other` (freeform). Never silently advance; never silently stop. On `Halt`, emit a one-line resume command and stop.
 
 ## Implementation discipline
 

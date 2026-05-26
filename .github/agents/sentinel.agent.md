@@ -140,7 +140,7 @@ Sentinel's chat output IS its full report. Format:
 - `Findings reported — N items`
 - `Blocked — <reason>`
 
-**Findings** (if any) — one bullet per finding, using the spec from `orchestrator-discipline.md`. The lens-tag must be one of: `correctness`, `security`, `maintainability`:
+**Findings** (if any) — one bullet per finding, using the spec from `reviewer-findings-format.md`. The lens-tag must be one of: `correctness`, `security`, `maintainability`:
 
 ```
 [severity] [lens-tag] file:line — what was wrong → suggested fix

@@ -175,7 +175,7 @@ Probe's chat output IS its full report. Format:
 - `Findings reported — N items`
 - `Blocked — <reason>` (only when plan AC is missing or untestable as written)
 
-**Findings** (if any) — one bullet per finding, using the spec from `orchestrator-discipline.md`:
+**Findings** (if any) — one bullet per finding, using the spec from `reviewer-findings-format.md`:
 ```
 [severity] [test-coverage] file:line — what was wrong → suggested fix
 ```
