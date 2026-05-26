@@ -122,8 +122,6 @@ Output: PR URL + final summary. The pipeline is done.
 <!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Dreamers Kernel
 
-Universal rules. Inlined at the bottom of every Dreamers skill + agent by `scripts/sync-refs.ps1`.
-
 ## Subagent allowlist (HARD RULE)
 
 The only `agent_type` values a skill may pass to `task()`:

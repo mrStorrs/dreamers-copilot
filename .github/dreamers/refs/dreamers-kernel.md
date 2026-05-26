@@ -1,7 +1,5 @@
 # Dreamers Kernel
 
-Universal rules. Inlined at the bottom of every Dreamers skill + agent by `scripts/sync-refs.ps1`.
-
 ## Subagent allowlist (HARD RULE)
 
 The only `agent_type` values a skill may pass to `task()`:
