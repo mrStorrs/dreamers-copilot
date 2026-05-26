@@ -25,7 +25,7 @@ If no bug description was provided, halt + ask.
 - Type-check + run tests. Fix inline (max 3 attempts) then halt.
 
 ## Exit
-- Bug-fix surface, regression test name, test status. Next step: `/dreamers-review --lens sentinel` for a quick audit, then `/dreamers-close-out` to ship.
+- Bug-fix surface, regression test name, test status. Next step: `/dreamers-review --lens sentinel` for a quick audit, then commit + `/dreamers-pr` to ship.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -90,7 +90,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 4. **Archive prior feature's plan directory** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
    - **Merged:** move the entire feature directory from `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived feature directory is preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files. Mid-feature archive (file-by-file) is NOT allowed; only whole-feature-directory archive at the milestone-final PR merge.
    - **Not merged:** leave the feature directory in place.
-   - **Note:** this step catches prior features not already archived by `/dreamers-close-out` Step 7 (the primary archive trigger). If close-out already ran on the prior feature, the source directory won't exist and the `mv` is a no-op — skip silently.
+   - **Note:** this catches prior features not already archived by `/dreamers-full` Phase 3 (the primary archive trigger). If archive already ran, the source directory won't exist and the `mv` is a no-op — skip silently.
 5. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
 ## Commit discipline (non-negotiable)

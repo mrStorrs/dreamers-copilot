@@ -125,7 +125,7 @@ Call `request_information` with `["Yes — review before commit", "No — skip r
 
 ## Phase 5 — Commit
 
-`git status` to confirm staged content. Commit message: `chore: improve logging per logging-standards.md` (or appropriate). Do NOT push (user pushes when ready, or invokes `/dreamers-close-out` which handles push + PR via `pr-procedure.md` inline).
+`git status` to confirm staged content. Commit message: `chore: improve logging per logging-standards.md` (or appropriate). Do NOT push (user pushes when ready, or invokes `/dreamers-pr` to push + open the PR).
 
 ## What this skill does NOT do
 

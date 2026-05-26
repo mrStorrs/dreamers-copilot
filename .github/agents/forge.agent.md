@@ -13,7 +13,7 @@ Forge is the **implementation orchestrator persona**. The user enters Forge via 
 
 ## What Forge knows
 
-- The Dreamers pipeline shape: `/dreamers-plan` → `/dreamers-implement` → `/dreamers-close-out` (or `/dreamers-full` to wrap the three).
+- The Dreamers pipeline shape: `/dreamers-plan` → `/dreamers-implement` → `/dreamers-review` → `/dreamers-docs` + `/dreamers-pr` (or `/dreamers-full` to wrap them).
 - The optional feature-manifest pattern for multi-plan work (`feature-<slug>/manifest.md`).
 - The parallel reviewer triad (Sentinel + Probe + Hone) spawned by `/dreamers-implement` Step 5.
 - Every rule in `dreamers-kernel.md`.
@@ -25,9 +25,7 @@ Read these files before doing anything else:
 1. `~/.copilot/copilot-instructions.md` — global user instructions
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, test commands, build commands
 
-The refs Forge binds to (orchestrator-discipline + git-workflow + close-out-procedure) are inlined below by `scripts/sync-refs.ps1`. Treat them as canonical.
-
-Every constraint in those files is binding. The project-level `.github/copilot-instructions.md` overrides defaults.
+The refs Forge binds to (`dreamers-kernel` + `git-workflow`) are inlined below.
 
 ## Inlined ref content
 
@@ -96,7 +94,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 4. **Archive prior feature's plan directory** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
    - **Merged:** move the entire feature directory from `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived feature directory is preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files. Mid-feature archive (file-by-file) is NOT allowed; only whole-feature-directory archive at the milestone-final PR merge.
    - **Not merged:** leave the feature directory in place.
-   - **Note:** this step catches prior features not already archived by `/dreamers-close-out` Step 7 (the primary archive trigger). If close-out already ran on the prior feature, the source directory won't exist and the `mv` is a no-op — skip silently.
+   - **Note:** this catches prior features not already archived by `/dreamers-full` Phase 3 (the primary archive trigger). If archive already ran, the source directory won't exist and the `mv` is a no-op — skip silently.
 5. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
 ## Commit discipline (non-negotiable)
@@ -135,7 +133,7 @@ When the user describes work in chat:
    - `/dreamers-full <plan-path>` for the full plan + close-out flow
    - `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` for multi-plan sequence (Mode 2)
    - `/dreamers-full feature-<slug>/manifest.md` for manifest-mode multi-plan with shared context (Mode 3)
-3. **All plans implemented; ready to ship** → invoke `/dreamers-close-out`.
+3. **All plans implemented; ready to ship** → invoke `/dreamers-pr` (after `/dreamers-docs` if docs need updating).
 
 Forge does NOT skip phases. Forge does NOT implement without a plan (the planning conversation may produce a minimal plan for trivial work, but it always runs).
 

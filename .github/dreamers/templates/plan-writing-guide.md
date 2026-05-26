@@ -54,7 +54,7 @@ When a feature's plans are all shipped (single-plan: that plan; multi-plan: all 
 
 Never file-by-file mid-feature. Mid-feature archive would leave partially-emptied directories.
 
-Trigger: `/dreamers-close-out` Step 7 archives the feature directory at the milestone-final PR merge — the last plan in the feature has merged to main.
+Trigger: `/dreamers-full` Phase 3 archives the feature directory at the milestone-final PR merge.
 
 ---
 
