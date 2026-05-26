@@ -1,102 +1,39 @@
 ---
 name: dreamers-fix
-description: 'Lightweight bug-fix pipeline. Cuts a fresh feature branch, writes a regression test, implements the fix, invokes /dreamers-review for a single-lens Sentinel audit, optional Echo docs, pushes + opens PR. Escalates to /dreamers-full on scope blowup. Triggers: /dreamers-fix, fix this bug, bug fix, address the bug.'
-argument-hint: '<bug description> [--issue <#|url>]'
+description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests. Exits at green tests. Triggers: /dreamers-fix, fix this bug, bug fix, address the bug.'
+argument-hint: '<bug description>'
 ---
 
 $ARGUMENTS
 
 If no bug description was provided, halt + ask.
 
-Template read at runtime via `view` (not inlined):
-- `.github/dreamers/templates/pr-description.md` — PR body shape.
-
----
-
-## Todo
-
-Declare at entry: Step 1 / Step 2 / Step 3 / Step 4 (review) / Step 5 / Step 6 (user test) / Step 7 (echo) / Step 8 (commit/push/PR).
-
----
+## Todo - Before you begin.
+- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
 ## Step 1 — Branch setup
+- Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
 
-Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
+## Step 2 — Scope survey + escalation
+- Read the bug surface (files identified from the description).
+- In bug-fix scope (single file or tight cluster, no architectural change) → continue.
+- Scope blowup (multiple unrelated subsystems, needs new module, schema change, etc.) → halt + recommend `/dreamers-full <bug description>` instead.
 
----
-
-## Step 2 — Scope survey + escalation check
-
-Read the bug surface (files identified from the description). Decide:
-
-- **In bug-fix scope** (single file or tight cluster, no architectural change) → continue.
-- **Scope blowup** (touches multiple unrelated subsystems, needs new module, schema change, etc.) → halt + recommend `/dreamers-full <bug description>` instead. User confirms before proceeding.
-
----
-
-## Step 3 — Implement fix + regression test
-
-1. **Regression test first.** Write a failing test that captures the buggy behavior. If no test infra exists for the affected surface, note the absence — it surfaces in Step 6's user approval.
-2. **Implement the fix** per `comment-rules` + `testing-mandate` (Kernel). Edit only files in the bug-fix surface from Step 2.
-3. **Type-check + run tests.** Fix inline (max 3 attempts) then halt.
-
----
-
-## Step 4 — Review
-
-Invoke `/dreamers-review --lens sentinel` with the bug-fix surface as scope. Single-lens (correctness/security/maintainability) is sufficient for bug-fix scope. Wait. It applies findings + handles major-refactor gate + re-runs tests.
-
-Blocked → halt this skill.
-
----
-
-## Step 5 — (reserved — no-op; /dreamers-review handles fix application)
-
----
-
-## Step 6 — User testing (if needed)
-
-If the fix has user-visible behavior change: `request_information` with build steps from `.github/instructions/build.instructions.md` (or ask user to build), what changed, reproduction-and-verify steps from the bug description + regression test, options (`Approved` / `Bug still present` / `Other`). Bug-present → fix inline + re-test + re-prompt.
-
----
-
-## Step 7 — Echo gate (judgment-based)
-
-Inspect `git diff --cached`. Invoke `echo` (`task(agent_type: "echo", mode: "sync")`) ONLY if the fix has user-facing or documentable changes (UI copy, public API, config, error messages). Otherwise skip.
-
----
-
-## Step 8 — Commit, push, PR
-
-1. `git commit` per project commit style; body MUST include a one-line summary of the fix + the regression test name.
-2. `git push -u origin fix/<slug>` (never force).
-3. Read `pr-description.md` template. Draft PR body. `gh pr create`. Capture PR URL.
-4. If `--issue <#|url>`: `gh issue comment <#> --body "Fixed in <PR URL>"`.
-
----
+## Step 3 — Regression test + implement + run
+- Write a failing test that captures the buggy behavior. If no test infra exists for the affected surface, note the absence.
+- Implement the fix per `comment-rules` + `testing-mandate` (Kernel). Edit only files in the bug-fix surface from Step 2. Stage with `git add`.
+- Type-check + run tests. Fix inline (max 3 attempts) then halt.
 
 ## Exit
-
-Output: PR URL + summary. No retro (bug fixes don't go through milestone close-out).
-
----
+- Bug-fix surface, regression test name, test status. Next step: `/dreamers-review --lens sentinel` for a quick audit, then `/dreamers-close-out` to ship.
 
 ## Dreamers Kernel
-
 <dreamers-kernel>
-<!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Dreamers Kernel
 
 ## Subagent allowlist (HARD RULE)
 
-The only `agent_type` values a skill may pass to `task()`:
-- `sentinel`, `probe`, `hone`, `echo`, `sage`
-
-Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, `bolt`, or any non-Dreamers agent. Exception: only if the user explicitly authorizes a fallback in the current run.
-
-## Single-owner todo
-
-Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
+Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
@@ -128,12 +65,11 @@ At every natural pause between phases — where the skill has produced a meaning
 Every commit body includes:
 
 ```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
+Co-authored-by: The Dreamers System
 ```
 </dreamers-kernel>
 
 <git-workflow>
-<!-- GENERATED from .github/dreamers/refs/git-workflow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
@@ -173,7 +109,6 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
   - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: feature-auth/plan-01-login-flow`) — repo-relative path without `.md`, without `.dreamers/plans/` prefix
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
@@ -181,14 +116,10 @@ One commit per plan keeps each plan's contribution atomic. Reviewer-fix applicat
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-The orchestrator works directly on the feature branch. Worktrees previously caused reviewers to read stale default-branch code.
-
-## Git history is the archive
-No separate archive directories. `git log` and PR diffs are the record.
+The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
 </git-workflow>
 
 <testing-mandate>
-<!-- GENERATED from .github/dreamers/refs/testing-mandate.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Testing Coverage Mandate (MANDATORY)
 
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
@@ -251,14 +182,9 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
 - **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
-
-## Why this matters
-
-Layer-annotated ACs prevent Probe from guessing intent. The Given/When/Then format forces specificity about preconditions and expected outcomes; the Layer annotation forces specificity about which test layer covers each AC. Together they reduce ambiguity at the planning → implementation handoff without duplicating content across multiple plan sections.
 </testing-mandate>
 
 <comment-rules>
-<!-- GENERATED from .github/dreamers/refs/comment-rules.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Comment Rules
 
 ## Core principle
@@ -279,20 +205,10 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
 - **No redundant JSDoc/KDoc** that only repeats the function signature
+- **No em dashes. no exceptions**
 
 ## Style
 - One line when possible; never exceed two lines for inline comments
 - Write *why*, never *what*
 - If a comment requires more than two lines to be useful, the code needs refactoring, not more words
 </comment-rules>
-
-<agent-recovery>
-<!-- GENERATED from .github/dreamers/refs/agent-recovery.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Agent Failure Recovery (mandatory)
-
-When a spawned agent hits a rate limit, crashes, or times out mid-run:
-1. Read whatever workspace files the agent managed to write before failing.
-2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
-3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
-4. Do not re-run steps that already completed — build on partial progress.
-</agent-recovery>

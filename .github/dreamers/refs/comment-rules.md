@@ -18,6 +18,7 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
 - **No redundant JSDoc/KDoc** that only repeats the function signature
+- **No em dashes. no exceptions**
 
 ## Style
 - One line when possible; never exceed two lines for inline comments

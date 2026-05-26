@@ -8,82 +8,29 @@ $ARGUMENTS
 
 If no plan path was provided, halt + ask. Do not invent a plan.
 
----
-
-## Todo
-
-Declare at entry: Step 1 / Step 2 / Step 3 / Step 4 / Step 5 (review) / Step 6 (user test) / Step 7 (commit).
-
----
+## Todo - Before you begin. 
+- Declare a todo list marking all steps. at entry: Step 1 / Step 2 / Step 3 / Step 4 / Step 5 (review) / Step 6 (user test) / Step 7 (commit).
 
 ## Step 1 — Read plan + write failing tests
-
-Read the plan file. For each AC (G/W/T + `*Layer: ...*`), write at least one failing test at the annotated layer. Stage with `git add`. Don't run yet.
-
----
+- Read the plan file. For each AC (G/W/T + `*Layer: ...*`), write at least one failing test at the annotated layer. Stage with `git add`. Don't run yet.
 
 ## Step 2 — Implement
-
-Edit production files per `comment-rules` + `testing-mandate` (Kernel). Stage as you go.
-
----
+- Edit production files per `comment-rules` + `testing-mandate` (Kernel). Stage as you go.
 
 ## Step 3 — Type-check + run tests
-
-Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
-
-Update `./test-benchmarks.md` row after passing (if the project uses one).
-
----
-
-## Step 4 — Coverage sweep
-
-For each plan AC: name the test(s) covering it. Layer audit. Negative + edge cases. Regression risks. Final missed-AC check. Any gap → write the test now, re-run.
-
----
-
-## Step 5 — Review
-
-Invoke `/dreamers-review` with the plan path. Wait. It handles: triad spawn (Sentinel + Probe + Hone), apply findings, major-refactor gate, re-run tests. Returns when the cycle is clean OR blocked.
-
-Blocked → halt this skill, surface verbatim.
-
----
-
-## Step 6 — User testing (if required)
-
-If plan declares `User-testing-required: yes`: `request_information` with build steps from `.github/instructions/build.instructions.md` (or ask user to build), what changed, test steps from ACs, options (`Approved — continue` / `Bug: <desc>` / `Other`). Bug → fix inline + re-run tests + re-prompt. No commit until approval.
-
----
-
-## Step 7 — Commit
-
-`git commit` per project commit style. Body MUST include `Plan: feature-<slug>/plan-NN-<name>` (no `.md`, no path prefix). One commit per cycle. No push.
-
----
+- Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
+- Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
-
-Output: commit hash, AC coverage matrix, review summary. Next step: `/dreamers-close-out` if last cycle, otherwise another `/dreamers-implement` for next plan (or `/dreamers-full` for the wrapper).
-
----
+-  AC coverage matrix, review summary. Next step: `/dreamers-review` if last cycle, otherwise another `/dreamers-implement` for next plan (or `/dreamers-full` for the wrapper).
 
 ## Dreamers Kernel
-
 <dreamers-kernel>
-<!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Dreamers Kernel
 
 ## Subagent allowlist (HARD RULE)
 
-The only `agent_type` values a skill may pass to `task()`:
-- `sentinel`, `probe`, `hone`, `echo`, `sage`
-
-Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, `bolt`, or any non-Dreamers agent. Exception: only if the user explicitly authorizes a fallback in the current run.
-
-## Single-owner todo
-
-Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
+Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
@@ -115,12 +62,11 @@ At every natural pause between phases — where the skill has produced a meaning
 Every commit body includes:
 
 ```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
+Co-authored-by: The Dreamers System
 ```
 </dreamers-kernel>
 
 <git-workflow>
-<!-- GENERATED from .github/dreamers/refs/git-workflow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
@@ -160,7 +106,6 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
   - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: feature-auth/plan-01-login-flow`) — repo-relative path without `.md`, without `.dreamers/plans/` prefix
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
@@ -168,14 +113,10 @@ One commit per plan keeps each plan's contribution atomic. Reviewer-fix applicat
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-The orchestrator works directly on the feature branch. Worktrees previously caused reviewers to read stale default-branch code.
-
-## Git history is the archive
-No separate archive directories. `git log` and PR diffs are the record.
+The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
 </git-workflow>
 
 <testing-mandate>
-<!-- GENERATED from .github/dreamers/refs/testing-mandate.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Testing Coverage Mandate (MANDATORY)
 
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
@@ -238,14 +179,9 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
 - **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
-
-## Why this matters
-
-Layer-annotated ACs prevent Probe from guessing intent. The Given/When/Then format forces specificity about preconditions and expected outcomes; the Layer annotation forces specificity about which test layer covers each AC. Together they reduce ambiguity at the planning → implementation handoff without duplicating content across multiple plan sections.
 </testing-mandate>
 
 <comment-rules>
-<!-- GENERATED from .github/dreamers/refs/comment-rules.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Comment Rules
 
 ## Core principle
@@ -266,6 +202,7 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
 - **No redundant JSDoc/KDoc** that only repeats the function signature
+- **No em dashes. no exceptions**
 
 ## Style
 - One line when possible; never exceed two lines for inline comments
@@ -274,7 +211,6 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <agent-recovery>
-<!-- GENERATED from .github/dreamers/refs/agent-recovery.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Agent Failure Recovery (mandatory)
 
 When a spawned agent hits a rate limit, crashes, or times out mid-run:

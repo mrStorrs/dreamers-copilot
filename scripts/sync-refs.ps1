@@ -111,7 +111,6 @@ $closeRegex = [regex]'^</([a-zA-Z][a-zA-Z0-9_-]*)>$'
 function Get-ExpectedInner {
     param([hashtable]$Ref)
     $lines = New-Object System.Collections.Generic.List[string]
-    $lines.Add("<!-- GENERATED from $($Ref.RelPath) -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->")
     foreach ($line in Split-Lines $Ref.Content) {
         $lines.Add($line)
     }

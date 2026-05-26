@@ -2,14 +2,7 @@
 
 ## Subagent allowlist (HARD RULE)
 
-The only `agent_type` values a skill may pass to `task()`:
-- `sentinel`, `probe`, `hone`, `echo`, `sage`
-
-Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, `bolt`, or any non-Dreamers agent. Exception: only if the user explicitly authorizes a fallback in the current run.
-
-## Single-owner todo
-
-Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
+Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
@@ -41,5 +34,5 @@ At every natural pause between phases — where the skill has produced a meaning
 Every commit body includes:
 
 ```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
+Co-authored-by: The Dreamers System
 ```

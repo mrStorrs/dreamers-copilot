@@ -1,83 +1,51 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Thin wrapper that invokes /dreamers-plan (Mode 1 only), then /dreamers-implement per plan, then /dreamers-close-out. Manages ship-strategy gate + between-cycle drift checks. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Thin wrapper that invokes /dreamers-plan, then per plan /dreamers-implement → /dreamers-review, then /dreamers-close-out. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
 $ARGUMENTS
 
----
-
 ## Modes
-
 | Mode | `$ARGUMENTS` | Phase 1 |
 |---|---|---|
 | 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` → capture plan paths from its output |
 | 2 | Plan path(s) | Skip (plans pre-existing) |
 | 3 | `manifest.md` | Skip; read manifest → capture plan sequence + shared-context payload |
 
----
-
-## Todo
-
-Declare at entry: Phase 1 / Phase 1.5 / Phase 2 cycle-N (one per plan) / Phase 3.
-
----
+## Todo - Before you begin.
+- Declare a todo list marking all phases at entry: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3.
 
 ## Phase 1 — Planning (Mode 1 only)
+- Invoke `/dreamers-plan $ARGUMENTS`. Wait. Capture plan paths.
+- If `/dreamers-plan` halts without approval → halt this skill with the same resume command.
 
-Invoke `/dreamers-plan $ARGUMENTS`. Wait for completion. Capture the plan paths it produced. If `/dreamers-plan` exits without approval (halted), exit this skill too with the same resume command.
+## Phase 1.5 — Ship strategy (multi-plan only)
+- Score against `plan-writing-guide.md` § "Ship strategy heuristics."
+- `request_information`: `INCREMENTAL` / `ATOMIC` / `Halt` / `Other` + recommendation + one-sentence reasoning. Capture as `strategy`.
 
----
-
-## Phase 1.5 — Ship strategy gate (multi-plan only)
-
-Skipped if single plan. For 2+ plans, recommend INCREMENTAL vs ATOMIC per `plan-writing-guide.md` § "Ship strategy heuristics." `request_information` with `INCREMENTAL` / `ATOMIC` / `Halt` / `Other` + one-sentence reasoning. Capture as `strategy`.
-
----
-
-## Phase 2 — Implementation (sequential per plan)
-
-Branch setup once at Phase 2 entry per `git-workflow` (Kernel): fetch + checkout default + pull + cut `feat/<slug>`. Confirm `.dreamers/` is gitignored. Action open items in `.dreamers/improvements.md` if present.
-
+## Phase 2 — Per plan
 For each plan in sequence:
-
-1. Invoke `/dreamers-implement <plan-path>` (Mode 3: also pass shared-context payload). Wait. It returns when its cycle commit lands. Blocked/Halt → halt this skill too.
-2. **Between cycles** (more plans remain):
-   - **Drift check** (inline): read next plan; cited paths exist; signatures still match; ACs still valid vs landed diff. Drift → surface; user revises/skips/halts.
-   - **INCREMENTAL:** invoke `/dreamers-close-out --light <plan-path>` (push + PR for this plan), then `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
-   - **ATOMIC:** `request_information` Continue/Halt/Other → next cycle.
-
----
+- Invoke `/dreamers-implement <plan-path>`. Wait. Implement returns with green tests.
+- Invoke `/dreamers-review`. Wait. Review applies findings + handles major-refactor gate + re-runs tests.
+- Between cycles (more plans remain):
+  - Drift check inline: read next plan; cited paths exist; signatures match; ACs valid vs landed diff. Drift → surface; user revises/skips/halts.
+  - INCREMENTAL → invoke `/dreamers-close-out --light <plan-path>`, then `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
+  - ATOMIC → `request_information` Continue/Halt/Other → next cycle.
 
 ## Phase 3 — Close-out
-
-Invoke `/dreamers-close-out` (FULL mode at milestone end). Wait. Capture PR URL.
-
----
+- Invoke `/dreamers-close-out` (FULL). Wait. Capture PR URL.
 
 ## Failure handling
-
-Any invoked skill returns Blocked/Halt → surface output verbatim + halt this skill with resume command pointing at the next step.
-
----
+- Any invoked skill returns Blocked/Halt → surface output verbatim + halt this skill with resume command pointing at the next step.
 
 ## Dreamers Kernel
-
 <dreamers-kernel>
-<!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Dreamers Kernel
 
 ## Subagent allowlist (HARD RULE)
 
-The only `agent_type` values a skill may pass to `task()`:
-- `sentinel`, `probe`, `hone`, `echo`, `sage`
-
-Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, `bolt`, or any non-Dreamers agent. Exception: only if the user explicitly authorizes a fallback in the current run.
-
-## Single-owner todo
-
-Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
+Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
@@ -109,12 +77,11 @@ At every natural pause between phases — where the skill has produced a meaning
 Every commit body includes:
 
 ```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
+Co-authored-by: The Dreamers System
 ```
 </dreamers-kernel>
 
 <git-workflow>
-<!-- GENERATED from .github/dreamers/refs/git-workflow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
@@ -154,7 +121,6 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
   - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: feature-auth/plan-01-login-flow`) — repo-relative path without `.md`, without `.dreamers/plans/` prefix
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
@@ -162,8 +128,5 @@ One commit per plan keeps each plan's contribution atomic. Reviewer-fix applicat
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-The orchestrator works directly on the feature branch. Worktrees previously caused reviewers to read stale default-branch code.
-
-## Git history is the archive
-No separate archive directories. `git log` and PR diffs are the record.
+The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
 </git-workflow>

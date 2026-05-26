@@ -37,7 +37,6 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
   - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: feature-auth/plan-01-login-flow`) — repo-relative path without `.md`, without `.dreamers/plans/` prefix
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
@@ -45,7 +44,4 @@ One commit per plan keeps each plan's contribution atomic. Reviewer-fix applicat
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-The orchestrator works directly on the feature branch. Worktrees previously caused reviewers to read stale default-branch code.
-
-## Git history is the archive
-No separate archive directories. `git log` and PR diffs are the record.
+The orchestrator works directly on the feature branch. Unless explicitly requested by the user.

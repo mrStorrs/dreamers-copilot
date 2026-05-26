@@ -47,10 +47,7 @@ Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`.
 
 
 <reviewer-findings-format>
-<!-- GENERATED from .github/dreamers/refs/reviewer-findings-format.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Reviewer Findings Format
-
-All three reviewers (Sentinel, Probe, Hone) return chat output in this exact format. The caller (typically `/dreamers-review`) parses against this spec.
 
 **Status line** (one of):
 - `Approved — no findings`

@@ -38,7 +38,6 @@ Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`.
 
 
 <comment-rules>
-<!-- GENERATED from .github/dreamers/refs/comment-rules.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Comment Rules
 
 ## Core principle
@@ -59,6 +58,7 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
 - **No redundant JSDoc/KDoc** that only repeats the function signature
+- **No em dashes. no exceptions**
 
 ## Style
 - One line when possible; never exceed two lines for inline comments
@@ -67,10 +67,7 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <reviewer-findings-format>
-<!-- GENERATED from .github/dreamers/refs/reviewer-findings-format.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Reviewer Findings Format
-
-All three reviewers (Sentinel, Probe, Hone) return chat output in this exact format. The caller (typically `/dreamers-review`) parses against this spec.
 
 **Status line** (one of):
 - `Approved — no findings`

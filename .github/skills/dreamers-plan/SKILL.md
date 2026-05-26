@@ -1,83 +1,48 @@
 ---
 name: dreamers-plan
-description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest. Hard-stops at Phase 1c approval gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
+description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest. Hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
 argument-hint: '<task description>'
 ---
 
 $ARGUMENTS
 
-Template read at runtime via `view` (not inlined):
+If no task description was provided, halt + ask.
+
+Template read at runtime via `view`:
 - `.github/dreamers/templates/plan-writing-guide.md` — plan structure, naming, ACs, decomposition, manifest, ship-strategy heuristics.
 
----
+## Todo - Before you begin.
+- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
-## Todo
+## Step 1 — Hash out
+- Write a one-paragraph understanding summary of the goal.
+- Identify ambiguities, gaps, open decisions. Ask all clarifying questions in ONE `request_information` round.
+- Present the proposal + get explicit approval via `request_information`. Non-approval = corrections; revise + re-present until approved.
+- Decide plan count + manifest per `plan-writing-guide.md`. Manifest backfill check: existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
 
-Declare at entry: Phase 1a / Phase 1b / Phase 1c.
+## Step 2 — Write plans
+- Read `plan-writing-guide.md` in full via `view`.
+- `mkdir -p .dreamers/plans/feature-<slug>/`.
+- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes.
+- Component-usage check: for shared components, grep the project source root for callers; include them in scope.
+- Citation accuracy: verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
+- Self-check the written plans against the guide before exit. Hard fail on any structural rule violation → halt + fix + re-check.
 
----
+## Step 3 — Review gate
+- Present plan paths via `request_information` with: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.
+- Minor edits applied inline + re-run Step 2 self-check + re-present.
+- Major rewrite → loop back to Step 1 with the correction as new context.
 
-## Phase 1a — Hash out
-
-1. Write a one-paragraph **understanding summary** of the goal.
-2. Identify ambiguities, gaps, open decisions. Ask all clarifying questions in ONE `request_information` round.
-3. After clarifications: present the proposal + get explicit approval via `request_information`:
-
-   ```
-   **Goal:** [one sentence]
-   **Scope:** [what is in]
-   **Non-goals:** [only if ambiguous]
-   **Acceptance criteria:**
-   1. ...
-   ```
-
-   Non-approval = corrections; revise + re-present until approved.
-
-4. **Decide plan count + manifest** per `plan-writing-guide.md`. **Manifest backfill check:** if `.dreamers/plans/feature-<slug>/` already exists with `plan-01-*.md` and no `manifest.md`, and this conversation is producing plan-02-*+, a manifest MUST be produced in Phase 1b.
-
----
-
-## Phase 1b — Write plans
-
-1. Read `.github/dreamers/templates/plan-writing-guide.md` in full via the `view` tool.
-2. `mkdir -p .dreamers/plans/feature-<slug>/`.
-3. Write each `plan-NN-<name>.md`. Write the manifest if Phase 1a decided yes.
-4. **Component-usage check:** for shared components, grep the project source root for callers; include them in scope.
-5. **Citation accuracy:** verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
-6. **Self-check** the written plans against the guide before exit. Hard fail on any structural rule violation → halt + fix + re-check.
-
----
-
-## Phase 1c — Review gate
-
-Present plan paths via `request_information`:
-
-- **Approved — start implementation** → exit. Surface next-step command: `/dreamers-full <plan-paths>` or `/dreamers-implement <plan-path>`.
-- **Minor edit** → apply inline, re-run 1b self-check, re-present.
-- **Major rewrite** → loop back to 1a with the correction as new context.
-- **Halt — planning only** → exit cleanly; surface plan paths.
-- **Other** → freeform redirect; route to minor or major.
-
-This skill HARD STOPS at 1c — it never invokes `/dreamers-implement` or `/dreamers-full` itself. The user runs them.
-
----
+## Exit
+- Surface plan paths. Hard stop — never invokes implementation.
 
 ## Dreamers Kernel
-
 <dreamers-kernel>
-<!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Dreamers Kernel
 
 ## Subagent allowlist (HARD RULE)
 
-The only `agent_type` values a skill may pass to `task()`:
-- `sentinel`, `probe`, `hone`, `echo`, `sage`
-
-Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, `bolt`, or any non-Dreamers agent. Exception: only if the user explicitly authorizes a fallback in the current run.
-
-## Single-owner todo
-
-Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
+Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
@@ -109,6 +74,6 @@ At every natural pause between phases — where the skill has produced a meaning
 Every commit body includes:
 
 ```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
+Co-authored-by: The Dreamers System
 ```
 </dreamers-kernel>

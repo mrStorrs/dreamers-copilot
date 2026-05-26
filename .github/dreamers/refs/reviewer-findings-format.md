@@ -1,7 +1,5 @@
 # Reviewer Findings Format
 
-All three reviewers (Sentinel, Probe, Hone) return chat output in this exact format. The caller (typically `/dreamers-review`) parses against this spec.
-
 **Status line** (one of):
 - `Approved — no findings`
 - `Findings reported — N items`

@@ -1,137 +1,74 @@
 ---
 name: dreamers-close-out
-description: 'Close-out skill — ships the milestone. Echo docs + retro + final commit + user gate + push + PR. Two modes: FULL (default, end of milestone) and LIGHT (--light <plan-path>, mid-sequence in INCREMENTAL). Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
+description: 'Close-out skill — ships the milestone. Echo docs + retro + commit + user gate + push + PR. Two modes: FULL (default, end of milestone) and LIGHT (--light <plan-path>, mid-sequence in INCREMENTAL). Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
 argument-hint: '[--light <plan-path>] [--issue <#|url>]'
 ---
 
 $ARGUMENTS
 
-Template read at runtime via `view` (not inlined):
+Template read at runtime via `view`:
 - `.github/dreamers/templates/pr-description.md` — PR body shape.
 
----
-
 ## Modes
-
-| Mode | When | Steps |
-|---|---|---|
-| FULL (default) | Milestone end — all plans shipped | 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 |
-| LIGHT (`--light <plan-path>`) | Mid-sequence in INCREMENTAL between cycles | 2 + 4 + 5 + 6 |
+- FULL (default, milestone end, all plans shipped): Steps 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8.
+- LIGHT (`--light <plan-path>`, mid-sequence in INCREMENTAL): Steps 2 + 4 + 5 + 6.
 
 LIGHT skips retro, improvements append, plan archive, post-PR scan.
 
----
-
-## Todo
-
-Declare at entry: one item per step (skip LIGHT-omitted steps).
-
----
+## Todo - Before you begin.
+- Declare a todo list marking all steps at entry (skip LIGHT-omitted steps).
 
 ## Step 1 — improvements.md milestone-close (FULL only)
-
-Append new improvement suggestions from this milestone to `.dreamers/improvements.md` (dated, one sentence each, reference the retro file path written at Step 3).
-
----
+- Append new improvement suggestions from this milestone to `.dreamers/improvements.md` (dated, one sentence each, reference the retro file path from Step 3).
 
 ## Step 2 — Echo dispatch
-
-Spawn `echo` via `task(agent_type: "echo", mode: "sync")`. Pass: plan paths, changed files (`git diff --name-only origin/$DEFAULT...HEAD`), diff base, concatenated review summary across the milestone's cycles.
-
-LIGHT mode: invoke Echo only when the just-completed plan's diff has user-facing or documentable changes.
-
-Stage Echo's edits.
-
----
+- Spawn `echo` via `task(agent_type: "echo", mode: "sync")`. Pass: plan paths, changed files (`git diff --name-only origin/$DEFAULT...HEAD`), diff base, concatenated review summary.
+- LIGHT mode: invoke Echo only when the just-completed plan's diff has user-facing or documentable changes.
+- Stage Echo's edits.
 
 ## Step 3 — Retro (FULL only)
-
-Write `.dreamers/retros/retro-d<N>-<name>.md`:
-
-- **What worked well** — clean handoffs, inline phases that held up.
-- **Friction points** — weak output, rework, places where discipline slipped.
-- **Proposed improvements** — specific, actionable edits to skill/agent/ref files.
-- **AC coverage matrix** — rolled up from each cycle's review summary.
-- **Bugs from user-testing** — if any: what was found, how it was fixed.
-- **Regression analysis** — only if the originating task was a user-reported bug: why wasn't it caught / what test was added / what else might be missing.
-
----
+- Write `.dreamers/retros/retro-d<N>-<name>.md`:
+  - What worked well
+  - Friction points
+  - Proposed improvements
+  - AC coverage matrix (rolled up from cycles)
+  - Bugs from user-testing (if any)
+  - Regression analysis (only if originating task was a bug fix)
 
 ## Step 4 — Final commit
-
-If Steps 1–3 wrote uncommitted changes: `git add <explicit-paths>` (no `-A`) + `git commit -m "docs: final cleanup before PR"`. Skip if nothing staged.
-
----
+- `git add <explicit-paths>` (no `-A`).
+- `git commit` with conventional-commits style + `Plan: feature-<slug>/plan-NN-<name>` body line + `Co-authored-by: The Dreamers System` trailer.
+- If nothing staged, skip — no empty commits.
 
 ## Step 5 — User approval gate (MANDATORY)
-
-Present milestone summary:
-
-```
-**Milestone ready to ship.**
-
-Plan(s) shipped:
-- ...
-AC coverage: <N>/<N>
-Review summary: <one paragraph from milestone's cycles>
-Echo docs result: <status>
-Retro: <path>  (FULL only)
-Final commit: <hash + message, or "none">
-Issue ref: <number/URL, or "none">
-```
-
-`request_information` Approved/Halt/Other. Halt → emit `Resume by re-invoking /dreamers-close-out. Branch state preserved on <branch>.` On Other: apply inline corrections, re-run affected steps, re-present.
-
----
+- Present milestone summary (plans shipped, AC coverage, review summary, Echo result, retro path, final commit, issue ref).
+- `request_information`: `Approved` / `Halt` / `Other`. Halt → emit resume command + stop. Other → apply inline corrections + re-run affected steps + re-present.
 
 ## Step 6 — Push + open PR
-
-1. **Pre-push verification:** `git status` clean. `git log --oneline -10` matches expectation.
-2. `git push -u origin <branch>` — never force; never skip hooks.
-3. Read `.github/dreamers/templates/pr-description.md` via `view`. Draft PR body using its shape: Summary / Plans shipped / Cumulative diff / End-to-end ACs / Review summary / Test plan.
-4. `gh pr create --base $DEFAULT --head <branch> --title "<short title>" --body <drafted body>`. Capture PR URL.
-5. If `$ARGUMENTS` referenced `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
-
----
+- Pre-push: `git status` clean; `git log --oneline -10` matches expectation.
+- `git push -u origin <branch>` (never force).
+- Read `pr-description.md` template via `view`. Draft PR body using its shape.
+- `gh pr create --base $DEFAULT --head <branch> --title "<short title>" --body <body>`. Capture PR URL.
+- If `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
 
 ## Step 7 — Plan archive (FULL only)
-
-For each `.dreamers/plans/feature-<slug>/` whose every plan's PR state is `MERGED` (verify via `gh pr view <#> --json state -q .state`): `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/`. Whole directory only. Skip silently if nothing ready.
-
----
+- For each `.dreamers/plans/feature-<slug>/` whose every plan's PR state is `MERGED` (verify via `gh pr view <#> --json state -q .state`): `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/`. Whole directory only. Skip silently if nothing ready.
 
 ## Step 8 — Post-PR scan (FULL only)
-
-Surface:
-- Open improvements from this milestone's retro → ask user before applying any.
-- Project-state drift: PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items.
-
-No auto-commit after the PR opens. Review-comment/CI fixes need explicit user approval.
-
----
+- Surface open retro improvements + ask user before applying any.
+- Flag project-state drift: PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items.
+- No auto-commit after PR opens. Review-comment/CI fixes need explicit user approval.
 
 ## Exit
-
-Output: PR URL + final summary. The pipeline is done.
-
----
+- PR URL + final summary. The pipeline is done.
 
 ## Dreamers Kernel
-
 <dreamers-kernel>
-<!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Dreamers Kernel
 
 ## Subagent allowlist (HARD RULE)
 
-The only `agent_type` values a skill may pass to `task()`:
-- `sentinel`, `probe`, `hone`, `echo`, `sage`
-
-Forbidden: `general-purpose`, `claude`, `claude-code-guide`, `Explore`, `Plan`, `bolt`, or any non-Dreamers agent. Exception: only if the user explicitly authorizes a fallback in the current run.
-
-## Single-owner todo
-
-Each user-invoked skill owns its own todo for its run. When skills compose (e.g., `/dreamers-full` invokes `/dreamers-implement`), the called skill creates its own todo on entry and closes it on exit. Sub-skills do not touch the caller's todo.
+Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
@@ -163,12 +100,11 @@ At every natural pause between phases — where the skill has produced a meaning
 Every commit body includes:
 
 ```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
+Co-authored-by: The Dreamers System
 ```
 </dreamers-kernel>
 
 <git-workflow>
-<!-- GENERATED from .github/dreamers/refs/git-workflow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
@@ -208,7 +144,6 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
   - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-  - Body: reference the plan file (e.g. `Plan: feature-auth/plan-01-login-flow`) — repo-relative path without `.md`, without `.dreamers/plans/` prefix
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
@@ -216,14 +151,10 @@ One commit per plan keeps each plan's contribution atomic. Reviewer-fix applicat
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
 ## No worktrees
-The orchestrator works directly on the feature branch. Worktrees previously caused reviewers to read stale default-branch code.
-
-## Git history is the archive
-No separate archive directories. `git log` and PR diffs are the record.
+The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
 </git-workflow>
 
 <agent-recovery>
-<!-- GENERATED from .github/dreamers/refs/agent-recovery.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
 # Agent Failure Recovery (mandatory)
 
 When a spawned agent hits a rate limit, crashes, or times out mid-run:
