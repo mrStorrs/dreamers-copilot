@@ -1,73 +1,38 @@
 ---
 name: dreamers-review
-description: 'Review phase — spawns Sentinel + Probe + Hone in parallel, applies findings inline, gates major-refactor findings to the user, re-runs tests. Standalone --lens flag for ad-hoc single-lens audit. Triggers: /dreamers-review, review my code, audit.'
-argument-hint: '[--lens sentinel|probe|hone] [--paths <glob>] [--branch] [--no-apply]'
+description: 'Review skill — spawns Sentinel + Probe + Hone in parallel and reports their structured findings. Read-only; does NOT apply fixes. The caller decides what to do with the findings. Standalone --lens flag for single-lens audits. Triggers: /dreamers-review, review my code, audit.'
+argument-hint: '[--lens sentinel|probe|hone] [--paths <glob>] [--branch]'
 ---
 
 $ARGUMENTS
 
 ## Modes
-- (default) Triad: Sentinel + Probe + Hone in parallel + apply findings + major-refactor gate + re-run tests.
-- `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`). No fix application; surface findings only.
-- `--no-apply` Triad runs but findings are surfaced without applying.
+- (default) Triad: Sentinel + Probe + Hone in parallel.
+- `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`).
 
 Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff vs default), default = staged + unstaged.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3 / Step 4.
+- Declare a todo list marking all steps at entry: Step 1 / Step 2.
 
-## Step 1 — Spawn
-- Triad: one batched `task()` call with three sub-invocations (Sentinel + Probe + Hone, all `mode: "sync"`).
-- Per-lens prompt:
+## Step 1 — Spawn reviewers
+- Triad mode: one batched `task()` call with three sub-invocations (Sentinel + Probe + Hone, all `mode: "sync"`).
+- Single-lens mode: spawn only the chosen reviewer.
+- Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
+- Per-lens prompt context:
   - **Sentinel** — correctness / security / maintainability. Return findings + plan-alignment summary.
   - **Probe** — test coverage (AC matrix, layer audit, edge cases, gaps). Return findings + AC coverage table.
-  - **Hone** — simplicity / over-engineering / redundancy / architecture. Return findings. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly."
-- Wait for all three to return. Single-lens mode: spawn only the chosen reviewer; skip Step 2.
+  - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
+- Wait for all spawned reviewers to return.
 
-## Step 2 — Apply findings
-- Concatenate findings from all three; sort by severity (critical → low).
-- Conflict resolution. Same `file:line` with contradicting fixes: correctness > simplicity. Genuine ambiguity → `request_information` before applying.
-- Major-refactor gate (see Step 3). For each finding, check criteria. If any fires, route through the gate. Never silently apply a gate-triggering finding regardless of severity.
-- Apply each non-deferred fix as a targeted Edit. Stage with `git add`.
-- Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
-- Non-finding outputs:
-  - Reviewer `Blocked` → halt; surface verbatim; resolve with user; re-spawn that reviewer only.
-  - Open questions → present each via `request_information`; capture; apply decisions; re-run tests once.
-  - All three `Approved — no findings` → skip to Step 4.
-
-## Step 3 — Major-refactor gate
-- A finding is "major-refactor scope" if its suggested fix meets ANY of:
-  - New module or top-level directory not in the plan's scope.
-  - Schema / data-model change (DB schema, persisted shape, migration, core data-model interface).
-  - Cross-cutting refactor (touches multiple unrelated subsystems).
-  - New public exported symbols not specified in the plan.
-  - Files outside the plan's scope (or outside the bug-fix surface for `/dreamers-fix`).
-  - Hone-recommended full refactor — scope language like "tear out X across N files," "rewrite Y module."
-- Closed checklist. Don't invent new criteria at runtime. Ambiguous → fire the gate.
-- For each gate-triggering finding, `request_information` with: reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, breadth estimate. Options: `Apply now` / `Defer — create follow-up plan` / `Other`.
-- Routing:
-  - Apply now → fix inline at Step 2; stage; re-run tests.
-  - Defer → do NOT apply. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per `plan-writing-guide.md`. Surface the stub path to the user and continue with remaining findings.
-  - Other → freeform redirect. Never silently apply/defer.
-- Batching: multiple findings sharing the same refactor scope MAY combine into one gate call. When in doubt, don't batch.
-- Severity does NOT bypass the gate. Critical/high findings still route through when they meet criteria.
-
-## Step 4 — Re-verification
-- Snapshot before applying: `git diff --cached --name-only` + `git diff --cached --stat`. This snapshot measures the fix-pass delta.
-- After applying fixes, re-run the project's test command. No reviewer is re-spawned by default.
-- Significant-refactor criteria (fix-pass delta vs snapshot): more than 5 production files touched; more than 150 LOC of production code changed; new file added; new exported/public symbol introduced; code moved between modules.
-- If ANY criterion fires, `request_information` with triggered criterion + measured values + one-sentence reasoning. Options: `Run second 3-parallel pass` / `Skip — commit as-is` / `Other`.
-  - Second pass → re-spawn Sentinel + Probe + Hone, re-apply findings, re-run tests.
-  - Skip → commit as-is.
-  - Other → freeform redirect. Halt — no auto-commit, no auto-spawn.
+## Step 2 — Report
+- Return per-reviewer chat output verbatim to the caller.
+- Aggregate counts by severity + lens for a one-line summary.
+- Surface any `Blocked` status from any reviewer (caller handles).
+- Surface any open questions raised by any reviewer (caller handles).
 
 ## Exit
-- Triad status (Approved / Findings applied / Blocked / Open questions).
-- Per-lens findings summary (counts by severity + lens).
-- Files modified during apply-findings.
-- Gate decisions (apply / defer / stub paths created).
-- Test status (green / regression details).
-- Standalone mode (single-lens or `--no-apply`): pass reviewer chat output through verbatim; no fix application; no test re-run.
+- Structured findings per `reviewer-findings-format` (Kernel). The caller applies (or defers) findings on its own terms.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -136,56 +101,6 @@ Co-authored-by: The Dreamers System
 
 Reviewers are read-only / report-only. The caller applies fixes per its own orchestrator-as-fixer behavior.
 </reviewer-findings-format>
-
-<git-workflow>
-# Git Workflow (mandatory)
-
-Every milestone uses a feature branch + PR — never work directly on the default branch.
-
-## Startup verification (do this FIRST)
-1. Detect the repo's default branch:
-   ```bash
-   DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-   [ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
-   ```
-   Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
-2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
-
-## Branch setup (before invoking `/dreamers-implement`)
-1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
-2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
-3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
-4. **Archive prior feature's plan directory** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
-   - **Merged:** move the entire feature directory from `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived feature directory is preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files. Mid-feature archive (file-by-file) is NOT allowed; only whole-feature-directory archive at the milestone-final PR merge.
-   - **Not merged:** leave the feature directory in place.
-   - **Note:** this catches prior features not already archived by `/dreamers-full` Phase 3 (the primary archive trigger). If archive already ran, the source directory won't exist and the `mv` is a no-op — skip silently.
-5. No init commit — the first commit for the milestone is the first thing in the PR diff.
-
-## Commit discipline (non-negotiable)
-1. **Commit at end of each cycle** — one commit per plan in the sequence (single-plan: one commit total; multi-plan: N commits, one per plan).
-2. **Commit before PR creation** — a final commit capturing any last changes before opening the PR.
-3. **No auto-commit after PR is created** — if changes are made after `gh pr create`, do NOT commit automatically. Ask the user first.
-
-## Push discipline (non-negotiable)
-`git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between cycles, or at any other point in the pipeline.
-
-## Post-PR push discipline
-If the user approves a post-PR commit, push with `git push` (no force). The PR will update automatically.
-
-## Commit structure (one commit per cycle)
-- Exactly **one** commit per plan/cycle, immediately after the reviewer findings have been applied and tests are green (and user testing, if required, is signed off).
-- The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
-- Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
-  - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
-
-One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
-
-## What gets committed
-Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
-
-## No worktrees
-The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
-</git-workflow>
 
 <agent-recovery>
 # Agent Failure Recovery (mandatory)

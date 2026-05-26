@@ -1,6 +1,6 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review per cycle, runs close-out inline + /dreamers-docs (Echo) + /dreamers-pr (push + PR). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review for findings, applies findings inline (with major-refactor gate), user-testing gate per plan, then close-out (inline + /dreamers-docs + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -40,23 +40,50 @@ For each plan in sequence:
 - Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
-### Step 4 — Review
-- Invoke `/dreamers-review`. Wait. It spawns the triad, applies findings, runs the major-refactor gate, re-runs tests.
-- On `Blocked` → halt cycle + surface verbatim.
+### Step 4 — Spawn review
+- Invoke `/dreamers-review`. Wait. It returns the triad's structured findings (per `reviewer-findings-format`, Kernel) — read-only.
+- `Blocked` from any reviewer → halt cycle + surface verbatim.
+- Open questions from any reviewer → present each via `request_information`; capture; carry decisions into Step 5.
+
+### Step 5 — Apply findings (orchestrator-as-fixer)
+- Concatenate findings from all three reviewers; sort by severity (critical → low).
+- Conflict resolution: same `file:line` with contradicting fixes → correctness > simplicity. Genuine ambiguity → `request_information` before applying.
+- **Major-refactor gate.** A finding is "major-refactor scope" if its suggested fix meets ANY of:
+  - New module or top-level directory not in the plan's scope.
+  - Schema / data-model change.
+  - Cross-cutting refactor (touches multiple unrelated subsystems).
+  - New public exported symbols not specified in the plan.
+  - Files outside the plan's scope.
+  - Hone-recommended full refactor (scope language like "tear out X across N files," "rewrite Y module").
+  Closed checklist. Ambiguous → fire the gate.
+- For each gate-triggering finding (or batched group sharing the same refactor scope), `request_information` with: reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, breadth estimate. Options: `Apply now` / `Defer — create follow-up plan` / `Other`.
+  - **Apply now** → fix inline; stage; re-run tests after.
+  - **Defer** → do NOT apply. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per `plan-writing-guide.md`. Surface the stub path. Continue with remaining findings.
+  - **Other** → freeform redirect. Never silently apply/defer.
+- Apply each non-deferred fix as a targeted Edit. Stage with `git add`. Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
+
+### Step 6 — User testing gate (MANDATORY, every plan)
+- `request_information` with:
+  - Plan ID + path
+  - Summary of what changed in this cycle
+  - Build/distribute steps from `.github/instructions/build.instructions.md` (or ask user to build if absent)
+  - Step-by-step verify steps derived from plan ACs
+  - Known limitations / out-of-scope
+  - Options: `Approved — continue` / `Bug: <description>` / `Other`
+- On bug → fix inline + re-prompt.
+- On Approved → continue.
+- No commit yet (commit happens at close-out for FULL, or in the LIGHT close-out between cycles for INCREMENTAL).
 
 ### Between cycles (more plans remain)
 - **Drift check** (inline): read next plan; cited paths exist; signatures match; ACs valid vs landed diff. Drift → surface; user revises/skips/halts.
 - **INCREMENTAL** (light close-out for this plan):
   - Invoke `/dreamers-docs --branch` if the just-completed plan's diff has user-facing or documentable changes.
   - `git commit` per project commit style; body includes `Plan: feature-<slug>/plan-NN-<name>`.
-  - User approval gate via `request_information` (Approved/Halt/Other).
   - Invoke `/dreamers-pr`. Capture PR URL.
   - `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
-- **ATOMIC**: `request_information` Continue/Halt/Other → next cycle.
-
-### Refactoring or applying fixes. 
-- when fixes are applied after a review cycle, we dont always want to call the full review. You should judge based on the significance of the change.
-- if user testing gets bounced back. never do a full review cycle. that should go straight back to the user. once the user has approved you can ask them if they would like a new review cycle. 
+- **ATOMIC**:
+  - `git commit` for this plan (body includes `Plan:` line). Do NOT push.
+  - `request_information` Continue/Halt/Other → next cycle.
 
 ## Phase 3 — Close-out (FULL, milestone end)
 - Append improvements to `.dreamers/improvements.md` (dated, one sentence each, reference retro path below).
@@ -69,7 +96,7 @@ For each plan in sequence:
   - Bugs from user-testing (if any)
   - Regression analysis (only if originating task was a bug fix)
 - Final commit: `git add <explicit-paths>` (no `-A`) + `git commit` per conventional-commits with `Plan:` body + trailer. Skip if nothing staged.
-- **User approval gate** (MANDATORY): present milestone summary. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
+- **User approval gate** (MANDATORY, last halt before PR): present milestone summary. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
 - Invoke `/dreamers-pr` (pass `--issue <#|url>` if `$ARGUMENTS` referenced one). Capture PR URL.
 - **Plan archive**: for each `.dreamers/plans/feature-<slug>/` whose every plan's PR state is `MERGED` (`gh pr view <#> --json state -q .state`): `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/`. Whole directory only.
 - **Post-PR scan**: surface open retro improvements + ask user before applying any. Flag project-state drift (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No auto-commit after PR opens.
@@ -263,6 +290,32 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - Write *why*, never *what*
 - If a comment requires more than two lines to be useful, the code needs refactoring, not more words
 </comment-rules>
+
+<reviewer-findings-format>
+# Reviewer Findings Format
+
+**Status line** (one of):
+- `Approved — no findings`
+- `Findings reported — N items`
+- `Blocked — <reason>`
+
+**Findings** (if any) — one bullet per finding, exact format:
+
+```
+[severity] [lens-tag] file:line — what was wrong → suggested fix
+```
+
+- `severity` ∈ `critical` / `high` / `medium` / `low`
+- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
+- `file:line` — absolute or repo-relative path + line number
+- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
+
+**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
+
+**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
+
+Reviewers are read-only / report-only. The caller applies fixes per its own orchestrator-as-fixer behavior.
+</reviewer-findings-format>
 
 <agent-recovery>
 # Agent Failure Recovery (mandatory)
