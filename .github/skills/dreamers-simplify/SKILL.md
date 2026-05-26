@@ -4,15 +4,6 @@ description: 'Standalone Hone review (architectural quality). Read-only — retu
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
-## What this skill does
-
-Spawns just Hone (one of the three pipeline reviewers) for a standalone architectural-quality audit. Read-only — Hone hunts over-engineering, premature abstractions, redundancy, dead code, and bad architecture. May recommend full refactors when implementation is poor. Returns structured findings. No orchestrator-as-fixer step. If you want findings applied, take them to `/dreamers-implement`.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <dreamers-kernel>
 # Dreamers Kernel
 

@@ -4,7 +4,7 @@
       "type": "agent",
       "slug": "echo",
       "name": "echo",
-      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), project-level instruction files (.github/copilot-instructions.md Echo-owned sections), and project-specific docs from completed implementation and review outputs. Spawned inline at `close-out-procedure.md` Step 2 and by the `/dreamers-docs` standalone skill.",
+      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), Echo-owned sections of `.github/copilot-instructions.md`, and project-specific docs based on recent changes. Spawned by `/dreamers-docs` (standalone) and by `/dreamers-full` Phase 3 close-out + Phase 2 between cycles (INCREMENTAL).",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -147,19 +147,6 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-close-out",
-      "name": "dreamers-close-out",
-      "description": "Close-out phase of the Dreamers pipeline. Follows `close-out-procedure.md` end-to-end (FULL or LIGHT mode). Includes Echo inline at Step 2 for docs, retro write (FULL only), improvements.md milestone-close append (FULL only), final commit, user approval gate, push + PR via `pr-procedure.md` inline at Step 6, plan archive (FULL only), and post-PR discipline (FULL only).",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-close-out/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-docs",
       "name": "dreamers-docs",
       "description": "Standalone docs-update entry point. Spawns Echo to update Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, project-specific docs). Resolves diff scope via `--branch` (vs origin/<default>) or `--staged`. Echo stages edits; user commits after review. Does not push or open a PR.",
@@ -188,7 +175,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, variadic plan paths (one or many, all inside per-feature directories), or a feature manifest (`feature-<slug>/manifest.md`). Runs planning + implementation + close-out inline by following procedure refs (planning-procedure.md, implementation-procedure.md, close-out-procedure.md, pr-procedure.md). Does NOT invoke other skills as sub-routines. Owns a single todo for the entire run. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, implements each plan inline (writes failing tests, code, runs tests), invokes /dreamers-review for the triad's findings, applies findings inline with the major-refactor gate, user-testing gate per plan, then close-out (inline + /dreamers-docs + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -201,7 +188,7 @@
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Standalone implementation entry point. Reads an approved plan file and follows `implementation-procedure.md` end-to-end (failing tests → implement inline → run tests → coverage sweep → parallel review with Sentinel + Probe + Hone → optional user-test → commit). Exits at the commit; does NOT push, does NOT open a PR. For full pipeline including close-out, use `/dreamers-full`.",
+      "description": "Standalone implementation entry point. Writes failing tests against the plan's ACs, implements inline, runs tests. Exits at green tests; does NOT review, push, or open a PR. For full pipeline use /dreamers-full.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -240,7 +227,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Standalone planning entry point. Follows `planning-procedure.md` end-to-end (three-phase requirements conversation → plan files → implementation-start approval gate). Hard-stops at the approval gate; does NOT implement and does NOT invoke any other skill. On Phase 1g approval, surfaces the next-step command (`/dreamers-full <plan-paths>`) for the user to run.",
+      "description": "Standalone planning entry point. 3-phase requirements conversation (Hash-out → Write → Review). Produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -261,6 +248,19 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-plan-verify/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-pr",
+      "name": "dreamers-pr",
+      "description": "PR creation skill — pushes the current branch, drafts the PR body from the pr-description template, opens the PR via gh, optionally posts an issue resolution comment.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-pr/SKILL.md"
     },
     {
       "type": "skill",
@@ -292,7 +292,7 @@
       "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
-      "description": "Standalone Sentinel review (correctness / security / maintainability). Read-only — returns structured findings without applying fixes. Args: --branch, --paths, --all.",
+      "description": "Review skill — spawns Sentinel + Probe + Hone in parallel and reports their structured findings. Read-only; does NOT apply fixes (the caller decides). --lens flag spawns a single reviewer for ad-hoc audits.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -333,7 +333,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Dreamers pipeline — end-to-end orchestrator `/dreamers-full` runs planning + implementation + close-out inline by following procedure refs (planning-procedure.md, implementation-procedure.md, close-out-procedure.md, pr-procedure.md). Standalone entry points (`/dreamers-plan`, `/dreamers-implement`, `/dreamers-close-out`) follow the same refs for partial workflows. No skill-calls-skill chaining; single-owner todo per run. Tests-first per cycle. Review phase spawns three read-only reviewers in parallel: Sentinel (correctness/security/maintainability), Probe (test coverage), Hone (simplicity / over-engineering). Each returns structured findings; orchestrator applies fixes inline. Echo handles close-out docs inline; Sage covers orthogonal research.",
+      "description": "Dreamers pipeline. `/dreamers-full` orchestrates: invokes `/dreamers-plan` for the 3-phase planning conversation, implements each plan inline (tests-first), invokes `/dreamers-review` for the parallel triad (Sentinel + Probe + Hone) which reports structured findings, applies findings inline with a major-refactor gate, user-testing gate per plan, then ships via inline close-out + `/dreamers-docs` (Echo) + `/dreamers-pr` (push + PR). Standalone entry points are independent: `/dreamers-plan`, `/dreamers-implement`, `/dreamers-review`, `/dreamers-docs`, `/dreamers-pr`, `/dreamers-fix` (bug-fix pipeline). Sage covers orthogonal research.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -389,10 +389,6 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-close-out"
-        },
-        {
-          "type": "skill",
           "slug": "dreamers-docs"
         },
         {
@@ -422,6 +418,10 @@
         {
           "type": "skill",
           "slug": "dreamers-plan-verify"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-pr"
         },
         {
           "type": "skill",

@@ -4,23 +4,6 @@ description: 'Phased pass to add or improve project logging per logging-standard
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
-## What this skill does
-
-Walks a project (or a subdirectory) and brings the logging up to `logging-standards.md`:
-
-- ERROR for unhandled failures with full stack traces
-- WARN for recoverable issues
-- INFO for lifecycle / business signal (startup config, request/response status+duration, auth events, business events)
-- DEBUG for traceability (function entry/exit on non-trivial fns, branch decisions, repo calls, retries, state transitions)
-- No secrets / PII / full request bodies logged
-
-All work runs inline (no implementation subagent). Optionally spawns Sentinel at the end to review the changes.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 Also load at runtime (not inlined — these are templates / project files):
 - `~/.copilot/dreamers/templates/logging-standards.md` — the binding spec
 - `.github/copilot-instructions.md` (project, if present) — project-specific logging conventions (logger library, format)
@@ -127,8 +110,3 @@ Call `request_information` with `["Yes — review before commit", "No — skip r
 
 `git status` to confirm staged content. Commit message: `chore: improve logging per logging-standards.md` (or appropriate). Do NOT push (user pushes when ready, or invokes `/dreamers-pr` to push + open the PR).
 
-## What this skill does NOT do
-
-- Does NOT add a new logger library or change the logger framework.
-- Does NOT add log calls in tests (tests don't need INFO/DEBUG log calls).
-- Does NOT auto-apply changes without Phase 2 user approval.

@@ -29,14 +29,9 @@ Read these files before doing anything else:
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, test commands, test layout
 3. The task and context passed in the prompt (plan file path, changed-files scope, branch + default-branch names)
 
-The two refs Probe binds to (testing-mandate + orchestrator-discipline) are inlined below by `scripts/sync-refs.ps1`. Treat them as canonical.
+The two refs Probe binds to (`testing-mandate` + `reviewer-findings-format`) are inlined below.
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
 
 <testing-mandate>
 # Testing Coverage Mandate (MANDATORY)

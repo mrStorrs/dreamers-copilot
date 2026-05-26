@@ -4,15 +4,6 @@ description: 'Standalone Probe review (test coverage audit). Read-only — retur
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
-## What this skill does
-
-Spawns just Probe (one of the three pipeline reviewers) for a standalone test-coverage audit. Read-only — Probe reads the code and tests in scope, identifies coverage gaps + edge case misses + regression risks, returns structured findings. No orchestrator-as-fixer step. If you want missing tests written, take the findings and run `/dreamers-implement` with a plan that adds them.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <dreamers-kernel>
 # Dreamers Kernel
 

@@ -4,20 +4,6 @@ description: 'Inline drift check on a plan against current codebase reality. Re-
 argument-hint: 'path/to/plan.md'
 ---
 
-## What this skill does
-
-Re-reads a plan file and checks whether it still applies to the current codebase. Useful when:
-- A plan was written some time ago and the code has moved on.
-- Multiple plans were written together; an earlier one shipped and may have changed paths / signatures / data shapes the later plans depend on.
-- The user wants to confirm a plan is still actionable before invoking `/dreamers-implement`.
-
-The check runs in-skill (no subagent spawn).
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <dreamers-kernel>
 # Dreamers Kernel
 
@@ -104,13 +90,6 @@ Return ONE of:
   - Revise the plan inline (and re-run `/dreamers-plan-verify`).
   - Abandon the plan.
   - Accept the drift and proceed (rare; usually means the plan needs updating).
-
-## What this skill does NOT do
-
-- Does NOT modify the plan — only reports drift.
-- Does NOT modify any source files.
-- Does NOT run tests — verification is read-only.
-- Does NOT call any subagent — fully inline.
 
 ## Use cases
 

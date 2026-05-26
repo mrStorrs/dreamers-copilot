@@ -4,17 +4,6 @@ description: 'Branch-scoped comment cleanup. Same as /dreamers-cleanup-comments 
 argument-hint: '(no args; scope is automatic from the current branch diff)'
 ---
 
-## What this skill does
-
-Branch-scoped variant of `/dreamers-cleanup-comments`. Audits and cleans comment-rules violations on the feature-branch diff only (files in `git diff origin/<DEFAULT>...HEAD --name-only`). Identical phase structure: audit → propose → user approval → apply inline → optional Sentinel review → commit.
-
-Standalone utility — invoke directly when you want a comment sweep limited to the changes this branch introduced (typical use: pre-PR polish on a feature branch).
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <comment-rules>
 # Comment Rules
 

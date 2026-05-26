@@ -37,14 +37,9 @@ Read these files before doing anything else:
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
 3. The task and context passed in the prompt (plan file path, changed-files scope, branch + default-branch names)
 
-The orchestrator-discipline ref Hone binds to (orchestrator-as-fixer role + structured findings format + major-refactor finding gate) is inlined below by `scripts/sync-refs.ps1`. Treat it as canonical.
+The `reviewer-findings-format` ref Hone binds to is inlined below. The caller (typically `/dreamers-full` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
 
 <reviewer-findings-format>
 # Reviewer Findings Format

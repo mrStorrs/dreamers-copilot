@@ -8,11 +8,6 @@ Resolve unresolved PR review comments. All work inline except a parallel review 
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <dreamers-kernel>
 # Dreamers Kernel
 
@@ -157,7 +152,7 @@ git commit -m "fix: address PR feedback"
 
 Use a single commit covering all the PR-feedback fixes. Commit message per `.github/instructions/git.instructions.md` if present.
 
-Per `close-out-procedure.md` Step 8 post-PR discipline: **do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count).
+**Do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count). Post-PR changes always require explicit user approval before pushing.
 
 Only push after explicit `Push to PR` approval: `git push`. On `Hold` → stop with status; the commit stays on the branch for the user to push manually.
 

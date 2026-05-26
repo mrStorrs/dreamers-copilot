@@ -4,27 +4,6 @@ description: 'Project-wide comment cleanup pass per comment-rules.md. Audit → 
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
-## What this skill does
-
-Walks the project source and removes / improves comments to match `comment-rules.md`:
-
-- Delete redundant comments that restate obvious code.
-- Delete separator comments (`// ---`, `// ===`, `// ###`, blank-comment lines, visual dividers).
-- Delete plan / ticket / agent / milestone references in source code.
-- Delete spec-rationalization comments.
-- Delete redundant JSDoc/KDoc that only repeats the function signature.
-- Shorten comments exceeding two lines (or flag the underlying code for refactoring).
-- Preserve: non-obvious logic explanations, public API docs callers need, actionable TODO/FIXME, license headers.
-
-Orchestrator does the work inline. Optionally Sentinel reviews at end.
-
-For branch-scoped cleanup (inside a parent pipeline, scoped to the feature diff), use `/dreamers-cleanup-comments-branch` instead.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <comment-rules>
 # Comment Rules
 
@@ -153,8 +132,3 @@ Call `request_information` with `["Yes — review before commit", "No — skip r
 
 `git status` to confirm staged content. Commit message: `chore: comment cleanup per comment-rules.md`. Do NOT push.
 
-## What this skill does NOT do
-
-- Does NOT modify code logic or behavior — comments only.
-- Does NOT touch comments in tests beyond rule violations.
-- Does NOT auto-apply without Phase 2 approval.

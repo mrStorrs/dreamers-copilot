@@ -8,11 +8,6 @@ Bootstrap a brand new project from scratch. Work through the phases in order. Do
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-
 <project-bootstrap>
 # Project Bootstrap
 
@@ -122,7 +117,7 @@ Then create the project-level `.github/copilot-instructions.md` per `project-boo
 
 ## Phase 5 — Shell plans
 
-Read `~/.copilot/dreamers/templates/shell-plan.md`. For each milestone in the approved brief, create a shell plan in `.dreamers/plans/` using plan naming rules from `refs/plan-rules.md`.
+Read `.github/dreamers/templates/shell-plan.md`. For each milestone in the approved brief, create a shell plan in `.dreamers/plans/feature-<slug>/` using plan naming + structure rules from `.github/dreamers/templates/plan-writing-guide.md`.
 
 After writing all plans, list them in chat with file paths and one-line summaries.
 

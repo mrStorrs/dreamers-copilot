@@ -28,14 +28,9 @@ Read these files before doing anything else:
 3. `~/.copilot/dreamers/templates/logging-standards.md` — logging discipline (Sentinel reviews log calls under correctness/security)
 4. The task and context passed in the prompt (plan file path, changed-files scope, branch + default-branch names)
 
-The two refs Sentinel binds to (comment discipline + orchestrator-as-fixer / findings format) are inlined below by `scripts/sync-refs.ps1`. Treat them as canonical.
+The two refs Sentinel binds to (`comment-rules` + `reviewer-findings-format`) are inlined below.
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
-
-## Inlined ref content
-
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
 
 <comment-rules>
 # Comment Rules
