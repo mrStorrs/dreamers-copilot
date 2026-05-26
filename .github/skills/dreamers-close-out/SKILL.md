@@ -1,148 +1,122 @@
 ---
 name: dreamers-close-out
-description: 'Close-out entry point. Runs the canonical close-out procedure (`close-out-procedure.md`). Two modes: FULL (default) and LIGHT (`--light <plan-path>`). Includes push + PR via `pr-procedure.md` at Step 6. Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
-argument-hint: '[--light <plan-path>] [--issue <#|url>]  (omit flags for full milestone close-out with no issue close)'
+description: 'Close-out skill — ships the milestone. Echo docs + retro + final commit + user gate + push + PR. Two modes: FULL (default, end of milestone) and LIGHT (--light <plan-path>, mid-sequence in INCREMENTAL). Triggers: /dreamers-close-out, close out the milestone, ship the feature.'
+argument-hint: '[--light <plan-path>] [--issue <#|url>]'
 ---
 
-## What this skill does
+$ARGUMENTS
 
-Standalone entry point for the close-out phase. The user invokes this when they have completed implementation (manually or via `/dreamers-implement`) and want to ship — push + PR + docs + retro + archive.
-
-This skill follows `~/.copilot/dreamers/refs/close-out-procedure.md` end-to-end. Echo is spawned as a subagent inline at Step 2 for project-doc updates. `pr-procedure.md` is followed inline at Step 6 for push + PR creation.
-
-This skill does NOT invoke any other skill. Echo is spawned as a subagent inline (per close-out-procedure Step 2). PR creation is handled inline (per pr-procedure.md).
+Template read at runtime via `view` (not inlined):
+- `.github/dreamers/templates/pr-description.md` — PR body shape.
 
 ---
 
-## Two modes
+## Modes
 
-| Mode | When | Run |
+| Mode | When | Steps |
 |---|---|---|
-| **FULL** (default) | Milestone end — all plans in the feature are implemented. Includes the case where INCREMENTAL ship-strategy is in play: the FINAL plan's close-out is always FULL. | All of close-out-procedure (Steps 1–8). |
-| **LIGHT** (`--light <plan-path>`) | Mid-sequence in INCREMENTAL ship mode — one plan complete, more remain. Used by `/dreamers-full` between plans. | Steps 2 + 4 + 5 + 6 only (docs if applicable + final commit + user gate + push + PR). NO retro, NO improvements append, NO plan archive, NO post-PR discipline. |
+| FULL (default) | Milestone end — all plans shipped | 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 |
+| LIGHT (`--light <plan-path>`) | Mid-sequence in INCREMENTAL between cycles | 2 + 4 + 5 + 6 |
 
-If `$ARGUMENTS` includes `--light` followed by a plan path, run LIGHT mode. Otherwise run FULL mode.
-
-If `$ARGUMENTS` includes `--issue <#|url>` (bare issue number or GitHub issue URL), capture it as the issue reference for `pr-procedure.md` Step 4. Do NOT prompt the user for an issue reference.
+LIGHT skips retro, improvements append, plan archive, post-PR scan.
 
 ---
 
-## Inlined ref content
+## Todo
 
-Refs below are inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do NOT edit between the XML tags — edit the source file and re-run sync.
-
-Also load at runtime (not inlined — these are templates / project files):
-- `.github/copilot-instructions.md` (root) — project conventions.
-
-<orchestration-flow>
-<!-- GENERATED from .github/dreamers/refs/orchestration-flow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Orchestration flow — single-owner todo, continuation principle
-
-Single source of truth for the orchestration principles that apply across all Dreamers skills.
+Declare at entry: one item per step (skip LIGHT-omitted steps).
 
 ---
 
-## Single-owner todo rule (HARD RULE)
+## Step 1 — improvements.md milestone-close (FULL only)
 
-There is exactly ONE todo list per user-invoked skill run. The skill the user invoked at the top level (`/dreamers-full`, `/dreamers-plan`, `/dreamers-implement`, `/dreamers-fix`, `/dreamers-close-out`, etc.) owns the todo for the duration of its run. No other entity touches it.
-
-### What the orchestrator does
-
-At skill entry:
-- Declare the todo via `manage_todo_list`. Each item corresponds to one major phase or step. Declare all items upfront; do not add items mid-run.
-
-During the run:
-- Mark the active item `in_progress` when starting.
-- Mark it `completed` when done.
-- Never batch completions at the end. The todo is a live progress indicator, not a retrospective log.
-- Before every meaningful step, re-read the todo to confirm position — the todo is the authoritative "where am I" signal, not chat context.
-
-At skill exit:
-- All items should be `completed` (or explicitly noted as deferred/skipped, with reason).
-
-### What subagents do NOT do
-
-Subagents spawned by the orchestrator (Sentinel, Probe, Hone, Echo, Sage) do NOT touch the todo. Their prompts MUST include the line:
-
-> "Do NOT call `manage_todo_list`. The orchestrator owns the todo."
-
-A subagent that creates its own todo creates a parallel state that drifts from the orchestrator's. Don't do it.
-
-### No composed-mode handoff
-
-There is no "composed mode" for the todo. Skills do not invoke other skills as runtime sub-routines in this system. Each user-invoked skill runs end-to-end with its own todo. When a user wants the full pipeline, they run `/dreamers-full`; when they want only planning, they run `/dreamers-plan`; etc. Each run has one owner, one todo, one exit.
-
-This rule replaces the previous "composed vs standalone — sub-skill updates parent's matching item" pattern, which created multi-owner todo state and was the root cause of mid-pipeline progress lapses.
-
-### Granularity
-
-One todo item per major phase or clearly distinct step. Not one per line of work. Not one per sub-step within a phase. Scannable overview, not micro-log.
+Append new improvement suggestions from this milestone to `.dreamers/improvements.md` (dated, one sentence each, reference the retro file path written at Step 3).
 
 ---
 
-## Continuation principle
+## Step 2 — Echo dispatch
 
-### Definition
+Spawn `echo` via `task(agent_type: "echo", mode: "sync")`. Pass: plan paths, changed files (`git diff --name-only origin/$DEFAULT...HEAD`), diff base, concatenated review summary across the milestone's cycles.
 
-The orchestrator MUST NOT silently halt mid-feature. At every natural pause — where a phase ends and a meaningful choice about what to do next exists — the orchestrator calls `request_information` with a structured choice block. The user picks `Continue`, `Halt for now`, or `Other (freeform)`. No silent forward progress; no silent stops.
+LIGHT mode: invoke Echo only when the just-completed plan's diff has user-facing or documentable changes.
 
-### Pause-point list
-
-The following are the canonical natural pauses where a continuation prompt is required:
-
-1. Between ATOMIC cycles in a multi-plan loop, after each plan's commit and drift check, before the next cycle starts — only when more plans remain.
-2. Between LIGHT close-outs in INCREMENTAL multi-plan mode, after each per-plan PR opens, before the next cycle starts — only when more plans remain.
-
-**Approval gates are NOT continuation prompts.** Phase 1c (proposal approval), Phase 1g (plan-file approval), and close-out Step 5 (push approval) each carry their own decision. They do not need a follow-up "do you want to continue?" prompt after they fire. Phase 1g's `Approved — start implementation` answer is itself the proceed signal — no second gate fires between Phase 1g and Phase 1.5 / Phase 2.
-
-### Prompt template
-
-Use this shape for every continuation prompt:
-
-```
-<status summary — one sentence stating what just completed>
-
-<concrete next action — one sentence stating what will happen if the user says Continue>
-
-Options:
-- label: Continue — <specific yes-action label>
-- label: Halt for now — No (halt; resume later)
-- label: Other — freeform redirect
-```
-
-Call `request_information` with at minimum these three choices. The `Continue` label must name the concrete next action (e.g., "start next cycle for feature-auth/plan-02-logout.md").
-
-### Halt behavior
-
-On `Halt for now` at any continuation prompt: halt cleanly. Output one line stating the resume command:
-
-```
-Resume by re-invoking `/dreamers-full` with the remaining plan paths: <paths>
-```
-
-(Adapt the resume command to whichever skill the user was running.)
-
-Do not leave partial state dangling. Stage nothing new. Do not proceed.
-
-On `Other`: treat the freeform input as a redirect instruction. Acknowledge it, confirm the new direction, and proceed accordingly.
+Stage Echo's edits.
 
 ---
 
-## Tool naming convention
+## Step 3 — Retro (FULL only)
 
-Skills in this system reference two tools by pseudonym. Runtime resolves the pseudonym to whatever Copilot CLI surfaces as the actual tool name at the time of invocation.
+Write `.dreamers/retros/retro-d<N>-<name>.md`:
 
-| Pseudonym | Tool | What it does |
-|-----------|------|--------------|
-| `request_information` | Copilot CLI user-prompt tool | Pauses the orchestrator, presents a message and structured choices, waits for the user's response |
-| `manage_todo_list` | Copilot CLI todo tool | Creates, updates, and marks items in a persistent todo list visible to the user |
+- **What worked well** — clean handoffs, inline phases that held up.
+- **Friction points** — weak output, rework, places where discipline slipped.
+- **Proposed improvements** — specific, actionable edits to skill/agent/ref files.
+- **AC coverage matrix** — rolled up from each cycle's review summary.
+- **Bugs from user-testing** — if any: what was found, how it was fixed.
+- **Regression analysis** — only if the originating task was a user-reported bug: why wasn't it caught / what test was added / what else might be missing.
 
-When a skill says "call `request_information`" or "declare via `manage_todo_list`", it means: invoke the tool Copilot CLI has bound to that function at runtime. The pseudonym names are stable across skill files regardless of CLI version.
+---
 
-### Legacy convention note
+## Step 4 — Final commit
 
-The `.github/agents/nova.agent.md` file retains the older `ask_user` pseudonym (predates this ref). It is functionally equivalent to `request_information`. Out of scope for the current alignment pass; tracked as a follow-up to harmonize agent files with the skill convention.
-</orchestration-flow>
+If Steps 1–3 wrote uncommitted changes: `git add <explicit-paths>` (no `-A`) + `git commit -m "docs: final cleanup before PR"`. Skip if nothing staged.
+
+---
+
+## Step 5 — User approval gate (MANDATORY)
+
+Present milestone summary:
+
+```
+**Milestone ready to ship.**
+
+Plan(s) shipped:
+- ...
+AC coverage: <N>/<N>
+Review summary: <one paragraph from milestone's cycles>
+Echo docs result: <status>
+Retro: <path>  (FULL only)
+Final commit: <hash + message, or "none">
+Issue ref: <number/URL, or "none">
+```
+
+`request_information` Approved/Halt/Other. Halt → emit `Resume by re-invoking /dreamers-close-out. Branch state preserved on <branch>.` On Other: apply inline corrections, re-run affected steps, re-present.
+
+---
+
+## Step 6 — Push + open PR
+
+1. **Pre-push verification:** `git status` clean. `git log --oneline -10` matches expectation.
+2. `git push -u origin <branch>` — never force; never skip hooks.
+3. Read `.github/dreamers/templates/pr-description.md` via `view`. Draft PR body using its shape: Summary / Plans shipped / Cumulative diff / End-to-end ACs / Review summary / Test plan.
+4. `gh pr create --base $DEFAULT --head <branch> --title "<short title>" --body <drafted body>`. Capture PR URL.
+5. If `$ARGUMENTS` referenced `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
+
+---
+
+## Step 7 — Plan archive (FULL only)
+
+For each `.dreamers/plans/feature-<slug>/` whose every plan's PR state is `MERGED` (verify via `gh pr view <#> --json state -q .state`): `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/`. Whole directory only. Skip silently if nothing ready.
+
+---
+
+## Step 8 — Post-PR scan (FULL only)
+
+Surface:
+- Open improvements from this milestone's retro → ask user before applying any.
+- Project-state drift: PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items.
+
+No auto-commit after the PR opens. Review-comment/CI fixes need explicit user approval.
+
+---
+
+## Exit
+
+Output: PR URL + final summary. The pipeline is done.
+
+---
+
+## Dreamers Kernel
 
 <dreamers-kernel>
 <!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
@@ -185,77 +159,6 @@ Every commit body includes:
 Co-authored-by: The Dreamers System <noreply@dreamers.local>
 ```
 </dreamers-kernel>
-
-<delegation>
-<!-- GENERATED from .github/dreamers/refs/delegation.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Delegation Protocol
-
-Each Agent tool invocation must include in the prompt:
-- **Context** — what this agent is being asked to do and why
-- **Prior work** — what was done previously, with absolute paths to any output files to read
-- **What is needed** — specific deliverable expected from this agent
-- **Constraints** — hard rules the agent must not violate
-- **Definition of Done** — how to know the work is complete
-- **Plan file path** — absolute path to the relevant plan file (if applicable)
-
-## MANDATORY — Agent mode
-
-All agents MUST be invoked with `mode: "sync"`. The agent blocks until completion and returns its summary inline. The orchestrator gates on the result before firing anything else.
-
-For the parallel reviewer triad in `/dreamers-implement` Step 5 and `/dreamers-pr-resolve` Step 5: spawn Sentinel + Probe + Hone in a single tool-call with 3 Agent sub-tool-uses. All three run concurrently; the orchestrator waits for all three before applying findings.
-
-## MANDATORY — Reading templates and project files at runtime
-
-Refs are inlined into every consumer at build time by `scripts/sync-refs.ps1`; they are part of the live prompt and do not require a runtime read. Templates (`.github/dreamers/templates/*.md` repo-local, primary; `~/.copilot/dreamers/templates/*.md` user-global, legacy) and project files (`.github/copilot-instructions.md`, `.github/instructions/*.md`) are NOT inlined and MUST be read in full using the `view` tool when a skill or agent reaches them. Never use shell commands (`cat`, `head`, `tail`, `Select-String`) to read templates or project files — they truncate. Every line matters.
-
-## Subagent allowlist (HARD RULE — read this twice)
-
-The ONLY subagent types a Dreamers skill may spawn are the five below. Any other agent type is FORBIDDEN. There is no fallback, no "general-purpose for when nothing fits" escape hatch.
-
-### Allowed (the only types you may pass as `agent_type` in a `task` / Agent tool call)
-
-- **`sentinel`** — read-only review of correctness, security, maintainability. Returns structured findings; the orchestrator applies fixes. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-review`.
-- **`probe`** — read-only review of test coverage (AC matrix, layer audit, edge cases, regression risk). Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-test`.
-- **`hone`** — read-only review of simplicity, over-engineering, redundancy, bad architecture. May recommend full refactors. Returns structured findings. One of the three parallel reviewers per cycle. Also invokable standalone via `/dreamers-simplify`.
-- **`echo`** — documentation. Updates Echo-owned sections of `.github/copilot-instructions.md` plus other project docs after a cycle. Spawned inline at `close-out-procedure.md` Step 2, and by the `/dreamers-docs` standalone skill for ad-hoc doc updates.
-- **`sage`** — deep multi-perspective research. Used by `/dreamers-research`. Orthogonal to the pipeline.
-
-### Forbidden (must NEVER appear as `agent_type` from a Dreamers skill)
-
-- **`general-purpose`** — NEVER. If you reach for general-purpose to "implement," "edit a file," "run a test," or "do git work," that is a bug. Implementation is INLINE by the orchestrator. There is no fallback.
-- **`claude`**, **`claude-code-guide`**, **`Explore`**, **`Plan`** (capital-P architect agent), **`statusline-setup`**, **`vercel:*`** — host-runtime agents from other systems. NEVER spawn from a Dreamers skill.
-- **`forge`**, **`nova`** — these are USER-ENTERED personas (via `/agents forge` or `/agents nova`). Skills do NOT spawn them as subagents.
-- **`bolt`** — does not exist as a subagent in this Dreamers system. Implementation, git ops, and PR creation are done INLINE by the orchestrator.
-- **Anything not in the 5-item allowlist above** — NEVER.
-
-### Runtime hard stop
-
-Before EVERY `task` / Agent tool call, check the `agent_type` argument:
-
-- ✅ If `agent_type` is one of `sentinel` / `probe` / `hone` / `echo` / `sage` → proceed.
-- ❌ If `agent_type` is anything else → STOP. Do not spawn. The action you're about to delegate either:
-  - (a) belongs to the orchestrator INLINE (writing code, writing tests, running tests, git operations, doc updates, file edits, PR creation), OR
-  - (b) needs the right Dreamers agent — re-evaluate which of Sentinel / Probe / Hone / Echo / Sage fits.
-
-There is no third option. There is no "general-purpose because I'm not sure which agent to use" path.
-
-## What implementation looks like (NO subagent)
-
-Implementation (writing production code, writing tests, running tests, type-checking, running build / lint / format, git operations including `add` / `commit` / `push` / `mv` / `rm`, branch setup, doc updates, PR creation via `gh`) is the orchestrator's lane — done inline using the orchestrator's Edit / Write / Bash tools. The five allowed subagents are read-only reporters (Sentinel / Probe / Hone return findings) or scoped doc-writers (Echo edits docs only) — none of them write production code or run the build.
-
-## Read-only reviewer lanes
-
-The three reviewer agents (Sentinel, Probe, Hone) have **`tools: Read, Glob, Grep, Bash`** in their frontmatter — no Write or Edit. They cannot modify files. They return structured findings per the spec in `orchestrator-discipline.md`; the orchestrator applies fixes inline.
-
-## Conflict resolution between reviewers
-
-When two reviewers' findings touch the same `file:line` with contradicting fixes (e.g., Sentinel `[correctness] add defensive check` vs Hone `[simplicity] remove this as over-engineering`):
-
-- **Correctness > simplicity always.** When in conflict, the correctness/security/maintainability finding wins.
-- **Genuine ambiguity surfaces to user.** If both arguments are equally strong (rare), present the conflict before applying either.
-
-See `orchestrator-discipline.md` § "Orchestrator-as-fixer behavior" for the full handling rules.
-</delegation>
 
 <git-workflow>
 <!-- GENERATED from .github/dreamers/refs/git-workflow.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
@@ -312,383 +215,13 @@ The orchestrator works directly on the feature branch. Worktrees previously caus
 No separate archive directories. `git log` and PR diffs are the record.
 </git-workflow>
 
-<close-out-procedure>
-<!-- GENERATED from .github/dreamers/refs/close-out-procedure.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Close-out Procedure (canonical)
-
-This ref is the SOLE source of truth for the Dreamers close-out phase. Both `/dreamers-close-out` (standalone) and `/dreamers-full` (end-to-end pipeline) follow this procedure. Echo is spawned inline at Step 2 for project-doc updates.
-
-The PR-creation half of close-out lives in `pr-procedure.md`. Step 6 below directs the orchestrator to follow that ref inline (the PR procedure is also inlined into the same consumer).
-
----
-
-## Two modes
-
-| Mode | When | Steps |
-|---|---|---|
-| **FULL** (default) | Milestone end — all plans in the feature are implemented. Includes the case where INCREMENTAL ship-strategy is in play: the FINAL plan's close-out is always FULL. | Steps 1–8. |
-| **LIGHT** (`--light <plan-path>`) | Mid-sequence in INCREMENTAL ship mode — one plan complete, more remain. Used by `/dreamers-full` between plans. | Steps 2 + 4 + 5 + 6 only (docs if applicable + final commit + user gate + push + PR). NO retro, NO improvements append, NO plan archive, NO post-PR discipline. |
-
-The light mode is intentionally minimal: per-plan retros would spam history, and milestone-level scan / improvements / plan-archive belong to the END of the sequence.
-
-If the procedure is invoked with a `--light <plan-path>` argument, run LIGHT mode against that plan. Otherwise run FULL mode.
-
----
-
-## Inputs
-
-- **Plan file paths** (list shipped this milestone — one or many, all under the same `feature-<slug>/` directory).
-- **Branch name** + **default branch name**.
-- **Sentinel summary string** (concatenated across cycles in the milestone for FULL mode; just this plan's reviewer summary for LIGHT mode).
-- **Issue reference** (number or URL, if applicable).
-- **Final commit hash** (if any docs/retro/improvements were committed during this procedure).
-
-## Outputs
-
-- Updated docs (Echo edits committed) — if applicable.
-- Retro file at `.dreamers/retros/retro-d<N>-<name>.md` (FULL mode only).
-- One PR opened against the default branch.
-- Plan directory archived to `.dreamers/plans/archive/feature-<slug>/` (FULL mode only, at milestone-final PR merge — actually performed in Step 7).
-
-The orchestrator's todo (a single list owned by the top-level skill) records step completion.
-
----
-
-## Step 1 — improvements.md milestone-close (FULL only)
-
-Append any new improvement suggestions from this milestone to `.dreamers/improvements.md`. Format: dated entry, one sentence each, references the retro file path written in Step 3.
-
-If `.dreamers/improvements.md` doesn't exist, skip — Step 3 will note this in the retro for future reference.
-
-LIGHT mode skips this step.
-
-## Step 2 — Docs update (Echo subagent invocation)
-
-The orchestrator spawns Echo as a subagent here for project-doc updates.
-
-**When to invoke Echo:**
-
-- FULL mode: always invoke (docs are evaluated at milestone end).
-- LIGHT mode: invoke only when the just-completed plan's diff has user-facing or documentable changes. Judgment criteria: user-visible behavior changed, public API changed, config/setup steps changed, test commands changed, or significant new exported symbol.
-
-When invoking, spawn Echo via the `task` tool:
-
-- `agent_type: "echo"`, `mode: "sync"`
-- Pass in the prompt (per `delegation.md`):
-  - **Context:** brief description of the milestone or plan being documented.
-  - **Prior work:** plan file paths (or "n/a (bug fix)" if no plan), changed files (output of `git diff --name-only origin/<DEFAULT>...HEAD`), diff base (`origin/<DEFAULT>`), Sentinel summary string.
-  - **What is needed:** review the changed files vs the plan(s) and update project docs as appropriate (README, CHANGELOG, Echo-owned sections of `.github/copilot-instructions.md`, project-specific docs the project conventions call out).
-  - **Constraints:** Echo edits docs ONLY — no production code, no tests. Echo writes to its own scope per `echo.agent.md`. **Do NOT call `manage_todo_list` — the orchestrator owns the todo.**
-  - **Definition of Done:** structured chat output per Echo's output discipline (status line + docs-changes log + instruction-file changes + comment audit + open questions).
-
-Wait for Echo to signal completion. Capture the doc-changes log + open questions from chat output. If open questions are raised, resolve them with the user before proceeding.
-
-Stage any new doc edits with `git add`.
-
-## Step 3 — Retro (FULL only)
-
-Write `.dreamers/retros/retro-d<N>-<name>.md`. Required sections:
-
-- **What worked well** — clean handoffs, inline phases that held up.
-- **Friction points** — weak output, rework, places the inline discipline slipped.
-- **Proposed improvements** — specific, actionable edits to the skill set, agent files, or refs. Reference the exact section to change and why.
-
-Additionally, write inline summaries:
-- **AC coverage matrix** — which test covers which AC across all cycles. Roll up from each cycle's chat output.
-- **Bugs found during user-testing** (if any) — what was found and how it was fixed.
-- **Regression analysis** (if the originating task was a user-reported bug) — three questions per `orchestrator-discipline.md`: why wasn't it caught, what test was added, what else might be missing.
-
-LIGHT mode skips this step.
-
-## Step 4 — Final commit (if needed)
-
-If Steps 1, 2, or 3 wrote any uncommitted changes (Echo's doc edits, improvements.md, retro file), create a final commit:
-
-```bash
-git status                                  # confirm uncommitted state
-git add <files>                             # explicit, no `-A`
-git commit -m "docs: final cleanup before PR"  # or appropriate message
-```
-
-If no uncommitted changes, skip — never create empty commits.
-
-## Step 5 — User approval gate (MANDATORY)
-
-Before invoking the PR-creation procedure, present this block:
-
-```
-**Milestone ready to ship.**
-
-Plan(s) shipped:
-- .dreamers/plans/feature-<slug>/plan-NN-<name>.md — one-line summary
-
-AC coverage: <N>/<N> ACs covered (or list any uncovered with reason)
-
-Sentinel summary: <one-paragraph from chat outputs across cycles>
-
-Echo docs result: <status line + N files touched, or "No doc updates needed">
-
-Retro: .dreamers/retros/retro-d<N>-<name>.md   (FULL only)
-
-Final commit: <hash + message, or "no final commit — nothing pending">
-
-Issue reference: <number/URL, or "none">
-```
-
-Call `request_information` with choices `["Approved — push + PR", "Halt for now", "Other"]`. Freeform corrections are accepted via Other.
-
-- **Approved → push + PR** → proceed to Step 6.
-- **Halt for now** → output "Resume by re-invoking `/dreamers-close-out`. Branch state is preserved on `<branch-name>`." and stop. No push.
-- **Other / corrections** → apply inline, re-run any affected steps (e.g. re-invoke Echo if docs missed something), and re-present this gate. Loop until approved.
-
-This is the LAST point where the user can halt before the PR goes live.
-
-## Step 6 — Push + PR (follow `pr-procedure.md` inline)
-
-Execute the `pr-procedure.md` content inline with the following inputs (the ref is inlined elsewhere in this consumer file via the sync markers — refer to that block, not a runtime `view`):
-
-- Branch name + default branch name (from procedure inputs).
-- Plan file paths (from procedure inputs).
-- Retro file path (from Step 3 if FULL; omitted in LIGHT).
-- Sentinel summary string (from procedure inputs).
-- Issue reference (from procedure inputs, if applicable).
-- Final commit hash (from Step 4, if any).
-
-Capture the PR URL returned by `pr-procedure.md`.
-
-## Step 7 — Plan archive (FULL only, whole-feature-directory)
-
-The archive unit is the **whole feature directory** (`.dreamers/plans/feature-<slug>/`), not individual plan files. Mid-feature archiving (file-by-file) is NOT allowed.
-
-**Trigger:** the feature is complete when ALL plans in `feature-<slug>/` have shipped (their PRs merged to main). For single-plan features this is one PR; for multi-plan features this is the last plan's PR.
-
-**Procedure:**
-
-1. Identify any feature directories at `.dreamers/plans/feature-<slug>/` whose plans are all referenced by merged PRs (excluding the PR just opened in Step 6, which is unmerged).
-2. For each such complete feature, verify every plan's PR is merged via `gh pr view <number> --json state -q .state` returning `MERGED`. If ANY plan's PR is still open or in-flight, skip this feature — it is not yet ready to archive.
-3. Move the entire feature directory: `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/` (create the archive dir if needed). Never delete files.
-
-Skip silently if no complete feature directories are ready to archive.
-
-LIGHT mode skips this step.
-
-## Step 8 — Post-PR discipline (FULL only)
-
-After `gh pr create` succeeds via Step 6:
-
-1. **No auto-commit after PR is created.** If any further changes are needed (review comments, CI failures), do NOT auto-commit and push. Ask the user first: *"I have changes ready. Should I commit and push these to the PR?"* Only commit and push after explicit user approval. Commit message: `fix: address PR feedback` (or appropriate).
-
-2. **Surface improvements from this cycle's retro** — list each as one sentence and ask: *"Should I address any of these?"* Do not apply without user go-ahead.
-
-3. **Project state contradiction scan** (read durable surfaces, check for drift, surface — do NOT auto-apply):
-   - The just-opened PR description vs the plan files shipped (verify the PR accurately describes what shipped).
-   - `git log origin/$DEFAULT -10 --format=%s` — recent merged work.
-   - Project-level `.github/copilot-instructions.md` Echo-owned sections — does the codebase still match?
-   - `.dreamers/improvements.md` — open items still relevant?
-   - `.dreamers/retros/` — any retro files for prior cycles that surface open improvements or stale items?
-
-   Check for: tech stack drift, architecture pivots not reflected in instructions, milestone status drift, rule conflicts. **Propose all changes — do not auto-apply.** Exception: clearly stale entries pointing to nonexistent files can be removed without asking.
-
-4. **Post-PR push (if changes approved):** use plain `git push` (no force). The PR updates automatically.
-
-LIGHT mode skips this step.
-
----
-
-## What happens after this procedure ends
-
-- **`/dreamers-full`** (end-to-end pipeline): the milestone is complete. The orchestrator's todo records final phase complete. The skill exits with the PR URL.
-- **`/dreamers-close-out`** (standalone, FULL or LIGHT mode): exit with success. Surface the PR URL + summary to the user.
-
-This procedure does not touch the todo. The consuming skill maintains it.
-</close-out-procedure>
-
-<pr-procedure>
-<!-- GENERATED from .github/dreamers/refs/pr-procedure.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# PR-Creation Procedure (canonical)
-
-This ref is the SOLE source of truth for the push + PR-creation step in the Dreamers pipeline. Consumers:
-
-- `close-out-procedure.md` Step 6 (FULL or LIGHT close-out).
-- `/dreamers-fix` Step 8.
-- `/dreamers-pr-resolve` does NOT use this — it pushes updates to an existing PR, not creates a new one.
-
----
-
-## Inputs
-
-The orchestrator running this procedure must have these inputs ready (passed in the prompt context or already captured from earlier phases):
-
-- **Branch name** — current feature branch (`fix/<slug>` for bug-fix flow, `feat/<slug>` for feature flow).
-- **Default branch name** — `$DEFAULT` from earlier branch setup.
-- **Plan file paths** — list of plan paths shipped this PR. Pass:
-  - For milestone close-out (FULL): all plans in the feature directory.
-  - For per-plan PR (LIGHT close-out, INCREMENTAL ship strategy): the single plan just completed.
-  - For bug-fix flow (`/dreamers-fix`): the sentinel string `none — bug fix, no plan file` (literal value; the procedure handles the absence via the Summary fallback rule below).
-- **Retro file path** — from FULL close-out Step 3. Omitted in LIGHT close-out and bug-fix flow.
-- **Sentinel summary string** — concatenated reviewer outputs across cycles (FULL) or single cycle (LIGHT, bug-fix).
-- **Issue reference** (optional) — number or URL. If provided, the procedure closes the issue after PR open.
-- **Final commit hash** — from the most recent commit on the branch (the one being pushed).
-
-## Outputs
-
-- Branch pushed to origin with upstream tracking.
-- PR opened against the default branch.
-- Optionally: issue closed with a comment referencing the PR URL.
-- PR URL returned to the caller.
-
-The orchestrator's todo records each step's completion. This procedure does not touch the todo.
-
----
-
-## Mandatory pre-push verification
-
-Before pushing, verify:
-
-1. **Branch identity** — `git branch --show-current` must NOT be the default branch. If on default, halt with error: "Refuse to push: working tree is on $DEFAULT, not a feature branch."
-2. **Working tree clean** — `git status --porcelain` must be empty. If not, halt: "Working tree has uncommitted changes; commit them before opening the PR." (If invoked from close-out, this should already be handled by close-out Step 4 final commit; if not, surface the discrepancy.)
-3. **Branch is ahead of remote** — `git log origin/$(git branch --show-current)..HEAD` should have commits, or the branch should not yet exist on remote. If the branch exists on remote and is up-to-date with local, halt: "Nothing to push." (Edge case: re-running this procedure on an already-pushed branch.)
-4. **No force-push intent** — never use `--force` or `--force-with-lease` for the initial push. If a previous push exists and there's divergence, halt and ask the user.
-
----
-
-## Step 1 — Push
-
-```bash
-git push -u origin <branch-name>
-```
-
-This is the ONLY push in the milestone pipeline. If push fails:
-- **Rejected (non-fast-forward):** halt; surface the error. Ask the user how to proceed. Do not auto-force.
-- **Network / auth error:** halt; surface; the user resolves credentials.
-- **Hook failure:** halt; surface the pre-push hook output; do not skip hooks.
-
-## Step 2 — Draft PR body
-
-Use `~/.copilot/dreamers/templates/pr-description.md` as the base template. Fill in:
-
-- **Summary** — one paragraph: plan title + 1–3 bullets of what was delivered + why.
-  - **Bug-fix fallback (plan paths sentinel = `none — bug fix, no plan file`, OR plan paths absent):** derive the Summary from the most recent commit's body — specifically the `Bug:` line written by `/dreamers-fix` — plus 1–2 bullets drawn from the Sentinel summary string describing what changed and why. Do NOT attempt to read the sentinel string as a filesystem path. Do NOT scan `.dreamers/plans/` looking for a matching file.
-- **Test counts** — only if test platforms are touched. Otherwise omit the section.
-- **Fixes applied** — severity-graded list from the Sentinel summary string.
-
-Title format: short (under 70 chars). Body details, not the title. Bug-fix invocations use the `fix:` prefix; milestone / plan invocations use the appropriate prefix per `.github/instructions/git.instructions.md` (if present).
-
-### Co-authored attribution (mandatory)
-
-Any co-author trailer in commit messages MUST use the standard git trailer key + this exact author identity:
-
-```
-Co-authored-by: The Dreamers System <noreply@dreamers.local>
-```
-
-Notes:
-- Key must be exactly `Co-authored-by:` (git's standard trailer key) so `git interpret-trailers` and GitHub recognize the line.
-- Author name is always `The Dreamers System` — never a specific model name. The system is the contributor; model identity ages poorly.
-- The `<noreply@dreamers.local>` email is a placeholder — it won't link to a GitHub profile, but it satisfies the trailer's required `Name <email>` format.
-
-The PR body should NOT include a `Co-authored-by:` line — co-author trailers belong on commits, not on PR descriptions.
-
-## Step 3 — Open the PR
-
-```bash
-gh pr create \
-  --title "<short title>" \
-  --body "<drafted body>" \
-  --base <DEFAULT_BRANCH>
-```
-
-Capture the returned PR URL.
-
-If `gh pr create` fails:
-- **Authentication:** halt; ask user to `gh auth login`.
-- **PR already exists for this branch:** halt; surface the existing URL.
-- **Repo permission denied:** halt; surface.
-
-## Step 4 — Issue close (if applicable)
-
-If an issue number/URL was provided as an input:
-
-```bash
-gh issue close <number> --comment "Resolved in <PR URL>"
-```
-
-If the issue close fails, surface the error but do not roll back the PR — the PR is valid even if the issue close has problems.
-
----
-
-## What happens after this procedure ends
-
-Return the PR URL to the caller (close-out procedure, `/dreamers-fix`, etc.). The caller continues with whatever step follows in its own procedure (post-PR discipline for FULL close-out, exit-with-PR-URL for bug-fix flow, etc.).
-
-This procedure does not touch the orchestrator's todo. The caller maintains it.
-</pr-procedure>
-
-$ARGUMENTS
-
----
-
-## Todo list (single owner: this skill)
-
-At skill entry, declare via `manage_todo_list`.
-
-**FULL mode:**
-- [ ] Read close-out-procedure.md + pr-procedure.md
-- [ ] Step 1 — improvements.md milestone-close append
-- [ ] Step 2 — docs update (Echo subagent)
-- [ ] Step 3 — retro write
-- [ ] Step 4 — final commit (if needed)
-- [ ] Step 5 — user approval gate
-- [ ] Step 6 — push + PR (follow pr-procedure.md inline)
-- [ ] Step 7 — plan archive (whole feature directory)
-- [ ] Step 8 — post-PR discipline
-
-**LIGHT mode:**
-- [ ] Read close-out-procedure.md + pr-procedure.md
-- [ ] Step 2 — docs update (if applicable)
-- [ ] Step 4 — final commit (if needed)
-- [ ] Step 5 — user approval gate
-- [ ] Step 6 — push + PR (follow pr-procedure.md inline)
-
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
-
-**Subagent prompt rule:** when this skill spawns Echo in Step 2, include the line "Do NOT call `manage_todo_list`. The orchestrator owns the todo." in Echo's prompt. Per `orchestration-flow.md` § "Single-owner todo."
-
----
-
-## Standalone-input auto-detection
-
-Auto-detect when running standalone:
-
-- **Branch name + default branch**: canonical two-step `git symbolic-ref` + `gh repo view`.
-- **Plan paths**: extract via `git log origin/<DEFAULT>..HEAD --format=%B | grep -E "^Plan:"` and resolve each value to `.dreamers/plans/<value>.md`. The commit body format produced by `implementation-procedure.md` Step 8 is `Plan: feature-<slug>/plan-NN-<name>` — repo-relative, no `.md`, no `.dreamers/plans/` prefix. Skip lines that don't resolve to an existing file (these may be stale commits or merge artifacts).
-- **Sentinel summary**: not available — pass placeholder "Standalone close-out — no Sentinel summary captured."
-- **Issue reference**: parse from `$ARGUMENTS` only — accepts `--issue <#|url>` flag or a bare issue number / GitHub issue URL. If not provided, skip the issue close entirely. **Do not prompt the user.**
-
----
-
-## Procedure
-
-Follow `~/.copilot/dreamers/refs/close-out-procedure.md` in the appropriate mode (FULL or LIGHT). The procedure includes its own user approval gate at Step 5 and reads `pr-procedure.md` in full at Step 6 for the push + PR creation.
-
-Update this skill's todo as each step completes.
-
----
-
-## Exit behavior
-
-Return in chat output:
-- PR URL.
-- Issue closed (yes/no/N/A).
-- Retro file path (FULL mode).
-- Improvements surfaced for user follow-up (FULL mode).
-- Project state scan summary (FULL mode).
-
-For LIGHT mode, exit with the per-plan PR URL and a one-line status block per close-out-procedure's LIGHT mode exit format.
-
----
-
-## What this skill does NOT do
-
-- Does NOT invoke any other skill. Echo is spawned as a subagent inline at Step 2; PR creation runs inline at Step 6 per `pr-procedure.md`.
-- Does NOT spawn agents outside the 5-item allowlist. Only Echo is used in this skill.
+<agent-recovery>
+<!-- GENERATED from .github/dreamers/refs/agent-recovery.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
+# Agent Failure Recovery (mandatory)
+
+When a spawned agent hits a rate limit, crashes, or times out mid-run:
+1. Read whatever workspace files the agent managed to write before failing.
+2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
+3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
+4. Do not re-run steps that already completed — build on partial progress.
+</agent-recovery>

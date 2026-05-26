@@ -1,12 +1,8 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Accepts a task description (Mode 1), variadic plan paths (Mode 2), or a feature-<slug>/manifest.md (Mode 3). Runs planning → implementation per plan → close-out inline. Single-owner todo. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Thin wrapper that invokes /dreamers-plan (Mode 1 only), then /dreamers-implement per plan, then /dreamers-close-out. Manages ship-strategy gate + between-cycle drift checks. Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
-
-Templates read at runtime via `view` (not inlined):
-- `.github/dreamers/templates/plan-writing-guide.md` — plan structure, naming, ACs, decomposition, manifest, ship-strategy heuristics.
-- `.github/dreamers/templates/pr-description.md` — PR body shape.
 
 $ARGUMENTS
 
@@ -14,92 +10,59 @@ $ARGUMENTS
 
 ## Modes
 
-| Mode | `$ARGUMENTS` | Run |
+| Mode | `$ARGUMENTS` | Phase 1 |
 |---|---|---|
-| 1 | task description | Phase 1 → 1.5 → 2 → 3 |
-| 2 | plan path(s) | Phase 1.5 → 2 → 3 |
-| 3 | manifest.md | Phase 1.5 → 2 (with shared-context payload) → 3 |
+| 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` → capture plan paths from its output |
+| 2 | Plan path(s) | Skip (plans pre-existing) |
+| 3 | `manifest.md` | Skip; read manifest → capture plan sequence + shared-context payload |
 
 ---
 
 ## Todo
 
-Declare once at entry: one item per phase (Phase 1, 1.5, 2 cycle-N, 3).
+Declare at entry: Phase 1 / Phase 1.5 / Phase 2 cycle-N (one per plan) / Phase 3.
 
 ---
 
 ## Phase 1 — Planning (Mode 1 only)
 
-**1a — Hash out.** Write a one-paragraph understanding summary. Ask all clarifying questions in one `request_information` round. Then present + get approval:
-
-```
-**Goal:** [one sentence]
-**Scope:** [what is in]
-**Non-goals:** [only if ambiguous]
-**Acceptance criteria:**
-1. ...
-```
-
-Non-approval = corrections; revise + re-present until approved. Decide plan count + manifest per `plan-writing-guide.md`. Manifest backfill check: existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in 1b.
-
-**1b — Write plans.** Read `plan-writing-guide.md` (full, via `view`). Write each `plan-NN-<name>.md` + manifest if applicable. Component-usage grep for shared components. Citation accuracy: read every cited artifact. Self-check the written plans against the guide before exit.
-
-**1c — Review gate.** Present plan paths via `request_information` with: `Approved — start implementation` / `Minor edit` / `Major rewrite (back to 1a)` / `Halt — planning only` / `Other`. Minor edits applied inline + re-run 1b self-check + re-present.
+Invoke `/dreamers-plan $ARGUMENTS`. Wait for completion. Capture the plan paths it produced. If `/dreamers-plan` exits without approval (halted), exit this skill too with the same resume command.
 
 ---
 
-## Phase 1.5 — Ship strategy (multi-plan only)
+## Phase 1.5 — Ship strategy gate (multi-plan only)
 
-Score against `plan-writing-guide.md` § "Ship strategy heuristics." `request_information` with `INCREMENTAL` / `ATOMIC` / `Halt` / `Other` + recommendation + one-sentence reasoning. Capture choice as `strategy`.
+Skipped if single plan. For 2+ plans, recommend INCREMENTAL vs ATOMIC per `plan-writing-guide.md` § "Ship strategy heuristics." `request_information` with `INCREMENTAL` / `ATOMIC` / `Halt` / `Other` + one-sentence reasoning. Capture as `strategy`.
 
 ---
 
 ## Phase 2 — Implementation (sequential per plan)
 
-Branch setup per `git-workflow` (Kernel): fetch + checkout default + pull + cut `feat/<slug>`. Confirm `.dreamers/` is gitignored. Read `.dreamers/improvements.md` if present and action open items.
+Branch setup once at Phase 2 entry per `git-workflow` (Kernel): fetch + checkout default + pull + cut `feat/<slug>`. Confirm `.dreamers/` is gitignored. Action open items in `.dreamers/improvements.md` if present.
 
 For each plan in sequence:
 
-1. Read plan. For each AC (G/W/T + `*Layer: ...*`) write a failing test at the annotated layer. Stage.
-2. Implement per `comment-rules` + `testing-mandate` (Kernel).
-3. Type-check + run tests. Fix inline (max 3 attempts) then halt.
-4. Coverage sweep: every AC named to a test; layer audit; missed-AC final check.
-5. Spawn `sentinel` + `probe` + `hone` in one batched `task` call (`mode: "sync"`). Each prompt MUST include `Do NOT call manage_todo_list.` Mode 3: pass manifest's shared-context payload under "Feature context."
-6. Apply findings inline per `orchestrator-discipline` Kernel. Severity order. Major-refactor gate → `request_information` (Apply / Defer / Other); on Defer create a stub plan + skip. Re-run tests after.
-7. If `User-testing-required: yes`: `request_information` with build steps from `build.instructions.md` (or ask user to build), test steps from ACs, options (`Approved` / `Bug: <desc>` / `Other`). Bug → fix + re-test + re-prompt. No commit until approval.
-8. `git commit`; body MUST include `Plan: feature-<slug>/plan-NN-<name>`. One commit per plan. No push.
-
-**Between cycles** (more plans remain):
-- Drift check: read next plan; cited paths exist; signatures still match; ACs still valid against the landed diff. Drift → surface; user revises/skips/halts.
-- INCREMENTAL: LIGHT close-out (push + PR), then `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
-- ATOMIC: `request_information` Continue/Halt/Other → next cycle.
+1. Invoke `/dreamers-implement <plan-path>` (Mode 3: also pass shared-context payload). Wait. It returns when its cycle commit lands. Blocked/Halt → halt this skill too.
+2. **Between cycles** (more plans remain):
+   - **Drift check** (inline): read next plan; cited paths exist; signatures still match; ACs still valid vs landed diff. Drift → surface; user revises/skips/halts.
+   - **INCREMENTAL:** invoke `/dreamers-close-out --light <plan-path>` (push + PR for this plan), then `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
+   - **ATOMIC:** `request_information` Continue/Halt/Other → next cycle.
 
 ---
 
-## Phase 3 — Close-out (FULL)
+## Phase 3 — Close-out
 
-1. Append new improvements to `.dreamers/improvements.md` (dated, one sentence each, reference retro path).
-2. Spawn `echo` (`mode: "sync"`) with plan paths, changed-files list, diff base, Sentinel summary. Prompt: `Do NOT call manage_todo_list.` Stage Echo's edits.
-3. Write retro `.dreamers/retros/retro-d<N>-<name>.md`: What worked well / Friction / Proposed improvements / AC coverage matrix / Bugs from user-testing / Regression analysis (only if originating task was a bug fix).
-4. Final commit if anything from 1–3 is staged.
-5. **User approval gate.** Present milestone summary. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
-6. Push. Build PR body from `pr-description.md` template. `gh pr create`. Capture PR URL. If issue ref: `gh issue comment <#> --body "Resolved in <PR URL>"`.
-7. Plan archive: for each `feature-<slug>/` whose every plan's PR state is `MERGED`, `mv` the whole directory to `.dreamers/plans/archive/`.
-8. Post-PR scan: list open retro improvements + ask user before applying any. Flag drift (PR description vs plans shipped, `.dreamers/improvements.md`, retros). No auto-commit after PR opens.
-
-**LIGHT mode** (mid-sequence, INCREMENTAL): Steps 2 + 4 + 5 + 6 only.
+Invoke `/dreamers-close-out` (FULL mode at milestone end). Wait. Capture PR URL.
 
 ---
 
 ## Failure handling
 
-Subagent `Blocked` → halt cycle + surface verbatim. Open questions → `request_information` per question, capture, re-spawn scoped. Crash/rate-limit → `agent-recovery` (Kernel). Push rejected → fetch + rebase + re-push.
+Any invoked skill returns Blocked/Halt → surface output verbatim + halt this skill with resume command pointing at the next step.
 
 ---
 
 ## Dreamers Kernel
-
-Inlined from `.github/dreamers/refs/` by `scripts/sync-refs.ps1`. Do not edit between tags — edit source + re-run sync.
 
 <dreamers-kernel>
 <!-- GENERATED from .github/dreamers/refs/dreamers-kernel.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
@@ -197,113 +160,3 @@ The orchestrator works directly on the feature branch. Worktrees previously caus
 ## Git history is the archive
 No separate archive directories. `git log` and PR diffs are the record.
 </git-workflow>
-
-<agent-recovery>
-<!-- GENERATED from .github/dreamers/refs/agent-recovery.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Agent Failure Recovery (mandatory)
-
-When a spawned agent hits a rate limit, crashes, or times out mid-run:
-1. Read whatever workspace files the agent managed to write before failing.
-2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
-3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
-4. Do not re-run steps that already completed — build on partial progress.
-</agent-recovery>
-
-<testing-mandate>
-<!-- GENERATED from .github/dreamers/refs/testing-mandate.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Testing Coverage Mandate (MANDATORY)
-
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
-
-## How test coverage is expressed in plans (new format)
-
-Plan ACs are numbered Given/When/Then statements with a Layer annotation per AC. See `plan-writing-guide.md` § "Acceptance Criteria format" for the canonical spec.
-
-```
-<acceptance_criteria>
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: unit.*
-2. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: integration.*
-3. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
-```
-
-Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
-
-**Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
-
-## Coverage requirement (every plan)
-
-Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
-
-**Unit layer**
-- Each significant function, method, or class in isolation.
-- All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
-- Any pure logic that does not require a real device, network, or database.
-
-**Integration layer**
-- Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
-- Database reads/writes (real or in-memory, not mocked).
-- Auth flows end-to-end within the backend.
-- Cloud function triggers and side-effects.
-
-**UI / E2E layer**
-- Full user journeys through the UI: screen load → interaction → outcome visible on screen.
-- Navigation flows between screens.
-- Error and empty states rendered correctly in the UI.
-- Any flow that requires a real device or emulator.
-- **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
-
-**Regression risks**
-- Anything touching existing behavior that could break — call out the specific existing test or flow at risk in the plan's Context section.
-
-If a layer cannot be covered automatically (e.g., camera permission flows), flag it explicitly as a manual-verification requirement in the plan's Verification section with a reason.
-
-## Probe's layer audit (consumes the new format)
-
-In `/dreamers-implement` Step 4 (coverage sweep) and Step 5 (parallel review with Probe), the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
-
-## Test benchmarks
-
-Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
-
-- **File path:** `./test-benchmarks.md` at the project root (committed to version control).
-- **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
-- **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
-- Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
-
-## Why this matters
-
-Layer-annotated ACs prevent Probe from guessing intent. The Given/When/Then format forces specificity about preconditions and expected outcomes; the Layer annotation forces specificity about which test layer covers each AC. Together they reduce ambiguity at the planning → implementation handoff without duplicating content across multiple plan sections.
-</testing-mandate>
-
-<comment-rules>
-<!-- GENERATED from .github/dreamers/refs/comment-rules.md -- do not edit between tags; edit the source file and re-run scripts/sync-refs.ps1 -->
-# Comment Rules
-
-## Core principle
-Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.
-
-## When to comment
-- Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
-- Public API documentation callers need to use the interface correctly
-- TODO/FIXME with specific, actionable notes
-- License headers
-
-## When NOT to comment
-- Code that reads naturally from well-named functions and variables
-- Anything that restates what the code obviously does (`const isRunning` does not need `// tracks whether running`)
-
-## Strict prohibitions
-- **No plan/ticket references** — never mention plan files, milestone names (D25, plan-3), ticket numbers, or agent names in source code
-- **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
-- **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
-- **No redundant JSDoc/KDoc** that only repeats the function signature
-
-## Style
-- One line when possible; never exceed two lines for inline comments
-- Write *why*, never *what*
-- If a comment requires more than two lines to be useful, the code needs refactoring, not more words
-</comment-rules>
