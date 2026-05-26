@@ -1,35 +1,3 @@
----
-name: dreamers-docs
-description: 'Docs skill — spawns Echo to update Echo-owned sections of .github/copilot-instructions.md plus other project docs (README, CHANGELOG) affected by recent changes. Echo stages edits; does not commit. Triggers: /dreamers-docs, update docs, echo docs update.'
-argument-hint: '[--branch | --staged]'
----
-
-$ARGUMENTS
-
-## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
-
-## Step 1 — Resolve diff scope
-- `--branch` (default): scope = `git diff --name-only origin/$DEFAULT...HEAD`.
-- `--staged`: scope = union of `git diff --cached --name-only` and `git diff --name-only`.
-- If the changed-files list is empty → output `No changes detected` and exit.
-
-## Step 2 — Spawn Echo
-- `task(agent_type: "echo", mode: "sync")`. Prompt MUST include `Do NOT call manage_todo_list.`
-- Pass: context (ad-hoc or milestone close-out — caller-supplied), changed-files list, diff base, plan paths (if applicable), prior review summary (if applicable).
-- Constraint to Echo: edits docs only — no production code, no tests. Stage with `git add`; do NOT commit.
-- Wait for Echo to return its structured chat output.
-
-## Step 3 — Handle output
-- `Docs updated — N files changed` → surface doc-changes log to user.
-- `No doc updates needed` → exit.
-- Open questions → present each via `request_information`; capture answers; re-spawn Echo with clarification if needed.
-
-## Exit
-- Files Echo touched. The caller commits (this skill does NOT commit, push, or open a PR).
-
-## Dreamers Kernel
-<dreamers-kernel>
 # Dreamers Kernel
 
 ## Subagent allowlist (HARD RULE)
@@ -68,4 +36,3 @@ Every commit body includes:
 ```
 Co-authored-by: The Dreamers System
 ```
-</dreamers-kernel>
