@@ -61,12 +61,10 @@ flowchart TD
     Between -->|ATOMIC| AtomicCommit["Drift check<br/>commit"]
 
     Light --> ContIncr{"Continue?"}
-    AtomicCommit --> ContAtomic{"Continue?"}
+    AtomicCommit --> Cycle
 
     ContIncr -->|Continue| ReCut["Wait for merge<br/>re-cut feature branch"]
     ContIncr -->|Halt| HaltF(["Halt"])
-    ContAtomic -->|Continue| Cycle
-    ContAtomic -->|Halt| HaltG(["Halt"])
     ReCut --> Cycle
 
     P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
@@ -86,8 +84,8 @@ flowchart TD
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
     class InvokePlan,S4,InvokeDocs,InvokePR skill
-    class ModeCheck,PlanResult,P15,Strategy,S3Check,ReviewResult,Gate,GateChoice,UserTest,MorePlans,Between,ContIncr,ContAtomic,Approval gate
-    class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltG,HaltH halt
+    class ModeCheck,PlanResult,P15,Strategy,S3Check,ReviewResult,Gate,GateChoice,UserTest,MorePlans,Between,ContIncr,Approval gate
+    class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,Archive,PostScan phase
 ```
 
@@ -103,4 +101,4 @@ flowchart TD
 - Step 6 (user-testing gate) fires at the end of **every** plan, not just plans that declare `User-testing-required: yes`.
 - `/dreamers-review` is **report-only** — Step 5 (apply findings + major-refactor gate) lives in this skill, not in `/dreamers-review`.
 - All `request_information` calls include an **Other** freeform option.
-- INCREMENTAL ships a PR per plan (between cycles). ATOMIC accumulates commits and ships one PR at Phase 3.
+- INCREMENTAL ships a PR per plan (between cycles, with merge-confirmation wait). ATOMIC accumulates commits and ships one PR at Phase 3, with no per-cycle prompt.

@@ -82,8 +82,7 @@ For each plan in sequence:
   - Invoke `/dreamers-pr`. Capture PR URL.
   - `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
 - **ATOMIC**:
-  - `git commit` for this plan (body includes `Plan:` line). Do NOT push.
-  - `request_information` Continue/Halt/Other → next cycle.
+  - `git commit` for this plan (body includes `Plan:` line). Do NOT push. → next cycle.
 
 ## Phase 3 — Close-out (FULL, milestone end)
 - Append improvements to `.dreamers/improvements.md` (dated, one sentence each, reference retro path below).
@@ -100,10 +99,6 @@ For each plan in sequence:
 - Invoke `/dreamers-pr` (pass `--issue <#|url>` if `$ARGUMENTS` referenced one). Capture PR URL.
 - **Plan archive**: for each `.dreamers/plans/feature-<slug>/` whose every plan's PR state is `MERGED` (`gh pr view <#> --json state -q .state`): `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/`. Whole directory only.
 - **Post-PR scan**: surface open retro improvements + ask user before applying any. Flag project-state drift (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No auto-commit after PR opens.
-
-## Failure handling
-- Any invoked skill returns Blocked/Halt → surface output verbatim + halt this skill with resume command pointing at the next step.
-- Implementation regression that can't be fixed in 3 attempts → halt + surface to user.
 
 ## Dreamers Kernel
 <dreamers-kernel>
