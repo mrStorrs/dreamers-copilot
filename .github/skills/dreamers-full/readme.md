@@ -11,13 +11,19 @@ flowchart TD
     ModeCheck -->|manifest.md| Mode3["Mode 3 + shared context"]
 
     Mode1 --> P1["Phase 1 — Planning"]
-    Mode2 --> BranchSetup
-    Mode3 --> BranchSetup
+    Mode2 --> P15
+    Mode3 --> P15
 
     P1 --> InvokePlan["Invoke /dreamers-plan"]
     InvokePlan --> PlanResult{"Plan result"}
     PlanResult -->|Halt| HaltA(["Halt + resume cmd"])
-    PlanResult -->|Plan paths| BranchSetup
+    PlanResult -->|Plan paths| P15
+
+    P15{"Multi-plan?"} -->|Yes| Strategy{"INCREMENTAL<br/>or ATOMIC?"}
+    P15 -->|No| BranchSetup
+    Strategy -->|INCREMENTAL| BranchSetup
+    Strategy -->|ATOMIC| BranchSetup
+    Strategy -->|Halt| HaltB(["Halt + resume cmd"])
 
     BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
 
@@ -49,8 +55,17 @@ flowchart TD
     UserTest -->|Approved| MorePlans{"More plans<br/>remain?"}
 
     MorePlans -->|No| P3
-    MorePlans -->|Yes| BetweenCycle["Drift check<br/>commit"]
-    BetweenCycle --> Cycle
+    MorePlans -->|Yes| Between{"Strategy?"}
+
+    Between -->|INCREMENTAL| Light["Drift check<br/>Invoke /dreamers-docs if applicable<br/>commit<br/>Invoke /dreamers-pr"]
+    Between -->|ATOMIC| AtomicCommit["Drift check<br/>commit"]
+
+    Light --> ContIncr{"Continue?"}
+    AtomicCommit --> Cycle
+
+    ContIncr -->|Continue| ReCut["Wait for merge<br/>re-cut feature branch"]
+    ContIncr -->|Halt| HaltF(["Halt"])
+    ReCut --> Cycle
 
     P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
     Improvements --> InvokeDocs["Invoke /dreamers-docs"]
@@ -69,9 +84,9 @@ flowchart TD
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
     class InvokePlan,S4,InvokeDocs,InvokePR skill
-    class ModeCheck,PlanResult,S3Check,ReviewResult,Gate,GateChoice,UserTest,MorePlans,Approval gate
-    class HaltA,HaltC,HaltD,HaltE,HaltH halt
-    class P1,Cycle,P3,BranchSetup,BetweenCycle,Improvements,Retro,FinalCommit,Archive,PostScan phase
+    class ModeCheck,PlanResult,P15,Strategy,S3Check,ReviewResult,Gate,GateChoice,UserTest,MorePlans,Between,ContIncr,Approval gate
+    class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
+    class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,Archive,PostScan phase
 ```
 
 ## Legend
@@ -86,4 +101,4 @@ flowchart TD
 - Step 6 (user-testing gate) fires at the end of **every** plan, not just plans that declare `User-testing-required: yes`.
 - `/dreamers-review` is **report-only** — Step 5 (apply findings + major-refactor gate) lives in this skill, not in `/dreamers-review`.
 - All `request_information` calls include an **Other** freeform option.
-- Multi-plan runs accumulate commits on one branch and ship via a single PR at Phase 3.
+- INCREMENTAL ships a PR per plan (between cycles, with merge-confirmation wait). ATOMIC accumulates commits and ships one PR at Phase 3, with no per-cycle prompt.
