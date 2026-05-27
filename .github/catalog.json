@@ -4,7 +4,7 @@
       "type": "agent",
       "slug": "echo",
       "name": "echo",
-      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), Echo-owned sections of `.github/copilot-instructions.md`, and project-specific docs based on recent changes. Spawned by `/dreamers-docs` (standalone) and by `/dreamers-full` Phase 3 close-out + Phase 2 between cycles (INCREMENTAL).",
+      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), Echo-owned sections of `.github/copilot-instructions.md`, and project-specific docs based on recent changes. Spawned by `/dreamers-docs` (standalone) and by `/dreamers-full` Phase 3 close-out.",
       "author": "CJ Storrs",
       "tags": [
         "code",

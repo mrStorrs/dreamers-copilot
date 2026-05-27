@@ -111,7 +111,7 @@ XML-wrapped, numbered, each item in Given/When/Then form with a layer annotation
 **"And" continuation** is allowed for compound outcomes:
 
 ```
-1. Given a feature with 3 plans, when ship-strategy is "atomic", then no PR opens until all 3 plans complete; and on any plan failure, the entire feature reverts.
+1. Given a multi-plan feature, when the final plan's Phase 3 close-out runs, then a single PR opens covering all plans; and on any plan failure, the milestone halts before PR open.
    *Layer: integration.*
 ```
 
@@ -280,7 +280,7 @@ OR, when a manifest exists:
 /dreamers-full feature-<slug>/manifest.md
 ```
 
-The orchestrator runs cycle-A → inline drift check → cycle-B → inline drift check → cycle-C → close-out + single PR (or per-plan PRs in INCREMENTAL ship strategy).
+The orchestrator runs cycle-A → inline drift check → cycle-B → inline drift check → cycle-C → close-out + single PR covering all plans.
 
 If plan-02 references state that plan-01 modified (paths, signatures, data shapes), the inline drift check between cycles surfaces any mismatch before cycle-02 starts.
 
@@ -322,40 +322,6 @@ This avoids the edge case where a feature has multiple plans but no manifest, an
 
 - Variadic plans (no manifest): `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` — plans run in argument order; no shared context.
 - Manifest mode: `/dreamers-full feature-<slug>/manifest.md` — orchestrator reads the manifest, extracts the plan sequence, threads shared context into reviewer prompts at each cycle.
-
----
-
-## Ship strategy heuristics
-
-When `/dreamers-full` runs ≥ 2 plans, it presents a **Phase 1.5 ship-strategy gate** asking how to ship:
-
-- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final plan's close-out runs the milestone retro + improvements + plan-archive.
-- **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans; whole feature dir moves to archive after the single PR merges.
-
-The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the gate. Single-plan invocations skip this gate.
-
-### Recommend INCREMENTAL when ANY hold
-
-- ≥ 4 plans in the sequence (review burden of one big PR is high).
-- Plans touch significantly different file subsystems (low overlap in plan Context file lists).
-- Manifest's shared constraints do NOT mention "ordering dependency," "breaking change," or "coordinated revert."
-- Plans are substantial (≥ 5 ACs each, or test cases spanning multiple layers).
-- Plan A's value is observable to users without plans B+ (incremental value delivery).
-
-### Recommend ATOMIC when ANY hold
-
-- 2–3 plans only (small feature).
-- Plans touch overlapping files (same files edited by multiple plans).
-- Manifest's shared constraints mention "ordering dependency," "breaking change requiring shim," or "coordinated revert."
-- DB migrations or schema changes gated on prior plans.
-- End-to-end ACs require ALL plans to verify (no piecewise testability).
-- Feature-flag protected work where partial deployment leaves the system in a half-state.
-
-### Strategy is a runtime decision, not a manifest field
-
-The manifest itself does NOT declare a strategy. The decision happens at invocation time, at the Phase 1.5 gate, where the user can weigh current capacity, review bandwidth, and post-incident risk against the recommendation. Same manifest may ship atomically one cycle and incrementally the next.
-
-If signals conflict, default to ATOMIC (safer) and cite the conflicting signals.
 
 ---
 

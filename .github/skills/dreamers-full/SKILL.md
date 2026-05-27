@@ -14,15 +14,11 @@ $ARGUMENTS
 | 3 | `manifest.md` | Skip; read manifest → capture plan sequence + shared-context payload |
 
 ## Todo - Before you begin.
-- Declare a todo list marking all phases at entry: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3.
+- Declare a todo list marking all phases at entry: Phase 1 / Phase 2 cycle-N / Phase 3.
 
 ## Phase 1 — Planning (Mode 1 only)
 - Invoke `/dreamers-plan $ARGUMENTS`. Wait. Capture plan paths.
 - Halt this skill if `/dreamers-plan` halts without approval.
-
-## Phase 1.5 — Ship strategy (multi-plan only)
-- Score against `plan-writing-guide.md` § "Ship strategy heuristics."
-- `request_information`: `INCREMENTAL` / `ATOMIC` / `Halt` / `Other` + recommendation + one-sentence reasoning. Capture as `strategy`.
 
 ## Phase 2 — Per plan (inline implementation + review)
 
@@ -72,18 +68,11 @@ For each plan in sequence:
   - Options: `Approved — continue` / `Bug: <description>` / `Other`
 - On bug → fix inline + re-prompt.
 - On Approved → continue.
-- No commit yet (commit happens at close-out for FULL, or in the LIGHT close-out between cycles for INCREMENTAL).
+- No commit yet (commit happens between cycles or at Phase 3 close-out).
 
 ### Between cycles (more plans remain)
 - **Drift check** (inline): read next plan; cited paths exist; signatures match; ACs valid vs landed diff. Drift → surface; user revises/skips/halts.
-- **INCREMENTAL** (light close-out for this plan):
-  - Invoke `/dreamers-docs --branch` if the just-completed plan's diff has user-facing or documentable changes.
-  - `git commit` per project commit style; body includes `Plan: feature-<slug>/plan-NN-<name>`.
-  - Invoke `/dreamers-pr`. Capture PR URL.
-  - `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
-- **ATOMIC**:
-  - `git commit` for this plan (body includes `Plan:` line). Do NOT push.
-  - `request_information` Continue/Halt/Other → next cycle.
+- `git commit` for this plan (body includes `Plan: feature-<slug>/plan-NN-<name>`). Do NOT push. → next cycle.
 
 ## Phase 3 — Close-out (FULL, milestone end)
 - Append improvements to `.dreamers/improvements.md` (dated, one sentence each, reference retro path below).
@@ -100,10 +89,6 @@ For each plan in sequence:
 - Invoke `/dreamers-pr` (pass `--issue <#|url>` if `$ARGUMENTS` referenced one). Capture PR URL.
 - **Plan archive**: for each `.dreamers/plans/feature-<slug>/` whose every plan's PR state is `MERGED` (`gh pr view <#> --json state -q .state`): `mv .dreamers/plans/feature-<slug>/ .dreamers/plans/archive/`. Whole directory only.
 - **Post-PR scan**: surface open retro improvements + ask user before applying any. Flag project-state drift (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No auto-commit after PR opens.
-
-## Failure handling
-- Any invoked skill returns Blocked/Halt → surface output verbatim + halt this skill with resume command pointing at the next step.
-- Implementation regression that can't be fixed in 3 attempts → halt + surface to user.
 
 ## Dreamers Kernel
 <dreamers-kernel>
