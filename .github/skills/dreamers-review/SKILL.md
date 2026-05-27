@@ -20,7 +20,7 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Single-lens mode: spawn only the chosen reviewer.
 - Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
 - Per-lens prompt context:
-  - **Sentinel** — correctness / security / maintainability. Return findings + plan-alignment summary.
+  - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Return findings + plan-alignment summary.
   - **Probe** — test coverage (AC matrix, layer audit, edge cases, gaps). Return findings + AC coverage table.
   - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
 - Wait for all spawned reviewers to return.
@@ -101,6 +101,21 @@ Co-authored-by: The Dreamers System
 
 Reviewers are read-only / report-only. The caller applies fixes per its own orchestrator-as-fixer behavior.
 </reviewer-findings-format>
+
+<logging-discipline>
+# Logging Discipline (reviewer lens)
+
+When Sentinel reviews log calls in the diff:
+
+1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, treat it as the binding spec. Flag any log call that violates it.
+2. **Else: surrounding-code conformity.** Compare added/changed log calls to existing calls in the same module and nearest neighbors. Flag mismatches in:
+   - Logger library / import path (introduces a new logger where one already exists).
+   - Level usage (e.g., ERROR for recoverable issues, INFO with full bodies).
+   - Message format (structured fields vs interpolated strings, key naming, casing) that breaks local convention.
+3. **Never-log violations are `security` severity.** Secrets, tokens, PII, or full request/response bodies in any log call → flag at `security` regardless of lens.
+
+Severity mapping: never-log violation → `security`; library/format/level deviation → `maintainability`. Findings follow the format in `reviewer-findings-format` (Kernel).
+</logging-discipline>
 
 <agent-recovery>
 # Agent Failure Recovery (mandatory)
