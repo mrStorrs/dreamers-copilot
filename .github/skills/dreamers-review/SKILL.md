@@ -103,18 +103,17 @@ Reviewers are read-only / report-only. The caller applies fixes per its own orch
 </reviewer-findings-format>
 
 <logging-discipline>
-# Logging Discipline (reviewer lens)
+# Logging Discipline
 
-When Sentinel reviews log calls in the diff:
+Rules for log calls — what to write, what to flag in review.
 
-1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, treat it as the binding spec. Flag any log call that violates it.
-2. **Else: surrounding-code conformity.** Compare added/changed log calls to existing calls in the same module and nearest neighbors. Flag mismatches in:
-   - Logger library / import path (introduces a new logger where one already exists).
-   - Level usage (e.g., ERROR for recoverable issues, INFO with full bodies).
-   - Message format (structured fields vs interpolated strings, key naming, casing) that breaks local convention.
-3. **Never-log violations are `security` severity.** Secrets, tokens, PII, or full request/response bodies in any log call → flag at `security` regardless of lens.
-
-Severity mapping: never-log violation → `security`; library/format/level deviation → `maintainability`. Findings follow the format in `reviewer-findings-format` (Kernel).
+1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
+2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
+   - Logger library / import path (do not introduce a new logger where one already exists).
+   - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
+   - Message format (structured fields vs interpolated strings, key names, casing).
+3. **Never log:** secrets, tokens, PII, full request/response bodies. No exceptions.
+4. **Neither rule yields a clear answer** → raise an open question via `request_information` rather than guessing.
 </logging-discipline>
 
 <agent-recovery>

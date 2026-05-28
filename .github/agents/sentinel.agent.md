@@ -99,7 +99,13 @@ Read every changed file in the passed scope (production AND test files). Apply t
 
 2. **Security** — Secrets exposure, auth bypass, injection vulnerabilities, permission escalation, insufficient input validation, OWASP Top 10. Test files reviewed for: do tests exercise auth boundaries and negative paths?
 
-3. **Maintainability** — Legibility, convention consistency, hidden coupling, dead code, naming quality, structural debt. Comment-rules violations from `comment-rules.md`. Logging discipline violations from `logging-standards.md` (Sentinel uses INFO/DEBUG/WARN/ERROR levels appropriately; never logs secrets/PII).
+3. **Maintainability** — Legibility, convention consistency, hidden coupling, dead code, naming quality, structural debt. Comment-rules violations from `comment-rules.md`. Logging-discipline violations from `logging-discipline.md` (project rule first, else match surrounding code; never log secrets/PII/full bodies).
+
+### Logging severity mapping (reviewer)
+
+When flagging logging-discipline violations:
+- Never-log violation (secrets, tokens, PII, full request/response bodies) → `security` severity.
+- Library / format / level deviation from project convention or surrounding code → `maintainability` severity.
 
 ### Severity scale
 
