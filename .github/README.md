@@ -2,13 +2,7 @@
 
 An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → parallel-review → docs → PR flow.
 
-## Quick start
-
-```powershell
-.\Install-Dreamers.ps1
-```
-
-Then invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
+Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
 
 ## Layout
 
@@ -21,8 +15,6 @@ Then invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan
 │   └── templates/# Plan, manifest, PR description, logging standards, etc.
 └── instructions/ # Auto-loaded instruction files (Copilot CLI picks these up)
 ```
-
-Refs in `dreamers/refs/` are the single source of truth. They're inlined into skill and agent files via `<tag>...</tag>` markers and synced by `scripts/sync-refs.ps1`. CI's `verify-refs` workflow fails PRs that drift.
 
 ## Agents
 
@@ -75,40 +67,34 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 ## Pipeline shape (`/dreamers-full`)
 
+```mermaid
+flowchart TD
+    Start([User invokes /dreamers-full]) --> P1["Phase 1: /dreamers-plan<br/>(task-description mode only)"]
+    P1 --> P15{"Phase 1.5: Ship-strategy gate<br/>(multi-plan only)"}
+    P15 -->|INCREMENTAL| P2
+    P15 -->|ATOMIC| P2
+    P15 -.->|single plan| P2
+
+    subgraph P2 ["Phase 2: per plan, inline"]
+        direction TB
+        S1[1. Write failing tests] --> S2[2. Implement]
+        S2 --> S3[3. Type-check + run tests]
+        S3 --> S4["4. /dreamers-review<br/>(Sentinel + Probe + Hone in parallel)"]
+        S4 --> S5["5. Apply findings<br/>(major-refactor gate on big fixes)"]
+        S5 --> S6[6. User-testing gate]
+    end
+
+    P2 --> P3
+    subgraph P3 ["Phase 3: Close-out"]
+        direction TB
+        C1[Append improvements] --> C2[/dreamers-docs/]
+        C2 --> C3[Write retro] --> C4[Final commit]
+        C4 --> C5{User approval gate}
+        C5 -->|Approved| C6[/dreamers-pr/]
+        C6 --> C7[Plan archive] --> C8[Post-PR scan]
+    end
+
+    P3 --> End([Shipped])
 ```
-Phase 1   → /dreamers-plan        (planning conversation, only in task-description mode)
-Phase 1.5 → Ship-strategy gate    (INCREMENTAL vs ATOMIC, multi-plan only)
-Phase 2   → per plan, inline:
-              1. Write failing tests
-              2. Implement
-              3. Type-check + run tests
-              4. /dreamers-review  (triad in parallel → structured findings)
-              5. Apply findings    (major-refactor gate prompts on big fixes)
-              6. User-testing gate
-Phase 3   → Close-out
-              improvements append → /dreamers-docs → retro → final commit
-              → user approval gate → /dreamers-pr → plan archive → post-PR scan
-```
 
-Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence.
 
-## Install / uninstall
-
-```powershell
-.\Install-Dreamers.ps1          # copies files into ~/.copilot/
-.\Install-Dreamers.ps1 -Force   # overwrite existing files
-
-.\Remove-Dreamers.ps1           # remove Dreamers-owned files
-.\Remove-Dreamers.ps1 -DryRun   # preview only
-```
-
-Instruction files in `.github/instructions/` are auto-loaded by Copilot CLI once installed.
-
-## Project setup
-
-For a project that wants to use Dreamers, see [`dreamers/refs/project-bootstrap.md`](dreamers/refs/project-bootstrap.md):
-
-1. Add `.dreamers/` to the project's `.gitignore`.
-2. Create the project-level `.github/copilot-instructions.md` (auto-loaded by Copilot CLI).
-3. Create `.dreamers/plans/` for plan files.
-4. Copy `instructions/comment-rules.instructions.md` into the project's `.github/instructions/`.
