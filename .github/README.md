@@ -65,36 +65,94 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 | `/dreamers-clean-work` | Between-milestone maintenance: archive merged plans, audit improvements, scan for drift. |
 | `/dreamers-plan-verify <plan>` | Inline drift check: cited paths / signatures / data shapes still hold? |
 
-## Pipeline shape (`/dreamers-full`)
+## Full (`/dreamers-full`) flow example
 
 ```mermaid
 flowchart TD
-    Start([User invokes /dreamers-full]) --> P1["Phase 1: /dreamers-plan<br/>(task-description mode only)"]
-    P1 --> P15{"Phase 1.5: Ship-strategy gate<br/>(multi-plan only)"}
-    P15 -->|INCREMENTAL| P2
-    P15 -->|ATOMIC| P2
-    P15 -.->|single plan| P2
+    Start(["/dreamers-full $ARGUMENTS"]) --> ModeCheck{"$ARGUMENTS<br/>type?"}
 
-    subgraph P2 ["Phase 2: per plan, inline"]
-        direction TB
-        S1[1. Write failing tests] --> S2[2. Implement]
-        S2 --> S3[3. Type-check + run tests]
-        S3 --> S4["4. /dreamers-review<br/>(Sentinel + Probe + Hone in parallel)"]
-        S4 --> S5["5. Apply findings<br/>(major-refactor gate on big fixes)"]
-        S5 --> S6[6. User-testing gate]
-    end
+    ModeCheck -->|Task description| Mode1["Mode 1"]
+    ModeCheck -->|Plan paths| Mode2["Mode 2"]
+    ModeCheck -->|manifest.md| Mode3["Mode 3 + shared context"]
 
-    P2 --> P3
-    subgraph P3 ["Phase 3: Close-out"]
-        direction TB
-        C1[Append improvements] --> C2[/dreamers-docs/]
-        C2 --> C3[Write retro] --> C4[Final commit]
-        C4 --> C5{User approval gate}
-        C5 -->|Approved| C6[/dreamers-pr/]
-        C6 --> C7[Plan archive] --> C8[Post-PR scan]
-    end
+    Mode1 --> P1["Phase 1 — Planning"]
+    Mode2 --> P15
+    Mode3 --> P15
 
-    P3 --> End([Shipped])
+    P1 --> InvokePlan["Invoke /dreamers-plan"]
+    InvokePlan --> PlanResult{"Plan result"}
+    PlanResult -->|Halt| HaltA(["Halt + resume cmd"])
+    PlanResult -->|Plan paths| P15
+
+    P15{"Multi-plan?"} -->|Yes| Strategy{"INCREMENTAL<br/>or ATOMIC?"}
+    P15 -->|No| BranchSetup
+    Strategy -->|INCREMENTAL| BranchSetup
+    Strategy -->|ATOMIC| BranchSetup
+    Strategy -->|Halt| HaltB(["Halt + resume cmd"])
+
+    BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
+
+    Cycle["Phase 2 — cycle N"] --> S1["Step 1<br/>Read plan + write failing tests"]
+    S1 --> S2["Step 2<br/>Implement inline"]
+    S2 --> S3["Step 3<br/>Type-check + run tests"]
+
+    S3 --> S3Check{"Tests green<br/>within 3 attempts?"}
+    S3Check -->|No| HaltC(["Halt + surface"])
+    S3Check -->|Yes| S4
+
+    S4["Step 4<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
+    ReviewResult -->|Blocked| HaltD(["Halt + surface"])
+    ReviewResult -->|Findings| S5
+
+    S5["Step 5 — Apply findings"] --> Gate{"Major-refactor<br/>gate fires?"}
+    Gate -->|No| ApplyFixes
+    Gate -->|Yes| GateChoice{"User decides"}
+    GateChoice -->|Apply now| ApplyFixes
+    GateChoice -->|Defer| CreateStub["Create stub plan file"]
+    CreateStub --> ApplyFixes
+    GateChoice -->|Other| GateChoice
+
+    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> S6
+    S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
+    UserTest -->|Bug| BugFix["Fix inline + re-test"]
+    BugFix --> S6
+    UserTest -->|Halt| HaltE(["Halt"])
+    UserTest -->|Approved| MorePlans{"More plans<br/>remain?"}
+
+    MorePlans -->|No| P3
+    MorePlans -->|Yes| Between{"Strategy?"}
+
+    Between -->|INCREMENTAL| Light["Drift check<br/>Invoke /dreamers-docs if applicable<br/>commit<br/>Invoke /dreamers-pr"]
+    Between -->|ATOMIC| AtomicCommit["Drift check<br/>commit"]
+
+    Light --> ContIncr{"Continue?"}
+    AtomicCommit --> Cycle
+
+    ContIncr -->|Continue| ReCut["Wait for merge<br/>re-cut feature branch"]
+    ContIncr -->|Halt| HaltF(["Halt"])
+    ReCut --> Cycle
+
+    P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
+    Improvements --> InvokeDocs["Invoke /dreamers-docs"]
+    InvokeDocs --> Retro["Write retro"]
+    Retro --> FinalCommit["Final commit if staged"]
+    FinalCommit --> Approval{"User approval"}
+    Approval -->|Halt| HaltH(["Halt"])
+    Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
+    InvokePR --> Archive["Plan archive — merged features only"]
+    Archive --> PostScan["Post-PR scan<br/>surface improvements + drift"]
+    PostScan --> End(["PR URL + summary"])
+
+    classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
+    classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
+    classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
+    classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
+
+    class InvokePlan,S4,InvokeDocs,InvokePR skill
+    class ModeCheck,PlanResult,P15,Strategy,S3Check,ReviewResult,Gate,GateChoice,UserTest,MorePlans,Between,ContIncr,Approval gate
+    class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
+    class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,Archive,PostScan phase
 ```
+
 
 
