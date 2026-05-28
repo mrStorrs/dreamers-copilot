@@ -333,7 +333,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Dreamers pipeline. `/dreamers-full` orchestrates: invokes `/dreamers-plan` for the 3-phase planning conversation, implements each plan inline (tests-first), invokes `/dreamers-review` for the parallel triad (Sentinel + Probe + Hone) which reports structured findings, applies findings inline with a major-refactor gate, user-testing gate per plan, then ships via inline close-out + `/dreamers-docs` (Echo) + `/dreamers-pr` (push + PR). Standalone entry points are independent: `/dreamers-plan`, `/dreamers-implement`, `/dreamers-review`, `/dreamers-docs`, `/dreamers-pr`, `/dreamers-fix` (bug-fix pipeline). Sage covers orthogonal research.",
+      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity) with an inline implementation orchestrator, a documentarian, and a researcher. Explicit user gates at every meaningful decision point: planning approval, ship strategy, major-refactor scope, user testing, close-out. The README at the readmePath has the full detail; what you gain in practice is a disciplined planning → tests-first → implementation → parallel-review → user-test → docs → PR flow you can re-run with confidence.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
