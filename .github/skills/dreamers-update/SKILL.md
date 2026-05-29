@@ -1,6 +1,6 @@
 ---
 name: dreamers-update
-description: 'Project-only skill for editing the Dreamers Copilot CLI system files. Sets directory scope, copilot-not-Claude framing, style standards, and cross-file sync rules (refs, /dreamers-full mirror, READMEs, catalog). Triggers: /dreamers-update.'
+description: 'Two-repo maintainer for Dreamers system files. Updates the Dreamers Copilot CLI source first, then transfers the equivalent change into the Dreamers Codex conversion with Codex-only adaptations. Triggers: /dreamers-update.'
 argument-hint: '<what to change>'
 ---
 
@@ -10,11 +10,43 @@ Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instru
 
 If no task description was provided, halt + ask via `request_information`.
 
+## Repository roles
+
+- **Dreamers Copilot = upstream source of truth.** Default path: `C:\projects\dreamers-copilot`. This is the Copilot CLI version and owns the canonical behavior, wording, refs, templates, agents, skills, READMEs, and catalog.
+- **Dreamers Codex = converted target.** Default path: `C:\projects\dreamers-codex`. This is the Codex version and must receive the same system change after adapting only runtime/tooling/layout details required by Codex.
+- **Order is mandatory:** change Copilot first, validate it, then transfer/adapt the same change to Codex, then validate Codex.
+
+## Workflow
+
+1. **Branch before edits.** Derive a short slug from the requested change. In Copilot first, detect the default branch, fetch, check out the default branch, pull, then create `feat/<slug>` or `fix/<slug>` from fresh `origin/<default>` before editing. Repeat in Codex before the first transfer edit. Never start system edits on the default branch. If work already exists on the default branch, create the feature branch immediately with the dirty tree preserved, then continue and report the recovery.
+2. **Copilot source pass.** Apply the canonical change in `C:\projects\dreamers-copilot`, update required READMEs/catalog entries, run ref sync/verify, and validate any Copilot-specific checks.
+3. **Codex transfer pass.** Transfer the same behavior into `C:\projects\dreamers-codex` with only Codex runtime/layout adaptations, then run Codex ref sync/verify and `scripts/Test-DreamersCodex.ps1`.
+4. **Close-out.** In each repo with changes, stage explicit paths, commit with the trailer below, push the feature branch, and open a PR. Prefer `/dreamers-pr` for PR creation when available; otherwise run the same push + `gh pr create` flow directly. Capture both PR URLs.
+
 ## Scope (hard rules)
 
-1. **This project directory only.** Stay inside the project working tree. Do not read, edit, or reference files outside it unless the user names a path.
+1. **Only the two Dreamers package repos.** Stay inside `C:\projects\dreamers-copilot` and `C:\projects\dreamers-codex` unless the user names another path. Do not touch consuming project repos while running this skill.
 2. **Copilot CLI, not Claude.** Do not import Claude tool names, agent names, or CLAUDE.md conventions. Runtime is Copilot CLI: `task()`, `request_information`, `view`, `manage_todo_list`.
-3. **Halt on ambiguity.** One `request_information` round, not a chain of guesses.
+3. **Codex transfer is semantic, not blind copy.** Preserve Copilot behavior, but adapt paths, frontmatter, runtime names, agent formats, installer names, and validation commands to Codex conventions.
+4. **Halt on ambiguity.** One `request_information` round, not a chain of guesses.
+
+## Transfer map
+
+Use this map when carrying the Copilot change into Codex:
+
+| Copilot source | Codex target |
+| --- | --- |
+| `.github/skills/<skill>/SKILL.md` | `skills/<skill>/SKILL.md` with Codex runtime preamble |
+| `.github/skills/<skill>/readme.md` | `skills/<skill>/readme.md` when that README exists |
+| `.github/agents/*.agent.md` | `agents/*.toml` Codex agent definitions |
+| `.github/dreamers/refs/*.md` | `dreamers/refs/*.md` |
+| `.github/dreamers/templates/*.md` | `dreamers/templates/*.md` |
+| `.github/instructions/*.instructions.md` | `dreamers/instructions/*.instructions.md` |
+| `.github/catalog.json` | `.github/catalog.json` with Codex paths and skill names |
+| `Install-Dreamers.ps1` / `Remove-Dreamers.ps1` | `Install-DreamersCodex.ps1` / `Remove-DreamersCodex.ps1` |
+| `scripts/sync-refs.ps1` | `scripts/sync-refs.ps1` adapted for Codex layout |
+
+Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -> `$CODEX_HOME`/`~/.codex`, slash commands -> skill names, `task()` -> Codex agent spawning rules, `request_information` -> asking the user, `.github/dreamers` -> `dreamers`, `.github/skills` -> `skills`, and `.github/agents/*.agent.md` -> `agents/*.toml`.
 
 ## Style (apply to every edit)
 
@@ -26,15 +58,22 @@ If no task description was provided, halt + ask via `request_information`.
 
 ## Sync rules (after any edit)
 
-1. **Kernel blocks.** Source-of-truth = `.github/dreamers/refs/*.md`. Inlined copies in skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1`. CI's `verify-refs` workflow fails on drift.
-2. **/dreamers-implement is inlined in `/dreamers-full` Phase 2.** Edits to `/dreamers-implement`'s flow (test-writing, type-check, apply-findings, user-testing gate) must be mirrored in `.github/skills/dreamers-full/SKILL.md`.
-3. **READMEs.** Update root `README.md` AND `.github/skills/<skill>/readme.md` when a skill's flow, args, or triggers change.
-4. **Catalog.** Update `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed skills, agents, refs, or templates. Project-only skills (not installed via `Install-Dreamers.ps1`) skip this.
+1. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync`, then `scripts/sync-refs.ps1 -Verify` in the Copilot repo.
+2. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync`, then `scripts/sync-refs.ps1 -Verify` in the Codex repo.
+3. **dreamers-implement mirror.** Edits to `dreamers-implement` flow (test-writing, type-check, apply-findings, user-testing gate) must be mirrored in Copilot `.github/skills/dreamers-full/SKILL.md` and Codex `skills/dreamers-full/SKILL.md`.
+4. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
+5. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
+6. **Validation.** After transfer, run Copilot ref verify and Codex ref verify + `scripts/Test-DreamersCodex.ps1`.
 
 ## Git / PR
 
-- Branch: `feat/<slug>` or `fix/<slug>` cut from fresh `origin/<default>`.
-- Stage files by name. No `git add -A`.
+- Branch before edits in each repo: `feat/<slug>` or `fix/<slug>` cut from fresh `origin/<default>`.
+- If the branch already exists, inspect it and ask before reusing or replacing it. Do not delete branches automatically.
+- Stage files by explicit path. No `git add -A`, `git add .`, or directory-wide staging unless that directory is the intended complete unit of work.
+- Keep Copilot and Codex commits separate unless the user explicitly asks for a different git shape.
+- Commit after validation in each repo. Use conventional commits; include the trailer below.
+- Push each branch with `git push -u origin <branch>`. No force-push.
+- Open one PR per changed repo. Prefer `/dreamers-pr`; pass through issue references from the original request when relevant. If `/dreamers-pr` is unavailable, draft the PR body from the repo's PR template and run `gh pr create`.
 - Commit trailer:
   ```
   Co-authored-by: The Dreamers System
@@ -44,4 +83,4 @@ If no task description was provided, halt + ask via `request_information`.
 
 ## Exit
 
-Report in chat: files changed, sync checks performed (refs / `/dreamers-full` Phase 2 mirror / READMEs / catalog), halts or questions raised.
+Report in chat: Copilot files changed, Codex files changed, sync checks performed in each repo (refs / `dreamers-full` Phase 2 mirror / READMEs / catalog), validations run, halts or questions raised.

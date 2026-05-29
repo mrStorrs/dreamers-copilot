@@ -20,7 +20,7 @@ All plans live under `.dreamers/plans/feature-<slug>/`. Flat layouts directly un
 ├── feature-<other>/
 │   └── plan-01-<name>.md        (single-plan feature: no manifest)
 └── archive/
-    └── feature-<old>/           (archived features: whole dir moves at milestone-final PR merge)
+    └── feature-<old>/           (archived features)
 ```
 
 ### Feature directory slug rules
@@ -46,15 +46,15 @@ Examples: `feature-auth/plan-01-login-flow.md`, `feature-auth/plan-02-logout.md`
 
 ### Archive rules
 
-When a feature's plans are all shipped (single-plan: that plan; multi-plan: all plans merged), the WHOLE feature directory moves to `.dreamers/plans/archive/`:
+When a feature ships, close-out moves the whole feature directory to `.dreamers/plans/archive/` after the PR is created:
 
 ```
 .dreamers/plans/feature-auth/  →  .dreamers/plans/archive/feature-auth/
 ```
 
-Never file-by-file mid-feature. Mid-feature archive would leave partially-emptied directories.
+Move the directory, not individual plan files.
 
-Trigger: `/dreamers-full` Phase 3 archives the feature directory at the milestone-final PR merge.
+Trigger: `/dreamers-pr` archives the feature directory after it creates the PR.
 
 ---
 
@@ -329,8 +329,8 @@ This avoids the edge case where a feature has multiple plans but no manifest, an
 
 When `/dreamers-full` runs ≥ 2 plans, it presents a **Phase 1.5 ship-strategy gate** asking how to ship:
 
-- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final plan's close-out runs the milestone retro + improvements + plan-archive.
-- **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans; whole feature dir moves to archive after the single PR merges. No per-cycle prompt — the strategy commitment at Phase 1.5 is sufficient sign-off.
+- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final close-out runs the milestone retro + improvements + plan archive.
+- **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans. No per-cycle prompt — the strategy commitment at Phase 1.5 is sufficient sign-off.
 
 The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the gate. Single-plan invocations skip this gate.
 

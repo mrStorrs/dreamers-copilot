@@ -83,6 +83,10 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
 
+## Maintaining Dreamers
+
+Use `/dreamers-update` for changes to Dreamers system files. The Copilot repo (`C:\projects\dreamers-copilot`) is the upstream source of truth; the skill creates feature branches before edits, applies and validates the Copilot change first, transfers the equivalent Codex adaptation, then commits, pushes, and opens PRs for both repos.
+
 ## Install
 
 Install agents, skills, refs, and templates into your global `~/.copilot/` directory:

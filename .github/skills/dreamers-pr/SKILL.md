@@ -10,7 +10,7 @@ Template read at runtime via `view`:
 - `.github/dreamers/templates/pr-description.md` — PR body shape.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
+- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3 / Step 4.
 
 ## Step 1 — Pre-push verification
 - `git status` — confirm clean (no unstaged/untracked production files).
@@ -27,8 +27,13 @@ Template read at runtime via `view`:
 - `gh pr create --base <DEFAULT> --head <branch> --title "<short title>" --body <body>`. Capture PR URL.
 - If `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
 
+## Step 4 — Archive shipped feature plan directory
+- If this PR ships a Dreamers plan from `.dreamers/plans/feature-<slug>/`, move that feature directory to `.dreamers/plans/archive/feature-<slug>/` after the PR is created.
+- Create `.dreamers/plans/archive/` if needed. Use `mv` (or `Move-Item`) for the directory move.
+- If no feature directory applies, skip this step.
+
 ## Exit
-- PR URL. Surface to the caller.
+- PR URL. Include archive path when Step 4 moved one.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -90,11 +95,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
-4. **Archive prior feature's plan directory** — check if the previous feature's PR is merged (`gh pr list --state merged` or `gh pr view <number>`):
-   - **Merged:** move the entire feature directory from `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived feature directory is preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files. Mid-feature archive (file-by-file) is NOT allowed; only whole-feature-directory archive at the milestone-final PR merge.
-   - **Not merged:** leave the feature directory in place.
-   - **Note:** this catches prior features not already archived by `/dreamers-full` Phase 3 (the primary archive trigger). If archive already ran, the source directory won't exist and the `mv` is a no-op — skip silently.
-5. No init commit — the first commit for the milestone is the first thing in the PR diff.
+4. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
 ## Commit discipline (non-negotiable)
 1. **Commit at end of each cycle** — one commit per plan in the sequence (single-plan: one commit total; multi-plan: N commits, one per plan).
