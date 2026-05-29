@@ -10,9 +10,11 @@ flowchart TD
 
     S1["Step 1 — Hash out"] --> Summary["Write 1-paragraph<br/>understanding summary"]
     Summary --> Questions["Identify ambiguities<br/>ask all clarifying Qs<br/>in ONE request_information"]
-    Questions --> Proposal["Present proposal +<br/>request approval"]
-    Proposal --> ApprovalGate{"User response"}
-    ApprovalGate -->|Corrections| Proposal
+    Questions --> Draft["Draft proposal"]
+    Draft --> ReviewPhase["Proposal review<br/>critique + user questions"]
+    ReviewPhase --> ApprovalGate{"User response"}
+    ApprovalGate -->|"Questions / challenges / corrections"| Answer["Fully review + answer<br/>update proposal + critique"]
+    Answer --> ReviewPhase
     ApprovalGate -->|Approved| Decide["Decide plan count + manifest<br/>backfill check on existing feature dir"]
     Decide --> S2
 
@@ -41,12 +43,13 @@ flowchart TD
 
     class ArgCheck,ApprovalGate,SelfCheck,Review gate
     class HaltA,HaltB halt
-    class S1,S2,S3,Summary,Questions,Proposal,Decide,ReadGuide,Mkdir,WritePlans,Component,Citation,FixPlan,Present,MinorFix phase
+    class S1,S2,S3,Summary,Questions,Draft,ReviewPhase,Answer,Decide,ReadGuide,Mkdir,WritePlans,Component,Citation,FixPlan,Present,MinorFix phase
 ```
 
 ## Key invariants
 
 - **Hard stop at Step 3.** The skill never invokes implementation — surfaces plan paths and exits.
 - **One round of clarifying questions** in Step 1. No trickling questions across turns.
+- **Proposal review is mandatory and interactive.** Approval is valid only after the proposal is stress-tested for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. User questions, challenges, and partial answers are handled inside the same loop with substantive reasoning, implications, and a recommended next move.
 - **Manifest backfill check** in Step 1 — existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
 - **Major rewrite loops back to Step 1**, not Step 2 — the proposal/scope needs to be re-agreed first.
