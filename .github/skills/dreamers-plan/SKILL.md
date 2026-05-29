@@ -17,8 +17,9 @@ Template read at runtime via `view`:
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
 - Identify ambiguities, gaps, open decisions. Ask all clarifying questions in ONE `request_information` round.
+- Treat the hash-out as a working conversation, not a handoff. If the user asks questions, challenges the direction, or gives partial answers, respond with reasoning, implications, and a recommended next move before asking for approval.
 - Draft the proposal, then critique it before asking for approval. Surface pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals.
-- Present the proposal + critique together via `request_information`. Approval is valid only after the critique is shown. Non-approval = answers, corrections, or counter-proposals; revise, re-critique, and re-present until approved.
+- Present the proposal + critique together via `request_information`. Approval is valid only after the critique is shown. Non-approval = questions, answers, corrections, or counter-proposals; answer substantively, fold the result into the proposal, re-critique, and re-present until approved.
 - Decide plan count + manifest per `plan-writing-guide.md`. Manifest backfill check: existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
 
 ## Step 2 — Write plans
