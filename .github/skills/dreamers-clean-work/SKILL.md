@@ -1,6 +1,6 @@
 ---
 name: dreamers-clean-work
-description: 'Between-milestone maintenance pass: prune stale files, archive merged plans, audit improvements.md, scan for project-state drift. All inline — no subagents. Triggers: /dreamers-clean-work, clean up, maintenance pass, between milestones.'
+description: 'Between-milestone maintenance pass: prune stale files, archive legacy unarchived feature plan directories, audit improvements.md, scan for project-state drift. All inline — no subagents. Triggers: /dreamers-clean-work, clean up, maintenance pass, between milestones.'
 argument-hint: '(no args; full maintenance pass)'
 ---
 
@@ -16,7 +16,7 @@ $ARGUMENTS
 
 At skill entry, declare via `manage_todo_list`:
 - [ ] Step 1 — improvements audit
-- [ ] Step 2 — plan file archive
+- [ ] Step 2 — feature plan directory archive
 - [ ] Step 3 — legacy workspace cleanup (recommend only)
 - [ ] Step 4 — project state contradiction scan
 - [ ] Step 5 — report
@@ -33,12 +33,13 @@ Read `.dreamers/improvements.md` (repo-local). For each open item:
 - If it requires a full pipeline (`/dreamers-full`): defer it — add a note with why and which skill to use.
 - Remove actioned/closed items. Leave only open deferred items with defer reasons.
 
-## Step 2 — Plan file archive
+## Step 2 — Feature plan directory archive
 
-In `.dreamers/plans/` (repo-local), for each `plan-*.md` (excluding files already in `archive/`):
-- Check if its associated PR is merged (`gh pr list --state merged` or `gh pr view <number>`).
-- **Merged:** move the plan file to `.dreamers/plans/archive/` (create the dir if it doesn't exist). The PR description is the lasting public record; the archived file stays for easy local reference. Use `mv` (or `Move-Item`), never delete.
-- **Open or not yet created:** leave it.
+In `.dreamers/plans/` (repo-local), for each `feature-<slug>/` directory (excluding directories already in `archive/`):
+- Check whether the PR that ships the full feature/plan set was created by inspecting recent PR bodies, branch names, commit `Plan:` lines, or explicit feature-directory references. For older runs missed by the PR-created archive trigger, a merged shipping PR is enough legacy evidence (`gh pr list --state merged` or `gh pr view <number>`).
+- **Shipping PR created, and no later plans remain unshipped:** move the whole feature directory to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived directory stays for easy local reference. Use `mv` (or `Move-Item`), never delete.
+- **Early incremental PR, open/not yet created shipping PR, unknown shipping state, or later plans remain:** leave it.
+- Do not archive individual plan files. Legacy flat `plan-*.md` files at the plans root stay in place unless the user explicitly asks for manual cleanup.
 - Report what was archived and what was kept (with reason).
 
 ## Step 3 — Legacy workspace cleanup (one-time)
@@ -63,7 +64,7 @@ Do NOT auto-delete — surface as a recommendation. The user may want to keep hi
 
 Read these durable surfaces and check for drift / contradictions:
 - `.dreamers/improvements.md` — open items still relevant?
-- `.dreamers/plans/` — any leftover plans from merged PRs (covered in Step 2)?
+- `.dreamers/plans/` — any leftover feature directories from created shipping PRs or older merged PRs (covered in Step 2)?
 - `.dreamers/retros/` — anything stale or contradicted by recent work?
 - Project-level `.github/copilot-instructions.md` Echo-owned sections (Tech stack, Repo structure, Conventions, Key files) — match the actual codebase?
 - Recent `git log` on the default branch — major shifts (tech stack, architecture, tooling) reflected in instruction files?
@@ -74,6 +75,6 @@ Read these durable surfaces and check for drift / contradictions:
 
 Summarise in chat:
 - Improvements actioned / deferred / closed (one line each)
-- Plan files archived / kept
+- Feature plan directories archived / kept
 - Legacy workspace recommendations (if any)
 - Proposed memory updates (if any)

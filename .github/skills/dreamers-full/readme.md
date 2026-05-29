@@ -74,7 +74,7 @@ flowchart TD
     FinalCommit --> Approval{"User approval"}
     Approval -->|Halt| HaltH(["Halt"])
     Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
-    InvokePR --> Archive["Plan archive — merged features only"]
+    InvokePR --> Archive["Plan archive — after PR created"]
     Archive --> PostScan["Post-PR scan<br/>surface improvements + drift"]
     PostScan --> End(["PR URL + summary"])
 

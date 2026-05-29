@@ -62,7 +62,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to the current feature-branch diff. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
-| `/dreamers-clean-work` | Between-milestone maintenance: archive merged plans, audit improvements, scan for drift. |
+| `/dreamers-clean-work` | Between-milestone maintenance: archive legacy unarchived feature plan directories, audit improvements, scan for drift. |
 | `/dreamers-plan-verify <plan>` | Inline drift check: cited paths / signatures / data shapes still hold? |
 
 ## Full (`/dreamers-full`) flow example
@@ -139,7 +139,7 @@ flowchart TD
     FinalCommit --> Approval{"User approval"}
     Approval -->|Halt| HaltH(["Halt"])
     Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
-    InvokePR --> Archive["Plan archive — merged features only"]
+    InvokePR --> Archive["Plan archive — after PR created"]
     Archive --> PostScan["Post-PR scan<br/>surface improvements + drift"]
     PostScan --> End(["PR URL + summary"])
 
