@@ -85,7 +85,7 @@ Each skill is independent — no skill invokes another mid-flow except `/dreamer
 
 ## Maintaining Dreamers
 
-Use `/dreamers-update` for changes to Dreamers system files. The Copilot repo (`C:\projects\dreamers-copilot`) is the upstream source of truth; the skill creates feature branches before edits, applies and validates the Copilot change first, transfers the equivalent Codex adaptation, then commits, pushes, and opens PRs for both repos.
+Use `/dreamers-update` for changes to Dreamers system files. The Copilot repo (`C:\projects\dreamers-copilot`) is the upstream source of truth; the skill branches, applies, validates, commits, pushes, and opens the Copilot PR first. It then stops for user approval, supports repeated Copilot PR revisions, and transfers to Codex only after approval.
 
 ## Install
 
