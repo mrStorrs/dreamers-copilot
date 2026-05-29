@@ -110,7 +110,7 @@
       "type": "skill",
       "slug": "dreamers-clean-work",
       "name": "dreamers-clean-work",
-      "description": "Between-milestone maintenance pass: prune stale files, archive legacy unarchived feature plan directories, audit improvements.md, scan for project-state drift. All inline — no subagents.",
+      "description": "Between-milestone maintenance pass: prune stale files, audit improvements.md, scan for project-state drift. All inline — no subagents.",
       "author": "CJ Storrs",
       "tags": [
         "code",

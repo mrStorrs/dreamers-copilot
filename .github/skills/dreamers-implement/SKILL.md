@@ -84,11 +84,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
-4. **Archive legacy unarchived feature plan directories** — fallback only. Check older feature directories whose shipping PR was created before `/dreamers-pr` archived on PR creation, then later merged (`gh pr list --state merged` or `gh pr view <number>`):
-   - **Merged and still active:** move the entire feature directory from `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/` (create the archive dir if it doesn't exist). The PR description is the lasting public record; the archived feature directory is preserved locally for easy reference. Use `mv` (or `Move-Item`), not `rm` — never delete plan files.
-   - **Open, unmerged, unknown, or already archived:** leave the feature directory in place.
-   - **Guardrail:** this is NOT the primary archive trigger. Modern runs archive immediately after the PR that ships the feature/plan set is created. Never archive file-by-file mid-feature, and never archive a multi-plan feature after an early incremental PR if later plans remain.
-5. No init commit — the first commit for the milestone is the first thing in the PR diff.
+4. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
 ## Commit discipline (non-negotiable)
 1. **Commit at end of each cycle** — one commit per plan in the sequence (single-plan: one commit total; multi-plan: N commits, one per plan).
