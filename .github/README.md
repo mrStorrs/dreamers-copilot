@@ -1,6 +1,6 @@
 # Dreamers — GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → parallel-review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → full review → selected follow-up review → docs → PR flow.
 
 Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
 
@@ -28,7 +28,7 @@ Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <tas
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -39,7 +39,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 | `/dreamers-full <task | plan paths | manifest>` | End-to-end pipeline: plan → implementation-start gate → implement → review → templated user-test when triggered → pre-PR approval → ship. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest. Hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → run tests. Exits at green tests. |
-| `/dreamers-review` | Spawns Sentinel + Probe + Hone in parallel. Read-only structured findings. `--lens <name>` for single-lens audit. |
+| `/dreamers-review` | Spawns the selected reviewer lane. Read-only structured findings. `--lens <name>` for single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
 | `/dreamers-fix <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers-full` on scope blowup. |
@@ -55,7 +55,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; parallel review of accepted changes. |
+| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Sentinel review of accepted changes, with Probe/Hone only when situationally needed. |
 | `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
 | `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → stack → brief → shell plans. |
@@ -101,7 +101,7 @@ flowchart TD
     S3Check -->|No| HaltC(["Halt + surface"])
     S3Check -->|Yes| S4
 
-    S4["Step 4<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
+    S4["Step 4<br/>Full lane<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
     ReviewResult -->|Blocked| HaltD(["Halt + surface"])
     ReviewResult -->|Findings| S5
 
@@ -157,5 +157,3 @@ flowchart TD
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
-
-

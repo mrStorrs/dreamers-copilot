@@ -1,6 +1,6 @@
 ---
 name: dreamers-implement
-description: 'Implementation skill — runs one cycle against an approved plan. Writes failing tests, implements, runs tests, invokes /dreamers-review (triad + apply findings), user-testing gate if required, commits. Does NOT push or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+description: 'Implementation skill — runs one cycle against an approved plan. Writes failing tests, implements, runs tests, and exits at green tests with an AC coverage matrix. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
 argument-hint: 'feature-<slug>/plan-NN-<name>.md'
 ---
 
@@ -161,7 +161,7 @@ If a layer cannot be covered automatically (e.g., camera permission flows), flag
 
 ## Probe's layer audit (consumes the new format)
 
-In `/dreamers-implement` Step 4 (coverage sweep) and Step 5 (parallel review with Probe), the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+During the full-pipeline review lane that includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 
