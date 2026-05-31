@@ -29,6 +29,7 @@ Template read at runtime via `view`:
 - Component-usage check: for shared components, grep the project source root for callers; include them in scope.
 - Citation accuracy: verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
 - Self-check the written plans against the guide before exit. Hard fail on any structural rule violation → halt + fix + re-check.
+- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in Goal, Context, ACs, Out of Scope, Constraints, Design Decisions, UI, or Verification. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
 
 ## Step 3 — Review gate
 - Present plan paths via `request_information` with: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.

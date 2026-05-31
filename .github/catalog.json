@@ -44,7 +44,7 @@
       "type": "agent",
       "slug": "nova",
       "name": "nova",
-      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation, critiques proposals before approval, writes plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), hard-stops at Phase 1g approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
+      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation, critiques proposals before approval, writes plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), verifies plan coverage against the proposal and user discussion, hard-stops at the approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -227,7 +227,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Standalone planning entry point. 3-phase requirements conversation (interactive Hash-out → Write → Review). Answers planning questions with reasoning, critiques proposals before approval, produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
+      "description": "Standalone planning entry point. 3-phase requirements conversation (interactive Hash-out → Write → Review). Answers planning questions with reasoning, critiques proposals before approval, produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then verifies written-plan coverage against the approved proposal and user discussion. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
       "author": "CJ Storrs",
       "tags": [
         "code",
