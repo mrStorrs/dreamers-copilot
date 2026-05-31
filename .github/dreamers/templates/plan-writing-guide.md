@@ -327,12 +327,12 @@ This avoids the edge case where a feature has multiple plans but no manifest, an
 
 ## Ship strategy heuristics
 
-When `/dreamers-full` runs ≥ 2 plans, it presents a **Phase 1.5 ship-strategy gate** asking how to ship:
+When `/dreamers-full` runs ≥ 2 plans, its **Phase 1.5 plan review / implementation-start gate** also asks how to ship:
 
 - **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final close-out runs the milestone retro + improvements + plan archive.
 - **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans. No per-cycle prompt — the strategy commitment at Phase 1.5 is sufficient sign-off.
 
-The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the gate. Single-plan invocations skip this gate.
+The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the same gate that approves implementation start. Single-plan invocations skip strategy selection.
 
 ### Recommend INCREMENTAL when ANY hold
 
@@ -353,7 +353,7 @@ The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at th
 
 ### Strategy is a runtime decision, not a manifest field
 
-The manifest itself does NOT declare a strategy. The decision happens at invocation time, at the Phase 1.5 gate, where the user can weigh current capacity, review bandwidth, and post-incident risk against the recommendation. Same manifest may ship atomically one cycle and incrementally the next.
+The manifest itself does NOT declare a strategy. The decision happens at invocation time, inside the Phase 1.5 implementation-start gate, where the user can weigh current capacity, review bandwidth, and post-incident risk against the recommendation. Same manifest may ship atomically one cycle and incrementally the next.
 
 If signals conflict, default to ATOMIC (safer) and cite the conflicting signals.
 

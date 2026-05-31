@@ -36,7 +36,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, implements each plan inline (tests-first), invokes `/dreamers-review`, applies findings with major-refactor gate, user-testing gate per plan, then close-out (inline + `/dreamers-docs` + `/dreamers-pr`). |
+| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes `/dreamers-review`, applies findings with major-refactor gate, halts for user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, then writes plan file(s) + optional manifest. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns Sentinel + Probe + Hone in parallel; reports structured findings. Read-only. `--lens <name>` for a single-lens audit. |
@@ -67,18 +67,19 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 ```
 /dreamers-full <task | plan paths | manifest.md>
   ├─ Phase 1   → /dreamers-plan   (Mode 1 only: 3-phase planning conversation)
-  ├─ Phase 1.5 → Ship-strategy gate (multi-plan only: INCREMENTAL vs ATOMIC)
+  ├─ Phase 1.5 → Plan review / implementation-start gate
+  │               multi-plan approval includes INCREMENTAL vs ATOMIC choice
   ├─ Phase 2   → per plan, inline:
   │               1. Write failing tests
   │               2. Implement
   │               3. Type-check + run tests
   │               4. Invoke /dreamers-review (triad → findings, read-only)
   │               5. Apply findings + major-refactor gate
-  │               6. User-testing gate (every plan)
-  │               ↳ between cycles: drift check + INCREMENTAL light close-out / ATOMIC continuation
+  │               6. User-testing gate (when triggered)
+  │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
   └─ Phase 3   → close-out (inline + /dreamers-docs + /dreamers-pr)
                    improvements append → Echo docs → retro → final commit
-                   → user approval gate → push + PR → plan archive → post-PR scan
+                   → user approval gate → push + PR → plan archive → post-PR scan (no prompt)
 ```
 
 Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
