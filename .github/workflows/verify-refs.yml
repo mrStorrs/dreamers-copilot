@@ -5,12 +5,14 @@ on:
     paths:
       - '.github/**/*.md'
       - 'scripts/sync-refs.ps1'
+      - 'scripts/sync-refs.sh'
       - '.github/workflows/verify-refs.yml'
   push:
     branches: [main]
     paths:
       - '.github/**/*.md'
       - 'scripts/sync-refs.ps1'
+      - 'scripts/sync-refs.sh'
       - '.github/workflows/verify-refs.yml'
   workflow_dispatch:
 
@@ -20,5 +22,5 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
       - name: Verify inlined refs match source
-        shell: pwsh
-        run: pwsh -File scripts/sync-refs.ps1 -Verify
+        shell: bash
+        run: scripts/sync-refs.sh -Verify

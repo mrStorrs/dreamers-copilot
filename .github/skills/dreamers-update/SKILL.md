@@ -48,7 +48,7 @@ Use this map when carrying the Copilot change into Codex:
 | `.github/instructions/*.instructions.md` | `dreamers/instructions/*.instructions.md` |
 | `.github/catalog.json` | `.github/catalog.json` with Codex paths and skill names |
 | `Install-Dreamers.ps1` / `Remove-Dreamers.ps1` | `Install-DreamersCodex.ps1` / `Remove-DreamersCodex.ps1` |
-| `scripts/sync-refs.ps1` | `scripts/sync-refs.ps1` adapted for Codex layout |
+| `scripts/sync-refs.ps1` / `scripts/sync-refs.sh` | `scripts/sync-refs.ps1` / `scripts/sync-refs.sh` adapted for Codex layout |
 
 Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -> `$CODEX_HOME`/`~/.codex`, slash commands -> skill names, `task()` -> Codex agent spawning rules, `request_information` -> asking the user, `.github/dreamers` -> `dreamers`, `.github/skills` -> `skills`, and `.github/agents/*.agent.md` -> `agents/*.toml`.
 
@@ -62,8 +62,8 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 
 ## Sync rules (after any edit)
 
-1. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync`, then `scripts/sync-refs.ps1 -Verify` in the Copilot repo.
-2. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync`, then `scripts/sync-refs.ps1 -Verify` in the Codex repo.
+1. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Copilot repo.
+2. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Codex repo.
 3. **dreamers-implement mirror.** Edits to `dreamers-implement` flow (test-writing, type-check, apply-findings, user-testing gate) must be mirrored in Copilot `.github/skills/dreamers-full/SKILL.md` and Codex `skills/dreamers-full/SKILL.md`.
 4. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
 5. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
