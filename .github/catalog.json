@@ -175,7 +175,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, implements each plan inline (writes failing tests, code, runs tests), invokes /dreamers-review for the triad's findings, applies findings inline with the major-refactor gate, user-testing gate per plan, then close-out (inline + /dreamers-docs + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes /dreamers-review for the triad's findings, applies findings inline with the major-refactor gate, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -333,7 +333,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity) with an inline implementation orchestrator, a documentarian, and a researcher. Explicit user gates at every meaningful decision point: planning approval, ship strategy, major-refactor scope, user testing, close-out. The README at the readmePath has the full detail; what you gain in practice is a disciplined planning → tests-first → implementation → parallel-review → user-test → docs → PR flow you can re-run with confidence.",
+      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity) with an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen: planning approval, implementation start, ship strategy when needed, major-refactor scope, user testing when triggered, and final pre-PR approval. The README at the readmePath has the full detail; what you gain in practice is a disciplined planning → tests-first → implementation → parallel-review → user-test → docs → PR flow you can re-run with confidence.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
