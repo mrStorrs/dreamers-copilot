@@ -1,6 +1,6 @@
 # Dreamers — GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected-lane review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → full review → selected follow-up review → docs → PR flow.
 
 Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
 
@@ -28,7 +28,7 @@ Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <tas
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. The full pipeline defaults to Sentinel + Probe; Hone is trigger-based for architecture/refactor risk. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -55,7 +55,7 @@ Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the sele
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; selected-lane review of accepted changes. |
+| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Sentinel review of accepted changes, with Probe/Hone only when situationally needed. |
 | `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
 | `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → stack → brief → shell plans. |
@@ -101,7 +101,7 @@ flowchart TD
     S3Check -->|No| HaltC(["Halt + surface"])
     S3Check -->|Yes| S4
 
-    S4["Step 4<br/>Select review lane<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
+    S4["Step 4<br/>Full lane<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
     ReviewResult -->|Blocked| HaltD(["Halt + surface"])
     ReviewResult -->|Findings| S5
 
@@ -157,4 +157,3 @@ flowchart TD
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
-

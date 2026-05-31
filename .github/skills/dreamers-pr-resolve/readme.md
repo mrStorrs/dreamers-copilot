@@ -29,7 +29,7 @@ flowchart TD
     TestResult -->|No| HaltA(["Halt + surface"])
     TestResult -->|Yes| S5
 
-    S5["Step 5 — Review accepted changes"] --> SpawnLane["Spawn selected lane<br/>default Sentinel<br/>scope = files touched by accepts"]
+    S5["Step 5 — Sentinel review"] --> SpawnLane["Spawn Sentinel<br/>Probe/Hone only situationally<br/>scope = files touched by accepts"]
     SpawnLane --> ReviewResult{"Reviewer<br/>statuses?"}
     ReviewResult -->|Blocked| HaltB(["Halt + surface;<br/>resolve + re-spawn"])
     ReviewResult -->|Findings| ApplyReviewer["Apply findings inline<br/>major-refactor gate per dreamers-review<br/>re-run tests"]
@@ -65,6 +65,6 @@ flowchart TD
 - **GraphQL only** for unresolved-thread discovery. The REST API's `resolved` field is unreliable.
 - **Reject is OK.** Don't feel obligated to accept every comment. If a suggestion conflicts with the plan, architecture, or is simply wrong, reject with rationale.
 - **Rejected threads stay open** — they represent active disagreements the reviewer should see.
-- **Review lane is narrow by default.** Sentinel reviews accepted fixes; add Probe for coverage/regression-sensitive changes and Hone for architecture/refactor changes.
+- **Sentinel is required for accepted fixes.** Keep PR-feedback review light; add Probe only for coverage/regression-sensitive changes and Hone only for architecture/refactor changes.
 - **Push requires explicit approval.** Post-PR changes never auto-push.
 - **Hold is a valid exit** — the commit stays on the branch for the user to push manually later.

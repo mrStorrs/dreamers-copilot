@@ -46,10 +46,8 @@ For each plan in sequence:
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ### Step 4 — Spawn review
-- Choose the review lane from `review-lanes` (Kernel). Default for full-pipeline PR-bearing code is `standard`: `/dreamers-review --lenses sentinel,probe --branch`.
-- Escalate to `full` (`/dreamers-review --branch`) only when a full-lane trigger exists: architecture/refactor risk, new abstractions, public API/schema/data model changes, dependency changes, persistence changes, cross-module rewrites, broad subsystem movement, conflicting reviewer feedback, or explicit user request.
-- Do not run Hone by default just because the change is a feature. If `standard` is chosen, record "Hone skipped — no full-lane trigger" in the cycle summary.
-- Wait. It returns the selected reviewers' structured findings (per `reviewer-findings-format`, Kernel) — read-only.
+- Invoke `/dreamers-review --branch` once per plan. This is the `full` lane: Sentinel + Probe + Hone with no lens flags.
+- Wait. It returns the full triad's structured findings (per `reviewer-findings-format`, Kernel) — read-only.
 - `Blocked` from any reviewer → halt cycle + surface verbatim.
 - Open questions from any reviewer → present each via `request_information`; capture; carry decisions into Step 5.
 
@@ -77,7 +75,7 @@ For each plan in sequence:
 - The gate prompt must include a numbered `Testing steps` section and a `Notes` section.
 - The gate must provide exactly three options: `Approved` / `Bug found (enter text)` / `Other (enter text)`.
 - `Bug found (enter text)` and `Other (enter text)` must accept freeform text.
-- On bug → capture text, fix inline, rerun required automated validation, then re-present the same templated gate.
+- On bug → capture text, fix inline, rerun required automated validation, then decide whether a reviewer re-run is needed. Do not re-run the full triad by default after user-testing bug fixes. If the fix is small and validation covers it, skip reviewer re-run and record why. Otherwise choose the narrowest follow-up lane from `review-lanes`: Sentinel by default, Probe for coverage/regression-risk changes, Hone for architecture/refactor changes, full only if a new full-lane trigger appears. Then re-present the same templated gate.
 - On Approved → continue.
 - No commit yet (commit happens at close-out for FULL, or in the LIGHT close-out between cycles for INCREMENTAL).
 
@@ -111,23 +109,23 @@ For each plan in sequence:
 <review-lanes>
 # Review Lanes
 
-Choose the narrowest reviewer set that satisfies the workflow gate. Reviewer work is read-only; the orchestrator applies or defers findings.
+Use the full lane for the initial `/dreamers-full` review for each plan. Use narrower lanes only for follow-up review gates after that full review has already happened, or for standalone focused audits. Reviewer work is read-only; the orchestrator applies or defers findings.
 
 | Lane | Reviewers | Use when |
 | --- | --- | --- |
 | `sentinel` | Sentinel | Correctness/security/maintainability audit, lightweight bug fix, cleanup, logging/comment pass, or user explicitly asks for Sentinel only. |
 | `probe` | Probe | Test coverage audit, AC/layer coverage check, regression-risk review, or user explicitly asks for Probe only. |
 | `hone` | Hone | Simplicity/architecture/over-engineering audit, or user explicitly asks for Hone only. |
-| `standard` | Sentinel + Probe | Default for PR-bearing full-pipeline code changes after orchestrator-run tests pass. |
-| `full` | Sentinel + Probe + Hone | Architectural/refactor risk: new abstractions, public API/schema/data model changes, dependency changes, persistence changes, cross-module rewrites, broad subsystem movement, conflicting reviewer feedback, or explicit user request for full review. |
+| `standard` | Sentinel + Probe | Follow-up check when both correctness and coverage need review but Hone is not warranted. |
+| `full` | Sentinel + Probe + Hone | Initial `/dreamers-full` per-plan review. Invoke as `/dreamers-review` with no lens flags. Also use for follow-up architectural/refactor risk: new abstractions, public API/schema/data model changes, dependency changes, persistence changes, cross-module rewrites, broad subsystem movement, conflicting reviewer feedback, or explicit user request for full review. |
 
 ## Gate Rules
 
-- Full-pipeline PR-bearing code changes require `standard` at minimum: Sentinel review + Probe coverage audit after the orchestrator has run type-checks and tests.
-- Hone is not a default full-pipeline gate. Add Hone only when a `full` trigger fires.
-- Single-lens lanes are valid for focused audit-only work and Tier 1/lightweight workflows. Do not use a single-lens lane to bypass the `standard` gate before opening a full-pipeline PR.
-- If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lens or stop short of PR.
-- When uncertain between `standard` and `full`, choose `standard` and state why Hone was not triggered.
+- `/dreamers-full` PR-bearing code changes require one `full` review per plan after orchestrator-run type-checks and tests pass.
+- Do not use a narrower lane to bypass the initial full per-plan review.
+- After the full review has passed, follow-up fix loops may use a narrower lane. User-testing bug fixes may skip reviewer re-run when the fix is small and automated validation covers it; otherwise run Sentinel by default. Add Probe or Hone only when the follow-up change touches their lenses.
+- `/dreamers-pr-resolve` requires Sentinel for accepted fixes. Add Probe or Hone only when the accepted fixes touch coverage/regression risk or architecture/refactor risk.
+- If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lane or stop short of PR.
 </review-lanes>
 
 <dreamers-kernel>

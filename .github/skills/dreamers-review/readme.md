@@ -55,8 +55,8 @@ flowchart TD
 | `sentinel` | Sentinel | Focused correctness/security/maintainability audit. |
 | `probe` | Probe | Focused test coverage or regression-risk audit. |
 | `hone` | Hone | Focused architecture/simplicity audit. |
-| `standard` | Sentinel + Probe | Default full-pipeline PR gate; invoke as `--lenses sentinel,probe`. |
-| `full` | Sentinel + Probe + Hone | Architecture/refactor risk or explicit full-review request; invoke with no lens flag. |
+| `standard` | Sentinel + Probe | Follow-up check when both correctness and coverage need review but Hone is not warranted. |
+| `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke with no lens flag. Also use for architecture/refactor risk or explicit full-review request. |
 
 ## Key invariants
 
