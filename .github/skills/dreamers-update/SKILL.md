@@ -24,7 +24,7 @@ If no task description was provided, halt + ask via `request_information`.
 4. **Mandatory gate.** Stop and ask via `request_information`: proceed to Codex transfer, or make additional Copilot PR changes. Do not edit Codex before approval.
 5. **Copilot PR revision loop.** If the user requests Copilot changes, apply them on the existing Copilot branch, validate, commit, push to the existing PR, then return to the mandatory gate. Repeat until the user approves Codex transfer.
 6. **Codex branch.** After explicit approval, create the Codex branch in `C:\projects\dreamers-codex` from fresh `origin/<default>` using the same branch naming rules.
-7. **Codex transfer pass.** Transfer the same behavior into Codex with only Codex runtime/layout adaptations, then run Codex ref sync/verify and `scripts/Test-DreamersCodex.ps1`.
+7. **Codex transfer pass.** Transfer the same behavior into Codex with only Codex runtime/layout adaptations, then run Codex ref sync/verify and `scripts/Test-DreamersCodex.ps1` or `scripts/Test-DreamersCodex.sh` for the active shell.
 8. **Codex PR close-out.** Stage explicit paths, commit with the trailer below, push the Codex branch, and open the Codex PR. Prefer `/dreamers-pr` when available; otherwise run the same push + `gh pr create` flow directly. Capture the PR URL.
 
 ## Scope (hard rules)
@@ -62,12 +62,13 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 
 ## Sync rules (after any edit)
 
-1. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Copilot repo.
-2. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Codex repo.
-3. **dreamers-implement mirror.** Edits to `dreamers-implement` flow (test-writing, type-check, apply-findings, user-testing gate) must be mirrored in Copilot `.github/skills/dreamers-full/SKILL.md` and Codex `skills/dreamers-full/SKILL.md`.
-4. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
-5. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
-6. **Validation.** After transfer, run Copilot ref verify and Codex ref verify + `scripts/Test-DreamersCodex.ps1`.
+1. **Script selection.** Use `.sh` validation scripts when running in bash/Linux. Use `.ps1` validation scripts when running in PowerShell/Windows. Treat the matching `.sh` and `.ps1` scripts as equivalent validation surfaces.
+2. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Copilot repo.
+3. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Codex repo.
+4. **dreamers-implement mirror.** Edits to `dreamers-implement` flow (test-writing, type-check, apply-findings, user-testing gate) must be mirrored in Copilot `.github/skills/dreamers-full/SKILL.md` and Codex `skills/dreamers-full/SKILL.md`.
+5. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
+6. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
+7. **Validation.** After transfer, run Copilot ref verify and Codex ref verify + `scripts/Test-DreamersCodex.ps1` or `scripts/Test-DreamersCodex.sh` for the active shell.
 
 ## Git / PR
 
