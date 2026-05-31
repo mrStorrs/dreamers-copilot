@@ -17,7 +17,7 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Declare a todo list marking all steps at entry: Step 1 / Step 2.
 
 ## Step 1 — Spawn reviewers
-- Determine the selected reviewers from `review-lanes` (Kernel): default = `full`; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset.
+- Determine the selected reviewers: default = `full`; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset.
 - For multiple selected reviewers, use one batched `task()` call with all selected sub-invocations, each `mode: "sync"`.
 - Single-lens mode: spawn only the chosen reviewer.
 - Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
@@ -36,9 +36,7 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 ## Exit
 - Structured findings per `reviewer-findings-format` (Kernel). The caller applies (or defers) findings on its own terms.
 
-## Dreamers Kernel
-<review-lanes>
-# Review Lanes
+## Lane policy
 
 Use the full lane for the initial `/dreamers-full` review for each plan. Use narrower lanes only for follow-up review gates after that full review has already happened, or for standalone focused audits. Reviewer work is read-only; the orchestrator applies or defers findings.
 
@@ -57,8 +55,8 @@ Use the full lane for the initial `/dreamers-full` review for each plan. Use nar
 - After the full review has passed, follow-up fix loops may use a narrower lane. User-testing bug fixes may skip reviewer re-run when the fix is small and automated validation covers it; otherwise run Sentinel by default. Add Probe or Hone only when the follow-up change touches their lenses.
 - `/dreamers-pr-resolve` requires Sentinel for accepted fixes. Add Probe or Hone only when the accepted fixes touch coverage/regression risk or architecture/refactor risk.
 - If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lane or stop short of PR.
-</review-lanes>
 
+## Dreamers Kernel
 <dreamers-kernel>
 # Dreamers Kernel
 

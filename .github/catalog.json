@@ -464,7 +464,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, review lanes, comment rules, git workflow, close-out procedure, orchestrator discipline, etc.).",
+      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, git workflow, close-out procedure, orchestrator discipline, etc.).",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },
