@@ -36,7 +36,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes `/dreamers-review`, applies findings with major-refactor gate, halts for user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
+| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes `/dreamers-review`, applies findings with major-refactor gate, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, then writes plan file(s) + optional manifest. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns Sentinel + Probe + Hone in parallel; reports structured findings. Read-only. `--lens <name>` for a single-lens audit. |

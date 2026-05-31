@@ -36,7 +36,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full <task | plan paths | manifest>` | End-to-end pipeline: plan → implementation-start gate → implement → review → user-test when triggered → pre-PR approval → ship. |
+| `/dreamers-full <task | plan paths | manifest>` | End-to-end pipeline: plan → implementation-start gate → implement → review → templated user-test when triggered → pre-PR approval → ship. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest. Hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns Sentinel + Probe + Hone in parallel. Read-only structured findings. `--lens <name>` for single-lens audit. |
@@ -157,6 +157,5 @@ flowchart TD
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
-
 
 
