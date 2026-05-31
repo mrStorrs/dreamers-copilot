@@ -70,14 +70,11 @@ For each plan in sequence:
 ### Step 6 — User testing gate (when triggered)
 - Trigger this gate when the plan requires manual verification, the change is user-facing, build/distribution steps are needed, reviewer findings request user validation, or the user asked to test this area.
 - If no trigger applies, record "user testing skipped — no manual verification trigger" in the cycle summary and continue.
-- When triggered, `request_information` with:
-  - Plan ID + path
-  - Summary of what changed in this cycle
-  - Build/distribute steps from `.github/instructions/build.instructions.md` (or ask user to build if absent)
-  - Step-by-step verify steps derived from plan ACs
-  - Known limitations / out-of-scope
-  - Options: `Approved — continue` / `Bug: <description>` / `Other`
-- On bug → fix inline + re-prompt.
+- When triggered, read `.github/dreamers/templates/user-testing-gate.md` and present the gate through `request_information` exactly as specified there.
+- The gate prompt must include a numbered `Testing steps` section and a `Notes` section.
+- The gate must provide exactly three options: `Approved` / `Bug found (enter text)` / `Other (enter text)`.
+- `Bug found (enter text)` and `Other (enter text)` must accept freeform text.
+- On bug → capture text, fix inline, rerun required automated validation, then re-present the same templated gate.
 - On Approved → continue.
 - No commit yet (commit happens at close-out for FULL, or in the LIGHT close-out between cycles for INCREMENTAL).
 

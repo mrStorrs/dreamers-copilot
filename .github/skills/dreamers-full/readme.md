@@ -102,7 +102,7 @@ flowchart TD
 
 ## Key invariants
 
-- Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it.
+- Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it. It uses `.github/dreamers/templates/user-testing-gate.md`: numbered testing steps, notes, and exactly `Approved` / `Bug found (enter text)` / `Other (enter text)`.
 - `/dreamers-review` is **report-only** — Step 5 (apply findings + major-refactor gate) lives in this skill, not in `/dreamers-review`.
 - Gates are declared inline at the phase or step where they happen.
 - INCREMENTAL ships a PR per plan after an explicit pre-PR approval gate, then halts until the user confirms merge. ATOMIC accumulates commits and ships one PR at Phase 3.
