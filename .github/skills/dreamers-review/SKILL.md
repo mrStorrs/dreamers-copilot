@@ -1,14 +1,15 @@
 ---
 name: dreamers-review
-description: 'Review skill — spawns Sentinel + Probe + Hone in parallel and reports their structured findings. Read-only; does NOT apply fixes. The caller decides what to do with the findings. Standalone --lens flag for single-lens audits. Triggers: /dreamers-review, review my code, audit.'
-argument-hint: '[--lens sentinel|probe|hone] [--paths <glob>] [--branch]'
+description: 'Review skill — spawns Sentinel / Probe / Hone in the selected lane and reports their structured findings. Read-only; does NOT apply fixes. The caller decides what to do with the findings. Supports full triad, selected-lens subsets, and single-lens audits. Triggers: /dreamers-review, review my code, audit.'
+argument-hint: '[--lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
 ---
 
 $ARGUMENTS
 
 ## Modes
-- (default) Triad: Sentinel + Probe + Hone in parallel.
+- (default) Full triad: Sentinel + Probe + Hone in parallel.
 - `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`).
+- `--lenses <csv>` Selected-lens audit (`sentinel`, `probe`, `hone` in any non-empty combination).
 
 Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff vs default), default = staged + unstaged.
 
@@ -16,7 +17,8 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Declare a todo list marking all steps at entry: Step 1 / Step 2.
 
 ## Step 1 — Spawn reviewers
-- Triad mode: one batched `task()` call with three sub-invocations (Sentinel + Probe + Hone, all `mode: "sync"`).
+- Determine the selected reviewers from `review-lanes` (Kernel): default = `full`; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset.
+- For multiple selected reviewers, use one batched `task()` call with all selected sub-invocations, each `mode: "sync"`.
 - Single-lens mode: spawn only the chosen reviewer.
 - Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
 - Per-lens prompt context:
@@ -35,6 +37,28 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Structured findings per `reviewer-findings-format` (Kernel). The caller applies (or defers) findings on its own terms.
 
 ## Dreamers Kernel
+<review-lanes>
+# Review Lanes
+
+Choose the narrowest reviewer set that satisfies the workflow gate. Reviewer work is read-only; the orchestrator applies or defers findings.
+
+| Lane | Reviewers | Use when |
+| --- | --- | --- |
+| `sentinel` | Sentinel | Correctness/security/maintainability audit, lightweight bug fix, cleanup, logging/comment pass, or user explicitly asks for Sentinel only. |
+| `probe` | Probe | Test coverage audit, AC/layer coverage check, regression-risk review, or user explicitly asks for Probe only. |
+| `hone` | Hone | Simplicity/architecture/over-engineering audit, or user explicitly asks for Hone only. |
+| `standard` | Sentinel + Probe | Default for PR-bearing full-pipeline code changes after orchestrator-run tests pass. |
+| `full` | Sentinel + Probe + Hone | Architectural/refactor risk: new abstractions, public API/schema/data model changes, dependency changes, persistence changes, cross-module rewrites, broad subsystem movement, conflicting reviewer feedback, or explicit user request for full review. |
+
+## Gate Rules
+
+- Full-pipeline PR-bearing code changes require `standard` at minimum: Sentinel review + Probe coverage audit after the orchestrator has run type-checks and tests.
+- Hone is not a default full-pipeline gate. Add Hone only when a `full` trigger fires.
+- Single-lens lanes are valid for focused audit-only work and Tier 1/lightweight workflows. Do not use a single-lens lane to bypass the `standard` gate before opening a full-pipeline PR.
+- If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lens or stop short of PR.
+- When uncertain between `standard` and `full`, choose `standard` and state why Hone was not triggered.
+</review-lanes>
+
 <dreamers-kernel>
 # Dreamers Kernel
 

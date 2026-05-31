@@ -31,7 +31,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. One of three parallel reviewers in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval per `dreamers-review.md` § 'Phase 3 — Major-refactor finding gate'.",
+      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Trigger-based reviewer for architecture/refactor risk in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -58,7 +58,7 @@
       "type": "agent",
       "slug": "probe",
       "name": "probe",
-      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). One of three parallel reviewers in the Dreamers pipeline's review phase.",
+      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Part of the standard full-pipeline review gate with Sentinel.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -84,7 +84,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. One of three parallel reviewers (with Probe and Hone) in the Dreamers pipeline's review phase. Returns structured findings; orchestrator applies fixes.",
+      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Part of the standard full-pipeline review gate with Probe and the default lightweight review lane. Returns structured findings; orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -162,7 +162,7 @@
       "type": "skill",
       "slug": "dreamers-fix",
       "name": "dreamers-fix",
-      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, implements inline, runs project tests + Sentinel review in parallel, optionally invokes Echo for docs, pushes + opens PR. No plan file, no Probe, no Hone, no /dreamers-full call. On scope blowup, surfaces choice to escalate to /dreamers-full; does not auto-route.",
+      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Sentinel-only review, then commit + /dreamers-pr. No Probe, no Hone, no /dreamers-full call. On scope blowup, surfaces choice to escalate to /dreamers-full; does not auto-route.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -175,7 +175,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes /dreamers-review for the triad's findings, applies findings inline with the major-refactor gate, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes /dreamers-review with the narrowest required lane, applies findings inline with the major-refactor gate, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -266,7 +266,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns Sentinel + Probe + Hone in parallel for review of accepted changes, then resolves accepted threads via `gh api`.",
+      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, spawns the narrowest required review lane for accepted changes, then resolves accepted threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -292,7 +292,7 @@
       "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
-      "description": "Review skill — spawns Sentinel + Probe + Hone in parallel and reports their structured findings. Read-only; does NOT apply fixes (the caller decides). --lens flag spawns a single reviewer for ad-hoc audits.",
+      "description": "Review skill — spawns Sentinel / Probe / Hone in the selected lane and reports their structured findings. Read-only; does NOT apply fixes (the caller decides). --lens spawns one reviewer; --lenses spawns an explicit subset; no flag runs the full triad.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -333,7 +333,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity) with an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen: planning approval, implementation start, ship strategy when needed, major-refactor scope, user testing when triggered, and final pre-PR approval. The README at the readmePath has the full detail; what you gain in practice is a disciplined planning → tests-first → implementation → parallel-review → user-test → docs → PR flow you can re-run with confidence.",
+      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity) with an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen: planning approval, implementation start, ship strategy when needed, selected-lane review, major-refactor scope, user testing when triggered, and final pre-PR approval. The README at the readmePath has the full detail; what you gain in practice is a disciplined planning → tests-first → implementation → selected-lane review → user-test → docs → PR flow you can re-run with confidence.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
@@ -464,7 +464,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, git workflow, close-out procedure, orchestrator discipline, etc.).",
+      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, review lanes, comment rules, git workflow, close-out procedure, orchestrator discipline, etc.).",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },

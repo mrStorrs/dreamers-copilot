@@ -29,8 +29,8 @@ flowchart TD
     TestResult -->|No| HaltA(["Halt + surface"])
     TestResult -->|Yes| S5
 
-    S5["Step 5 — Parallel review of accepted changes"] --> SpawnTriad["Spawn Sentinel + Probe + Hone<br/>scope = files touched by accepts"]
-    SpawnTriad --> ReviewResult{"Reviewer<br/>statuses?"}
+    S5["Step 5 — Review accepted changes"] --> SpawnLane["Spawn selected lane<br/>default Sentinel<br/>scope = files touched by accepts"]
+    SpawnLane --> ReviewResult{"Reviewer<br/>statuses?"}
     ReviewResult -->|Blocked| HaltB(["Halt + surface;<br/>resolve + re-spawn"])
     ReviewResult -->|Findings| ApplyReviewer["Apply findings inline<br/>major-refactor gate per dreamers-review<br/>re-run tests"]
     ReviewResult -->|Approved no findings| S6
@@ -56,7 +56,7 @@ flowchart TD
 
     class PRCheck,HasThreads,AcceptedAny,TestResult,ReviewResult,PushGate gate
     class HaltA,HaltB,HaltC halt
-    class SpawnTriad agent
+    class SpawnLane agent
     class S1,S2,S3,S4,S5,S6,S7,S8,UseSpecified,PickPR,UseOne,Query,PerThread,ApplyFixes,ApplyReviewer,CommitFixes,Push,ResolveGQL,S7Skip phase
 ```
 
@@ -65,5 +65,6 @@ flowchart TD
 - **GraphQL only** for unresolved-thread discovery. The REST API's `resolved` field is unreliable.
 - **Reject is OK.** Don't feel obligated to accept every comment. If a suggestion conflicts with the plan, architecture, or is simply wrong, reject with rationale.
 - **Rejected threads stay open** — they represent active disagreements the reviewer should see.
+- **Review lane is narrow by default.** Sentinel reviews accepted fixes; add Probe for coverage/regression-sensitive changes and Hone for architecture/refactor changes.
 - **Push requires explicit approval.** Post-PR changes never auto-push.
 - **Hold is a valid exit** — the commit stays on the branch for the user to push manually later.

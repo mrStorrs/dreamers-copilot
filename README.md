@@ -1,6 +1,6 @@
 # Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → parallel-review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → selected-lane review → docs → PR flow.
 
 ## Structure
 
@@ -28,7 +28,7 @@ Everything lives under `.github/`:
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research. |
 
-Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. The full pipeline defaults to Sentinel + Probe; Hone is trigger-based for architecture/refactor risk. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -36,10 +36,10 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes `/dreamers-review`, applies findings with major-refactor gate, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
+| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes `/dreamers-review` with the narrowest required lane, applies findings with major-refactor gate, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, then writes plan file(s) + optional manifest. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
-| `/dreamers-review` | Spawns Sentinel + Probe + Hone in parallel; reports structured findings. Read-only. `--lens <name>` for a single-lens audit. |
+| `/dreamers-review` | Spawns the selected reviewer lane and reports structured findings. Read-only. `--lens <name>` for a single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
 | `/dreamers-pr` | Pushes the branch and opens the PR using the `pr-description.md` template. |
 | `/dreamers-fix` | Self-contained bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers-full` on scope blowup. |
@@ -48,11 +48,21 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
 
 `/dreamers-review --lens sentinel` (or `probe`/`hone`) covers the same ground. The standalone skills `dreamers-test` (Probe) and `dreamers-simplify` (Hone) remain as convenient aliases.
 
+### Review lanes
+
+| Lane | Reviewers | Normal use |
+|---|---|---|
+| `sentinel` | Sentinel | Lightweight fixes, cleanup, correctness/security/maintainability audit. |
+| `probe` | Probe | Test coverage, AC/layer coverage, regression-risk audit. |
+| `hone` | Hone | Simplicity, architecture, over-engineering audit. |
+| `standard` | Sentinel + Probe | Default full-pipeline PR gate. |
+| `full` | Sentinel + Probe + Hone | Architecture/refactor risk or explicit full-review request. |
+
 ### Utility + orthogonal
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve` | Resolve PR review comments inline; parallel review of accepted changes. |
+| `/dreamers-pr-resolve` | Resolve PR review comments inline; selected-lane review of accepted changes. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
@@ -73,7 +83,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
   │               1. Write failing tests
   │               2. Implement
   │               3. Type-check + run tests
-  │               4. Invoke /dreamers-review (triad → findings, read-only)
+  │               4. Invoke /dreamers-review (selected lane → findings, read-only)
   │               5. Apply findings + major-refactor gate
   │               6. User-testing gate (when triggered)
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation

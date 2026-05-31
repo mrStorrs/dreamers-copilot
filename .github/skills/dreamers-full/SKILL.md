@@ -1,6 +1,6 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review for findings, applies findings inline with the major-refactor gate, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review with the narrowest required review lane, applies findings inline with the major-refactor gate, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -46,13 +46,16 @@ For each plan in sequence:
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ### Step 4 — Spawn review
-- Invoke `/dreamers-review`. Wait. It returns the triad's structured findings (per `reviewer-findings-format`, Kernel) — read-only.
+- Choose the review lane from `review-lanes` (Kernel). Default for full-pipeline PR-bearing code is `standard`: `/dreamers-review --lenses sentinel,probe --branch`.
+- Escalate to `full` (`/dreamers-review --branch`) only when a full-lane trigger exists: architecture/refactor risk, new abstractions, public API/schema/data model changes, dependency changes, persistence changes, cross-module rewrites, broad subsystem movement, conflicting reviewer feedback, or explicit user request.
+- Do not run Hone by default just because the change is a feature. If `standard` is chosen, record "Hone skipped — no full-lane trigger" in the cycle summary.
+- Wait. It returns the selected reviewers' structured findings (per `reviewer-findings-format`, Kernel) — read-only.
 - `Blocked` from any reviewer → halt cycle + surface verbatim.
 - Open questions from any reviewer → present each via `request_information`; capture; carry decisions into Step 5.
 
 ### Step 5 — Apply findings (orchestrator-as-fixer)
-- Concatenate findings from all three reviewers; sort by severity (critical → low).
-- Conflict resolution: same `file:line` with contradicting fixes → correctness > simplicity. Genuine ambiguity → `request_information` before applying.
+- Concatenate findings from the spawned reviewers; sort by severity (critical → low).
+- Conflict resolution: same `file:line` with contradicting fixes → correctness/security > test-coverage > simplicity. Genuine ambiguity → `request_information` before applying.
 - **Major-refactor gate.** A finding is "major-refactor scope" if its suggested fix meets ANY of:
   - New module or top-level directory not in the plan's scope.
   - Schema / data-model change.
@@ -105,6 +108,28 @@ For each plan in sequence:
 - **Post-PR scan**: surface open retro improvements and project-state drift only (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No new prompt, no auto-commit after PR opens.
 
 ## Dreamers Kernel
+<review-lanes>
+# Review Lanes
+
+Choose the narrowest reviewer set that satisfies the workflow gate. Reviewer work is read-only; the orchestrator applies or defers findings.
+
+| Lane | Reviewers | Use when |
+| --- | --- | --- |
+| `sentinel` | Sentinel | Correctness/security/maintainability audit, lightweight bug fix, cleanup, logging/comment pass, or user explicitly asks for Sentinel only. |
+| `probe` | Probe | Test coverage audit, AC/layer coverage check, regression-risk review, or user explicitly asks for Probe only. |
+| `hone` | Hone | Simplicity/architecture/over-engineering audit, or user explicitly asks for Hone only. |
+| `standard` | Sentinel + Probe | Default for PR-bearing full-pipeline code changes after orchestrator-run tests pass. |
+| `full` | Sentinel + Probe + Hone | Architectural/refactor risk: new abstractions, public API/schema/data model changes, dependency changes, persistence changes, cross-module rewrites, broad subsystem movement, conflicting reviewer feedback, or explicit user request for full review. |
+
+## Gate Rules
+
+- Full-pipeline PR-bearing code changes require `standard` at minimum: Sentinel review + Probe coverage audit after the orchestrator has run type-checks and tests.
+- Hone is not a default full-pipeline gate. Add Hone only when a `full` trigger fires.
+- Single-lens lanes are valid for focused audit-only work and Tier 1/lightweight workflows. Do not use a single-lens lane to bypass the `standard` gate before opening a full-pipeline PR.
+- If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lens or stop short of PR.
+- When uncertain between `standard` and `full`, choose `standard` and state why Hone was not triggered.
+</review-lanes>
+
 <dreamers-kernel>
 # Dreamers Kernel
 
@@ -241,7 +266,7 @@ If a layer cannot be covered automatically (e.g., camera permission flows), flag
 
 ## Probe's layer audit (consumes the new format)
 
-In `/dreamers-implement` Step 4 (coverage sweep) and Step 5 (parallel review with Probe), the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+During the full-pipeline review lane that includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 

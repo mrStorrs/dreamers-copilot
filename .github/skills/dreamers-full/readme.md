@@ -36,7 +36,7 @@ flowchart TD
     S3Check -->|No| HaltC(["Halt + surface"])
     S3Check -->|Yes| S4
 
-    S4["Step 4<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
+    S4["Step 4<br/>Select review lane<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
     ReviewResult -->|Blocked| HaltD(["Halt + surface"])
     ReviewResult -->|Findings| S5
 
@@ -103,6 +103,7 @@ flowchart TD
 ## Key invariants
 
 - Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it. It uses `.github/dreamers/templates/user-testing-gate.md`: numbered testing steps, notes, and exactly `Approved` / `Bug found (enter text)` / `Other (enter text)`.
+- Step 4 defaults to the `standard` review lane (Sentinel + Probe). Hone runs only when a full-lane trigger exists: architecture/refactor risk, new abstractions, public API/schema/data model changes, dependency/persistence changes, cross-module rewrites, conflicting reviewer feedback, or explicit user request.
 - `/dreamers-review` is **report-only** — Step 5 (apply findings + major-refactor gate) lives in this skill, not in `/dreamers-review`.
 - Gates are declared inline at the phase or step where they happen.
 - INCREMENTAL ships a PR per plan after an explicit pre-PR approval gate, then halts until the user confirms merge. ATOMIC accumulates commits and ships one PR at Phase 3.
