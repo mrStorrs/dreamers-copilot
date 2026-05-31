@@ -82,7 +82,7 @@ Sentinel + Probe + Hone spawn in parallel per cycle via `/dreamers-review`. Echo
                    → user approval gate → push + PR → plan archive → post-PR scan (no prompt)
 ```
 
-Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
+Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
 
 ## Maintaining Dreamers
 
