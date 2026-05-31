@@ -37,7 +37,7 @@ Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the sele
 | Skill | Purpose |
 |---|---|
 | `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses narrower lanes for follow-up fix loops when appropriate, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
-| `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, then writes plan file(s) + optional manifest. Hard-stops at the review gate. |
+| `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, writes plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns the selected reviewer lane and reports structured findings. Read-only. `--lens <name>` for a single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |

@@ -26,7 +26,10 @@ flowchart TD
     Citation --> SelfCheck{"Self-check<br/>against guide?"}
     SelfCheck -->|Fail| FixPlan["Fix violations"]
     FixPlan --> SelfCheck
-    SelfCheck -->|Pass| S3
+    SelfCheck -->|Pass| Coverage{"Coverage review<br/>proposal + user discussion?"}
+    Coverage -->|Fail| FixCoverage["Fix missing / weak items"]
+    FixCoverage --> Citation
+    Coverage -->|Pass| S3
 
     S3["Step 3 — Review gate"] --> Present["Present plan paths<br/>via request_information"]
     Present --> Review{"User response"}
@@ -41,9 +44,9 @@ flowchart TD
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
-    class ArgCheck,ApprovalGate,SelfCheck,Review gate
+    class ArgCheck,ApprovalGate,SelfCheck,Coverage,Review gate
     class HaltA,HaltB halt
-    class S1,S2,S3,Summary,Questions,Draft,ReviewPhase,Answer,Decide,ReadGuide,Mkdir,WritePlans,Component,Citation,FixPlan,Present,MinorFix phase
+    class S1,S2,S3,Summary,Questions,Draft,ReviewPhase,Answer,Decide,ReadGuide,Mkdir,WritePlans,Component,Citation,FixPlan,FixCoverage,Present,MinorFix phase
 ```
 
 ## Key invariants
@@ -51,5 +54,6 @@ flowchart TD
 - **Hard stop at Step 3.** The skill never invokes implementation — surfaces plan paths and exits.
 - **One round of clarifying questions** in Step 1. No trickling questions across turns.
 - **Proposal review is mandatory and interactive.** Approval is valid only after the proposal is stress-tested for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. User questions, challenges, and partial answers are handled inside the same loop with substantive reasoning, implications, and a recommended next move.
+- **Plan coverage review is mandatory after writing.** Before Step 3, compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Fix any missing, ambiguous, contradicted, or weakened item before presenting paths.
 - **Manifest backfill check** in Step 1 — existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
 - **Major rewrite loops back to Step 1**, not Step 2 — the proposal/scope needs to be re-agreed first.

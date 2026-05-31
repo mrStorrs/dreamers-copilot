@@ -87,6 +87,20 @@ Anthropic recency-bias rule: Verification ALWAYS at the bottom of the file.
 
 ---
 
+## Post-write coverage review
+
+Before presenting plan paths for approval, compare the written plan(s) against:
+
+- The approved proposal.
+- The proposal critique and accepted mitigations.
+- Every user-discussed question, correction, decision, constraint, scope boundary, and follow-up answer from the planning conversation.
+
+Every accepted item must appear in the plan set in the most appropriate section: Goal, Context, Acceptance Criteria, Out of Scope, Constraints, Design Decisions, UI, or Verification. Fix any missing, ambiguous, contradicted, or weakened item, then re-run citation accuracy, structural self-check, and this coverage review.
+
+For multi-plan features, verify coverage across the full plan set and `manifest.md` when present. Shared decisions belong in the manifest only when each affected plan points to that manifest or repeats the decision locally.
+
+---
+
 ## Section formats
 
 ### Acceptance Criteria format
