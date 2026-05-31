@@ -19,11 +19,12 @@ flowchart TD
     PlanResult -->|Halt| HaltA(["Halt + resume cmd"])
     PlanResult -->|Plan paths| P15
 
-    P15{"Multi-plan?"} -->|Yes| Strategy{"INCREMENTAL<br/>or ATOMIC?"}
-    P15 -->|No| BranchSetup
-    Strategy -->|INCREMENTAL| BranchSetup
-    Strategy -->|ATOMIC| BranchSetup
-    Strategy -->|Halt| HaltB(["Halt + resume cmd"])
+    P15["Phase 1.5<br/>Plan review / implementation start"] --> PlanGate{"Start approved?"}
+    PlanGate -->|Single-plan approved| BranchSetup
+    PlanGate -->|INCREMENTAL| BranchSetup
+    PlanGate -->|ATOMIC| BranchSetup
+    PlanGate -->|Revise| P15
+    PlanGate -->|Halt| HaltB(["Halt + resume cmd"])
 
     BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
 
@@ -47,7 +48,9 @@ flowchart TD
     CreateStub --> ApplyFixes
     GateChoice -->|Other| GateChoice
 
-    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> S6
+    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> S6Check{"User testing<br/>triggered?"}
+    S6Check -->|No| MorePlans
+    S6Check -->|Yes| S6
     S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
     UserTest -->|Bug| BugFix["Fix inline + re-test"]
     BugFix --> S6
@@ -57,14 +60,16 @@ flowchart TD
     MorePlans -->|No| P3
     MorePlans -->|Yes| Between{"Strategy?"}
 
-    Between -->|INCREMENTAL| Light["Drift check<br/>Invoke /dreamers-docs if applicable<br/>commit<br/>Invoke /dreamers-pr"]
+    Between -->|INCREMENTAL| Light["Drift check<br/>Invoke /dreamers-docs if applicable<br/>commit"]
     Between -->|ATOMIC| AtomicCommit["Drift check<br/>commit"]
 
-    Light --> ContIncr{"Continue?"}
+    Light --> IncrPRGate{"Pre-PR<br/>approved?"}
+    IncrPRGate -->|Approved| IncrPR["Invoke /dreamers-pr"]
+    IncrPRGate -->|Halt| HaltF(["Halt"])
+    IncrPR --> MergeWait(["Halt until PR merged"])
     AtomicCommit --> Cycle
 
-    ContIncr -->|Continue| ReCut["Wait for merge<br/>re-cut feature branch"]
-    ContIncr -->|Halt| HaltF(["Halt"])
+    MergeWait --> ReCut["Re-cut feature branch"]
     ReCut --> Cycle
 
     P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
@@ -74,7 +79,7 @@ flowchart TD
     FinalCommit --> Approval{"User approval"}
     Approval -->|Halt| HaltH(["Halt"])
     Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
-    InvokePR --> PostScan["Post-PR scan<br/>surface improvements + drift"]
+    InvokePR --> PostScan["Post-PR scan<br/>surface improvements + drift<br/>no prompt"]
     PostScan --> End(["PR URL + summary"])
 
     classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
@@ -82,8 +87,8 @@ flowchart TD
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
-    class InvokePlan,S4,InvokeDocs,InvokePR skill
-    class ModeCheck,PlanResult,P15,Strategy,S3Check,ReviewResult,Gate,GateChoice,UserTest,MorePlans,Between,ContIncr,Approval gate
+    class InvokePlan,S4,InvokeDocs,InvokePR,IncrPR skill
+    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,MorePlans,Between,IncrPRGate,Approval gate
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
@@ -97,7 +102,7 @@ flowchart TD
 
 ## Key invariants
 
-- Step 6 (user-testing gate) fires at the end of **every** plan, not just plans that declare `User-testing-required: yes`.
+- Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it.
 - `/dreamers-review` is **report-only** — Step 5 (apply findings + major-refactor gate) lives in this skill, not in `/dreamers-review`.
-- All `request_information` calls include an **Other** freeform option.
-- INCREMENTAL ships a PR per plan (between cycles, with merge-confirmation wait). ATOMIC accumulates commits and ships one PR at Phase 3, with no per-cycle prompt.
+- Gates are declared inline at the phase or step where they happen.
+- INCREMENTAL ships a PR per plan after an explicit pre-PR approval gate, then halts until the user confirms merge. ATOMIC accumulates commits and ships one PR at Phase 3.

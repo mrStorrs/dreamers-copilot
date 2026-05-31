@@ -1,6 +1,6 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review for findings, applies findings inline (with major-refactor gate), user-testing gate per plan, then close-out (inline + /dreamers-docs + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review for findings, applies findings inline with the major-refactor gate, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -20,9 +20,14 @@ $ARGUMENTS
 - Invoke `/dreamers-plan $ARGUMENTS`. Wait. Capture plan paths.
 - Halt this skill if `/dreamers-plan` halts without approval.
 
-## Phase 1.5 — Ship strategy (multi-plan only)
-- Score against `plan-writing-guide.md` § "Ship strategy heuristics."
-- `request_information`: `INCREMENTAL` / `ATOMIC` / `Halt` / `Other` + recommendation + one-sentence reasoning. Capture as `strategy`.
+## Phase 1.5 — Plan review / implementation start gate
+- Read the plan path(s). If manifest mode, also read the manifest shared-context payload.
+- If multiple plans will run, score against `plan-writing-guide.md` § "Ship strategy heuristics."
+- Present the written plan path(s), implementation scope, test intent, and any ship-strategy recommendation.
+- `request_information`:
+  - Single-plan: `Approved — start implementation` / `Revise plan` / `Halt` / `Other`.
+  - Multi-plan: `Approved — start INCREMENTAL` / `Approved — start ATOMIC` / `Revise plan` / `Halt` / `Other`.
+- On `Revise plan`, apply explicit minor edits inline when unambiguous, then re-present this gate. Major rewrite → return to `/dreamers-plan` with the correction as context. Capture selected `strategy` for multi-plan runs.
 
 ## Phase 2 — Per plan (inline implementation + review)
 
@@ -62,8 +67,10 @@ For each plan in sequence:
   - **Other** → freeform redirect. Never silently apply/defer.
 - Apply each non-deferred fix as a targeted Edit. Stage with `git add`. Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
 
-### Step 6 — User testing gate (MANDATORY, every plan)
-- `request_information` with:
+### Step 6 — User testing gate (when triggered)
+- Trigger this gate when the plan requires manual verification, the change is user-facing, build/distribution steps are needed, reviewer findings request user validation, or the user asked to test this area.
+- If no trigger applies, record "user testing skipped — no manual verification trigger" in the cycle summary and continue.
+- When triggered, `request_information` with:
   - Plan ID + path
   - Summary of what changed in this cycle
   - Build/distribute steps from `.github/instructions/build.instructions.md` (or ask user to build if absent)
@@ -79,8 +86,9 @@ For each plan in sequence:
 - **INCREMENTAL** (light close-out for this plan):
   - Invoke `/dreamers-docs --branch` if the just-completed plan's diff has user-facing or documentable changes.
   - `git commit` per project commit style; body includes `Plan: feature-<slug>/plan-NN-<name>`.
+  - **Pre-PR approval gate**: present plan summary, validation status, and PR scope. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
   - Invoke `/dreamers-pr`. Capture PR URL.
-  - `request_information` Continue/Halt/Other. Continue: wait for user confirm-merged → re-cut feature branch from default → next cycle.
+  - Halt until the user confirms the PR has merged, then re-cut feature branch from default → next cycle.
 - **ATOMIC**:
   - `git commit` for this plan (body includes `Plan:` line). Do NOT push. → next cycle.
 
@@ -97,7 +105,7 @@ For each plan in sequence:
 - Final commit: `git add <explicit-paths>` (no `-A`) + `git commit` per conventional-commits with `Plan:` body + trailer. Skip if nothing staged.
 - **User approval gate** (MANDATORY, last halt before PR): present milestone summary. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
 - Invoke `/dreamers-pr` (pass `--issue <#|url>` if `$ARGUMENTS` referenced one). Capture PR URL.
-- **Post-PR scan**: surface open retro improvements + ask user before applying any. Flag project-state drift (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No auto-commit after PR opens.
+- **Post-PR scan**: surface open retro improvements and project-state drift only (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No new prompt, no auto-commit after PR opens.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -119,10 +127,6 @@ Every `task()` invocation MUST include in the prompt:
 - **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
-
-## Continuation principle
-
-At every natural pause between phases — where the skill has produced a meaningful result and the user could redirect — call `request_information` with three choices: `Continue` / `Halt for now` / `Other` (freeform). Never silently advance; never silently stop. On `Halt`, emit a one-line resume command and stop.
 
 ## Implementation discipline
 
