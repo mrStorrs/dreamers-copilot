@@ -4,14 +4,12 @@ on:
   pull_request:
     paths:
       - '.github/**/*.md'
-      - 'scripts/sync-refs.ps1'
       - 'scripts/sync-refs.sh'
       - '.github/workflows/verify-refs.yml'
   push:
     branches: [main]
     paths:
       - '.github/**/*.md'
-      - 'scripts/sync-refs.ps1'
       - 'scripts/sync-refs.sh'
       - '.github/workflows/verify-refs.yml'
   workflow_dispatch:
