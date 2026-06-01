@@ -6,10 +6,6 @@ argument-hint: '[--lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [-
 
 $ARGUMENTS
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 ## Modes
 - (default) Full triad: Sentinel + Probe + Hone in parallel.
 - `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`).
@@ -63,6 +59,10 @@ Use the full lane for the initial `/dreamers-full` review for each plan. Use nar
 ## Dreamers Kernel
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

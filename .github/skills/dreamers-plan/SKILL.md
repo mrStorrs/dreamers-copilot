@@ -11,10 +11,6 @@ If no task description was provided, halt + ask.
 Template read at runtime via `view`:
 - `.github/dreamers/templates/plan-writing-guide.md` — plan structure, naming, ACs, decomposition, manifest, ship-strategy heuristics.
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
@@ -46,6 +42,10 @@ Template read at runtime via `view`:
 ## Dreamers Kernel
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

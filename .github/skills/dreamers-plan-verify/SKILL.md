@@ -4,12 +4,12 @@ description: 'Inline drift check on a plan against current codebase reality. Re-
 argument-hint: 'path/to/plan.md'
 ---
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

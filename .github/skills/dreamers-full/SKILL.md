@@ -6,10 +6,6 @@ argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | f
 
 $ARGUMENTS
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 ## Modes
 | Mode | `$ARGUMENTS` | Phase 1 |
 |---|---|---|
@@ -112,6 +108,10 @@ For each plan in sequence:
 ## Dreamers Kernel
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

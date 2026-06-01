@@ -4,10 +4,6 @@ description: 'Branch-scoped comment cleanup. Same as /dreamers-cleanup-comments 
 argument-hint: '(no args; scope is automatic from the current branch diff)'
 ---
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 <comment-rules>
 # Comment Rules
 
@@ -39,6 +35,10 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

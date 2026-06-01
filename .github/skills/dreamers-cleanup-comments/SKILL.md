@@ -4,10 +4,6 @@ description: 'Project-wide comment cleanup pass per comment-rules.md. Audit → 
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 <comment-rules>
 # Comment Rules
 
@@ -39,6 +35,10 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

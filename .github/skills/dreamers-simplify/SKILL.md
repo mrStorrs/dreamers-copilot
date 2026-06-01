@@ -4,12 +4,12 @@ description: 'Standalone Hone review (architectural quality). Read-only — retu
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 

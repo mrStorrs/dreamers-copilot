@@ -9,10 +9,6 @@ $ARGUMENTS
 Template read at runtime via `view`:
 - `.github/dreamers/templates/pr-description.md` — PR body shape.
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3 / Step 4.
 
@@ -42,6 +38,10 @@ Template read at runtime via `view`:
 ## Dreamers Kernel
 <dreamers-kernel>
 # Dreamers Kernel
+
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
 
 ## Subagent allowlist (HARD RULE)
 
