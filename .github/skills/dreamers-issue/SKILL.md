@@ -10,6 +10,10 @@ $ARGUMENTS
 
 ---
 
+## User overrides
+
+- Explicit user instructions can skip or alter phases/actions.
+
 **Routing — check for `#` prefix**
 
 If the arguments start with `#`, enter **discussion mode**:

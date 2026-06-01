@@ -4,6 +4,10 @@ description: 'Branch-scoped comment cleanup. Same as /dreamers-cleanup-comments 
 argument-hint: '(no args; scope is automatic from the current branch diff)'
 ---
 
+## User overrides
+
+- Explicit user instructions can skip or alter phases/actions.
+
 <comment-rules>
 # Comment Rules
 

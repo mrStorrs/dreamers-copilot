@@ -6,6 +6,10 @@ argument-hint: '[--branch | --staged]'
 
 $ARGUMENTS
 
+## User overrides
+
+- Explicit user instructions can skip or alter phases/actions.
+
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 

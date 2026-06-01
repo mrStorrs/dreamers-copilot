@@ -8,6 +8,10 @@ $ARGUMENTS
 
 If no plan path was provided, halt + ask. Do not invent a plan.
 
+## User overrides
+
+- Explicit user instructions can skip or alter phases/actions.
+
 ## Todo - Before you begin. 
 - Declare a todo list marking all steps. at entry: Step 1 / Step 2 / Step 3 / Step 4 / Step 5 (review) / Step 6 (user test) / Step 7 (commit).
 

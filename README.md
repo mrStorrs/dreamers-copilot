@@ -32,6 +32,8 @@ Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the sele
 
 ## Skills
 
+Explicit user instructions can skip or alter skill phases/actions.
+
 ### Pipeline
 
 | Skill | Purpose |

@@ -8,6 +8,10 @@ Also load at runtime (not inlined — these are templates / project files):
 - `~/.copilot/dreamers/templates/logging-standards.md` — the binding spec
 - `.github/copilot-instructions.md` (project, if present) — project-specific logging conventions (logger library, format)
 
+## User overrides
+
+- Explicit user instructions can skip or alter phases/actions.
+
 <dreamers-kernel>
 # Dreamers Kernel
 
