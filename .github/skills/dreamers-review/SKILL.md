@@ -60,6 +60,10 @@ Use the full lane for the initial `/dreamers-full` review for each plan. Use nar
 <dreamers-kernel>
 # Dreamers Kernel
 
+## User overrides
+
+Explicit user instructions can skip or alter phases/actions.
+
 ## Subagent allowlist (HARD RULE)
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.

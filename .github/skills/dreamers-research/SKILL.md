@@ -10,6 +10,10 @@ $ARGUMENTS
 
 ---
 
+## User overrides
+
+- Explicit user instructions can skip or alter phases/actions.
+
 ## Todo list
 
 At skill entry, declare via `manage_todo_list`:
