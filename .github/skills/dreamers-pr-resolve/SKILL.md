@@ -1,10 +1,10 @@
 ---
 name: dreamers-pr-resolve
-description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Sentinel review of accepted changes, adds Probe/Hone only when situationally needed, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Vigil review of accepted changes, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
-Resolve unresolved PR review comments. All work inline except required artifact-backed Sentinel review over accepted changes; add Probe/Hone only when situationally needed.
+Resolve unresolved PR review comments. All work inline except required artifact-backed Vigil review over accepted changes.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
@@ -59,7 +59,7 @@ At skill entry, declare via `manage_todo_list`:
 - [ ] Read review comments (discover PR + pull unresolved threads via GraphQL)
 - [ ] Categorize threads (accept/reject decision per thread)
 - [ ] Apply accepted fixes inline + run tests
-- [ ] Spawn Sentinel review of accepted changes; add Probe/Hone only when situationally required
+- [ ] Spawn Vigil review of accepted changes
 - [ ] Resolve accepted threads + commit + report
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
@@ -86,7 +86,7 @@ Extract only threads where `isResolved: false`. Capture each thread's `id`, `pat
 - ❌ `agent_type: "general-purpose"` → FORBIDDEN. There is no general-purpose fallback for implementation.
 - ❌ `agent_type: "claude"` or any other host-runtime agent → FORBIDDEN.
 - ❌ `agent_type: "forge"` / `"nova"` / `"bolt"` → FORBIDDEN (these are not subagents in this system — see `dreamers-kernel.md` § "Subagent allowlist").
-- ✅ The only `agent_type` values you may spawn from this skill are `sentinel`, `probe`, `hone` in Step 5 (selected-lane review of the applied fixes). Nothing else.
+- ✅ The only `agent_type` value you may spawn from this skill is `vigil` in Step 5 (review of the applied fixes). Nothing else.
 
 For each unresolved thread, judge whether to accept or reject the comment. You are the implementation expert and have full authority. **Do not feel obligated to accept every comment** — if a suggestion conflicts with the plan, the architecture, or is simply wrong, reject it and say why.
 
@@ -108,48 +108,35 @@ If any threads were accepted:
 
 If no threads were accepted, skip to Step 6.
 
-## Step 5 — Sentinel review of accepted changes
+## Step 5 — Vigil review of accepted changes
 
-Run Sentinel for accepted PR-feedback fixes. This pass stays light because Probe and Hone already ran during the main pipeline review. Scope is restricted to ONLY the files touched by accepted threads.
+Run Vigil for accepted PR-feedback fixes. Scope is restricted to ONLY the files touched by accepted threads.
 
-Use `agent_type: "sentinel"`, `mode: "sync"` for the required review.
+Use `agent_type: "vigil"`, `mode: "sync"` for the required review. Do not spawn Sentinel, Probe, or Hone from this skill; selected reviewer lanes belong to `/dreamers-review`.
 
-Add Probe only when accepted fixes changed tests, test harnesses, AC-covered behavior, validation logic, regression-sensitive behavior, or user/reviewer feedback asks for a coverage audit.
-
-Add Hone only when accepted fixes introduce or reshape abstractions, module boundaries, public APIs, schemas, data models, persistence, dependencies, or broad refactors.
-
-If Probe or Hone is added, spawn all selected reviewers in one batched tool call. All reviewers are read-only / report-only for code and each writes one `.dreamers/reviews/<reviewer>-*.md` artifact in the format from `reviewer-findings-format.md`.
-
-Common prompt context for each selected reviewer (subagent prompt rule — include verbatim):
+Common prompt context for Vigil (subagent prompt rule — include verbatim):
 - **Todo discipline:** "Do NOT call `manage_todo_list`. The orchestrator owns the todo." (per `dreamers-kernel.md` § "Single-owner todo")
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
 - Scope: list of files changed by accepted threads from `git status`
 - Branch + default branch names
 - What the orchestrator has done: addressed N accepted PR review comments via inline edits; type-checked + tests green.
-- Write exactly one `.dreamers/reviews/<reviewer>-*.md` artifact.
+- Risk notes: call out whether accepted fixes changed tests/test harnesses/AC-covered behavior/validation/regression-sensitive behavior, or introduced/reshaped abstractions/module boundaries/APIs/schemas/data models/persistence/dependencies/refactors.
+- Review lenses: correctness, security, maintainability, test coverage, and simplicity. Treat the risk notes as focus areas, not as permission to skip the other lenses.
+- Write exactly one `.dreamers/reviews/vigil-*.md` artifact.
 - Return only status, counts, artifact path, blocked reason, and open questions.
 
-Per-reviewer prompt addition:
-
-**Sentinel** (`agent_type: "sentinel"`, `mode: "sync"`) — correctness, security, maintainability lenses.
-
-**Probe** (`agent_type: "probe"`, `mode: "sync"`) — test coverage lens (did the PR-feedback fixes break or weaken test coverage?).
-
-**Hone** (`agent_type: "hone"`, `mode: "sync"`) — simplicity lens (did the fixes introduce over-engineering or redundancy?).
-- **Mandate reinforcement (include in Hone's prompt verbatim):** "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor — do not soften, hedge, or omit findings because the fix is big. When the suggested fix has architectural scope (touches files outside the PR-feedback surface, requires a new module, requires schema or symbol changes, or amounts to a full refactor of a subsystem), state the scope explicitly in the suggested-fix text. The orchestrator's major-refactor finding gate (per `dreamers-review.md`) routes those findings through the user for apply-now vs defer decisions. Your job is to surface; the gate handles disposition."
-
-Read each returned artifact before applying findings. Apply findings from artifacts inline per the full-pipeline apply-findings rules:
+Read the returned artifact before applying findings. Apply findings from the artifact inline per the full-pipeline apply-findings rules:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).
-3. **Evaluate each finding against the Major-refactor finding gate** per `dreamers-review.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Hone-style "tear out X" scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — create follow-up plan` / `Other`) and route per the user's answer. On `Defer`, create the stub plan file per the canonical template; do NOT apply the deferred fix.
+3. **Evaluate each finding against the Major-refactor finding gate** per `dreamers-review.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Vigil full-refactor scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — create follow-up plan` / `Other`) and route per the user's answer. On `Defer`, create the stub plan file per the canonical template; do NOT apply the deferred fix.
 4. Apply each (non-deferred) fix inline; stage with `git add`.
 5. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
 
 Handle non-finding outputs:
-- Any artifact reports `Blocked` → halt; surface the artifact path and reason; resolve; re-spawn that reviewer.
-- Open questions in any artifact → present to user before proceeding.
-- All spawned artifacts report `Approved — no findings` → proceed to Step 6 directly.
+- The artifact reports `Blocked` → halt; surface the artifact path and reason; resolve; re-spawn Vigil.
+- Open questions in the artifact → present to user before proceeding.
+- The artifact reports `Approved — no findings` → proceed to Step 6 directly.
 
 ## Step 6 — Commit accepted fixes (if any)
 
@@ -183,6 +170,6 @@ Report to the user:
 - M comments rejected (with one-line path + rejection rationale per reject)
 - Threads remaining open (the M rejected ones)
 - Commit hash + push status
-- Reviewer artifact paths and results (selected lane)
+- Vigil artifact path and result
 
 This skill does NOT update the PR description, does NOT re-request review, does NOT close the PR. Those are user actions.

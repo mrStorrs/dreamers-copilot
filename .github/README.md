@@ -25,11 +25,11 @@ Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <tas
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass `/dreamers-lite` reviewer and `/dreamers-full` follow-up rerun reviewer. Combines Sentinel, Probe, and Hone lenses and writes one `.dreamers/reviews/` artifact. |
+| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`, skill-internal reviews outside `/dreamers-full` and `/dreamers-review`, and `/dreamers-full` follow-up reruns. Combines Sentinel, Probe, and Hone lenses and writes one `.dreamers/reviews/` artifact. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. A second triad or selected lane is user-gated for major-change reruns. Vigil is also the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. Other skills that need a review call Vigil, not individual Sentinel/Probe/Hone lanes. A second triad or selected lane is user-gated for major-change reruns. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -52,14 +52,14 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-test` | Probe-only audit — test coverage findings on the current diff. |
-| `/dreamers-simplify` | Hone-only audit — over-engineering and architectural findings. |
+| `/dreamers-test` | Focused Vigil audit — test coverage findings on the current diff. |
+| `/dreamers-simplify` | Focused Vigil audit — over-engineering and architectural findings. |
 
 ### Utility
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Sentinel review of accepted changes, with Probe/Hone only when situationally needed. |
+| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Vigil reviews accepted changes before thread resolution. |
 | `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
 | `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → stack → brief → shell plans. |

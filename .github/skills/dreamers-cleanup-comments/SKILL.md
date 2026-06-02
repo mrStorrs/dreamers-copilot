@@ -1,6 +1,6 @@
 ---
 name: dreamers-cleanup-comments
-description: 'Project-wide comment cleanup pass per comment-rules.md. Audit → propose → user approval → apply inline → optional Sentinel review. Triggers: /dreamers-cleanup-comments, clean up comments, audit comments, remove fluff comments.'
+description: 'Project-wide comment cleanup pass per comment-rules.md. Audit → propose → user approval → apply inline → optional Vigil review. Triggers: /dreamers-cleanup-comments, clean up comments, audit comments, remove fluff comments.'
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
@@ -84,7 +84,7 @@ At skill entry, declare via `manage_todo_list`:
 - [ ] Phase 1 — audit comment-rules violations
 - [ ] Phase 2 — proposal + user approval
 - [ ] Phase 3 — apply cleanup inline
-- [ ] Phase 4 — optional Sentinel review (if requested)
+- [ ] Phase 4 — optional Vigil review (if requested)
 - [ ] Phase 5 — commit
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
@@ -121,12 +121,12 @@ Edit files inline; stage with `git add`. Follow `dreamers-kernel.md` implementat
 
 Run the project's type-check command after edits (comments don't usually affect type-check but verify).
 
-## Phase 4 — Optional Sentinel review
+## Phase 4 — Optional Vigil review
 
-Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`. Sentinel's maintainability lens catches anything the cleanup missed or newly-introduced ambiguity.
+Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`. Vigil's maintainability lens catches anything the cleanup missed or newly-introduced ambiguity.
 
-- Yes → invoke `agent_type: "sentinel"` with changed-files scope. Apply findings inline.
-- Require Sentinel to write one `.dreamers/reviews/sentinel-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
+- Yes → invoke `agent_type: "vigil"` with changed-files scope. Prompt Vigil to focus on comment-rules and maintainability, while still reporting correctness/security/coverage/simplicity findings if they appear. Apply findings inline.
+- Require Vigil to write one `.dreamers/reviews/vigil-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
 - No → proceed to commit.
 
 ## Phase 5 — Commit
