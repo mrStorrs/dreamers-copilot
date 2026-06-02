@@ -104,9 +104,9 @@ Run the project's type-check command after edits. Fix any type errors.
 Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`.
 
 - Yes → invoke `agent_type: "sentinel"` with the changed-files scope. Sentinel reviews under correctness/security/maintainability lenses; comment-rules + logging-standards violations surface here. Apply findings inline.
+- Require Sentinel to write one `.dreamers/reviews/sentinel-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
 - No → proceed to commit.
 
 ## Phase 5 — Commit
 
 `git status` to confirm staged content. Commit message: `chore: improve logging per logging-standards.md` (or appropriate). Do NOT push (user pushes when ready, or invokes `/dreamers-pr` to push + open the PR).
-

@@ -25,8 +25,9 @@ flowchart TD
     P4["Phase 4 — Optional Sentinel review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip review| P5
-    ReviewGate -->|Yes — review before commit| SpawnSentinel["Spawn Sentinel<br/>scope = changed files<br/>maintainability lens"]
-    SpawnSentinel --> ApplyFindings["Apply findings inline"]
+    ReviewGate -->|Yes — review before commit| SpawnSentinel["Spawn Sentinel<br/>scope = changed files<br/>writes review artifact"]
+    SpawnSentinel --> ReadArtifact["Read Sentinel artifact"]
+    ReadArtifact --> ApplyFindings["Apply findings inline"]
     ApplyFindings --> P5
 
     P5["Phase 5 — Commit"] --> Status["git status"]
@@ -41,7 +42,7 @@ flowchart TD
     class ApprovalGate,ReviewGate gate
     class HaltA halt
     class SpawnSentinel agent
-    class P1,P2,P3,P4,P5,Walk,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,ApplyFindings,Status,Commit phase
+    class P1,P2,P3,P4,P5,Walk,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Status,Commit phase
 ```
 
 ## Key invariants
@@ -51,5 +52,6 @@ flowchart TD
 - **License headers and TODO/FIXME are preserved** by default; users can refine via `Other` (e.g., "preserve vendor headers").
 - **No logic edits.** Phase 3 touches comments only — no while-I'm-here code refactors.
 - **No push.** Exits at commit.
+- **Review artifacts are read before fixes.** Optional Sentinel review writes `.dreamers/reviews/sentinel-*.md`; Phase 4 applies findings from that artifact.
 
 For branch-scoped cleanup (only files in the current feature-branch diff), use `/dreamers-cleanup-comments-branch`.

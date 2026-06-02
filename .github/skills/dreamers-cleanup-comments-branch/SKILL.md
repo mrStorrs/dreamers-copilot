@@ -119,7 +119,7 @@ Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch
 1. **Audit** the branch-diff scope; categorize comment-rules violations.
 2. **Propose** changes; `request_information` for approval.
 3. **Apply** changes inline; stage with `git add`.
-4. **Optional Sentinel review** of changed files.
+4. **Optional Sentinel review** of changed files. Require one `.dreamers/reviews/sentinel-*.md` artifact and read it before applying findings.
 5. **Commit** with message `chore: comment cleanup on feature branch`. Do NOT push.
 
 ## When this skill is the right tool

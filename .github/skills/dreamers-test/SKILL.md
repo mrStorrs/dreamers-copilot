@@ -1,6 +1,6 @@
 ---
 name: dreamers-test
-description: 'Standalone Probe review (test coverage audit). Read-only — returns structured findings on AC coverage, layer audit, edge cases, regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps.'
+description: 'Standalone Probe review (test coverage audit). Read-only — reads Probe's `.dreamers/reviews/` artifact for AC coverage, layer audit, edge cases, and regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps.'
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
@@ -141,11 +141,12 @@ prompt:
   Branch: <current feature branch>
   Default branch: <detected default>
   Lens: test coverage (AC matrix is N/A here — no plan binding; focus on layer audit + edge cases + regression risks for the scope).
-  Return: status line + severity-graded findings + observations + open questions.
+  Write: exactly one .dreamers/reviews/probe-*.md artifact.
+  Return: status + counts + artifact path + blocked reason + open questions only.
 ```
 
 ## Output
 
-Pass Probe's chat output through to the user verbatim. Do NOT write any tests — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+Read the artifact path returned by Probe and pass the artifact contents through to the user verbatim. Do NOT write any tests — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
 
 If the user wants missing tests written from the findings, suggest: "Run `/dreamers-implement` with a plan that addresses these coverage gaps."

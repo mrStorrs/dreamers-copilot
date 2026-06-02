@@ -33,8 +33,9 @@ flowchart TD
     P4["Phase 4 — Optional Sentinel review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip| P5
-    ReviewGate -->|Yes — review| SpawnSentinel["Spawn Sentinel<br/>scope = changed files"]
-    SpawnSentinel --> ApplyFindings["Apply findings inline"]
+    ReviewGate -->|Yes — review| SpawnSentinel["Spawn Sentinel<br/>scope = changed files<br/>writes review artifact"]
+    SpawnSentinel --> ReadArtifact["Read Sentinel artifact"]
+    ReadArtifact --> ApplyFindings["Apply findings inline"]
     ApplyFindings --> P5
 
     P5["Phase 5 — Commit"] --> Commit["git commit -m<br/>chore: comment cleanup on feature branch"]
@@ -48,7 +49,7 @@ flowchart TD
     class RevParse,BranchCheck,ApprovalGate,ReviewGate gate
     class HaltStale,HaltOnDefault,HaltA halt
     class SpawnSentinel agent
-    class Detect,P1,P2,P3,P4,P5,ResolveDefault,Fetch,ComputeDiff,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,ApplyFindings,Commit phase
+    class Detect,P1,P2,P3,P4,P5,ResolveDefault,Fetch,ComputeDiff,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Commit phase
 ```
 
 ## Key invariants
@@ -57,4 +58,5 @@ flowchart TD
 - **Refuses to run on the default branch.** Halt with a redirect to `/dreamers-cleanup-comments` for project-wide sweeps.
 - **Fetch before diff.** Stale `origin/$DEFAULT` produces wrong scope — always fetch first.
 - **Same phases as the project-wide variant** — only the scope source differs.
+- **Review artifacts are read before fixes.** Optional Sentinel review writes `.dreamers/reviews/sentinel-*.md`; Phase 4 applies findings from that artifact.
 - **Pre-PR positioning.** Designed to run before opening a PR; commit stays on branch for `/dreamers-pr` to push.

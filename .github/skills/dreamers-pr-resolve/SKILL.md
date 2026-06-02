@@ -1,10 +1,10 @@
 ---
 name: dreamers-pr-resolve
-description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required Sentinel review of accepted changes, adds Probe/Hone only when situationally needed, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Sentinel review of accepted changes, adds Probe/Hone only when situationally needed, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
-Resolve unresolved PR review comments. All work inline except required Sentinel review over accepted changes; add Probe/Hone only when situationally needed.
+Resolve unresolved PR review comments. All work inline except required artifact-backed Sentinel review over accepted changes; add Probe/Hone only when situationally needed.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
@@ -118,7 +118,7 @@ Add Probe only when accepted fixes changed tests, test harnesses, AC-covered beh
 
 Add Hone only when accepted fixes introduce or reshape abstractions, module boundaries, public APIs, schemas, data models, persistence, dependencies, or broad refactors.
 
-If Probe or Hone is added, spawn all selected reviewers in one batched tool call. All reviewers are read-only / report-only; each returns structured findings in the format from `reviewer-findings-format.md`.
+If Probe or Hone is added, spawn all selected reviewers in one batched tool call. All reviewers are read-only / report-only for code and each writes one `.dreamers/reviews/<reviewer>-*.md` artifact in the format from `reviewer-findings-format.md`.
 
 Common prompt context for each selected reviewer (subagent prompt rule — include verbatim):
 - **Todo discipline:** "Do NOT call `manage_todo_list`. The orchestrator owns the todo." (per `dreamers-kernel.md` § "Single-owner todo")
@@ -126,6 +126,8 @@ Common prompt context for each selected reviewer (subagent prompt rule — inclu
 - Scope: list of files changed by accepted threads from `git status`
 - Branch + default branch names
 - What the orchestrator has done: addressed N accepted PR review comments via inline edits; type-checked + tests green.
+- Write exactly one `.dreamers/reviews/<reviewer>-*.md` artifact.
+- Return only status, counts, artifact path, blocked reason, and open questions.
 
 Per-reviewer prompt addition:
 
@@ -136,7 +138,7 @@ Per-reviewer prompt addition:
 **Hone** (`agent_type: "hone"`, `mode: "sync"`) — simplicity lens (did the fixes introduce over-engineering or redundancy?).
 - **Mandate reinforcement (include in Hone's prompt verbatim):** "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor — do not soften, hedge, or omit findings because the fix is big. When the suggested fix has architectural scope (touches files outside the PR-feedback surface, requires a new module, requires schema or symbol changes, or amounts to a full refactor of a subsystem), state the scope explicitly in the suggested-fix text. The orchestrator's major-refactor finding gate (per `dreamers-review.md`) routes those findings through the user for apply-now vs defer decisions. Your job is to surface; the gate handles disposition."
 
-Apply findings inline per the full-pipeline apply-findings rules:
+Read each returned artifact before applying findings. Apply findings from artifacts inline per the full-pipeline apply-findings rules:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).
@@ -145,9 +147,9 @@ Apply findings inline per the full-pipeline apply-findings rules:
 5. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
 
 Handle non-finding outputs:
-- Any reviewer returns `Blocked` → halt; surface; resolve; re-spawn that reviewer.
-- Open questions → present to user before proceeding.
-- All spawned reviewers return `Approved — no findings` → proceed to Step 6 directly.
+- Any artifact reports `Blocked` → halt; surface the artifact path and reason; resolve; re-spawn that reviewer.
+- Open questions in any artifact → present to user before proceeding.
+- All spawned artifacts report `Approved — no findings` → proceed to Step 6 directly.
 
 ## Step 6 — Commit accepted fixes (if any)
 
@@ -181,6 +183,6 @@ Report to the user:
 - M comments rejected (with one-line path + rejection rationale per reject)
 - Threads remaining open (the M rejected ones)
 - Commit hash + push status
-- Reviewer results (selected lane)
+- Reviewer artifact paths and results (selected lane)
 
 This skill does NOT update the PR description, does NOT re-request review, does NOT close the PR. Those are user actions.

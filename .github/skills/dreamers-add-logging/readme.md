@@ -25,8 +25,9 @@ flowchart TD
     P4["Phase 4 — Optional Sentinel review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip review| P5
-    ReviewGate -->|Yes — review before commit| SpawnSentinel["Spawn Sentinel<br/>scope = changed files<br/>correctness/security/maintainability"]
-    SpawnSentinel --> ApplyFindings["Apply findings inline<br/>comment-rules + logging-standards"]
+    ReviewGate -->|Yes — review before commit| SpawnSentinel["Spawn Sentinel<br/>scope = changed files<br/>writes review artifact"]
+    SpawnSentinel --> ReadArtifact["Read Sentinel artifact"]
+    ReadArtifact --> ApplyFindings["Apply findings inline<br/>comment-rules + logging-standards"]
     ApplyFindings --> P5
 
     P5["Phase 5 — Commit"] --> Status["git status"]
@@ -41,7 +42,7 @@ flowchart TD
     class ApprovalGate,ReviewGate gate
     class HaltA halt
     class SpawnSentinel agent
-    class P1,P2,P3,P4,P5,Walk,Identify,Summary,Propose,Revise,Apply,TypeCheck,ApplyFindings,Status,Commit phase
+    class P1,P2,P3,P4,P5,Walk,Identify,Summary,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Status,Commit phase
 ```
 
 ## Key invariants
@@ -51,3 +52,4 @@ flowchart TD
 - **NEVER-LOG violations are high priority.** Secrets, PII, and full request bodies in INFO logs surface first.
 - **Logger conventions are detected, not invented.** Phase 2 surfaces the existing library/format so additions stay consistent.
 - **No push.** This skill exits at the commit. Push is the user's call or `/dreamers-pr`'s job.
+- **Review artifacts are read before fixes.** Optional Sentinel review writes `.dreamers/reviews/sentinel-*.md`; Phase 4 applies findings from that artifact.

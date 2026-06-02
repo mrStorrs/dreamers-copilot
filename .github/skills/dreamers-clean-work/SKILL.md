@@ -38,7 +38,7 @@ Read `.dreamers/improvements.md` (repo-local). For each open item:
 
 ## Step 2 — Legacy workspace cleanup (one-time)
 
-The legacy multi-agent pipeline wrote per-cycle workspace artifacts under `.dreamers/{forge,probe,hone,sentinel,echo}/`. The current pipeline writes none of those — Sentinel, Probe, Hone, and Echo do not maintain workspace files.
+The legacy multi-agent pipeline wrote per-cycle workspace artifacts under `.dreamers/{forge,probe,hone,sentinel,echo}/`. The current reviewer handoff writes `.dreamers/reviews/*.md` instead. Sentinel, Probe, Hone, and Echo do not maintain those legacy per-agent directories.
 
 If any of those directories exist, the user is welcome to delete them:
 

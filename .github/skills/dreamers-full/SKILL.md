@@ -47,12 +47,13 @@ For each plan in sequence:
 
 ### Step 4 — Spawn review
 - Invoke `/dreamers-review --branch` once per plan. This is the `full` lane: Sentinel + Probe + Hone with no lens flags.
-- Wait. It returns the full triad's structured findings (per `reviewer-findings-format`, Kernel) — read-only.
-- `Blocked` from any reviewer → halt cycle + surface verbatim.
-- Open questions from any reviewer → present each via `request_information`; capture; carry decisions into Step 5.
+- Wait. It reads the triad's `.dreamers/reviews/` artifacts and returns artifact-backed structured findings (per `reviewer-findings-format`, Kernel) — read-only.
+- Capture the Sentinel, Probe, and Hone artifact paths in the cycle summary.
+- `Blocked` from any reviewer artifact → halt cycle + surface verbatim with artifact path.
+- Open questions from any reviewer artifact → present each via `request_information`; capture; carry decisions into Step 5.
 
 ### Step 5 — Apply findings (orchestrator-as-fixer)
-- Concatenate findings from the spawned reviewers; sort by severity (critical → low).
+- Concatenate findings from the spawned reviewer artifacts; sort by severity (critical → low).
 - Conflict resolution: same `file:line` with contradicting fixes → correctness/security > test-coverage > simplicity. Genuine ambiguity → `request_information` before applying.
 - **Major-refactor gate.** A finding is "major-refactor scope" if its suggested fix meets ANY of:
   - New module or top-level directory not in the plan's scope.
@@ -306,6 +307,16 @@ Do not add log calls outside the plan's scope as while-I'm-here cleanup. If the 
 <reviewer-findings-format>
 # Reviewer Findings Format
 
+## Artifact contract
+
+Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
+
+`.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md`
+
+Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
+
+The artifact is the durable handoff. Chat output is only a short status pointer with the artifact path. The caller must read the artifact before reporting, applying, or deferring findings.
+
 **Status line** (one of):
 - `Approved — no findings`
 - `Findings reported — N items`
@@ -326,7 +337,7 @@ Do not add log calls outside the plan's scope as while-I'm-here cleanup. If the 
 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
-Reviewers are read-only / report-only. The caller applies fixes per its own orchestrator-as-fixer behavior.
+Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
 </reviewer-findings-format>
 
 <agent-recovery>
