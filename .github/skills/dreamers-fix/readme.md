@@ -21,7 +21,7 @@ flowchart TD
     Implement --> Stage["git add"]
     Stage --> RunTests["Type-check + run tests"]
     RunTests --> TestResult{"Tests pass?"}
-    TestResult -->|Yes| End(["Surface:<br/>bug-fix surface<br/>regression test name<br/>test status<br/><br/>Next: /dreamers-review --lens sentinel<br/>then commit + /dreamers-pr"])
+    TestResult -->|Yes| End(["Surface:<br/>bug-fix surface<br/>regression test name<br/>test status<br/><br/>Next: Vigil review<br/>then commit + /dreamers-pr"])
     TestResult -->|No| AttemptCheck{"Attempts < 3?"}
     AttemptCheck -->|Yes| FixInline["Fix inline"]
     FixInline --> RunTests
@@ -42,4 +42,4 @@ flowchart TD
 - **Regression test first.** Step 3 writes the failing test BEFORE implementing the fix. If no test infra exists for the affected surface, note the absence.
 - **Files in the bug-fix surface only.** No while-I'm-here cleanup, no unrelated refactors.
 - **3-attempt fix loop.** Same as `/dreamers-implement`. Halt and surface after 3 failed attempts.
-- **No review, no commit, no push.** This skill exits at green tests. The user runs `/dreamers-review --lens sentinel` for the audit, then commits + `/dreamers-pr` to ship.
+- **No review, no commit, no push.** This skill exits at green tests. The user runs Vigil for the audit, then commits + `/dreamers-pr` to ship.

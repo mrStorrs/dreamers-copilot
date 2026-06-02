@@ -1,6 +1,6 @@
 ---
 name: dreamers-simplify
-description: 'Standalone Hone review (architectural quality). Read-only — reads Hone's `.dreamers/reviews/` artifact for over-engineering, premature abstractions, redundancy, and bad architecture. May recommend full refactors. No auto-fix. Triggers: /dreamers-simplify, simplify this, audit for over-engineering, architectural review.'
+description: 'Standalone focused Vigil review (architectural quality). Read-only — reads Vigil's `.dreamers/reviews/` artifact for over-engineering, premature abstractions, redundancy, and bad architecture. May recommend full refactors. No auto-fix. Triggers: /dreamers-simplify, simplify this, audit for over-engineering, architectural review.'
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
@@ -59,29 +59,29 @@ Default scope (no flags): staged + unstaged changes.
   [ -z "$DEFAULT" ] && DEFAULT=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || echo "main")
   ```
 - `--paths <glob>` — scope to files matching the glob.
-- `--all` — entire codebase. Hone's lens (over-engineering, architectural quality) is well-suited to full-codebase audits; less of a warning here than for review / test.
+- `--all` — entire codebase. Vigil's simplicity lens (over-engineering, architectural quality) is well-suited to full-codebase audits; less of a warning here than for review / test.
 
 ---
 
-## Spawn Hone
+## Spawn Vigil
 
 Invoke via the runtime's subagent-spawn mechanism:
 
 ```
-agent_type: "hone"
+agent_type: "vigil"
 mode: "sync"
 prompt:
-  Context: Standalone architectural-quality audit via /dreamers-simplify. No plan binding (ad-hoc audit).
+  Context: Standalone focused Vigil audit via /dreamers-simplify. No plan binding (ad-hoc audit).
   Scope: <list of files from arg parsing above>
   Branch: <current feature branch>
   Default branch: <detected default>
-  Lens: simplicity / over-engineering / redundancy / bad architecture. Recommend full refactors when warranted.
-  Write: exactly one .dreamers/reviews/hone-*.md artifact.
+  Focus: simplicity / over-engineering / redundancy / bad architecture. Recommend full refactors when warranted, while still reporting critical correctness/security/maintainability/test-coverage findings if they appear.
+  Write: exactly one .dreamers/reviews/vigil-*.md artifact.
   Return: status + counts + artifact path + blocked reason + open questions only.
 ```
 
 ## Output
 
-Read the artifact path returned by Hone and pass the artifact contents through to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+Read the artifact path returned by Vigil and pass the artifact contents through to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
 
-If Hone recommends a large refactor, suggest: "Run `/dreamers-plan` to scope the refactor, then `/dreamers-full` to execute it."
+If Vigil recommends a large refactor, suggest: "Run `/dreamers-plan` to scope the refactor, then `/dreamers-full` to execute it."

@@ -1,6 +1,6 @@
 ---
 name: dreamers-add-logging
-description: 'Phased pass to add or improve project logging per logging-standards.md. Audit current state → propose changes → user approval → implement inline → optional Sentinel review. Triggers: /dreamers-add-logging, add logging, improve logging, audit log calls.'
+description: 'Phased pass to add or improve project logging per logging-standards.md. Audit current state → propose changes → user approval → implement inline → optional Vigil review. Triggers: /dreamers-add-logging, add logging, improve logging, audit log calls.'
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
@@ -59,7 +59,7 @@ At skill entry, declare via `manage_todo_list`:
 - [ ] Phase 1 — audit current logging state
 - [ ] Phase 2 — proposal + user approval
 - [ ] Phase 3 — implement approved changes
-- [ ] Phase 4 — optional Sentinel review
+- [ ] Phase 4 — optional Vigil review
 - [ ] Phase 5 — commit
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
@@ -99,12 +99,12 @@ Apply the approved changes inline. Stage with `git add` as you go. Follow `dream
 
 Run the project's type-check command after edits. Fix any type errors.
 
-## Phase 4 — Optional Sentinel review
+## Phase 4 — Optional Vigil review
 
 Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`.
 
-- Yes → invoke `agent_type: "sentinel"` with the changed-files scope. Sentinel reviews under correctness/security/maintainability lenses; comment-rules + logging-standards violations surface here. Apply findings inline.
-- Require Sentinel to write one `.dreamers/reviews/sentinel-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
+- Yes → invoke `agent_type: "vigil"` with the changed-files scope. Prompt Vigil to focus on logging-standards plus correctness/security/maintainability risks, while still reporting coverage or simplicity findings if they appear. Apply findings inline.
+- Require Vigil to write one `.dreamers/reviews/vigil-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
 - No → proceed to commit.
 
 ## Phase 5 — Commit

@@ -84,7 +84,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Writes one `.dreamers/reviews/` artifact. Part of the full per-plan /dreamers-full review gate and the required lightweight PR-feedback review lane. Orchestrator applies fixes.",
+      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Writes one `.dreamers/reviews/` artifact. Part of the full per-plan /dreamers-full review gate and explicit /dreamers-review selected lanes. Orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -97,7 +97,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and Hone lenses for correctness, security, maintainability, test coverage, and simplicity. Used by /dreamers-lite and /dreamers-full follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact; never applies fixes.",
+      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and Hone lenses for correctness, security, maintainability, test coverage, and simplicity. Used by /dreamers-lite, skill-internal reviews outside /dreamers-full and /dreamers-review, and /dreamers-full follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact; never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -110,7 +110,7 @@
       "type": "skill",
       "slug": "dreamers-add-logging",
       "name": "dreamers-add-logging",
-      "description": "Phased pass to add or improve project logging per `logging-standards.md`. Audit → propose → user approval → implement inline → optional Sentinel review.",
+      "description": "Phased pass to add or improve project logging per `logging-standards.md`. Audit → propose → user approval → implement inline → optional Vigil review.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -136,7 +136,7 @@
       "type": "skill",
       "slug": "dreamers-cleanup-comments",
       "name": "dreamers-cleanup-comments",
-      "description": "Project-wide comment cleanup pass per `comment-rules.md`. Audit → propose → user approval → apply inline → optional Sentinel review.",
+      "description": "Project-wide comment cleanup pass per `comment-rules.md`. Audit → propose → user approval → apply inline → optional Vigil review.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -175,7 +175,7 @@
       "type": "skill",
       "slug": "dreamers-fix",
       "name": "dreamers-fix",
-      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Sentinel-only review, then commit + /dreamers-pr. No Probe, no Hone, no /dreamers-full call. On scope blowup, surfaces choice to escalate to /dreamers-full; does not auto-route.",
+      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers-full call. On scope blowup, surfaces choice to escalate to /dreamers-full; does not auto-route.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -292,7 +292,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Sentinel review of accepted changes, adds Probe/Hone only when situationally needed, then resolves accepted threads via `gh api`.",
+      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Vigil review of accepted changes, then resolves accepted threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -331,7 +331,7 @@
       "type": "skill",
       "slug": "dreamers-simplify",
       "name": "dreamers-simplify",
-      "description": "Standalone Hone review (architectural quality / over-engineering / redundancy). Read-only and artifact-backed — may recommend full refactors. Args: --branch, --paths, --all.",
+      "description": "Standalone focused Vigil review for architectural quality / over-engineering / redundancy. Read-only and artifact-backed — may recommend full refactors. Args: --branch, --paths, --all.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -344,7 +344,7 @@
       "type": "skill",
       "slug": "dreamers-test",
       "name": "dreamers-test",
-      "description": "Standalone Probe review (test coverage audit). Read-only and artifact-backed — reports structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
+      "description": "Standalone focused Vigil review for test coverage. Read-only and artifact-backed — reports structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
       "author": "CJ Storrs",
       "tags": [
         "code",

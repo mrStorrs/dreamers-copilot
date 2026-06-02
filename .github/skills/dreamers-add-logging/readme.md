@@ -22,11 +22,11 @@ flowchart TD
     Apply --> TypeCheck["Run project's type-check<br/>fix type errors"]
     TypeCheck --> P4
 
-    P4["Phase 4 — Optional Sentinel review"] --> ReviewGate{"request_information"}
+    P4["Phase 4 — Optional Vigil review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip review| P5
-    ReviewGate -->|Yes — review before commit| SpawnSentinel["Spawn Sentinel<br/>scope = changed files<br/>writes review artifact"]
-    SpawnSentinel --> ReadArtifact["Read Sentinel artifact"]
+    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>writes review artifact"]
+    SpawnVigil --> ReadArtifact["Read Vigil artifact"]
     ReadArtifact --> ApplyFindings["Apply findings inline<br/>comment-rules + logging-standards"]
     ApplyFindings --> P5
 
@@ -41,7 +41,7 @@ flowchart TD
 
     class ApprovalGate,ReviewGate gate
     class HaltA halt
-    class SpawnSentinel agent
+    class SpawnVigil agent
     class P1,P2,P3,P4,P5,Walk,Identify,Summary,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Status,Commit phase
 ```
 
@@ -52,4 +52,4 @@ flowchart TD
 - **NEVER-LOG violations are high priority.** Secrets, PII, and full request bodies in INFO logs surface first.
 - **Logger conventions are detected, not invented.** Phase 2 surfaces the existing library/format so additions stay consistent.
 - **No push.** This skill exits at the commit. Push is the user's call or `/dreamers-pr`'s job.
-- **Review artifacts are read before fixes.** Optional Sentinel review writes `.dreamers/reviews/sentinel-*.md`; Phase 4 applies findings from that artifact.
+- **Review artifacts are read before fixes.** Optional Vigil review writes `.dreamers/reviews/vigil-*.md`; Phase 4 applies findings from that artifact.

@@ -25,11 +25,11 @@ Everything lives under `.github/`:
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite` and `/dreamers-full` follow-up review reruns. Combines Sentinel, Probe, and Hone lenses; writes one `.dreamers/reviews/` artifact. |
+| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`, skill-internal reviews outside `/dreamers-full` and `/dreamers-review`, and `/dreamers-full` follow-up review reruns. Combines Sentinel, Probe, and Hone lenses; writes one `.dreamers/reviews/` artifact. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. A second triad or selected lane is user-gated for major-change reruns. Vigil is also the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. Other skills that need a review call Vigil, not individual Sentinel/Probe/Hone lanes. A second triad or selected lane is user-gated for major-change reruns. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -48,25 +48,25 @@ Explicit user instructions can skip or alter skill phases/actions.
 | `/dreamers-pr` | Pushes the branch and opens the PR using the `pr-description.md` template. |
 | `/dreamers-fix` | Self-contained bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers-full` on scope blowup. |
 
-### Single-lens reviewer wrappers (legacy aliases)
+### Focused Vigil audit wrappers
 
-`/dreamers-review --lens sentinel` (or `probe`/`hone`) covers the same ground. The standalone skills `dreamers-test` (Probe) and `dreamers-simplify` (Hone) remain as convenient aliases.
+`/dreamers-test` and `/dreamers-simplify` call Vigil with a focused prompt for test coverage or simplicity. Use `/dreamers-review --lens <name>` only when the user explicitly asks for a selected Sentinel/Probe/Hone lane.
 
 ### Review lanes
 
 | Lane | Reviewers | Normal use |
 |---|---|---|
-| `sentinel` | Sentinel | Lightweight fixes, cleanup, correctness/security/maintainability audit. |
+| `sentinel` | Sentinel | Explicit correctness/security/maintainability audit through `/dreamers-review`. |
 | `probe` | Probe | Test coverage, AC/layer coverage, regression-risk audit. |
 | `hone` | Hone | Simplicity, architecture, over-engineering audit. |
-| `standard` | Sentinel + Probe | Standalone or user-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
+| `standard` | Sentinel + Probe | User-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
 | `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke as `/dreamers-review` with no lens flags. After that, use only when the user selects it from the `/dreamers-full` major-change rerun gate or explicitly requests full review. |
 
 ### Utility + orthogonal
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve` | Resolve PR review comments inline; Sentinel review of accepted changes, with Probe/Hone only when situationally needed. |
+| `/dreamers-pr-resolve` | Resolve PR review comments inline; Vigil reviews accepted changes before thread resolution. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |

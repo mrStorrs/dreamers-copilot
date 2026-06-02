@@ -25,7 +25,7 @@ If no bug description was provided, halt + ask.
 - Type-check + run tests. Fix inline (max 3 attempts) then halt.
 
 ## Exit
-- Bug-fix surface, regression test name, test status. Next step: `/dreamers-review --lens sentinel` for a quick audit, then commit + `/dreamers-pr` to ship.
+- Bug-fix surface, regression test name, test status. Next step: Vigil review for a quick audit, then commit + `/dreamers-pr` to ship.
 
 ## Dreamers Kernel
 <dreamers-kernel>
