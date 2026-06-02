@@ -25,10 +25,11 @@ Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <tas
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only; returns structured findings. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Surfaces full-refactor recommendations without softening. Read-only. |
+| **Vigil** | Subagent | Single-pass `/dreamers-lite` reviewer. Combines Sentinel, Probe, and Hone lenses and writes one `.dreamers/reviews/` artifact. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Vigil is the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -39,6 +40,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 | Skill | Purpose |
 |---|---|
 | `/dreamers-full <task | plan paths | manifest>` | End-to-end pipeline: plan → implementation-start gate → implement → review → templated user-test when triggered → pre-PR approval → ship. |
+| `/dreamers-lite <task>` | Lean pipeline: compact proposal + critique → approved plan file → implement → Vigil artifact review → docs when triggered → commit → PR. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest, verifies plan coverage against the proposal and user discussion, then hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns the selected reviewer lane. Read-only structured findings. `--lens <name>` for single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
