@@ -97,7 +97,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and Hone lenses for correctness, security, maintainability, test coverage, and simplicity. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact; never applies fixes.",
+      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and Hone lenses for correctness, security, maintainability, test coverage, and simplicity. Used by /dreamers-lite and /dreamers-full follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact; never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -188,7 +188,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses narrower lanes for follow-up fix loops when appropriate, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",

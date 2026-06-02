@@ -1,6 +1,6 @@
 # Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → full review → selected follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → full review → Vigil follow-up review → docs → PR flow.
 
 ## Structure
 
@@ -25,11 +25,11 @@ Everything lives under `.github/`:
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`. Combines Sentinel, Probe, and Hone lenses; writes one `.dreamers/reviews/` artifact. |
+| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite` and `/dreamers-full` follow-up review reruns. Combines Sentinel, Probe, and Hone lenses; writes one `.dreamers/reviews/` artifact. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Vigil is the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. A second triad or selected lane is user-gated for major-change reruns. Vigil is also the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -39,7 +39,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses narrower lanes for follow-up fix loops when appropriate, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
+| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses Vigil for normal review reruns, asks before any extra triad/selected-lane rerun, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
 | `/dreamers-lite` | Lean pipeline. Reviews context, proposes a compact plan with critique, writes the approved plan, implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, then opens the PR. No second plan gate or pre-PR gate. |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, writes plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
@@ -59,8 +59,8 @@ Explicit user instructions can skip or alter skill phases/actions.
 | `sentinel` | Sentinel | Lightweight fixes, cleanup, correctness/security/maintainability audit. |
 | `probe` | Probe | Test coverage, AC/layer coverage, regression-risk audit. |
 | `hone` | Hone | Simplicity, architecture, over-engineering audit. |
-| `standard` | Sentinel + Probe | Follow-up check when both correctness and coverage need review but Hone is not warranted. |
-| `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke as `/dreamers-review` with no lens flags. Also use for architecture/refactor risk or explicit full-review request. |
+| `standard` | Sentinel + Probe | Standalone or user-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
+| `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke as `/dreamers-review` with no lens flags. After that, use only when the user selects it from the `/dreamers-full` major-change rerun gate or explicitly requests full review. |
 
 ### Utility + orthogonal
 
@@ -89,14 +89,14 @@ Explicit user instructions can skip or alter skill phases/actions.
   │               3. Type-check + run tests
   │               4. Invoke /dreamers-review (full lane → artifacts → findings, read-only)
   │               5. Apply findings + major-refactor gate
-  │               6. User-testing gate (when triggered)
+  │               6. User-testing gate (when triggered; bug-fix review reruns use Vigil unless user selects another lane)
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
   └─ Phase 3   → close-out (inline + /dreamers-docs + /dreamers-pr)
                    improvements append → Echo docs → retro → final commit
                    → user approval gate → push + PR → plan archive → post-PR scan (no prompt)
 ```
 
-`/dreamers-lite <task>` uses one approval gate for compact plan approval plus implementation start, then replaces the full triad with Vigil's single artifact-backed review. The full triad uses the same durable `.dreamers/reviews/` handoff pattern through `/dreamers-review`. Lite still writes plan files, validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.
+`/dreamers-lite <task>` uses one approval gate for compact plan approval plus implementation start, then replaces the full triad with Vigil's single artifact-backed review. `/dreamers-full` still runs the full triad once per plan, then uses Vigil for normal review reruns; extra triad or selected-lane reruns require a major-change gate and user choice. Both flows use the same durable `.dreamers/reviews/` handoff pattern. Lite still writes plan files, validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.
 
 Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
 
