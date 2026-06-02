@@ -8,17 +8,14 @@ $ARGUMENTS
 
 If no task description was provided, halt + ask.
 
-## Rule
-
-Lite removes ceremony, not standards. Preserve plan adherence, tests-first implementation, Vigil review, full-refactor surfacing, and validation.
-
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry: Phase 1 / Phase 2 / Phase 3 cycle-N / Phase 4.
 
 ## Phase 1 - Context + proposal
 - Anchor to remote truth per `git-workflow`: detect default branch, fetch, read `origin/$DEFAULT_BRANCH` log.
 - Read project instructions and relevant code. Verify cited artifacts before claiming behavior.
-- Ask one clarification batch if required. Do not trickle questions.
+- Ask clarifying questions.
+- Respond with any critisims or feedback.
 - Draft a compact proposal in chat:
   - Goal
   - Plan Shape: single plan / multi-plan recommended / full recommended; manifest yes/no; why
@@ -54,7 +51,8 @@ For each plan in sequence:
 - Update `./test-benchmarks.md` after passing if the project uses it.
 
 ### Step 4 - Vigil review
-- Spawn `vigil` once with plan path, changed-files scope, branch/default names, validation commands/results, and this line: `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
+- Ensure vigils artifacts are clean: `.dreamers/reviews/vigil-*.md`
+- Spawn `vigil` once with plan path, changed-files scope, branch/default names, validation commands/results.
 - Require Vigil to write one `.dreamers/reviews/vigil-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions.
 - Read the artifact before applying findings.
 - `Blocked` -> halt and surface the artifact path.
@@ -64,7 +62,7 @@ For each plan in sequence:
 - Sort artifact findings by severity: critical, high, medium, low.
 - Conflict resolution: correctness/security > test-coverage > maintainability > simplicity. Genuine ambiguity -> ask.
 - Major-refactor scope triggers a gate when any finding needs a new module/top-level directory, schema/data-model change, cross-subsystem refactor, new public exported symbol, files outside plan scope, or Vigil full-refactor wording.
-- For each major-refactor group, ask: `Apply now` / `Defer - create follow-up plan` / `Continue lite scope` / `Other`.
+- For each major-refactor group, provide details, recomendations, reasons and ask: `Apply now` / `Defer - create follow-up plan` / `Continue lite scope` / `Other`.
   - `Apply now` -> fix inline, stage, re-run validation.
   - `Defer` -> create a stub plan under `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md`; do not apply now.
   - `Continue lite scope` -> do not apply; record unresolved finding for PR summary.
@@ -81,9 +79,9 @@ For each plan in sequence:
 - Commit the completed plan when validation is green and user testing, if any, is approved.
 
 ## Phase 4 - Close-out
-- Run `/dreamers-docs --branch` only when the diff changes user-facing behavior, public API, config/env/build, install behavior, docs, or Dreamers/project instructions.
-- Commit any staged docs. Skip if nothing staged.
-- Invoke `/dreamers-pr` immediately after commits are ready. No separate pre-PR approval gate.
+- Run `/dreamers-docs --branch` 
+- Commit any staged docs.
+- Invoke `/dreamers-pr`.
 - Exit with PR URL, plan paths, Vigil artifact paths, unresolved continued findings, docs status, and validation commands.
 
 ## Dreamers Kernel
