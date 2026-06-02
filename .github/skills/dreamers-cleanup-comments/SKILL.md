@@ -126,9 +126,9 @@ Run the project's type-check command after edits (comments don't usually affect 
 Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`. Sentinel's maintainability lens catches anything the cleanup missed or newly-introduced ambiguity.
 
 - Yes → invoke `agent_type: "sentinel"` with changed-files scope. Apply findings inline.
+- Require Sentinel to write one `.dreamers/reviews/sentinel-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
 - No → proceed to commit.
 
 ## Phase 5 — Commit
 
 `git status` to confirm staged content. Commit message: `chore: comment cleanup per comment-rules.md`. Do NOT push.
-

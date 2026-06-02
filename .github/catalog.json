@@ -31,7 +31,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Trigger-based reviewer for architecture/refactor risk in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval.",
+      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Writes one `.dreamers/reviews/` artifact. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Trigger-based reviewer for architecture/refactor risk in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -58,7 +58,7 @@
       "type": "agent",
       "slug": "probe",
       "name": "probe",
-      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Part of the full per-plan /dreamers-full review gate.",
+      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Writes one `.dreamers/reviews/` artifact. Part of the full per-plan /dreamers-full review gate.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -84,7 +84,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Part of the full per-plan /dreamers-full review gate and the required lightweight PR-feedback review lane. Returns structured findings; orchestrator applies fixes.",
+      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Writes one `.dreamers/reviews/` artifact. Part of the full per-plan /dreamers-full review gate and the required lightweight PR-feedback review lane. Orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -188,7 +188,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses narrower lanes for follow-up fix loops when appropriate, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses narrower lanes for follow-up fix loops when appropriate, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Accepts a task description, variadic plan paths, or a feature manifest. In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -292,7 +292,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required Sentinel review of accepted changes, adds Probe/Hone only when situationally needed, then resolves accepted threads via `gh api`.",
+      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Sentinel review of accepted changes, adds Probe/Hone only when situationally needed, then resolves accepted threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -318,7 +318,7 @@
       "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
-      "description": "Review skill — spawns Sentinel / Probe / Hone in the selected lane and reports their structured findings. Read-only; does NOT apply fixes (the caller decides). --lens spawns one reviewer; --lenses spawns an explicit subset; no flag runs the full triad.",
+      "description": "Review skill — spawns Sentinel / Probe / Hone in the selected lane, reads their `.dreamers/reviews/` artifacts, and reports structured findings. Read-only; does NOT apply fixes (the caller decides). --lens spawns one reviewer; --lenses spawns an explicit subset; no flag runs the full triad.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -331,7 +331,7 @@
       "type": "skill",
       "slug": "dreamers-simplify",
       "name": "dreamers-simplify",
-      "description": "Standalone Hone review (architectural quality / over-engineering / redundancy). Read-only — may recommend full refactors. Args: --branch, --paths, --all.",
+      "description": "Standalone Hone review (architectural quality / over-engineering / redundancy). Read-only and artifact-backed — may recommend full refactors. Args: --branch, --paths, --all.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -344,7 +344,7 @@
       "type": "skill",
       "slug": "dreamers-test",
       "name": "dreamers-test",
-      "description": "Standalone Probe review (test coverage audit). Read-only — returns structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
+      "description": "Standalone Probe review (test coverage audit). Read-only and artifact-backed — reports structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -359,7 +359,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity), the Vigil single-pass reviewer, an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen; lite keeps one plan approval gate and one artifact-backed review. The README at the readmePath has the full detail.",
+      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs artifact-backed specialised reviewers (correctness/security, test coverage, simplicity), the Vigil single-pass reviewer, an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen; lite keeps one plan approval gate and one artifact-backed review. The README at the readmePath has the full detail.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [

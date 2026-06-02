@@ -1,5 +1,15 @@
 # Reviewer Findings Format
 
+## Artifact contract
+
+Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
+
+`.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md`
+
+Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
+
+The artifact is the durable handoff. Chat output is only a short status pointer with the artifact path. The caller must read the artifact before reporting, applying, or deferring findings.
+
 **Status line** (one of):
 - `Approved — no findings`
 - `Findings reported — N items`
@@ -20,4 +30,4 @@
 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
-Reviewers are read-only / report-only. The caller applies fixes per its own orchestrator-as-fixer behavior.
+Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.

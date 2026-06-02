@@ -19,6 +19,6 @@ plan/task summary here
 
 ## Fixes applied
 
-- [SEVERITY] file:line — what was fixed (from Sentinel's chat output / commit messages)
+- [SEVERITY] file:line — what was fixed (from reviewer artifacts / commit messages)
 
 *(Omit if no fixes applied.)*

@@ -19,13 +19,13 @@ flowchart TD
     LensH --> Spawn
 
     Spawn --> Wait["Wait for all spawned<br/>reviewers to return"]
-    Wait --> Collect["Collect chat outputs<br/>per reviewer-findings-format"]
+    Wait --> Collect["Read returned<br/>.dreamers/reviews artifacts"]
     Collect --> Aggregate["Aggregate counts<br/>by severity + lens"]
     Aggregate --> CheckStatus{"Reviewer<br/>statuses?"}
 
     CheckStatus -->|Blocked| Surface1["Surface Blocked verbatim<br/>caller handles"]
     CheckStatus -->|Open questions| Surface2["Surface open questions<br/>caller handles"]
-    CheckStatus -->|Approved + Findings| Report["Return findings<br/>verbatim to caller"]
+    CheckStatus -->|Approved + Findings| Report["Return artifact findings<br/>verbatim to caller"]
 
     Surface1 --> End(["Exit with status"])
     Surface2 --> End
@@ -44,9 +44,9 @@ flowchart TD
 
 | Lens | Reviewer | Returns |
 |---|---|---|
-| Correctness / security / maintainability | Sentinel | Findings + plan-alignment summary |
-| Test coverage (AC matrix, layer audit, gaps) | Probe | Findings + AC coverage table |
-| Simplicity / over-engineering / architecture | Hone | Findings (incl. full-refactor recommendations) |
+| Correctness / security / maintainability | Sentinel | Artifact with findings + plan-alignment summary |
+| Test coverage (AC matrix, layer audit, gaps) | Probe | Artifact with findings + AC coverage table |
+| Simplicity / over-engineering / architecture | Hone | Artifact with findings incl. full-refactor recommendations |
 
 ## Lane policy
 
@@ -62,5 +62,6 @@ flowchart TD
 
 - **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers-full` Step 5, or whoever invoked it) decides what to do with the findings.
 - **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
+- **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
 - **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
 - **`--no-apply` doesn't exist anymore** — this skill is always read-only by design.
