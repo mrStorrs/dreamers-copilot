@@ -94,6 +94,19 @@
       "path": ".github/agents/sentinel.agent.md"
     },
     {
+      "type": "agent",
+      "slug": "vigil",
+      "name": "vigil",
+      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and Hone lenses for correctness, security, maintainability, test coverage, and simplicity. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact; never applies fixes.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "agent"
+      ],
+      "path": ".github/agents/vigil.agent.md"
+    },
+    {
       "type": "skill",
       "slug": "dreamers-add-logging",
       "name": "dreamers-add-logging",
@@ -183,6 +196,19 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-full/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-lite",
+      "name": "dreamers-lite",
+      "description": "Lean end-to-end Dreamers pipeline. Reviews project context, proposes a compact plan with critique, writes the approved plan, implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. No second plan gate or pre-PR gate.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-lite/SKILL.md"
     },
     {
       "type": "skill",
@@ -333,7 +359,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity) with an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen: planning approval, implementation start, ship strategy when needed, full per-plan review, selected follow-up review, major-refactor scope, user testing when triggered, and final pre-PR approval. The README at the readmePath has the full detail; what you gain in practice is a disciplined planning → tests-first → implementation → full review → selected follow-up review → user-test → docs → PR flow you can re-run with confidence.",
+      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs specialised reviewers (correctness/security, test coverage, simplicity), the Vigil single-pass reviewer, an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen; lite keeps one plan approval gate and one artifact-backed review. The README at the readmePath has the full detail.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
@@ -373,6 +399,10 @@
           "slug": "sentinel"
         },
         {
+          "type": "agent",
+          "slug": "vigil"
+        },
+        {
           "type": "skill",
           "slug": "dreamers-add-logging"
         },
@@ -399,6 +429,10 @@
         {
           "type": "skill",
           "slug": "dreamers-full"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-lite"
         },
         {
           "type": "skill",

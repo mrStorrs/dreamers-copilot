@@ -8,7 +8,7 @@ Everything lives under `.github/`:
 
 ```
 .github/
-├── agents/           # Agent definitions (Forge, Nova personas; Sentinel, Probe, Hone, Echo, Sage subagents)
+├── agents/           # Agent definitions (Forge, Nova personas; reviewers, Echo, Sage)
 ├── skills/           # Skill entry points
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (inlined into consumers at build time)
@@ -25,10 +25,11 @@ Everything lives under `.github/`:
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Read-only. |
 | **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Read-only; surfaces full-refactor recommendations without softening. |
+| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`. Combines Sentinel, Probe, and Hone lenses; writes one `.dreamers/reviews/` artifact. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Vigil is the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -39,6 +40,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 | Skill | Purpose |
 |---|---|
 | `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses narrower lanes for follow-up fix loops when appropriate, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
+| `/dreamers-lite` | Lean pipeline. Reviews context, proposes a compact plan with critique, writes the approved plan, implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, then opens the PR. No second plan gate or pre-PR gate. |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, writes plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns the selected reviewer lane and reports structured findings. Read-only. `--lens <name>` for a single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
@@ -93,6 +95,8 @@ Explicit user instructions can skip or alter skill phases/actions.
                    improvements append → Echo docs → retro → final commit
                    → user approval gate → push + PR → plan archive → post-PR scan (no prompt)
 ```
+
+`/dreamers-lite <task>` uses one approval gate for compact plan approval plus implementation start, then replaces the full triad with Vigil's single artifact-backed review. It still writes plan files, validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.
 
 Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
 
