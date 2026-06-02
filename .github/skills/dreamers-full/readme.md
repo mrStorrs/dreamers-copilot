@@ -48,12 +48,26 @@ flowchart TD
     CreateStub --> ApplyFixes
     GateChoice -->|Other| GateChoice
 
-    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> S6Check{"User testing<br/>triggered?"}
+    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> RerunCheck{"Review rerun<br/>needed?"}
+    RerunCheck -->|No, before user test| S6Check{"User testing<br/>triggered?"}
+    RerunCheck -->|Normal| Vigil["Spawn Vigil"]
+    RerunCheck -->|Major change| RerunGate{"User chooses<br/>review rerun"}
     S6Check -->|No| MorePlans
     S6Check -->|Yes| S6
     S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
     UserTest -->|Bug| BugFix["Fix inline + re-test"]
-    BugFix --> S6
+    BugFix --> BugRerunCheck{"Review rerun<br/>needed?"}
+    BugRerunCheck -->|No| S6
+    BugRerunCheck -->|Normal| Vigil
+    BugRerunCheck -->|Major change| RerunGate
+    RerunGate -->|Vigil| Vigil
+    RerunGate -->|Full triad| FullRerun["Invoke /dreamers-review<br/>full lane"]
+    RerunGate -->|Selected lane| SelectedRerun["Invoke /dreamers-review<br/>selected lane"]
+    RerunGate -->|Skip before user test| S6Check
+    RerunGate -->|Skip after bug| S6
+    Vigil --> S5
+    FullRerun --> S5
+    SelectedRerun --> S5
     UserTest -->|Halt| HaltE(["Halt"])
     UserTest -->|Approved| MorePlans{"More plans<br/>remain?"}
 
@@ -87,8 +101,8 @@ flowchart TD
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
-    class InvokePlan,S4,InvokeDocs,InvokePR,IncrPR skill
-    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,MorePlans,Between,IncrPRGate,Approval gate
+    class InvokePlan,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
+    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
@@ -103,7 +117,8 @@ flowchart TD
 ## Key invariants
 
 - Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it. It uses `.github/dreamers/templates/user-testing-gate.md`: numbered testing steps, notes, and exactly `Approved` / `Bug found (enter text)` / `Other (enter text)`.
-- Step 4 always runs the `full` review lane once per plan: `/dreamers-review` with no lens flags, scoped to the branch. Selective lanes apply only to follow-up fix loops after that full review, such as user-testing bug fixes.
+- Step 4 always runs the `full` review lane once per plan: `/dreamers-review` with no lens flags, scoped to the branch. This is the only automatic triad pass.
+- Follow-up review reruns use Vigil by default. A second triad or selected `/dreamers-review` lane runs only when a major-change trigger fires and the user chooses that option.
 - `/dreamers-review` is **report-only** and artifact-backed — it reads reviewer `.dreamers/reviews/` artifacts before returning findings. Step 5 (apply findings + major-refactor gate) lives in this skill, not in `/dreamers-review`.
 - Gates are declared inline at the phase or step where they happen.
 - INCREMENTAL ships a PR per plan after an explicit pre-PR approval gate, then halts until the user confirms merge. ATOMIC accumulates commits and ships one PR at Phase 3.

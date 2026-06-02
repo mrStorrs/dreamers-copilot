@@ -1,6 +1,6 @@
 # Dreamers — GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → full review → selected follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → full review → Vigil follow-up review → docs → PR flow.
 
 Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
 
@@ -25,11 +25,11 @@ Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <tas
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass `/dreamers-lite` reviewer. Combines Sentinel, Probe, and Hone lenses and writes one `.dreamers/reviews/` artifact. |
+| **Vigil** | Subagent | Single-pass `/dreamers-lite` reviewer and `/dreamers-full` follow-up rerun reviewer. Combines Sentinel, Probe, and Hone lenses and writes one `.dreamers/reviews/` artifact. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up fix loops use narrower lanes when appropriate. Vigil is the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. A second triad or selected lane is user-gated for major-change reruns. Vigil is also the single-pass `/dreamers-lite` reviewer. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -117,12 +117,26 @@ flowchart TD
     CreateStub --> ApplyFixes
     GateChoice -->|Other| GateChoice
 
-    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> S6Check{"User testing<br/>triggered?"}
+    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> RerunCheck{"Review rerun<br/>needed?"}
+    RerunCheck -->|No, before user test| S6Check{"User testing<br/>triggered?"}
+    RerunCheck -->|Normal| Vigil["Spawn Vigil"]
+    RerunCheck -->|Major change| RerunGate{"User chooses<br/>review rerun"}
     S6Check -->|No| MorePlans
     S6Check -->|Yes| S6
     S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
     UserTest -->|Bug| BugFix["Fix inline + re-test"]
-    BugFix --> S6
+    BugFix --> BugRerunCheck{"Review rerun<br/>needed?"}
+    BugRerunCheck -->|No| S6
+    BugRerunCheck -->|Normal| Vigil
+    BugRerunCheck -->|Major change| RerunGate
+    RerunGate -->|Vigil| Vigil
+    RerunGate -->|Full triad| FullRerun["Invoke /dreamers-review<br/>full lane"]
+    RerunGate -->|Selected lane| SelectedRerun["Invoke /dreamers-review<br/>selected lane"]
+    RerunGate -->|Skip before user test| S6Check
+    RerunGate -->|Skip after bug| S6
+    Vigil --> S5
+    FullRerun --> S5
+    SelectedRerun --> S5
     UserTest -->|Halt| HaltE(["Halt"])
     UserTest -->|Approved| MorePlans{"More plans<br/>remain?"}
 
@@ -156,8 +170,8 @@ flowchart TD
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
-    class InvokePlan,S4,InvokeDocs,InvokePR,IncrPR skill
-    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,MorePlans,Between,IncrPRGate,Approval gate
+    class InvokePlan,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
+    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
     class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```

@@ -1,6 +1,6 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), invokes /dreamers-review with the narrowest required review lane, applies findings inline with the major-refactor gate, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -47,6 +47,7 @@ For each plan in sequence:
 
 ### Step 4 — Spawn review
 - Invoke `/dreamers-review --branch` once per plan. This is the `full` lane: Sentinel + Probe + Hone with no lens flags.
+- This is the only automatic triad pass for the plan.
 - Wait. It reads the triad's `.dreamers/reviews/` artifacts and returns artifact-backed structured findings (per `reviewer-findings-format`, Kernel) — read-only.
 - Capture the Sentinel, Probe, and Hone artifact paths in the cycle summary.
 - `Blocked` from any reviewer artifact → halt cycle + surface verbatim with artifact path.
@@ -69,6 +70,26 @@ For each plan in sequence:
   - **Other** → freeform redirect. Never silently apply/defer.
 - Apply each non-deferred fix as a targeted Edit. Stage with `git add`. Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
 
+### Step 5.5 — Review rerun policy
+- Never re-run the full triad automatically after Step 4. Step 4 is the single automatic Sentinel + Probe + Hone pass for this plan.
+- After Step 5 fixes or Step 6 bug fixes, skip reviewer rerun when the fix is small and validation covers it. Record why in the cycle summary.
+- If a reviewer rerun is needed and no major-change trigger applies, spawn `vigil` once with: plan path, changed-files scope, branch/default names, validation commands/results, prior triad artifact paths, and what changed since the triad pass. Read the Vigil artifact before applying findings. Route Vigil findings through Step 5.
+- A major-change rerun trigger fires when the post-triad fix set includes any of:
+  - New abstraction, module, or top-level directory.
+  - Schema / data-model change.
+  - Public API, exported symbol, dependency, or persistence change.
+  - Cross-subsystem refactor or broad rewrite.
+  - Files outside the plan's scope.
+  - Conflicting triad/Vigil feedback that cannot be resolved mechanically.
+  - Hone/Vigil full-refactor scope language.
+  Ambiguous -> fire the gate.
+- On a major-change trigger, ask the user before rerunning review. Provide the reason, breadth estimate, files touched, validation status, and options: `Run Vigil` / `Run full triad` / `Run selected /dreamers-review lane` / `Skip reviewer rerun` / `Other`.
+  - `Run Vigil` -> spawn `vigil` once as above.
+  - `Run full triad` -> invoke `/dreamers-review --branch` once, capture artifact paths, and route findings through Step 5.
+  - `Run selected /dreamers-review lane` -> ask for `sentinel`, `probe`, `hone`, or comma-separated lenses; invoke that lane once and route findings through Step 5.
+  - `Skip reviewer rerun` -> record the user-approved skip and continue.
+  - `Other` -> follow user direction; never infer an extra triad pass.
+
 ### Step 6 — User testing gate (when triggered)
 - Trigger this gate when the plan requires manual verification, the change is user-facing, build/distribution steps are needed, reviewer findings request user validation, or the user asked to test this area.
 - If no trigger applies, record "user testing skipped — no manual verification trigger" in the cycle summary and continue.
@@ -76,7 +97,7 @@ For each plan in sequence:
 - The gate prompt must include a numbered `Testing steps` section and a `Notes` section.
 - The gate must provide exactly three options: `Approved` / `Bug found (enter text)` / `Other (enter text)`.
 - `Bug found (enter text)` and `Other (enter text)` must accept freeform text.
-- On bug → capture text, fix inline, rerun required automated validation, then decide whether a reviewer re-run is needed. Do not re-run the full triad by default after user-testing bug fixes. If the fix is small and validation covers it, skip reviewer re-run and record why. Otherwise choose the narrowest follow-up `/dreamers-review` lane: Sentinel by default, Probe for coverage/regression-risk changes, Hone for architecture/refactor changes, full only if a new full-lane trigger appears. Then re-present the same templated gate.
+- On bug → capture text, fix inline, rerun required automated validation, then apply Step 5.5. Then re-present the same templated gate.
 - On Approved → continue.
 - No commit yet (commit happens at close-out for FULL, or in the LIGHT close-out between cycles for INCREMENTAL).
 

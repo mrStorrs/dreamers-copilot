@@ -55,12 +55,13 @@ flowchart TD
 | `sentinel` | Sentinel | Focused correctness/security/maintainability audit. |
 | `probe` | Probe | Focused test coverage or regression-risk audit. |
 | `hone` | Hone | Focused architecture/simplicity audit. |
-| `standard` | Sentinel + Probe | Follow-up check when both correctness and coverage need review but Hone is not warranted. |
-| `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke with no lens flag. Also use for architecture/refactor risk or explicit full-review request. |
+| `standard` | Sentinel + Probe | Standalone or user-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
+| `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke with no lens flag. After that, use only when the user selects it from the `/dreamers-full` major-change rerun gate or explicitly asks for full review. |
 
 ## Key invariants
 
 - **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers-full` Step 5, or whoever invoked it) decides what to do with the findings.
+- **`/dreamers-full` reruns.** Routine post-triad review reruns go through Vigil. This skill is used again only when the major-change rerun gate asks the user and the user selects a triad or selected-lane rerun.
 - **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
 - **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
 - **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
