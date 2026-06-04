@@ -1,7 +1,7 @@
 ---
 name: sentinel
 description: Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Writes one `.dreamers/reviews/` artifact; never edits code. One of three parallel reviewers (with Probe and Hone) in the Dreamers pipeline's review phase.
-tools: Read, Write, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash
 model: gpt-5.4
 ---
 
