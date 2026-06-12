@@ -214,7 +214,7 @@
       "type": "skill",
       "slug": "dreamers-lite",
       "name": "dreamers-lite",
-      "description": "Lean end-to-end Dreamers pipeline. Reviews project context, proposes a compact plan with critique, writes the approved plan, implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. No second plan gate or pre-PR gate.",
+      "description": "Lean end-to-end Dreamers pipeline. Accepts a task description or existing plan path(s). Task mode reviews project context, proposes a compact plan with critique, and writes the approved plan; plan path mode skips planning and uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. No second plan gate or pre-PR gate.",
       "author": "CJ Storrs",
       "tags": [
         "code",
