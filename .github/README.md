@@ -40,7 +40,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 | Skill | Purpose |
 |---|---|
 | `/dreamers-full <task | plan paths | manifest>` | End-to-end pipeline: plan → implementation-start gate → implement → review → templated user-test when triggered → pre-PR approval → ship. |
-| `/dreamers-lite <task>` | Lean pipeline: compact proposal + critique → approved plan file → implement → Vigil artifact review → docs when triggered → commit → PR. |
+| `/dreamers-lite <task | plan paths>` | Lean pipeline: task mode runs compact proposal + critique → approved plan file; plan path mode skips planning and uses supplied plans directly. Then implement → Vigil artifact review → docs when triggered → commit → PR. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest, verifies plan coverage against the proposal and user discussion, then hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns the selected reviewer lane, reads reviewer artifacts, and reports read-only structured findings. `--lens <name>` for single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |

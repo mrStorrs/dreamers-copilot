@@ -4,7 +4,9 @@ Source of truth is `SKILL.md`.
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers-lite task"]) --> Context["Read project context"]
+    Start(["/dreamers-lite $ARGUMENTS"]) --> ModeCheck{"$ARGUMENTS<br/>type?"}
+    ModeCheck -->|Task description| Context["Read project context"]
+    ModeCheck -->|Plan path(s)| ExistingPlan["Resolve supplied plan file(s)"]
     Context --> Questions{"Clarification needed?"}
     Questions -->|Yes| Ask["Ask one batch"]
     Questions -->|No| Proposal
@@ -13,6 +15,7 @@ flowchart TD
     Approval -->|Revise| Proposal
     Approval -->|Halt| Halt(["Halt"])
     Approval -->|Approved| Plan["Write compact plan file"]
+    ExistingPlan --> Branch
     Plan --> Branch["Fresh feat branch"]
     Branch --> Cycle["Tests -> implement -> validate"]
     Cycle --> Vigil["Spawn Vigil"]
@@ -34,6 +37,7 @@ flowchart TD
 ## Invariants
 
 - One approval gate covers plan approval and implementation start.
+- Plan path mode skips planning and plan writing; supplied plan files are used directly after path and structure checks.
 - Vigil writes one `.dreamers/reviews/` artifact; chat output stays short.
 - Full-refactor findings are always surfaced. User may apply, defer, or continue lite scope.
 - No pre-PR approval gate.
