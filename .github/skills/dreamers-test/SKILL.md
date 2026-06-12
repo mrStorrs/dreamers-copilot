@@ -1,6 +1,6 @@
 ---
 name: dreamers-test
-description: 'Standalone focused Vigil review (test coverage audit). Read-only — reads Vigil's `.dreamers/reviews/` artifact for AC coverage, layer audit, edge cases, and regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps.'
+description: "Standalone focused Vigil review (test coverage audit). Read-only — reads Vigil's `.dreamers/reviews/` artifact for AC coverage, layer audit, edge cases, and regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps."
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
