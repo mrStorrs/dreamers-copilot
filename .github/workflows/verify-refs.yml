@@ -1,16 +1,22 @@
-name: verify-refs
+name: verify
 
 on:
   pull_request:
     paths:
       - '.github/**/*.md'
+      - '.github/dreamers/scripts/**'
       - 'scripts/sync-refs.sh'
+      - 'test-benchmarks.md'
+      - 'tests/**'
       - '.github/workflows/verify-refs.yml'
   push:
     branches: [main]
     paths:
       - '.github/**/*.md'
+      - '.github/dreamers/scripts/**'
       - 'scripts/sync-refs.sh'
+      - 'test-benchmarks.md'
+      - 'tests/**'
       - '.github/workflows/verify-refs.yml'
   workflow_dispatch:
 
@@ -22,3 +28,6 @@ jobs:
       - name: Verify inlined refs match source
         shell: bash
         run: scripts/sync-refs.sh -Verify
+      - name: Run stats writer tests
+        shell: bash
+        run: python3 -m unittest tests/test_dreamers_stats.py

@@ -1,5 +1,9 @@
 # Dreamers workspace (repo-local)
 .dreamers/
 
+# Python test artifacts
+__pycache__/
+*.py[cod]
+
 # JetBrains IDE
 .idea/

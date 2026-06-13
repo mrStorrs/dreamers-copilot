@@ -12,6 +12,7 @@ Everything lives under `.github/`:
 ├── skills/           # Skill entry points
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (inlined into consumers at build time)
+│   ├── scripts/      # Dreamers-managed local helper scripts
 │   └── templates/    # Plan-writing guide, PR description shape, etc.
 └── instructions/     # Auto-loaded instruction files
 ```
@@ -99,7 +100,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 `/dreamers-lite <task | plan paths>` uses one approval gate for compact plan approval plus implementation start in task mode. When passed plan path(s), it skips planning and plan writing, then uses the supplied plan file(s) directly. `/dreamers-full` also skips planning when passed plan path(s) or a manifest, then proceeds through its Phase 1.5 implementation-start gate. Lite replaces the full triad with Vigil's single artifact-backed review. `/dreamers-full` still runs the full triad once per plan, then uses Vigil for normal review reruns; extra triad or selected-lane reruns require a major-change gate and user choice. Both flows use the same durable `.dreamers/reviews/` handoff pattern. Lite validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.
 
-Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
+Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`. CI's `verify` workflow fails any PR whose inlined content drifts from source and runs the stats writer test suite.
 
 ## Maintaining Dreamers
 
