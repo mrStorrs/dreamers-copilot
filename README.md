@@ -39,7 +39,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full` | End-to-end pipeline. Invokes `/dreamers-plan`, halts for plan review / implementation start, implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses Vigil for normal review reruns, asks before any extra triad/selected-lane rerun, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
+| `/dreamers-full` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan`; plan path and manifest modes skip planning and use supplied artifacts directly. Halts for plan review / implementation start, implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses Vigil for normal review reruns, asks before any extra triad/selected-lane rerun, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
 | `/dreamers-lite` | Lean pipeline. Accepts a task description or existing plan path(s). Task mode reviews context, proposes a compact plan with critique, and writes the approved plan; plan path mode skips planning and uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, then opens the PR. No second plan gate or pre-PR gate. |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Critiques the proposal before approval, writes plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
@@ -81,7 +81,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 ```
 /dreamers-full <task | plan paths | manifest.md>
-  ├─ Phase 1   → /dreamers-plan   (Mode 1 only: 3-phase planning conversation)
+  ├─ Phase 1   → /dreamers-plan   (Mode 1 only: 3-phase planning conversation; plan/manifest modes skip)
   ├─ Phase 1.5 → Plan review / implementation-start gate
   │               multi-plan approval includes INCREMENTAL vs ATOMIC choice
   ├─ Phase 2   → per plan, inline:
@@ -97,7 +97,7 @@ Explicit user instructions can skip or alter skill phases/actions.
                    → user approval gate → push + PR → plan archive → post-PR scan (no prompt)
 ```
 
-`/dreamers-lite <task | plan paths>` uses one approval gate for compact plan approval plus implementation start in task mode. When passed plan path(s), it skips planning and plan writing, then uses the supplied plan file(s) directly. It replaces the full triad with Vigil's single artifact-backed review. `/dreamers-full` still runs the full triad once per plan, then uses Vigil for normal review reruns; extra triad or selected-lane reruns require a major-change gate and user choice. Both flows use the same durable `.dreamers/reviews/` handoff pattern. Lite validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.
+`/dreamers-lite <task | plan paths>` uses one approval gate for compact plan approval plus implementation start in task mode. When passed plan path(s), it skips planning and plan writing, then uses the supplied plan file(s) directly. `/dreamers-full` also skips planning when passed plan path(s) or a manifest, then proceeds through its Phase 1.5 implementation-start gate. Lite replaces the full triad with Vigil's single artifact-backed review. `/dreamers-full` still runs the full triad once per plan, then uses Vigil for normal review reruns; extra triad or selected-lane reruns require a major-change gate and user choice. Both flows use the same durable `.dreamers/reviews/` handoff pattern. Lite validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.
 
 Each skill is independent — no skill invokes another mid-flow except `/dreamers-full`, which orchestrates the sequence. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`. CI's `verify-refs` workflow fails any PR whose inlined content drifts from source.
 

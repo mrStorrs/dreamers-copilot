@@ -1,10 +1,12 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Invokes /dreamers-plan, halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Accepts a task description, existing plan file(s), or a feature manifest. Task mode invokes /dreamers-plan; plan path and manifest modes skip planning and use the supplied artifacts directly. Halts for plan review / implementation start, implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
 $ARGUMENTS
+
+If no task description, plan path, or manifest was provided, halt + ask.
 
 ## Modes
 | Mode | `$ARGUMENTS` | Phase 1 |
@@ -12,6 +14,19 @@ $ARGUMENTS
 | 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` → capture plan paths from its output |
 | 2 | Plan path(s) | Skip (plans pre-existing) |
 | 3 | `manifest.md` | Skip; read manifest → capture plan sequence + shared-context payload |
+
+Plan path mode:
+- Treat arguments ending in `.md` as plan paths when they resolve under `.dreamers/plans/`, or when they match `feature-<slug>/plan-NN-<name>.md`.
+- Resolve `feature-<slug>/plan-NN-<name>.md` under `.dreamers/plans/`.
+- Preserve the provided order as the implementation sequence.
+- Resolve and read each supplied plan file before Phase 1.5; halt if any file is missing, is outside `.dreamers/plans/`, or is not a `plan-*.md` file.
+- Do not invoke `/dreamers-plan`, re-plan, or write replacement plan files unless the user explicitly chooses `Revise plan`.
+
+Manifest mode:
+- Treat `manifest.md` as manifest mode when it resolves under `.dreamers/plans/`, or when it matches `feature-<slug>/manifest.md`.
+- Resolve `feature-<slug>/manifest.md` under `.dreamers/plans/`.
+- Read the manifest before Phase 1.5, capture the plan sequence and shared-context payload, and preserve that sequence through Phase 2.
+- Do not invoke `/dreamers-plan`, re-plan, or write replacement plan files unless the user explicitly chooses `Revise plan`.
 
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3.
