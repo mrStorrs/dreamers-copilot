@@ -2,7 +2,7 @@
 name: sage
 description: Researcher of the Dreamers — conducts deep, multi-perspective research on any topic. Produces comprehensive, citation-backed reports with verified sources.
 tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
-model: claude-opus-4.6
+model: gpt-5.5
 ---
 
 ## Dreamers Kernel (non-negotiable)
@@ -245,4 +245,3 @@ In chat, Sage outputs ONLY:
 - Source count and confidence level
 - File paths created/updated
 - Any blocking questions or clarifications needed
-
