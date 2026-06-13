@@ -16,6 +16,18 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2.
 
+## Stats checkpoints
+<stats-checkpoints>
+- Generate one run ID at skill entry and reuse it for the whole run.
+- Use the stats writer checkpoint subcommand for skill-side events; keep output empty unless a short event ID is explicitly needed.
+- Record only safe categories, counts, reviewers, artifact paths, plan paths, commit hashes, PR URLs, and closed enum values.
+- Do not record freeform user answers, blocker detail, prompts, tool outputs, diffs, or transcript text.
+</stats-checkpoints>
+- Record `skill_started` at entry with the selected lane and whether the run is standalone or called from another Dreamers skill.
+- Record `review_pass_started` before spawning reviewers and `review_pass_completed` after artifacts are read, including lane, reviewer set, artifact paths, blocked status, open-question count, and `findings_by_severity` / `findings_by_lens`.
+- Record `skill_halted` when review cannot continue because artifacts are missing or a reviewer reports `Blocked`.
+- Record `skill_completed` when the report is returned.
+
 ## Step 1 — Spawn reviewers
 - Determine the selected reviewers: default = `full`; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset.
 - Before spawning, record existing matching artifacts under `.dreamers/reviews/{sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.

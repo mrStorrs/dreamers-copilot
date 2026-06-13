@@ -1,0 +1,4 @@
+- Generate one run ID at skill entry and reuse it for the whole run.
+- Use the stats writer checkpoint subcommand for skill-side events; keep output empty unless a short event ID is explicitly needed.
+- Record only safe categories, counts, reviewers, artifact paths, plan paths, commit hashes, PR URLs, and closed enum values.
+- Do not record freeform user answers, blocker detail, prompts, tool outputs, diffs, or transcript text.

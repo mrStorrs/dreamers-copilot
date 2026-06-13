@@ -31,6 +31,24 @@ Manifest mode:
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3.
 
+## Stats checkpoints
+<stats-checkpoints>
+- Generate one run ID at skill entry and reuse it for the whole run.
+- Use the stats writer checkpoint subcommand for skill-side events; keep output empty unless a short event ID is explicitly needed.
+- Record only safe categories, counts, reviewers, artifact paths, plan paths, commit hashes, PR URLs, and closed enum values.
+- Do not record freeform user answers, blocker detail, prompts, tool outputs, diffs, or transcript text.
+</stats-checkpoints>
+- Record `skill_started` at entry with mode, plan count, and strategy when known.
+- Record `phase_started` when entering Phase 1, Phase 1.5, each Phase 2 cycle, and Phase 3.
+- Record `gate_presented` and `gate_decided` for implementation-start, major-refactor, review-rerun, user-testing, and pre-pr gates. Store only gate type, option category, safe counts, and follow-up plan paths.
+- Record `validation_attempt` for each type-check and test attempt.
+- Record `review_pass_started` and `review_pass_completed` for the initial full triad and any follow-up Vigil or user-selected reruns, including lane, reviewers, artifact paths, blocked status, open-question count, and `findings_by_severity` / `findings_by_lens`.
+- Record `review_findings_applied` after Step 5 with applied, deferred, and continued counts plus any follow-up plan path.
+- Record `rerun_decision` with one closed trigger value whenever a rerun is selected, required, or skipped.
+- Record `cycle_completed` after each completed plan cycle with the plan path and final cycle status.
+- Record `retro_written`, `pr_created`, and `skill_completed` during close-out.
+- Record `skill_halted` whenever a blocker or user halt stops the run using only safe halt categories and artifact references.
+
 ## Phase 1 — Planning (Mode 1 only)
 - Invoke `/dreamers-plan $ARGUMENTS`. Wait. Capture plan paths.
 - Halt this skill if `/dreamers-plan` halts without approval.

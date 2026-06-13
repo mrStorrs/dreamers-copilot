@@ -62,6 +62,21 @@ At skill entry, declare via `manage_todo_list`:
 - [ ] Spawn Vigil review of accepted changes
 - [ ] Resolve accepted threads + commit + report
 
+## Stats checkpoints
+<stats-checkpoints>
+- Generate one run ID at skill entry and reuse it for the whole run.
+- Use the stats writer checkpoint subcommand for skill-side events; keep output empty unless a short event ID is explicitly needed.
+- Record only safe categories, counts, reviewers, artifact paths, plan paths, commit hashes, PR URLs, and closed enum values.
+- Do not record freeform user answers, blocker detail, prompts, tool outputs, diffs, or transcript text.
+</stats-checkpoints>
+- Record `skill_started` at entry with the target PR and `unresolved_thread_count` when known.
+- Record `gate_presented` and `gate_decided` for PR selection and push-decision gates. Store only gate type, option category, safe counts, and no freeform user explanation.
+- Record `validation_attempt` for each type-check and test attempt after accepted fixes.
+- Record `review_pass_started` and `review_pass_completed` for the required Vigil pass with lane, reviewer set, artifact path, blocked status, open-question count, and `findings_by_severity` / `findings_by_lens`.
+- Record `review_findings_applied` after Vigil findings are fixed, including `accepted_count`, `rejected_count`, deferred or continued counts, and any follow-up plan path.
+- Record `skill_halted` if no PR can be selected, GraphQL lookup fails, Vigil blocks, or the user holds the push, using only safe halt categories.
+- Record `skill_completed` after accepted threads are resolved and the final report is returned, including `commit_hash`, `push_status`, `accepted_count`, `rejected_count`, and `resolved_thread_count`.
+
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
 ---

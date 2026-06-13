@@ -23,6 +23,22 @@ Plan path mode:
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry: Phase 1 / Phase 2 / Phase 3 cycle-N / Phase 4.
 
+## Stats checkpoints
+<stats-checkpoints>
+- Generate one run ID at skill entry and reuse it for the whole run.
+- Use the stats writer checkpoint subcommand for skill-side events; keep output empty unless a short event ID is explicitly needed.
+- Record only safe categories, counts, reviewers, artifact paths, plan paths, commit hashes, PR URLs, and closed enum values.
+- Do not record freeform user answers, blocker detail, prompts, tool outputs, diffs, or transcript text.
+</stats-checkpoints>
+- Record `skill_started` at entry and `skill_completed` when the lite run closes out.
+- Record `phase_started` when entering the close-out/docs step before `/dreamers-docs --branch`.
+- Record `gate_presented` and `gate_decided` for proposal approval, major-refactor, user-testing, and ship gates. Store only gate type, option category, safe counts, and follow-up plan paths.
+- Record `validation_attempt` for each type-check and test attempt.
+- Record `review_pass_started` and `review_pass_completed` for each Vigil pass with lane, reviewer set, artifact path, blocked status, open-question count, and `findings_by_severity` / `findings_by_lens`.
+- Record `review_findings_applied` after Step 5, `cycle_completed` after each green plan cycle, and `pr_created` during close-out.
+- Record `skill_completed` with `docs_status` and `docs_updated` after `/dreamers-docs --branch`, plus final close-out status.
+- Record `skill_halted` whenever the run stops early using only safe halt categories and artifact references.
+
 ## Phase 1 - Context + proposal (Mode 1 only)
 - Anchor to remote truth per `git-workflow`: detect default branch, fetch, read `origin/$DEFAULT_BRANCH` log.
 - Read project instructions and relevant code. Verify cited artifacts before claiming behavior.
