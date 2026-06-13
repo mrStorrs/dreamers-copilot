@@ -1,6 +1,6 @@
 # /dreamers-full — flow
 
-Visual map of every decision point in the end-to-end pipeline. Source of truth is `SKILL.md`; this is the picture. Task mode runs Phase 1 planning; plan path and manifest modes skip Phase 1 and enter Phase 1.5 with supplied artifacts.
+Visual map of every decision point in the end-to-end pipeline. Source of truth is `SKILL.md`; this is the picture. Task mode runs Phase 1 planning and Phase 1.5. Plan path and manifest modes skip Phase 1.5 and start implementation after artifact checks.
 
 ```mermaid
 flowchart TD
@@ -11,8 +11,8 @@ flowchart TD
     ModeCheck -->|manifest.md| Mode3["Mode 3 + shared context"]
 
     Mode1 --> P1["Phase 1 — Planning"]
-    Mode2 --> P15
-    Mode3 --> P15
+    Mode2 --> ArtifactCheck["Resolve supplied artifact(s)<br/>multi-plan default: ATOMIC"]
+    Mode3 --> ArtifactCheck
 
     P1 --> InvokePlan["Invoke /dreamers-plan"]
     InvokePlan --> PlanResult{"Plan result"}
@@ -26,6 +26,7 @@ flowchart TD
     PlanGate -->|Revise| P15
     PlanGate -->|Halt| HaltB(["Halt + resume cmd"])
 
+    ArtifactCheck --> BranchSetup
     BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
 
     Cycle["Phase 2 — cycle N"] --> S1["Step 1<br/>Read plan + write failing tests"]
@@ -104,7 +105,7 @@ flowchart TD
     class InvokePlan,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
     class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
-    class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
+    class P1,Cycle,P3,ArtifactCheck,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
 
 ## Legend
@@ -116,7 +117,7 @@ flowchart TD
 
 ## Key invariants
 
-- Plan path and manifest modes do not invoke `/dreamers-plan`; they resolve supplied artifacts under `.dreamers/plans/`, preserve the provided sequence, and continue to the Phase 1.5 implementation-start gate.
+- Plan path and manifest modes do not invoke `/dreamers-plan` and do not enter the Phase 1.5 implementation-start gate; they resolve supplied artifacts under `.dreamers/plans/`, preserve the provided sequence, default multi-plan strategy to ATOMIC unless explicitly supplied, and continue directly to branch setup.
 - Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it. It uses `.github/dreamers/templates/user-testing-gate.md`: numbered testing steps, notes, and exactly `Approved` / `Bug found (enter text)` / `Other (enter text)`.
 - Step 4 always runs the `full` review lane once per plan: `/dreamers-review` with no lens flags, scoped to the branch. This is the only automatic triad pass.
 - Follow-up review reruns use Vigil by default. A second triad or selected `/dreamers-review` lane runs only when a major-change trigger fires and the user chooses that option.
