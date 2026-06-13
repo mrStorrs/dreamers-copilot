@@ -37,7 +37,7 @@ flowchart TD
 ## Invariants
 
 - One approval gate covers plan approval and implementation start.
-- Plan path mode skips planning and plan writing; supplied plan files are used directly after path and structure checks.
+- Plan path mode skips planning, plan writing, and implementation-start approval; supplied plan files are used directly after path and structure checks.
 - Vigil writes one `.dreamers/reviews/` artifact; chat output stays short.
 - Full-refactor findings are always surfaced. User may apply, defer, or continue lite scope.
 - No pre-PR approval gate.

@@ -1,6 +1,6 @@
 ---
 name: dreamers-lite
-description: 'Lean end-to-end Dreamers pipeline. Accepts a task description or existing plan file(s). For task descriptions, reviews project context, proposes a compact plan with critique, then writes the approved plan. For plan paths, skips planning and uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. Triggers: /dreamers-lite, lite pipeline, lightweight feature, quick ship.'
+description: 'Lean end-to-end Dreamers pipeline. Accepts a task description or existing plan file(s). For task descriptions, reviews project context, proposes a compact plan with critique, then writes the approved plan. For plan paths, skips planning, plan writing, and implementation-start approval, then uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. Triggers: /dreamers-lite, lite pipeline, lightweight feature, quick ship.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more]'
 ---
 
@@ -12,13 +12,13 @@ If no task description or plan path was provided, halt + ask.
 | Mode | `$ARGUMENTS` | Phase 1 / 2 behavior |
 |---|---|---|
 | 1 | Task description | Run Phase 1 proposal, then Phase 2 writes plan file(s). |
-| 2 | Plan path(s) | Skip Phase 1 and plan-writing. Use supplied plan file(s) directly. |
+| 2 | Plan path(s) | Skip Phase 1, plan-writing, and implementation-start approval. Use supplied plan file(s) directly. |
 
 Plan path mode:
 - Treat arguments ending in `.md` as plan paths when they resolve to files, or when they match `feature-<slug>/plan-NN-<name>.md`.
 - Resolve `feature-<slug>/plan-NN-<name>.md` under `.dreamers/plans/`.
 - Preserve the provided order as the implementation sequence.
-- Do not re-plan, rewrite, or reopen the plan approval gate.
+- Do not re-plan, rewrite, reopen the plan approval gate, or ask for implementation-start approval.
 
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry: Phase 1 / Phase 2 / Phase 3 cycle-N / Phase 4.
@@ -47,6 +47,7 @@ Plan path mode:
 - Mode 1: if multiple plans share constraints, decisions, data models, or end-to-end ACs, write `manifest.md`; otherwise skip manifest.
 - Mode 2: resolve and read each supplied plan file; halt if any file is missing, is outside `.dreamers/plans/`, or is not a `plan-*.md` file.
 - Self-check plan structure against `plan-writing-guide.md`. In Mode 1, fix violations before implementation. In Mode 2, surface violations and ask before editing supplied plan files.
+- Mode 2: after artifact checks pass, proceed directly to branch setup and implementation.
 - Set up branch per `git-workflow`: checkout fresh default, pull, cut `feat/<slug>`, confirm `.dreamers/` is gitignored. In Mode 2, derive `<slug>` from the supplied feature directory.
 
 ## Phase 3 - Per plan implementation + Vigil
