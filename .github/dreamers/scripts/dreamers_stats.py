@@ -2,14 +2,15 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import os
 import re
 import sys
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable, TextIO
+from typing import Any, Callable, Iterable, TextIO
 
 
 SCHEMA_VERSION = 1
@@ -175,6 +176,21 @@ PUSH_STATUSES = {"pushed", "held", "not-requested"}
 FINAL_STATUSES = {"completed", "resolved", "approved"}
 FINDING_SEVERITIES = {"critical", "high", "medium", "low"}
 FINDING_LENSES = {"correctness", "security", "maintainability", "test-coverage", "simplicity"}
+FINDING_SEVERITY_ORDER = ("critical", "high", "medium", "low")
+FINDING_LENS_ORDER = ("correctness", "security", "maintainability", "test-coverage", "simplicity")
+ARTIFACT_SECTION_HEADINGS = {
+    "findings",
+    "plan alignment",
+    "ac coverage",
+    "full refactor findings",
+    "observations",
+    "open questions",
+}
+RELATIVE_RANGE_PATTERN = re.compile(r"^(?P<amount>\d+)(?P<unit>[dhm])$")
+FINDING_LINE_PATTERN = re.compile(
+    r"^- \[(?P<severity>critical|high|medium|low)\] "
+    r"\[(?P<lens>correctness|security|maintainability|test-coverage|simplicity)\] "
+)
 
 HOOK_EVENT_SPECS: dict[str, HookSpec] = {
     "sessionStart": {
@@ -962,6 +978,922 @@ def doctor(copilot_home: str | Path | None = None) -> dict[str, Any]:
     return report
 
 
+def load_report_events(copilot_home: str | Path | None = None) -> tuple[list[dict[str, Any]], int]:
+    event_log = events_path(copilot_home)
+    if not event_log.exists():
+        return [], 0
+
+    events: list[dict[str, Any]] = []
+    warning_count = 0
+    for line in event_log.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            warning_count += 1
+            continue
+        normalized = normalize_report_event(payload)
+        if normalized is None:
+            warning_count += 1
+            continue
+        events.append(normalized)
+    return events, warning_count
+
+
+def normalize_report_event(payload: Any) -> dict[str, Any] | None:
+    if not isinstance(payload, dict):
+        return None
+    if not isinstance(payload.get("metrics"), dict):
+        return None
+    if not isinstance(payload.get("repo_path"), str) or not payload["repo_path"].strip():
+        return None
+    if not isinstance(payload.get("event_type"), str) or not payload["event_type"].strip():
+        return None
+    if not isinstance(payload.get("timestamp"), str) or not payload["timestamp"].strip():
+        return None
+
+    try:
+        parsed_timestamp = parse_iso_timestamp(payload["timestamp"])
+    except StatsValidationError:
+        return None
+
+    if parsed_timestamp.tzinfo is None:
+        parsed_timestamp = parsed_timestamp.replace(tzinfo=UTC)
+    normalized = dict(payload)
+    normalized["metrics"] = dict(payload["metrics"])
+    normalized["_parsed_timestamp"] = parsed_timestamp.astimezone(UTC)
+    return normalized
+
+
+def build_report_filters(args: argparse.Namespace) -> dict[str, Any]:
+    since = parse_report_boundary(args.since, is_end=False) if args.since else None
+    until = parse_report_boundary(args.until, is_end=True) if args.until else None
+    if since is not None and until is not None and since > until:
+        raise StatsValidationError("invalid_date_range", "--since must be earlier than --until")
+
+    current_repo = detect_repo_root(os.getcwd()) if args.repo == "current" else None
+    return {
+        "repo": args.repo,
+        "skill": args.skill,
+        "since": datetime_to_iso(since),
+        "until": datetime_to_iso(until),
+        "current_repo": str(current_repo) if current_repo is not None else None,
+        "_since": since,
+        "_until": until,
+        "_current_repo": current_repo,
+    }
+
+
+def parse_report_boundary(value: str, *, is_end: bool) -> datetime:
+    match = RELATIVE_RANGE_PATTERN.fullmatch(value)
+    if match is not None:
+        amount = int(match.group("amount"))
+        unit = match.group("unit")
+        delta = {
+            "d": timedelta(days=amount),
+            "h": timedelta(hours=amount),
+            "m": timedelta(minutes=amount),
+        }[unit]
+        return datetime.now(UTC) - delta
+
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        parsed = datetime.fromisoformat(value).replace(tzinfo=UTC)
+        if is_end:
+            return parsed + timedelta(days=1) - timedelta(microseconds=1)
+        return parsed
+
+    parsed = parse_iso_timestamp(value)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def detect_repo_root(start: str | Path) -> Path:
+    current = Path(start).resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / ".git").exists():
+            return candidate
+    return current
+
+
+def filter_report_events(events: Iterable[dict[str, Any]], filters: dict[str, Any]) -> list[dict[str, Any]]:
+    filtered: list[dict[str, Any]] = []
+    since = filters["_since"]
+    until = filters["_until"]
+    current_repo = filters["_current_repo"]
+    skill = filters["skill"]
+    repo_mode = filters["repo"]
+
+    for event in events:
+        if repo_mode == "current" and current_repo is not None and not event_matches_repo(event, current_repo):
+            continue
+        if skill is not None and event.get("skill") != skill:
+            continue
+        timestamp = event["_parsed_timestamp"]
+        if since is not None and timestamp < since:
+            continue
+        if until is not None and timestamp > until:
+            continue
+        filtered.append(event)
+    return filtered
+
+
+def event_matches_repo(event: dict[str, Any], current_repo: Path) -> bool:
+    event_path = Path(event["repo_path"]).expanduser().resolve(strict=False)
+    return event_path == current_repo or current_repo in event_path.parents or event_path in current_repo.parents
+
+
+def datetime_to_iso(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def event_range(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    timestamps = [event["_parsed_timestamp"] for event in events]
+    if not timestamps:
+        return {"first_timestamp": None, "last_timestamp": None}
+    return {
+        "first_timestamp": datetime_to_iso(min(timestamps)),
+        "last_timestamp": datetime_to_iso(max(timestamps)),
+    }
+
+
+def empty_count_dict(keys: Iterable[str]) -> dict[str, int]:
+    return {key: 0 for key in keys}
+
+
+def merge_count_dicts(target: dict[str, int], source: dict[str, Any], keys: Iterable[str]) -> None:
+    for key in keys:
+        target[key] += int(source.get(key, 0) or 0)
+
+
+def build_runs_report(
+    events: list[dict[str, Any]],
+    filters: dict[str, Any],
+    *,
+    warning_count: int = 0,
+) -> dict[str, Any]:
+    runs: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for event in events:
+        run_id = event.get("run_id")
+        skill = event.get("skill")
+        if not run_id or not skill:
+            continue
+        run_key = (run_id, event["repo_path"], skill)
+
+        run = runs.setdefault(
+            run_key,
+            {
+                "run_id": run_id,
+                "repo_path": event["repo_path"],
+                "skill": skill,
+                "status": "in_progress",
+                "first_timestamp": event["_parsed_timestamp"],
+                "last_timestamp": event["_parsed_timestamp"],
+                "start_timestamp": None,
+                "end_timestamp": None,
+            },
+        )
+        run["first_timestamp"] = min(run["first_timestamp"], event["_parsed_timestamp"])
+        run["last_timestamp"] = max(run["last_timestamp"], event["_parsed_timestamp"])
+        if event["event_type"] == "skill_started":
+            run["start_timestamp"] = event["_parsed_timestamp"]
+        elif event["event_type"] == "skill_completed":
+            run["end_timestamp"] = event["_parsed_timestamp"]
+            run["status"] = event["metrics"].get("final_status") or event.get("status") or "completed"
+        elif event["event_type"] == "skill_halted":
+            run["end_timestamp"] = event["_parsed_timestamp"]
+            run["status"] = event.get("status") or "halted"
+
+    grouped: dict[tuple[str, str], dict[str, Any]] = {}
+    for run in runs.values():
+        start_timestamp = run["start_timestamp"] or run["first_timestamp"]
+        end_timestamp = run["end_timestamp"] or run["last_timestamp"]
+        duration_seconds = int((end_timestamp - start_timestamp).total_seconds())
+        duration_seconds = max(duration_seconds, 0)
+        key = (run["skill"], run["status"])
+        group = grouped.setdefault(
+            key,
+            {
+                "skill": run["skill"],
+                "status": run["status"],
+                "run_count": 0,
+                "total_duration_seconds": 0,
+                "first_timestamp": start_timestamp,
+                "last_timestamp": end_timestamp,
+            },
+        )
+        group["run_count"] += 1
+        group["total_duration_seconds"] += duration_seconds
+        group["first_timestamp"] = min(group["first_timestamp"], start_timestamp)
+        group["last_timestamp"] = max(group["last_timestamp"], end_timestamp)
+
+    groups = []
+    for key in sorted(grouped):
+        group = grouped[key]
+        average_duration = 0
+        if group["run_count"]:
+            average_duration = int(group["total_duration_seconds"] / group["run_count"])
+        groups.append(
+            {
+                "skill": group["skill"],
+                "status": group["status"],
+                "run_count": group["run_count"],
+                "total_duration_seconds": group["total_duration_seconds"],
+                "average_duration_seconds": average_duration,
+                "first_timestamp": datetime_to_iso(group["first_timestamp"]),
+                "last_timestamp": datetime_to_iso(group["last_timestamp"]),
+            }
+        )
+
+    run_range = {"first_timestamp": None, "last_timestamp": None}
+    if runs:
+        run_range = {
+            "first_timestamp": datetime_to_iso(min(run["first_timestamp"] for run in runs.values())),
+            "last_timestamp": datetime_to_iso(max(run["last_timestamp"] for run in runs.values())),
+        }
+
+    return {
+        "report_type": "runs",
+        "filters": report_filters_public(filters),
+        "warning_count": warning_count,
+        "run_count": len(runs),
+        "range": run_range,
+        "groups": groups,
+    }
+
+
+def build_reviews_report(
+    events: list[dict[str, Any]],
+    filters: dict[str, Any],
+    *,
+    warning_count: int = 0,
+) -> dict[str, Any]:
+    review_events = [event for event in events if event["event_type"] == "review_pass_completed"]
+    lane_counts: Counter[str] = Counter()
+    reviewer_counts: Counter[str] = Counter()
+    trigger_counts: Counter[str] = Counter()
+    findings_by_severity = empty_count_dict(FINDING_SEVERITY_ORDER)
+    findings_by_lens = empty_count_dict(FINDING_LENS_ORDER)
+    initial_review_count = 0
+    rereview_count = 0
+    blocked_count = 0
+    open_question_count = 0
+    artifact_cache: dict[str, dict[str, Any]] = {}
+    parsed_artifact_paths: set[str] = set()
+    missing_artifact_paths: set[str] = set()
+    mismatches: list[dict[str, Any]] = []
+
+    for event in review_events:
+        metrics = event["metrics"]
+        lane = metrics.get("lane")
+        if isinstance(lane, str) and lane:
+            lane_counts[lane] += 1
+        reviewers = metrics.get("reviewers", [])
+        if isinstance(reviewers, list):
+            reviewer_counts.update([reviewer for reviewer in reviewers if isinstance(reviewer, str)])
+
+        is_rereview = bool(metrics.get("is_rereview"))
+        if is_rereview:
+            rereview_count += 1
+            trigger = metrics.get("trigger")
+            if isinstance(trigger, str) and trigger:
+                trigger_counts[trigger] += 1
+        else:
+            initial_review_count += 1
+
+        event_artifacts = resolve_review_artifacts(event)
+        event_missing = False
+        parsed_summary = {
+            "blocked": False,
+            "open_question_count": 0,
+            "findings_by_severity": empty_count_dict(FINDING_SEVERITY_ORDER),
+            "findings_by_lens": empty_count_dict(FINDING_LENS_ORDER),
+        }
+        for artifact_path in event_artifacts:
+            summary = artifact_cache.get(str(artifact_path))
+            if summary is None:
+                summary = parse_review_artifact(artifact_path)
+                artifact_cache[str(artifact_path)] = summary
+            if not summary["found"]:
+                event_missing = True
+                missing_artifact_paths.add(str(artifact_path))
+                continue
+            parsed_artifact_paths.add(str(artifact_path))
+            if summary["blocked"]:
+                parsed_summary["blocked"] = True
+            parsed_summary["open_question_count"] += summary["open_question_count"]
+            merge_count_dicts(
+                parsed_summary["findings_by_severity"],
+                summary["findings_by_severity"],
+                FINDING_SEVERITY_ORDER,
+            )
+            merge_count_dicts(
+                parsed_summary["findings_by_lens"],
+                summary["findings_by_lens"],
+                FINDING_LENS_ORDER,
+            )
+
+        count_source = parsed_summary if event_artifacts and not event_missing else metrics
+        if bool(count_source.get("blocked")):
+            blocked_count += 1
+        open_question_count += int(count_source.get("open_question_count", 0) or 0)
+        merge_count_dicts(findings_by_severity, count_source.get("findings_by_severity", {}), FINDING_SEVERITY_ORDER)
+        merge_count_dicts(findings_by_lens, count_source.get("findings_by_lens", {}), FINDING_LENS_ORDER)
+
+        if event_artifacts and not event_missing and review_event_has_artifact_mismatch(metrics, parsed_summary):
+            mismatches.append(
+                {
+                    "review_pass_id": metrics.get("review_pass_id"),
+                    "artifact_paths": [str(path) for path in event_artifacts],
+                }
+            )
+
+    return {
+        "report_type": "reviews",
+        "filters": report_filters_public(filters),
+        "warning_count": warning_count,
+        "review_count": len(review_events),
+        "initial_review_count": initial_review_count,
+        "rereview_count": rereview_count,
+        "lane_counts": dict(lane_counts),
+        "reviewer_counts": dict(reviewer_counts),
+        "blocked_count": blocked_count,
+        "open_question_count": open_question_count,
+        "findings_by_severity": findings_by_severity,
+        "findings_by_lens": findings_by_lens,
+        "rereview_trigger_counts": dict(trigger_counts),
+        "artifact_summary": {
+            "parsed_count": len(parsed_artifact_paths),
+            "missing_count": len(missing_artifact_paths),
+            "mismatch_count": len(mismatches),
+            "mismatches": mismatches,
+        },
+    }
+
+
+def resolve_review_artifacts(event: dict[str, Any]) -> list[Path]:
+    repo_root = Path(event["repo_path"]).expanduser()
+    seen: set[str] = set()
+    resolved: list[Path] = []
+    for artifact in event["metrics"].get("artifact_paths", []):
+        if not isinstance(artifact, str) or not artifact.strip():
+            continue
+        candidate = Path(artifact)
+        if not candidate.is_absolute():
+            candidate = repo_root / candidate
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        resolved.append(candidate)
+    return resolved
+
+
+def parse_review_artifact(path: Path) -> dict[str, Any]:
+    summary = {
+        "found": False,
+        "blocked": False,
+        "open_question_count": 0,
+        "findings_by_severity": empty_count_dict(FINDING_SEVERITY_ORDER),
+        "findings_by_lens": empty_count_dict(FINDING_LENS_ORDER),
+    }
+    if not path.exists():
+        return summary
+
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return summary
+    summary["found"] = True
+    status_line = next((line.strip() for line in lines if line.strip()), "")
+    normalized_status = status_line
+    if normalized_status.lower().startswith("status:"):
+        normalized_status = normalized_status.split(":", 1)[1].strip()
+    summary["blocked"] = normalized_status.startswith("Blocked")
+
+    sections = split_artifact_sections(lines)
+    for line in sections.get("findings", []):
+        match = FINDING_LINE_PATTERN.match(line.strip())
+        if match is None:
+            continue
+        summary["findings_by_severity"][match.group("severity")] += 1
+        summary["findings_by_lens"][match.group("lens")] += 1
+
+    open_question_lines = [line.strip() for line in sections.get("open questions", []) if line.strip()]
+    if open_question_lines and not (len(open_question_lines) == 1 and open_question_lines[0].lower() == "none"):
+        summary["open_question_count"] = sum(
+            1
+            for line in open_question_lines
+            if line.startswith("- ")
+            or re.match(r"^\d+\.\s+", line) is not None
+            or line.lower() != "none"
+        )
+
+    return summary
+
+
+def split_artifact_sections(lines: list[str]) -> dict[str, list[str]]:
+    sections: dict[str, list[str]] = {}
+    current_section: str | None = None
+    for line in lines:
+        heading = line.strip().lower()
+        if heading in ARTIFACT_SECTION_HEADINGS:
+            current_section = heading
+            sections.setdefault(current_section, [])
+            continue
+        if current_section is not None:
+            sections[current_section].append(line)
+    return sections
+
+
+def review_event_has_artifact_mismatch(metrics: dict[str, Any], parsed: dict[str, Any]) -> bool:
+    stored_severity = empty_count_dict(FINDING_SEVERITY_ORDER)
+    stored_lens = empty_count_dict(FINDING_LENS_ORDER)
+    merge_count_dicts(stored_severity, metrics.get("findings_by_severity", {}), FINDING_SEVERITY_ORDER)
+    merge_count_dicts(stored_lens, metrics.get("findings_by_lens", {}), FINDING_LENS_ORDER)
+    if stored_severity != parsed["findings_by_severity"]:
+        return True
+    if stored_lens != parsed["findings_by_lens"]:
+        return True
+    if bool(metrics.get("blocked")) != parsed["blocked"]:
+        return True
+    return int(metrics.get("open_question_count", 0) or 0) != parsed["open_question_count"]
+
+
+def build_validation_report(
+    events: list[dict[str, Any]],
+    filters: dict[str, Any],
+    *,
+    warning_count: int = 0,
+) -> dict[str, Any]:
+    validation_events = [event for event in events if event["event_type"] == "validation_attempt"]
+    command_kinds: dict[str, dict[str, int]] = {}
+    final_attempts: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+    for event in validation_events:
+        metrics = event["metrics"]
+        command_kind = metrics.get("command_kind")
+        command_label = metrics.get("command_label")
+        if not isinstance(command_kind, str) or not isinstance(command_label, str):
+            continue
+
+        stats = command_kinds.setdefault(
+            command_kind,
+            {
+                "attempt_count": 0,
+                "failure_count": 0,
+                "retry_count": 0,
+                "final_pass_count": 0,
+                "final_fail_count": 0,
+            },
+        )
+        stats["attempt_count"] += 1
+        if metrics.get("result") == "fail":
+            stats["failure_count"] += 1
+        if int(metrics.get("attempt_number", 0) or 0) > 1:
+            stats["retry_count"] += 1
+
+        key = (
+            event.get("run_id"),
+            event.get("repo_path"),
+            command_kind,
+            command_label,
+            metrics.get("scope"),
+            metrics.get("plan_path"),
+        )
+        previous = final_attempts.get(key)
+        if previous is None or should_replace_validation_attempt(previous, event):
+            final_attempts[key] = event
+
+    for event in final_attempts.values():
+        command_kind = event["metrics"]["command_kind"]
+        result = event["metrics"].get("result")
+        if result == "pass":
+            command_kinds[command_kind]["final_pass_count"] += 1
+        elif result == "fail":
+            command_kinds[command_kind]["final_fail_count"] += 1
+
+    return {
+        "report_type": "validation",
+        "filters": report_filters_public(filters),
+        "warning_count": warning_count,
+        "attempt_count": len(validation_events),
+        "command_kinds": command_kinds,
+    }
+
+
+def should_replace_validation_attempt(previous: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    previous_attempt = int(previous["metrics"].get("attempt_number", 0) or 0)
+    candidate_attempt = int(candidate["metrics"].get("attempt_number", 0) or 0)
+    if candidate_attempt != previous_attempt:
+        return candidate_attempt > previous_attempt
+    return candidate["_parsed_timestamp"] > previous["_parsed_timestamp"]
+
+
+def build_gates_report(
+    events: list[dict[str, Any]],
+    filters: dict[str, Any],
+    *,
+    warning_count: int = 0,
+) -> dict[str, Any]:
+    gate_events = [event for event in events if event["event_type"] == "gate_decided"]
+    gate_type_counts: Counter[str] = Counter()
+    decision_counts: dict[str, Counter[str]] = {}
+
+    for event in gate_events:
+        gate_type = event["metrics"].get("gate_type")
+        decision = event["metrics"].get("decision")
+        if not isinstance(gate_type, str) or not gate_type:
+            continue
+        gate_type_counts[gate_type] += 1
+        if isinstance(decision, str) and decision:
+            decision_counts.setdefault(gate_type, Counter())[decision] += 1
+
+    return {
+        "report_type": "gates",
+        "filters": report_filters_public(filters),
+        "warning_count": warning_count,
+        "gate_count": len(gate_events),
+        "gate_type_counts": dict(gate_type_counts),
+        "decision_counts": {gate_type: dict(counter) for gate_type, counter in decision_counts.items()},
+    }
+
+
+def build_tokens_report(
+    events: list[dict[str, Any]],
+    filters: dict[str, Any],
+    *,
+    warning_count: int = 0,
+) -> dict[str, Any]:
+    token_events = [event for event in events if event["event_type"] == "token_usage_recorded"]
+    by_source = {
+        "exact": [event for event in token_events if event["metrics"].get("token_source") == "exact"],
+        "estimated": [event for event in token_events if event["metrics"].get("token_source") == "estimated"],
+        "unavailable": [event for event in token_events if event["metrics"].get("token_source") == "unavailable"],
+    }
+
+    return {
+        "report_type": "tokens",
+        "filters": report_filters_public(filters),
+        "warning_count": warning_count,
+        "exact": summarize_token_source("exact", by_source["exact"]),
+        "estimated": summarize_token_source("estimated", by_source["estimated"]),
+        "unavailable": summarize_token_source("unavailable", by_source["unavailable"]),
+    }
+
+
+def summarize_token_source(source_quality: str, events: list[dict[str, Any]]) -> dict[str, Any]:
+    totals = empty_token_totals()
+    skills: dict[str, dict[str, Any]] = {}
+    models: dict[str, dict[str, Any]] = {}
+    sessions: dict[tuple[str | None, str | None, str | None], dict[str, Any]] = {}
+
+    for event in events:
+        metrics = event["metrics"]
+        merge_token_totals(totals, metrics)
+
+        skill = event.get("skill")
+        model = metrics.get("model")
+        session_id = event.get("session_id")
+        session_key = (session_id, skill, model if isinstance(model, str) else None)
+        session_summary = sessions.setdefault(
+            session_key,
+            {
+                "session_id": session_id,
+                "skill": skill,
+                "model": model if isinstance(model, str) else None,
+                "input_tokens": None,
+                "output_tokens": None,
+                "total_tokens": None,
+                "cache_read_tokens": None,
+                "cache_write_tokens": None,
+                "ai_credits": None,
+            },
+        )
+        merge_token_totals(session_summary, metrics)
+
+        if isinstance(skill, str) and skill:
+            merge_named_token_totals(skills, skill, metrics)
+        if isinstance(model, str) and model:
+            merge_named_token_totals(models, model, metrics)
+
+    return {
+        "source_quality": source_quality,
+        "row_count": len(events),
+        "session_count": len({event.get("session_id") for event in events if event.get("session_id") is not None}),
+        "totals": totals,
+        "sessions": sorted(sessions.values(), key=lambda item: (item["session_id"] or "", item["skill"] or "", item["model"] or "")),
+        "skills": skills,
+        "models": models,
+    }
+
+
+def empty_token_totals() -> dict[str, int | float | None]:
+    return {
+        "input_tokens": None,
+        "output_tokens": None,
+        "total_tokens": None,
+        "cache_read_tokens": None,
+        "cache_write_tokens": None,
+        "ai_credits": None,
+    }
+
+
+def merge_token_totals(target: dict[str, Any], metrics: dict[str, Any]) -> None:
+    for field in TOKEN_FIELDS:
+        value = metrics.get(field)
+        if value is None:
+            continue
+        if target[field] is None:
+            target[field] = value
+        else:
+            target[field] += value
+
+
+def merge_named_token_totals(target: dict[str, dict[str, Any]], key: str, metrics: dict[str, Any]) -> None:
+    summary = target.setdefault(key, empty_token_totals())
+    merge_token_totals(summary, metrics)
+
+
+def build_workflow_report(events: list[dict[str, Any]]) -> dict[str, Any]:
+    cycle_status_counts: Counter[str] = Counter()
+    for event in events:
+        if event["event_type"] == "cycle_completed":
+            cycle_status = event["metrics"].get("cycle_status")
+            if isinstance(cycle_status, str) and cycle_status:
+                cycle_status_counts[cycle_status] += 1
+
+    return {
+        "cycle_status_counts": dict(cycle_status_counts),
+        "pr_count": sum(1 for event in events if event["event_type"] == "pr_created"),
+        "retro_count": sum(1 for event in events if event["event_type"] == "retro_written"),
+    }
+
+
+def build_summary_report(
+    events: list[dict[str, Any]],
+    filters: dict[str, Any],
+    *,
+    warning_count: int = 0,
+) -> dict[str, Any]:
+    return {
+        "report_type": "summarize",
+        "filters": report_filters_public(filters),
+        "warning_count": warning_count,
+        "runs": build_runs_report(events, filters),
+        "reviews": build_reviews_report(events, filters),
+        "validation": build_validation_report(events, filters),
+        "gates": build_gates_report(events, filters),
+        "workflow_outputs": build_workflow_report(events),
+        "tokens": build_tokens_report(events, filters),
+    }
+
+
+def report_filters_public(filters: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "repo": filters["repo"],
+        "skill": filters["skill"],
+        "since": filters["since"],
+        "until": filters["until"],
+        "current_repo": filters["current_repo"],
+    }
+
+
+def format_runs_report(report: dict[str, Any]) -> str:
+    lines = [f"Skill runs ({format_filter_header(report['filters'])})"]
+    lines.extend(format_warning_lines(report["warning_count"]))
+    if not report["groups"]:
+        lines.append("- none")
+        return "\n".join(lines)
+
+    for group in report["groups"]:
+        lines.append(
+            "- "
+            f"{group['skill']} {group['status']}: {group['run_count']} runs, "
+            f"avg {format_duration(group['average_duration_seconds'])}, "
+            f"total {format_duration(group['total_duration_seconds'])}, "
+            f"window {group['first_timestamp']} .. {group['last_timestamp']}"
+        )
+    return "\n".join(lines)
+
+
+def format_reviews_report(report: dict[str, Any]) -> str:
+    lines = [f"Reviews ({format_filter_header(report['filters'])})"]
+    lines.extend(format_warning_lines(report["warning_count"]))
+    lines.append(
+        "- "
+        f"reviews={report['review_count']} initial={report['initial_review_count']} "
+        f"rereviews={report['rereview_count']} blocked={report['blocked_count']} "
+        f"open_questions={report['open_question_count']}"
+    )
+    lines.append(f"- lanes: {format_counter_map(report['lane_counts'])}")
+    lines.append(f"- reviewers: {format_counter_map(report['reviewer_counts'])}")
+    lines.append(f"- findings by severity: {format_counter_map(report['findings_by_severity'])}")
+    lines.append(f"- findings by lens: {format_counter_map(report['findings_by_lens'])}")
+    if report["rereview_trigger_counts"]:
+        lines.append(f"- rereview triggers: {format_counter_map(report['rereview_trigger_counts'])}")
+    lines.append(
+        "- "
+        f"artifacts parsed={report['artifact_summary']['parsed_count']} "
+        f"missing={report['artifact_summary']['missing_count']} "
+        f"mismatches={report['artifact_summary']['mismatch_count']}"
+    )
+    return "\n".join(lines)
+
+
+def format_validation_report(report: dict[str, Any]) -> str:
+    lines = [f"Validation ({format_filter_header(report['filters'])})"]
+    lines.extend(format_warning_lines(report["warning_count"]))
+    if not report["command_kinds"]:
+        lines.append("- none")
+        return "\n".join(lines)
+    for command_kind in sorted(report["command_kinds"]):
+        stats = report["command_kinds"][command_kind]
+        lines.append(
+            "- "
+            f"{command_kind}: attempts={stats['attempt_count']} failures={stats['failure_count']} "
+            f"retries={stats['retry_count']} final_pass={stats['final_pass_count']} "
+            f"final_fail={stats['final_fail_count']}"
+        )
+    return "\n".join(lines)
+
+
+def format_gates_report(report: dict[str, Any]) -> str:
+    lines = [f"Gates ({format_filter_header(report['filters'])})"]
+    lines.extend(format_warning_lines(report["warning_count"]))
+    if not report["decision_counts"]:
+        lines.append("- none")
+        return "\n".join(lines)
+    for gate_type in sorted(report["decision_counts"]):
+        lines.append(f"- {gate_type}: {format_counter_map(report['decision_counts'][gate_type])}")
+    return "\n".join(lines)
+
+
+def format_tokens_report(report: dict[str, Any]) -> str:
+    lines = [f"Tokens ({format_filter_header(report['filters'])})"]
+    lines.extend(format_warning_lines(report["warning_count"]))
+    for key in ("exact", "estimated", "unavailable"):
+        source = report[key]
+        total_tokens = source["totals"]["total_tokens"]
+        total_label = "none" if total_tokens is None else str(total_tokens)
+        lines.append(
+            "- "
+            f"Source quality: {source['source_quality']} rows={source['row_count']} "
+            f"sessions={source['session_count']} total_tokens={total_label}"
+        )
+    return "\n".join(lines)
+
+
+def format_summary_report(report: dict[str, Any]) -> str:
+    lines = [f"Dreamers stats summary ({format_filter_header(report['filters'])})"]
+    lines.extend(format_warning_lines(report["warning_count"]))
+    lines.append("")
+    lines.append("Skill runs")
+    lines.extend(format_summary_block_from_runs(report["runs"]))
+    lines.append("")
+    lines.append("Reviews")
+    lines.extend(format_summary_block_from_reviews(report["reviews"]))
+    lines.append("")
+    lines.append("Validation")
+    lines.extend(format_summary_block_from_validation(report["validation"]))
+    lines.append("")
+    lines.append("Gates")
+    lines.extend(format_summary_block_from_gates(report["gates"]))
+    lines.append("")
+    lines.append("Workflow outputs")
+    lines.extend(format_summary_block_from_workflow(report["workflow_outputs"]))
+    lines.append("")
+    lines.append("Tokens")
+    lines.extend(format_summary_block_from_tokens(report["tokens"]))
+    return "\n".join(lines)
+
+
+def format_summary_block_from_runs(report: dict[str, Any]) -> list[str]:
+    if not report["groups"]:
+        return ["- none"]
+    return [
+        "- "
+        f"{group['skill']} {group['status']}: {group['run_count']} runs, "
+        f"avg {format_duration(group['average_duration_seconds'])}, "
+        f"total {format_duration(group['total_duration_seconds'])}"
+        for group in report["groups"]
+    ]
+
+
+def format_summary_block_from_reviews(report: dict[str, Any]) -> list[str]:
+    return [
+        "- "
+        f"reviews={report['review_count']} rereviews={report['rereview_count']} "
+        f"blocked={report['blocked_count']} open_questions={report['open_question_count']}",
+        f"- lanes: {format_counter_map(report['lane_counts'])}",
+        f"- artifacts: parsed={report['artifact_summary']['parsed_count']} mismatches={report['artifact_summary']['mismatch_count']}",
+    ]
+
+
+def format_summary_block_from_validation(report: dict[str, Any]) -> list[str]:
+    if not report["command_kinds"]:
+        return ["- none"]
+    return [
+        "- "
+        f"{kind}: attempts={stats['attempt_count']} failures={stats['failure_count']} retries={stats['retry_count']}"
+        for kind, stats in sorted(report["command_kinds"].items())
+    ]
+
+
+def format_summary_block_from_gates(report: dict[str, Any]) -> list[str]:
+    if not report["decision_counts"]:
+        return ["- none"]
+    return [f"- {gate_type}: {format_counter_map(decisions)}" for gate_type, decisions in sorted(report["decision_counts"].items())]
+
+
+def format_summary_block_from_workflow(report: dict[str, Any]) -> list[str]:
+    return [
+        f"- cycles: {format_counter_map(report['cycle_status_counts'])}",
+        f"- prs={report['pr_count']} retros={report['retro_count']}",
+    ]
+
+
+def format_summary_block_from_tokens(report: dict[str, Any]) -> list[str]:
+    return [
+        "- "
+        f"{key}: rows={report[key]['row_count']} total_tokens="
+        f"{'none' if report[key]['totals']['total_tokens'] is None else report[key]['totals']['total_tokens']}"
+        for key in ("exact", "estimated", "unavailable")
+    ]
+
+
+def format_filter_header(filters: dict[str, Any]) -> str:
+    parts = [f"repo={filters['repo']}"]
+    if filters["skill"] is not None:
+        parts.append(f"skill={filters['skill']}")
+    if filters["since"] is not None:
+        parts.append(f"since={filters['since']}")
+    if filters["until"] is not None:
+        parts.append(f"until={filters['until']}")
+    return ", ".join(parts)
+
+
+def format_warning_lines(warning_count: int) -> list[str]:
+    if warning_count == 0:
+        return []
+    return [f"Warnings: skipped {warning_count} malformed or unreadable line(s)"]
+
+
+def format_duration(seconds: int) -> str:
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes, remainder = divmod(seconds, 60)
+    if minutes < 60:
+        if remainder:
+            return f"{minutes}m {remainder}s"
+        return f"{minutes}m"
+    hours, minutes = divmod(minutes, 60)
+    if minutes:
+        return f"{hours}h {minutes}m"
+    return f"{hours}h"
+
+
+def format_counter_map(values: dict[str, Any]) -> str:
+    if not values:
+        return "none"
+    items = []
+    for key in sorted(values):
+        items.append(f"{key}={values[key]}")
+    return ", ".join(items)
+
+
+REPORT_BUILDERS: dict[str, Callable[[list[dict[str, Any]], dict[str, Any]], dict[str, Any]]] = {
+    "summarize": build_summary_report,
+    "runs": build_runs_report,
+    "reviews": build_reviews_report,
+    "validation": build_validation_report,
+    "gates": build_gates_report,
+    "tokens": build_tokens_report,
+}
+
+REPORT_FORMATTERS: dict[str, Callable[[dict[str, Any]], str]] = {
+    "summarize": format_summary_report,
+    "runs": format_runs_report,
+    "reviews": format_reviews_report,
+    "validation": format_validation_report,
+    "gates": format_gates_report,
+    "tokens": format_tokens_report,
+}
+
+
+def run_report_command(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
+    filters = build_report_filters(args)
+    events, warning_count = load_report_events(args.copilot_home)
+    filtered_events = filter_report_events(events, filters)
+    report = REPORT_BUILDERS[args.command](filtered_events, filters, warning_count=warning_count)
+    if args.json:
+        return report, json.dumps(report, sort_keys=True)
+    return report, REPORT_FORMATTERS[args.command](report)
+
+
 def load_event(args: argparse.Namespace, stdin: TextIO) -> dict[str, Any]:
     event_json = getattr(args, "event_json", None)
     if event_json is not None:
@@ -1005,7 +1937,20 @@ def build_parser() -> argparse.ArgumentParser:
     hook_parser.add_argument("--copilot-home")
     hook_parser.add_argument("--event-name", required=True)
 
+    for name in ("summarize", "runs", "reviews", "validation", "gates", "tokens"):
+        report_parser = subcommands.add_parser(name)
+        add_report_arguments(report_parser)
+
     return parser
+
+
+def add_report_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--copilot-home")
+    parser.add_argument("--repo", choices=("current", "all"), default="current")
+    parser.add_argument("--skill")
+    parser.add_argument("--since")
+    parser.add_argument("--until")
+    parser.add_argument("--json", action="store_true")
 
 
 def main(argv: list[str] | None = None, stdin: TextIO | None = None) -> int:
@@ -1074,6 +2019,18 @@ def main(argv: list[str] | None = None, stdin: TextIO | None = None) -> int:
         except OSError:
             print("write_failed", file=sys.stderr)
             return 1
+        return 0
+
+    if args.command in REPORT_BUILDERS:
+        try:
+            _report, output = run_report_command(args)
+        except StatsValidationError as exc:
+            print(exc.category, file=sys.stderr)
+            return 2
+        except OSError:
+            print("read_failed", file=sys.stderr)
+            return 1
+        print(output)
         return 0
 
     parser.error("unknown command")

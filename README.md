@@ -136,6 +136,21 @@ Options:
 
 Uninstall removes only Dreamers-managed hook and script assets and preserves any historical stats already written under `~/.copilot/dreamers/stats/`.
 
+## Local stats reports
+
+After install, Dreamers can summarize the local stats log at `~/.copilot/dreamers/stats/events.jsonl` with on-demand report commands from `~/.copilot/dreamers/scripts/dreamers_stats.py`:
+
+```bash
+python3 ~/.copilot/dreamers/scripts/dreamers_stats.py summarize --repo current
+python3 ~/.copilot/dreamers/scripts/dreamers_stats.py runs --repo all --since 30d --json
+python3 ~/.copilot/dreamers/scripts/dreamers_stats.py reviews --repo current --json
+python3 ~/.copilot/dreamers/scripts/dreamers_stats.py validation --repo current --json
+python3 ~/.copilot/dreamers/scripts/dreamers_stats.py gates --repo current --json
+python3 ~/.copilot/dreamers/scripts/dreamers_stats.py tokens --repo current --json
+```
+
+Use `--copilot-home` or `COPILOT_HOME` when your Dreamers install lives outside the default `~/.copilot` path.
+
 ## Project setup
 
 For a new project that wants to use Dreamers, see [project-bootstrap.md](.github/dreamers/refs/project-bootstrap.md):
