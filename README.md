@@ -11,8 +11,9 @@ Everything lives under `.github/`:
 ├── agents/           # Agent definitions (Forge, Nova personas; reviewers, Echo, Sage)
 ├── skills/           # Skill entry points
 ├── dreamers/
+│   ├── hooks/        # Copilot runtime hook configs installed into ~/.copilot/hooks/
 │   ├── refs/         # Shared reference docs (inlined into consumers at build time)
-│   ├── scripts/      # Dreamers-managed local helper scripts
+│   ├── scripts/      # Dreamers-managed helper scripts, including runtime stats hooks
 │   └── templates/    # Plan-writing guide, PR description shape, etc.
 └── instructions/     # Auto-loaded instruction files
 ```
@@ -108,7 +109,7 @@ Use `/dreamers-update` for changes to Dreamers system files. The Copilot repo (`
 
 ## Install
 
-Install agents, skills, refs, and templates into your global `~/.copilot/` directory:
+Install agents, skills, refs, templates, runtime hook configs, and helper scripts into your global `~/.copilot/` directory:
 
 ```powershell
 .\Install-Dreamers.ps1
@@ -116,9 +117,12 @@ Install agents, skills, refs, and templates into your global `~/.copilot/` direc
 
 Options:
 - `-Force` — overwrite existing files without prompting
+- `-WhatIf` — preview the managed files that would be copied
 - `-CopilotHome "D:\custom\.copilot"` — install to a custom location
 
 Instruction files in `.github/instructions/` (including `dreamers.instructions.md`) are auto-loaded by Copilot CLI. The installer copies them to `~/.copilot/instructions/` for global use. Your personal `~/.copilot/copilot-instructions.md` is never touched.
+
+The installer also copies Dreamers runtime hook assets into `~/.copilot/hooks/` and `~/.copilot/dreamers/scripts/` so Copilot lifecycle events can be recorded in local stats without modifying session context.
 
 ## Uninstall
 
@@ -129,6 +133,8 @@ Instruction files in `.github/instructions/` (including `dreamers.instructions.m
 Options:
 - `-DryRun` — preview what would be removed without deleting
 - `-CopilotHome "D:\custom\.copilot"` — target a custom location
+
+Uninstall removes only Dreamers-managed hook and script assets and preserves any historical stats already written under `~/.copilot/dreamers/stats/`.
 
 ## Project setup
 

@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Callable, TextIO
 
 
 SCHEMA_VERSION = 1
@@ -126,6 +127,101 @@ SENSITIVE_VALUE_PATTERNS = (
     re.compile(r"Bearer\s+[A-Za-z0-9._~+/=-]{8,}", re.IGNORECASE),
 )
 
+HookSpecValue = str | Callable[[dict[str, Any]], Any]
+HookSpec = dict[str, HookSpecValue]
+
+HOOK_EVENT_SPECS: dict[str, HookSpec] = {
+    "sessionStart": {
+        "event_type": "session_started",
+        "status": "started",
+        "metrics": lambda payload: {
+            "session_source": hook_value(payload, "source"),
+            "initial_input_present": bool(hook_value(payload, "initialPrompt")),
+        },
+    },
+    "sessionEnd": {
+        "event_type": "session_completed",
+        "status": "completed",
+        "metrics": lambda payload: {
+            "reason": hook_value(payload, "reason"),
+        },
+    },
+    "userPromptSubmitted": {
+        "event_type": "prompt_submitted",
+        "status": "submitted",
+        "metrics": lambda payload: {
+            "prompt_count": 1,
+            "input_char_count": len(hook_value(payload, "prompt", default="")),
+            "starts_with_slash": hook_value(payload, "prompt", default="").lstrip().startswith("/"),
+        },
+    },
+    "postToolUse": {
+        "event_type": "tool_completed",
+        "status": "completed",
+        "metrics": lambda payload: {
+            "tool_name": hook_value(payload, "toolName", "tool_name"),
+            "result_type": hook_nested_value(
+                payload,
+                ("toolResult", "tool_result"),
+                "resultType",
+                "result_type",
+                default="success",
+            ),
+        },
+    },
+    "postToolUseFailure": {
+        "event_type": "tool_failed",
+        "status": "failed",
+        "metrics": lambda payload: {
+            "tool_name": hook_value(payload, "toolName", "tool_name"),
+            "error_present": bool(hook_value(payload, "error")),
+        },
+    },
+    "agentStop": {
+        "event_type": "turn_completed",
+        "status": "completed",
+        "metrics": lambda payload: {
+            "stop_reason": hook_value(payload, "stopReason", "stop_reason"),
+        },
+    },
+    "subagentStart": {
+        "event_type": "subagent_started",
+        "status": "started",
+        "metrics": lambda payload: {
+            "agent_name": hook_value(payload, "agentName", "agent_name"),
+            "agent_display_name": hook_value(payload, "agentDisplayName", "agent_display_name"),
+        },
+    },
+    "subagentStop": {
+        "event_type": "subagent_completed",
+        "status": "completed",
+        "metrics": lambda payload: {
+            "agent_name": hook_value(payload, "agentName", "agent_name"),
+            "agent_display_name": hook_value(payload, "agentDisplayName", "agent_display_name"),
+            "stop_reason": hook_value(payload, "stopReason", "stop_reason"),
+        },
+    },
+    "errorOccurred": {
+        "event_type": "error_occurred",
+        "status": lambda payload: "recoverable" if bool(hook_value(payload, "recoverable")) else "terminal",
+        "metrics": lambda payload: {
+            "error_name": hook_nested_value(payload, ("error",), "name", default="unknown"),
+            "error_context": hook_value(payload, "errorContext", "error_context"),
+            "recoverable": bool(hook_value(payload, "recoverable")),
+        },
+    },
+    "preCompact": {
+        "event_type": "compaction_started",
+        "status": "started",
+        "metrics": lambda payload: {
+            "trigger": hook_value(payload, "trigger"),
+            "instructions_present": bool(
+                hook_value(payload, "customInstructions", "custom_instructions")
+            ),
+        },
+    },
+}
+
 
 class StatsValidationError(ValueError):
     def __init__(self, category: str, message: str) -> None:
@@ -218,9 +314,85 @@ def _validate_event_id(value: str) -> None:
 
 
 def _validate_timestamp(value: str) -> None:
+    parse_iso_timestamp(value)
+
+
+def build_hook_event(event_name: str, payload: dict[str, Any]) -> dict[str, Any]:
+    spec = HOOK_EVENT_SPECS.get(event_name)
+    if spec is None:
+        raise StatsValidationError("invalid_hook_event", "hook event is not supported")
+    event = {
+        "schema_version": SCHEMA_VERSION,
+        "timestamp": hook_timestamp(payload),
+        "event_type": resolve_hook_spec_value(spec["event_type"], payload),
+        "repo_path": hook_value(payload, "cwd"),
+        "session_id": hook_value(payload, "sessionId", "session_id"),
+        "source": "hook",
+        "status": resolve_hook_spec_value(spec["status"], payload),
+        "metrics": resolve_hook_spec_value(spec["metrics"], payload),
+    }
+    event["event_id"] = hook_event_id(event_name, event)
+    return event
+
+
+def hook_event_id(event_name: str, event: dict[str, Any]) -> str:
+    fingerprint = json.dumps(
+        {
+            "event_name": event_name,
+            "timestamp": event["timestamp"],
+            "session_id": event.get("session_id"),
+            "repo_path": event["repo_path"],
+            "event_type": event["event_type"],
+            "metrics": event["metrics"],
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    digest = hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()[:16]
+    return f"hook_{event['event_type']}_{digest}"
+
+
+def hook_value(payload: dict[str, Any], *keys: str, default: Any = None) -> Any:
+    for key in keys:
+        if key in payload:
+            return payload[key]
+    return default
+
+
+def hook_nested_value(
+    payload: dict[str, Any],
+    parent_keys: tuple[str, ...],
+    *child_keys: str,
+    default: Any = None,
+) -> Any:
+    nested = hook_value(payload, *parent_keys, default={})
+    if not isinstance(nested, dict):
+        return default
+    return hook_value(nested, *child_keys, default=default)
+
+
+def resolve_hook_spec_value(value: HookSpecValue, payload: dict[str, Any]) -> Any:
+    if callable(value):
+        return value(payload)
+    return value
+
+
+def hook_timestamp(payload: dict[str, Any]) -> str:
+    value = hook_value(payload, "timestamp")
+    if isinstance(value, int | float):
+        return datetime.fromtimestamp(value / 1000, tz=UTC).isoformat().replace("+00:00", "Z")
+    if isinstance(value, str):
+        parsed = parse_iso_timestamp(value)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=UTC)
+        return parsed.astimezone(UTC).isoformat().replace("+00:00", "Z")
+    raise StatsValidationError("invalid_timestamp", "timestamp must be a number or ISO 8601 string")
+
+
+def parse_iso_timestamp(value: str) -> datetime:
     candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
     try:
-        datetime.fromisoformat(candidate)
+        return datetime.fromisoformat(candidate)
     except ValueError as exc:
         raise StatsValidationError("invalid_timestamp", "timestamp must be ISO 8601") from exc
 
@@ -365,8 +537,9 @@ def doctor(copilot_home: str | Path | None = None) -> dict[str, Any]:
 
 
 def load_event(args: argparse.Namespace, stdin: TextIO) -> dict[str, Any]:
-    if args.event_json is not None:
-        raw = args.event_json
+    event_json = getattr(args, "event_json", None)
+    if event_json is not None:
+        raw = event_json
     else:
         raw = stdin.read()
     payload = json.loads(raw)
@@ -388,6 +561,10 @@ def build_parser() -> argparse.ArgumentParser:
     doctor_parser = subcommands.add_parser("doctor")
     doctor_parser.add_argument("--copilot-home")
     doctor_parser.add_argument("--json", action="store_true")
+
+    hook_parser = subcommands.add_parser("hook")
+    hook_parser.add_argument("--copilot-home")
+    hook_parser.add_argument("--event-name", required=True)
 
     return parser
 
@@ -426,6 +603,22 @@ def main(argv: list[str] | None = None, stdin: TextIO | None = None) -> int:
                 f"path={report['events_file']}"
             )
         return 0 if report["writable"] else 1
+
+    if args.command == "hook":
+        try:
+            payload = load_event(args, input_stream)
+            event = build_hook_event(args.event_name, payload)
+            record_event(event, copilot_home=args.copilot_home)
+        except json.JSONDecodeError:
+            print("invalid_json", file=sys.stderr)
+            return 2
+        except StatsValidationError as exc:
+            print(exc.category, file=sys.stderr)
+            return 2
+        except OSError:
+            print("write_failed", file=sys.stderr)
+            return 1
+        return 0
 
     parser.error("unknown command")
     return 2

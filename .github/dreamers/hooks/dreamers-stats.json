@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" sessionStart",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') sessionStart",
+        "timeoutSec": 10
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" sessionEnd",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') sessionEnd",
+        "timeoutSec": 10
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" userPromptSubmitted",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') userPromptSubmitted",
+        "timeoutSec": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" postToolUse",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') postToolUse",
+        "timeoutSec": 10
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" postToolUseFailure",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') postToolUseFailure",
+        "timeoutSec": 10
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" agentStop",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') agentStop",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStart": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" subagentStart",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') subagentStart",
+        "timeoutSec": 10
+      }
+    ],
+    "subagentStop": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" subagentStop",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') subagentStop",
+        "timeoutSec": 10
+      }
+    ],
+    "errorOccurred": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" errorOccurred",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') errorOccurred",
+        "timeoutSec": 10
+      }
+    ],
+    "preCompact": [
+      {
+        "type": "command",
+        "bash": "COPILOT_HOME=\"${COPILOT_HOME:-$HOME/.copilot}\"; bash \"$COPILOT_HOME/dreamers/scripts/dreamers_hook.sh\" preCompact",
+        "powershell": "$copilotHome = if ($env:COPILOT_HOME) { $env:COPILOT_HOME } else { Join-Path $HOME '.copilot' }; & (Join-Path $copilotHome 'dreamers/scripts/dreamers_hook.ps1') preCompact",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
