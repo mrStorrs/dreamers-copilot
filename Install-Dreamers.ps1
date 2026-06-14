@@ -12,6 +12,10 @@
 .PARAMETER CopilotHome
     Override the target Copilot home directory. Defaults to ~/.copilot.
 
+.PARAMETER DreamersMcpPath
+    Override the local dreamers-mcp checkout used for the shared stats runtime.
+    Defaults to a sibling ../dreamers-mcp checkout next to this repo.
+
 .PARAMETER Force
     Overwrite existing files without prompting.
 
@@ -24,6 +28,7 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [string]$CopilotHome = (Join-Path $HOME ".copilot"),
+    [string]$DreamersMcpPath,
     [switch]$Force
 )
 
@@ -37,13 +42,59 @@ if (-not (Test-Path $Source)) {
     exit 1
 }
 
+function Resolve-DreamersMcpCheckout {
+    param([string]$CandidatePath)
+
+    $checkoutRoot = if ($CandidatePath) {
+        $CandidatePath
+    } else {
+        Join-Path (Split-Path -Parent $RepoRoot) "dreamers-mcp"
+    }
+
+    $resolvedPath = Resolve-Path -LiteralPath $checkoutRoot -ErrorAction SilentlyContinue
+    $resolvedRoot = if ($null -ne $resolvedPath) {
+        [System.IO.Path]::GetFullPath($resolvedPath.Path)
+    } else {
+        [System.IO.Path]::GetFullPath($checkoutRoot)
+    }
+    $packageDir = Join-Path $resolvedRoot "dreamers_stats"
+    $requiredFiles = @("__init__.py", "__main__.py", "cli.py", "mcp_server.py", "runtime.py")
+    if (-not (Test-Path $packageDir)) {
+        throw "Cannot find dreamers-mcp shared runtime at '$resolvedRoot'. Pass -DreamersMcpPath to a local dreamers-mcp checkout."
+    }
+    foreach ($name in $requiredFiles) {
+        if (-not (Test-Path (Join-Path $packageDir $name))) {
+            throw "dreamers-mcp checkout at '$resolvedRoot' is incomplete; missing dreamers_stats/$name."
+        }
+    }
+
+    return $packageDir
+}
+
+function Get-ManagedRuntimeTargets {
+    $targets = [System.Collections.Generic.List[string]]::new()
+    if (-not (Test-Path $RuntimeInstallStatePath)) {
+        return $targets
+    }
+
+    foreach ($line in Get-Content $RuntimeInstallStatePath) {
+        $trimmed = $line.Trim()
+        if ($trimmed) {
+            $targets.Add($trimmed)
+        }
+    }
+
+    return $targets
+}
+
 function Copy-Files {
     param(
         [string]$From,
         [string]$To,
         [string]$Label,
         [System.Collections.Generic.List[string]]$ManagedTargets,
-        [string]$ManagedPrefix
+        [string]$ManagedPrefix,
+        [switch]$Recurse
     )
     if (-not (Test-Path $From)) {
         Write-Warning "Source not found, skipping: $From"
@@ -54,19 +105,34 @@ function Copy-Files {
             New-Item -ItemType Directory -Path $To -Force | Out-Null
         }
     }
-    $files = Get-ChildItem $From -File
+    $files = if ($Recurse) {
+        Get-ChildItem $From -File -Recurse
+    } else {
+        Get-ChildItem $From -File
+    }
     $count = 0
     foreach ($f in $files) {
-        $dest = Join-Path $To $f.Name
+        $relativePath = if ($Recurse) {
+            $f.FullName.Substring($From.Length).TrimStart("\", "/")
+        } else {
+            $f.Name
+        }
+        $dest = Join-Path $To $relativePath
+        $destDir = Split-Path -Parent $dest
+        if (-not (Test-Path $destDir)) {
+            if ($PSCmdlet.ShouldProcess($destDir, "Create directory for $Label")) {
+                New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+            }
+        }
         if ((Test-Path $dest) -and -not $Force) {
-            Write-Host "  SKIP (exists): $($f.Name) — use -Force to overwrite" -ForegroundColor Yellow
+            Write-Host "  SKIP (exists): $relativePath — use -Force to overwrite" -ForegroundColor Yellow
             continue
         }
         if ($PSCmdlet.ShouldProcess($dest, "Copy $Label asset")) {
             Copy-Item $f.FullName $dest -Force
-            Write-Host "  OK: $($f.Name)" -ForegroundColor Green
+            Write-Host "  OK: $relativePath" -ForegroundColor Green
             if ($null -ne $ManagedTargets -and $ManagedPrefix) {
-                $ManagedTargets.Add(((Join-Path $ManagedPrefix $f.Name) -replace "\\", "/"))
+                $ManagedTargets.Add(((Join-Path $ManagedPrefix $relativePath) -replace "\\", "/"))
             }
             $count++
         }
@@ -107,12 +173,15 @@ function Write-ManagedRuntimeTargets {
     }
 }
 
+$SharedRuntimePackageSource = Resolve-DreamersMcpCheckout -CandidatePath $DreamersMcpPath
+
 Write-Host "`nDreamers Installer" -ForegroundColor Cyan
 Write-Host "Source:  $Source"
+Write-Host "Runtime: $SharedRuntimePackageSource"
 Write-Host "Target:  $CopilotHome`n"
 
 $total = 0
-$managedRuntimeTargets = [System.Collections.Generic.List[string]]::new()
+$managedRuntimeTargets = Get-ManagedRuntimeTargets
 
 # Agents
 Write-Host "[agents]" -ForegroundColor Cyan
@@ -136,6 +205,10 @@ $total += Copy-Files -From (Join-Path $Source "dreamers" "refs") -To (Join-Path 
 # Dreamers templates
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
 $total += Copy-Files -From (Join-Path $Source "dreamers" "templates") -To (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
+
+# Shared runtime package
+Write-Host "[dreamers/runtime]" -ForegroundColor Cyan
+$total += Copy-Files -From $SharedRuntimePackageSource -To (Join-Path $CopilotHome "dreamers" "runtime" "dreamers_stats") -Label "runtime" -ManagedTargets $managedRuntimeTargets -ManagedPrefix "dreamers/runtime/dreamers_stats" -Recurse
 
 # Dreamers scripts
 Write-Host "[dreamers/scripts]" -ForegroundColor Cyan

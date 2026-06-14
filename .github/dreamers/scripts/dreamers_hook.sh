@@ -31,7 +31,7 @@ if ! python_bin="$(resolve_python)"; then
   exit 0
 fi
 
-if "$python_bin" "$script_dir/dreamers_stats.py" hook --copilot-home "$copilot_home" --event-name "$event_name"; then
+if "$python_bin" "$script_dir/dreamers_stats.py" hook --client copilot --home "$copilot_home" --event-name "$event_name"; then
   :
 else
   status=$?

@@ -109,7 +109,7 @@ Use `/dreamers-update` for changes to Dreamers system files. The Copilot repo (`
 
 ## Install
 
-Install agents, skills, refs, templates, runtime hook configs, and helper scripts into your global `~/.copilot/` directory:
+Install agents, skills, refs, templates, runtime hook configs, the shared stats runtime package, and helper scripts into your global `~/.copilot/` directory:
 
 ```powershell
 .\Install-Dreamers.ps1
@@ -119,10 +119,11 @@ Options:
 - `-Force` — overwrite existing files without prompting
 - `-WhatIf` — preview the managed files that would be copied
 - `-CopilotHome "D:\custom\.copilot"` — install to a custom location
+- `-DreamersMcpPath "D:\projects\dreamers-mcp"` — use a specific local `dreamers-mcp` checkout instead of the default sibling `../dreamers-mcp`
 
 Instruction files in `.github/instructions/` (including `dreamers.instructions.md`) are auto-loaded by Copilot CLI. The installer copies them to `~/.copilot/instructions/` for global use. Your personal `~/.copilot/copilot-instructions.md` is never touched.
 
-The installer also copies Dreamers runtime hook assets into `~/.copilot/hooks/` and `~/.copilot/dreamers/scripts/` so Copilot lifecycle events can be recorded in local stats without modifying session context.
+The installer copies the shared runtime from the local `dreamers-mcp` checkout into `~/.copilot/dreamers/runtime/dreamers_stats/`. It also installs the Copilot compatibility shim and hook assets into `~/.copilot/dreamers/scripts/` and `~/.copilot/hooks/` so Copilot lifecycle events can be recorded in local stats without modifying session context or requiring `pip install`.
 
 ## Uninstall
 
@@ -134,11 +135,11 @@ Options:
 - `-DryRun` — preview what would be removed without deleting
 - `-CopilotHome "D:\custom\.copilot"` — target a custom location
 
-Uninstall removes only Dreamers-managed hook and script assets and preserves any historical stats already written under `~/.copilot/dreamers/stats/`.
+Uninstall removes only Dreamers-managed runtime, hook, and shim assets that Dreamers actually installed. It preserves user-owned same-name files and any historical stats already written under `~/.copilot/dreamers/stats/`.
 
 ## Local stats reports
 
-After install, Dreamers can summarize the local stats log at `~/.copilot/dreamers/stats/events.jsonl` with on-demand report commands from `~/.copilot/dreamers/scripts/dreamers_stats.py`:
+After install, Dreamers can summarize the local stats log at `~/.copilot/dreamers/stats/events.jsonl` with on-demand report commands from the legacy Copilot command path `~/.copilot/dreamers/scripts/dreamers_stats.py`. That shim delegates to the shared `dreamers-mcp` runtime while preserving Copilot CLI behavior:
 
 ```bash
 python3 ~/.copilot/dreamers/scripts/dreamers_stats.py summarize --repo current

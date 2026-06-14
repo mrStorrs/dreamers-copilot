@@ -51,7 +51,7 @@ if ($pythonCommand.Length -gt 1) {
 }
 
 try {
-    $payload | & $pythonExecutable @pythonArgs $statsScript hook --copilot-home $CopilotHome --event-name $EventName
+    $payload | & $pythonExecutable @pythonArgs $statsScript hook --client copilot --home $CopilotHome --event-name $EventName
     if ($LASTEXITCODE -ne 0) {
         Write-HookWarning "$EventName stats write failed with exit $LASTEXITCODE"
     }

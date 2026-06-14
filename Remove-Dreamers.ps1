@@ -72,6 +72,30 @@ function Remove-EmptyDirectory {
     }
 }
 
+function Remove-ManifestManagedTargets {
+    param([hashtable]$ManagedTargets)
+    if ($null -eq $ManagedTargets -or $ManagedTargets.Count -eq 0) {
+        return 0
+    }
+
+    $count = 0
+    foreach ($relativePath in ($ManagedTargets.Keys | Sort-Object)) {
+        $normalizedRelative = $relativePath -replace "/", [System.IO.Path]::DirectorySeparatorChar
+        $target = Join-Path $CopilotHome $normalizedRelative
+        if (-not (Test-Path $target)) {
+            continue
+        }
+        if ($DryRun) {
+            Write-Host "  WOULD REMOVE: $target" -ForegroundColor Yellow
+        } else {
+            Remove-Item $target -Force
+            Write-Host "  REMOVED: $relativePath" -ForegroundColor Red
+        }
+        $count++
+    }
+    return $count
+}
+
 function Remove-ManagedFiles {
     param(
         [string]$SourceDir,
@@ -116,6 +140,9 @@ Write-Host "Target:  $CopilotHome`n"
 $total = 0
 $managedRuntimeTargets = Get-ManagedRuntimeTargets
 
+Write-Host "[runtime-manifest]" -ForegroundColor Cyan
+$total += Remove-ManifestManagedTargets -ManagedTargets $managedRuntimeTargets
+
 # Agents
 Write-Host "[agents]" -ForegroundColor Cyan
 $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "agents") -TargetDir (Join-Path $CopilotHome "agents") -Label "agents"
@@ -139,13 +166,7 @@ $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "refs") -
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
 $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "templates") -TargetDir (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
 
-# Dreamers scripts
-Write-Host "[dreamers/scripts]" -ForegroundColor Cyan
-$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "scripts") -TargetDir (Join-Path $CopilotHome "dreamers" "scripts") -Label "scripts" -ManagedTargets $managedRuntimeTargets -ManagedPrefix "dreamers/scripts"
-
-# User-level hooks
-Write-Host "[hooks]" -ForegroundColor Cyan
-$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "hooks") -TargetDir (Join-Path $CopilotHome "hooks") -Label "hooks" -ManagedTargets $managedRuntimeTargets -ManagedPrefix "hooks"
+# Runtime package, compatibility shim, and user-level hooks are removed from the manifest only.
 
 # Instructions
 Write-Host "[instructions]" -ForegroundColor Cyan
@@ -157,6 +178,8 @@ if (-not $DryRun) {
     }
     Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers" "refs")
     Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers" "install-state")
+    Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers" "runtime" "dreamers_stats")
+    Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers" "runtime")
     Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers" "templates")
     Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers" "scripts")
     Remove-EmptyDirectory -Path (Join-Path $CopilotHome "dreamers")
