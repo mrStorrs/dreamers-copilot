@@ -25,7 +25,7 @@ Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <tas
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`, skill-internal reviews outside `/dreamers-full` and `/dreamers-review`, and `/dreamers-full` follow-up reruns. Combines Sentinel, Probe, and Hone lenses and writes one `.dreamers/reviews/` artifact. |
+| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`, skill-internal reviews outside `/dreamers-full` and `/dreamers-review`, and `/dreamers-full` follow-up reruns. Combines Sentinel, Probe, and the shared Hone architecture rubric; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
