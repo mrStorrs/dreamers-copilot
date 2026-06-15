@@ -97,7 +97,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and Hone lenses for correctness, security, maintainability, test coverage, and simplicity. Used by /dreamers-lite, skill-internal reviews outside /dreamers-full and /dreamers-review, and /dreamers-full follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact; never applies fixes.",
+      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and the shared Hone architecture rubric for correctness, security, maintainability, test coverage, and simplicity. Used by /dreamers-lite, skill-internal reviews outside /dreamers-full and /dreamers-review, and /dreamers-full follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -515,7 +515,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, git workflow, close-out procedure, orchestrator discipline, etc.).",
+      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, architecture rubric, git workflow, close-out procedure, orchestrator discipline, etc.).",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },

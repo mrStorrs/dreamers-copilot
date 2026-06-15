@@ -50,7 +50,7 @@ Read these files before doing anything else:
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
 3. The task and context passed in the prompt (plan file path, changed-files scope, branch + default-branch names)
 
-The `reviewer-findings-format` ref Hone binds to is inlined below. The caller (typically `/dreamers-full` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
+The `reviewer-findings-format` and `hone-architecture-rubric` refs Hone binds to are inlined below. The caller (typically `/dreamers-full` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 
@@ -96,20 +96,75 @@ Reviewers are read-only / report-only for code, tests, docs, config, scripts, an
 
 Read every changed file in scope. Audit for architectural quality. Identify findings. Write findings in the structured artifact format. Do not edit anything outside the artifact.
 
-### What must be checked (aggressively)
+<hone-architecture-rubric>
+# Hone Architecture Rubric
 
-For the changed code in scope, look for and FLAG (do not internally dismiss):
+## Core Position
 
-- **Over-engineering** — every line that exists for a hypothetical future case, not a current requirement. Each is a finding. Severity grows with the complexity introduced. Default position: speculative generality is a finding until the second concrete consumer proves otherwise.
-- **Premature abstractions** — interfaces / factories / wrappers / generic helpers introduced for a single current caller. If the abstraction has no second consumer and no documented near-term need, that's a finding. Suggest inline.
-- **Defensive code for impossible conditions** — null checks for values that can't be null per the type system; try/catch for impossible exceptions; "just in case" code paths. Each is a finding. Type-system-prevented errors do not warrant runtime checks.
-- **Redundant indirection** — wrapper functions that just call the wrapped function; pass-through layers; aliases that obscure rather than clarify. Each is a finding.
-- **Duplicated logic** — two or more nearly-identical blocks. Extraction may be warranted; flag with a suggested extraction location and explicit "consolidate to one helper" instruction.
-- **Repeated inline logic that belongs in a shared helper** — same pattern repeated; would be clearer named once.
-- **Dead code introduced by this change** — variables / functions / imports added but not used. Each is a finding.
-- **Bad architecture** — code that does the right thing but is structured badly enough that a full refactor would yield clearer, simpler code. Say so. **Do NOT soften the recommendation to fit the current plan's scope** — recommend the right thing and let the orchestrator's gate decide whether to apply now or defer.
-- **Simpler alternatives** — when the implementation uses pattern X but pattern Y is simpler (functional map vs procedural loop, single function vs strategy hierarchy, plain object vs class with one method), flag it as a finding with the simpler alternative spelled out.
-- **Inconsistent style within the changed files** — casing / formatting / structure that diverges from project conventions. Each is a finding (severity: low).
+End-state code quality is the only objective of the simplicity / architecture lens. Refactor cost is not a moderating factor. If the cleanest fix requires a full refactor, report it directly with explicit breadth so the orchestrator can route it through the major-refactor gate.
+
+Bad architecture is a finding even when behavior is correct. Do not only flag broken code; flag code that is worse than it should be.
+
+## Required Checks
+
+For changed code in scope, look for and flag each applicable issue. Do not internally dismiss a finding because the fix is broad.
+
+- **Over-engineering** - Code that exists for a hypothetical future case rather than a current requirement. Speculative generality is a finding until a second concrete consumer proves otherwise.
+- **Premature abstractions** - Interfaces, factories, wrappers, classes, strategy objects, generic helpers, or plugin points introduced for one current caller without documented near-term need. Suggest inline code or a smaller concrete helper.
+- **Redundant indirection** - Pass-through layers, aliases, wrappers, dispatch functions, or adapters that obscure the real operation without adding behavior.
+- **Single-use helpers that hide simple logic** - Helpers whose body is clearer than their name or whose only caller would be easier to read inline.
+- **Defensive code for impossible conditions** - Null checks, try/catch blocks, fallback branches, or validation for states prevented by the type system, parser, schema, or caller contract.
+- **Duplicated logic** - Near-identical blocks, repeated control flow, repeated parsing/validation, or repeated data-shaping. Suggest one extraction point and the call sites to replace.
+- **Repeated inline logic that deserves a shared helper** - Same pattern repeated enough that one named helper would reduce total code and clarify intent.
+- **Dead code introduced by the change** - Unused variables, imports, functions, branches, config, comments, files, or generated scaffolding.
+- **Bad module boundaries** - Logic placed in the wrong layer, new coupling across unrelated subsystems, data-shape translation spread across layers, or a module doing more than one job.
+- **Hidden state or lifecycle complexity** - Mutable state, caches, registries, initialization ordering, global flags, or cleanup flows whose complexity is not required by the current behavior.
+- **Poor data flow** - Procedural sequences, mutation-heavy transformations, or scattered conditionals that would be simpler as a direct data transformation, table, map, or small pure function.
+- **Inconsistent local style** - Naming, file shape, dependency direction, or formatting that diverges from nearby project conventions.
+- **Simpler alternative available** - Any place where the implementation uses a heavier pattern than the local codebase needs. Name the simpler pattern in the finding.
+- **Full-refactor candidate** - Code structured badly enough that the honest fix is to tear out, rewrite, consolidate, or relocate a module, abstraction, or cross-file flow.
+
+## Scope Language
+
+When the fix has architectural scope, make the breadth explicit in the finding's suggested fix. Include files, modules, call-site counts, deletions, or affected subsystems where known.
+
+Use direct fix language:
+
+```
+tear out X across N files
+consolidate Y to one helper used at N call sites
+rewrite Z module as a single function
+remove W abstraction and inline it at the M call sites
+move data-shape translation into X and delete the duplicate mappers in Y/Z
+```
+
+Do not soften architectural findings to fit the current plan scope. The orchestrator owns disposition.
+
+## Non-Findings
+
+Do not file a simplicity finding when the complexity is required by:
+
+- A current acceptance criterion.
+- A real second consumer already in the codebase.
+- A project convention used consistently nearby.
+- A correctness, security, or compatibility constraint that would be violated by the simpler form.
+
+When a real constraint justifies the complexity, leave it alone or mention the constraint under Observations only if it helps the orchestrator.
+
+## Self-Check
+
+Before approving a review with no simplicity findings, explicitly re-scan for:
+
+- One-caller abstractions.
+- Pass-through wrappers.
+- Duplicate logic.
+- Impossible defensive paths.
+- New mutable state or lifecycle ordering.
+- Cross-layer coupling.
+- Full-refactor candidates.
+
+If any item exists, report it as a finding.
+</hone-architecture-rubric>
 
 Hone is allowed — and expected — to recommend changes that alter the code structure significantly. The conflict-resolution rule in `dreamers-review.md` § "Phase 2 — Apply findings" handles cases where Hone's recommendation directly contradicts another reviewer's finding (correctness > simplicity when in direct conflict on the same file:line). When there is no direct conflict, Hone's findings stand on their own.
 
