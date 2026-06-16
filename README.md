@@ -45,7 +45,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns the selected reviewer lane, reads reviewer artifacts, and reports structured findings. Read-only. `--lens <name>` for a single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
-| `/dreamers-pr` | Pushes the branch and opens the PR using the `pr-description.md` template. |
+| `/dreamers-pr` | Pushes the branch, opens the PR using the `pr-description.md` template, and archives shipped Dreamers plan artifacts. |
 | `/dreamers-fix` | Self-contained bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers-full` on scope blowup. |
 | `/dreamers-find-refactors` | Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes Dreamers plan files, and stops. No implementation, branch, commit, push, or PR. |
 
@@ -95,7 +95,7 @@ Explicit user instructions can skip or alter skill phases/actions.
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
   └─ Phase 3   → close-out (inline + /dreamers-docs + /dreamers-pr)
                    improvements append → Echo docs → retro → final commit
-                   → user approval gate → push + PR → plan archive → post-PR scan (no prompt)
+                   → user approval gate → push + PR → archive shipped plan artifacts → post-PR scan (no prompt)
 ```
 
 `/dreamers-lite <task | plan paths>` uses one approval gate for compact plan approval plus implementation start in task mode. When passed plan path(s), it skips planning, plan writing, and implementation-start approval, then uses the supplied plan file(s) directly. `/dreamers-full` also skips planning when passed plan path(s) or a manifest; those modes skip Phase 1.5, default multi-plan strategy to ATOMIC unless explicitly supplied, and move straight to implementation after artifact checks. Lite replaces the full triad with Vigil's single artifact-backed review. `/dreamers-full` still runs the full triad once per plan, then uses Vigil for normal review reruns; extra triad or selected-lane reruns require a major-change gate and user choice. Vigil applies the same shared Hone architecture rubric used by Hone and must include a dedicated architecture audit section in its artifact. Both flows use the same durable `.dreamers/reviews/` handoff pattern. Lite validates tests/type-checks, surfaces full-refactor findings, runs user testing when triggered, and opens the PR through `/dreamers-pr`.

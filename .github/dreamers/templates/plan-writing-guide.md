@@ -20,7 +20,7 @@ All plans live under `.dreamers/plans/feature-<slug>/`. Flat layouts directly un
 ├── feature-<other>/
 │   └── plan-01-<name>.md        (single-plan feature: no manifest)
 └── archive/
-    └── feature-<old>/           (archived features)
+    └── feature-<old>/           (archived shipped plans; manifest only after the sequence finishes)
 ```
 
 ### Feature directory slug rules
@@ -46,15 +46,22 @@ Examples: `feature-auth/plan-01-login-flow.md`, `feature-auth/plan-02-logout.md`
 
 ### Archive rules
 
-When a feature ships, close-out moves the whole feature directory to `.dreamers/plans/archive/` after the PR is created:
+Close-out archives shipped plan artifacts after the PR is created.
+
+Single-plan feature:
 
 ```
 .dreamers/plans/feature-auth/  →  .dreamers/plans/archive/feature-auth/
 ```
 
-Move the directory, not individual plan files.
+Multi-plan feature or manifest sequence:
 
-Trigger: `/dreamers-pr` archives the feature directory after it creates the PR.
+- Move only the finished `plan-NN-*.md` file(s) into `.dreamers/plans/archive/feature-<slug>/`.
+- Keep `manifest.md` and unfinished plan files in `.dreamers/plans/feature-<slug>/`.
+- Do not move the whole live feature directory while unfinished plans remain.
+- After the last unfinished plan ships, move `manifest.md` into the same archive directory and remove the now-empty live feature directory.
+
+Trigger: `/dreamers-pr` performs the applicable archive step after it creates the PR.
 
 ---
 
@@ -343,7 +350,7 @@ This avoids the edge case where a feature has multiple plans but no manifest, an
 
 When `/dreamers-full` runs ≥ 2 plans, its **Phase 1.5 plan review / implementation-start gate** also asks how to ship:
 
-- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final close-out runs the milestone retro + improvements + plan archive.
+- **INCREMENTAL** — each plan's cycle ends with its own push + PR; main advances incrementally; the final close-out runs the milestone retro + improvements + completed-plan archive step.
 - **ATOMIC** — plans land as commits on one branch; ONE close-out + ONE PR at the end covering all plans. No per-cycle prompt — the strategy commitment at Phase 1.5 is sufficient sign-off.
 
 The orchestrator RECOMMENDS a strategy based on heuristics; the user picks at the same gate that approves implementation start. Single-plan invocations skip strategy selection.
