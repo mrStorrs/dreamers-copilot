@@ -44,7 +44,7 @@
       "type": "agent",
       "slug": "nova",
       "name": "nova",
-      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation, explores the codebase before asking discoverable questions, critiques proposals before approval, writes full-spec plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), verifies plan coverage against the proposal and user discussion, hard-stops at the approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
+      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation with Phase 1A Grill before proposal approval, writes full-spec plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), verifies plan coverage against the proposal and user discussion, hard-stops at the approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -201,7 +201,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes /dreamers-plan for codebase-informed discovery and full-spec plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts after plan-quality checks. Implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes /dreamers-plan for the Grill phase and full-spec plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts after plan-quality checks. Implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -266,7 +266,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Standalone planning entry point. 3-phase requirements conversation (interactive Hash-out → Write → Review). Explores the codebase before asking discoverable questions, walks dependent design decisions with recommended answers, critiques proposals before approval, produces full-spec plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then verifies written-plan coverage against the approved proposal and user discussion. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
+      "description": "Standalone planning entry point. 3-phase requirements conversation (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, critiques proposals before approval, produces full-spec plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then verifies written-plan coverage against the approved proposal and user discussion. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
       "author": "CJ Storrs",
       "tags": [
         "code",

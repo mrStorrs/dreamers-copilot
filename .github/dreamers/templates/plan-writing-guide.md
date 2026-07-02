@@ -8,12 +8,20 @@ Sole source of truth for plan structure, naming, content, and quality rules. Rea
 
 A plan is a standalone implementation spec for both humans and AI consumers. It must be readable without the planning transcript and specific enough that implementation does not require guessing architecture, touched files, contracts, tests, or verification.
 
-Before writing the plan, resolve the design tree:
+Before writing the plan, run this planning phase:
 
-- Interview the user until shared understanding is reached.
-- Walk each dependent design branch in order; do not ask a later question before the prerequisite decision is resolved.
-- Explore the codebase instead of asking whenever repository inspection can answer the question.
-- For every user-facing question, provide the recommended answer and one concise rationale/tradeoff.
+### Phase 1A — Grill
+
+```
+Interview me relentlessly about every aspect of this plan until
+we reach a shared understanding. Walk down each branch of the design
+tree resolving dependencies between decisions one by one.
+
+If a question can be answered by exploring the codebase, explore
+the codebase instead.
+
+For each question, provide your recommended answer.
+```
 
 Bare plans are invalid. Do not write "follow existing pattern," "wire up relevant files," "handle edge cases," or similar placeholders unless the plan names the exact pattern, files, and edge cases.
 

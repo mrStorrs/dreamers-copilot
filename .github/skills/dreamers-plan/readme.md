@@ -9,11 +9,10 @@ flowchart TD
     ArgCheck -->|Yes| S1
 
     S1["Step 1 — Hash out"] --> Summary["Write 1-paragraph<br/>understanding summary"]
-    Summary --> Explore["Explore codebase for<br/>discoverable answers"]
-    Explore --> Interview["Discovery interview<br/>design tree + recommended answers"]
-    Interview --> Shared{"Shared<br/>understanding?"}
-    Shared -->|No| Explore
-    Shared -->|Yes| Draft["Draft proposal"]
+    Summary --> Grill["Phase 1A — Grill<br/>verbatim planning phase"]
+    Grill --> Shared{"Shared<br/>understanding?"}
+    Shared -->|No| Grill
+    Shared -->|Yes| Draft["Phase 1B — Proposal review"]
     Draft --> ReviewPhase["Proposal review<br/>critique + user questions"]
     ReviewPhase --> ApprovalGate{"User response"}
     ApprovalGate -->|"Questions / challenges / corrections"| Answer["Fully review + answer<br/>update proposal + critique"]
@@ -49,13 +48,13 @@ flowchart TD
 
     class ArgCheck,Shared,ApprovalGate,SelfCheck,Coverage,Review gate
     class HaltA,HaltB halt
-    class S1,S2,S3,Summary,Explore,Interview,Draft,ReviewPhase,Answer,Decide,ReadGuide,Mkdir,WritePlans,Component,Citation,FixPlan,FixCoverage,Present,MinorFix phase
+    class S1,S2,S3,Summary,Grill,Draft,ReviewPhase,Answer,Decide,ReadGuide,Mkdir,WritePlans,Component,Citation,FixPlan,FixCoverage,Present,MinorFix phase
 ```
 
 ## Key invariants
 
 - **Hard stop at Step 3.** The skill never invokes implementation — surfaces plan paths and exits.
-- **Discovery interview is iterative.** Explore the codebase before asking discoverable questions, walk dependent design decisions one branch at a time, and include a recommended answer with each user-facing question.
+- **Phase 1A — Grill is mandatory.** The Grill text is the planning phase, not a checklist item, and must be followed before proposal approval.
 - **Proposal review is mandatory and interactive.** Approval is valid only after the proposal is stress-tested for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. User questions, challenges, and partial answers are handled inside the same loop with substantive reasoning, implications, and a recommended next move.
 - **Plans are full implementation specs.** Architecture, files touched, contracts, ACs, constraints, and verification must be explicit enough that implementation does not infer missing design.
 - **Plan coverage review is mandatory after writing.** Before Step 3, compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Fix any missing, ambiguous, contradicted, or weakened item before presenting paths.

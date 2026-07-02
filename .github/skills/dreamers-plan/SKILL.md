@@ -1,6 +1,6 @@
 ---
 name: dreamers-plan
-description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs a codebase-informed discovery interview, produces full-spec plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
+description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs the Grill phase, produces full-spec plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
 argument-hint: '<task description>'
 ---
 
@@ -16,13 +16,24 @@ Template read at runtime via `view`:
 
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
-- Run a discovery interview before proposal approval:
-  - Interview the user relentlessly about every aspect of the plan until shared understanding is reached.
-  - Walk down each branch of the design tree, resolving dependencies between decisions one by one.
-  - If a question can be answered by exploring the codebase, explore the codebase instead; cite the inspected artifacts in the proposal or plan.
-  - For each user-facing question, provide the recommended answer and one concise rationale/tradeoff.
-  - Ask dependent questions sequentially. Group only independent questions whose answers will not change the next branch.
+
+### Phase 1A — Grill
+
+```
+Interview me relentlessly about every aspect of this plan until
+we reach a shared understanding. Walk down each branch of the design
+tree resolving dependencies between decisions one by one.
+
+If a question can be answered by exploring the codebase, explore
+the codebase instead.
+
+For each question, provide your recommended answer.
+```
+
 - Identify ambiguities, gaps, open decisions. Use `request_information` for unresolved decision branches. Do not draft the proposal while required decisions are still open.
+
+### Phase 1B — Proposal review
+
 - Draft the proposal, then enter proposal review before approval. Present the proposal + critique together via `request_information`.
 - Proposal review stress-tests the proposal for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. Approval is valid only after this critique is shown.
 - If the user responds with questions, challenges, partial answers, corrections, or counter-proposals, fully review and answer them with reasoning, implications, and a recommended next move. Fold the result into the proposal, re-critique, and re-present proposal review until approved.
