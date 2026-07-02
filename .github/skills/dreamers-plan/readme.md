@@ -56,7 +56,7 @@ flowchart TD
 - **Hard stop at Step 3.** The skill never invokes implementation — surfaces plan paths and exits.
 - **Phase 1A — Grill is mandatory.** The Grill text is the planning phase, not a checklist item, and must be followed before proposal approval.
 - **Proposal review is mandatory and interactive.** Approval is valid only after the proposal is stress-tested for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. User questions, challenges, and partial answers are handled inside the same loop with substantive reasoning, implications, and a recommended next move.
-- **Plans are full implementation specs.** Architecture, files touched, contracts, ACs, constraints, and verification must be explicit enough that implementation does not infer missing design.
+- **Plans are full implementation specs.** Architecture, Mermaid diagrams for non-trivial flows/processes, files touched, contracts, ACs, constraints, and verification must be explicit enough that implementation does not infer missing design.
 - **Plan coverage review is mandatory after writing.** Before Step 3, compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Fix any missing, ambiguous, contradicted, or weakened item before presenting paths.
 - **Manifest backfill check** in Step 1 — existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
 - **Major rewrite loops back to Step 1**, not Step 2 — the proposal/scope needs to be re-agreed first.

@@ -56,7 +56,7 @@ For each question, provide your recommended answer.
 ```
 </planning-grill>
 
-- The planning pass must then write full-spec plans per `plan-writing-guide.md`.
+- The planning pass must then write full-spec plans per `plan-writing-guide.md`, including Mermaid diagrams for non-trivial flows/processes.
 - Wait. Capture plan paths.
 - Halt this skill if `/dreamers-plan` halts without approval.
 

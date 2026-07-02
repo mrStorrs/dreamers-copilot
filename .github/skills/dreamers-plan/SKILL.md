@@ -44,7 +44,7 @@ For each question, provide your recommended answer.
 ## Step 2 — Write plans
 - Read `plan-writing-guide.md` in full via `view`.
 - `mkdir -p .dreamers/plans/feature-<slug>/`.
-- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes. Each plan is a standalone implementation spec: architecture, files touched, contracts, ACs, constraints, and verification are explicit enough that the implementer does not infer missing design.
+- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes. Each plan is a standalone implementation spec: architecture, Mermaid diagrams for non-trivial flows/processes, files touched, contracts, ACs, constraints, and verification are explicit enough that the implementer does not infer missing design.
 - Component-usage check: for shared components, grep the project source root for callers; include them in scope.
 - Citation accuracy: verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
 - Self-check the written plans against the guide before exit. Hard fail on any structural rule violation → halt + fix + re-check.

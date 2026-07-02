@@ -129,6 +129,7 @@ Mandatory. Write concise prose or bullets covering each item:
 - **Boundaries:** which layer/module owns each responsibility; name any existing abstraction being reused.
 - **Contracts:** public APIs, data shapes, schemas, CLI/chat output, events, config keys, or persistence changes. If none, say "No contract changes."
 - **Failure/edge states:** error, empty, permission, retry, stale data, concurrency, or rollback behavior relevant to this plan.
+- **Mermaid diagram:** mandatory when the plan changes or introduces a non-trivial flow, process, state machine, lifecycle, async handoff, branching path, or multi-step user/system workflow. Use `flowchart TD` for processes, `sequenceDiagram` for cross-boundary calls, and `stateDiagram-v2` for state machines. Omit only for simple linear edits with no meaningful flow/process/state transition.
 
 If an interface/type signature is the contract, include the minimal signature and file path only. Do not include implementation bodies.
 
@@ -234,9 +235,9 @@ OR per-component subsections (good when behavior descriptions are long):
 - **Source data:** <where the data comes from>
 ```
 
-**Layer 3 — Mermaid state/flow (OPTIONAL):**
+**Layer 3 — Mermaid state/flow (MANDATORY for non-trivial UI state/branching):**
 
-Use only when the UI has interactive state transitions or branching flows that prose would describe verbosely.
+Use when the UI has interactive state transitions, branching flows, modal/dialog lifecycles, navigation paths, or multi-step user actions. Omit only for static UI surfaces or single-step interactions already covered by the Architecture diagram.
 
 ```mermaid
 stateDiagram-v2

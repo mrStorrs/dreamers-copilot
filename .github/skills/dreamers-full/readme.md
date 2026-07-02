@@ -120,7 +120,7 @@ flowchart TD
 
 ## Key invariants
 
-- Task mode invokes `/dreamers-plan`, which runs the Grill phase and writes full-spec plans with architecture, files touched, contracts, ACs, constraints, and verification.
+- Task mode invokes `/dreamers-plan`, which runs the Grill phase and writes full-spec plans with architecture, Mermaid diagrams for non-trivial flows/processes, files touched, contracts, ACs, constraints, and verification.
 - Plan path and manifest modes do not invoke `/dreamers-plan` and do not enter the Phase 1.5 implementation-start gate; they resolve supplied artifacts under `.dreamers/plans/`, preserve the provided sequence, default multi-plan strategy to ATOMIC unless explicitly supplied, and continue directly to branch setup after plan-quality checks.
 - Bare plans do not proceed to implementation. Current-format plans must include the guide's mandatory full-spec sections; legacy plans require explicit user approval after a missing-section warning.
 - Step 6 (user-testing gate) fires only when manual verification, user-facing behavior, build/distribution, reviewer feedback, or user request triggers it. It uses `.github/dreamers/templates/user-testing-gate.md`: numbered testing steps, notes, and exactly `Approved` / `Bug found (enter text)` / `Other (enter text)`.
