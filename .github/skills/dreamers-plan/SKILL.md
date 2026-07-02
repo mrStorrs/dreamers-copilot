@@ -17,6 +17,7 @@ Template read at runtime via `view`:
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
 
+<planning-grill>
 ### Phase 1A — Grill
 
 ```
@@ -29,6 +30,7 @@ the codebase instead.
 
 For each question, provide your recommended answer.
 ```
+</planning-grill>
 
 - Identify ambiguities, gaps, open decisions. Use `request_information` for unresolved decision branches. Do not draft the proposal while required decisions are still open.
 

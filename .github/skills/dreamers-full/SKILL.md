@@ -41,6 +41,7 @@ Plan quality check before branch setup (all modes):
 ## Phase 1 — Planning (Mode 1 only)
 - Invoke `/dreamers-plan $ARGUMENTS`. The planning pass must include this phase before proposal approval:
 
+<planning-grill>
 ### Phase 1A — Grill
 
 ```
@@ -53,6 +54,7 @@ the codebase instead.
 
 For each question, provide your recommended answer.
 ```
+</planning-grill>
 
 - The planning pass must then write full-spec plans per `plan-writing-guide.md`.
 - Wait. Capture plan paths.

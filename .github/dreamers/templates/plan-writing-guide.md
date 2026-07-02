@@ -10,6 +10,7 @@ A plan is a standalone implementation spec for both humans and AI consumers. It 
 
 Before writing the plan, run this planning phase:
 
+<planning-grill>
 ### Phase 1A — Grill
 
 ```
@@ -22,6 +23,7 @@ the codebase instead.
 
 For each question, provide your recommended answer.
 ```
+</planning-grill>
 
 Bare plans are invalid. Do not write "follow existing pattern," "wire up relevant files," "handle edge cases," or similar placeholders unless the plan names the exact pattern, files, and edge cases.
 
