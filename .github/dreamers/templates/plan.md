@@ -2,6 +2,7 @@
 
 **Date:** YYYY-MM-DD
 **Status:** Draft
+**Plan-type:** standard
 **Branch:** feat/<slug>
 **User-testing-required:** yes/no
 
@@ -19,6 +20,24 @@
 
 - `path/to/relevant-file.ext` — one-line role
 - `[Prior plan or PR](path-or-url)` — what it established that this plan builds on
+
+---
+
+## Architecture
+
+- **Current flow:** [verified current behavior and file citations]
+- **Target flow:** [target behavior]
+- **Boundaries:** [owning modules/layers]
+- **Contracts:** [contract changes or "No contract changes."]
+- **Failure/edge states:** [relevant cases]
+
+---
+
+## Files Touched
+
+| Path | Action | Required change | Verification |
+|---|---|---|---|
+| `path/file.ext` | modify | [exact change] | [test or inspection] |
 
 ---
 
@@ -92,7 +111,7 @@ OR per-component subsections (good when behavior descriptions are long):
 - **Behavior:** [what it does, when it's disabled, error states, loading states]
 - **Source data:** [where the data comes from]
 
-**Layer 3 — Mermaid state/flow** (optional, only if interactive):
+**Layer 3 — Mermaid state/flow** (required for non-trivial state/branching):
 
 ```mermaid
 stateDiagram-v2

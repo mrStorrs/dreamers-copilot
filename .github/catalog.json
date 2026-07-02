@@ -44,7 +44,7 @@
       "type": "agent",
       "slug": "nova",
       "name": "nova",
-      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation, critiques proposals before approval, writes plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), verifies plan coverage against the proposal and user discussion, hard-stops at the approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
+      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation with Phase 1A Grill before proposal approval, honors user plan-type override, writes right-sized plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), verifies plan coverage against the proposal and user discussion, hard-stops at the approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -188,7 +188,7 @@
       "type": "skill",
       "slug": "dreamers-find-refactors",
       "name": "dreamers-find-refactors",
-      "description": "Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes guide-compatible Dreamers plan files, and stops. Read-only for project code; no implementation, branch, commit, push, or PR.",
+      "description": "Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes Dreamers plan files using the selected lite / standard / complex guide, and stops. Read-only for project code; no implementation, branch, commit, push, or PR.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -201,7 +201,7 @@
       "type": "skill",
       "slug": "dreamers-full",
       "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes /dreamers-plan and uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts directly. Implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes /dreamers-plan for the Grill phase and right-sized plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts after plan-quality checks. Implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -266,7 +266,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Standalone planning entry point. 3-phase requirements conversation (interactive Hash-out → Write → Review). Answers planning questions with reasoning, critiques proposals before approval, produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then verifies written-plan coverage against the approved proposal and user discussion. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
+      "description": "Standalone planning entry point. 3-phase requirements conversation (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, honors user plan-type override, selects lite / standard / complex, produces right-sized plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then verifies written-plan coverage against the approved proposal and user discussion. Hard-stops at the review gate; does NOT implement and does NOT invoke any other skill.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -515,7 +515,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, testing mandate, comment rules, architecture rubric, git workflow, close-out procedure, orchestrator discipline, etc.).",
+      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, planning Grill phase, testing mandate, comment rules, architecture rubric, git workflow, close-out procedure, orchestrator discipline, etc.).",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },
@@ -523,7 +523,7 @@
       "type": "folder",
       "slug": "dreamers-templates",
       "name": "Dreamers Templates",
-      "description": "Shared templates used by Dreamers skills (plan, feature manifest, GitHub issue, PR description, project brief, user testing gate, logging standards, etc.).",
+      "description": "Shared templates used by Dreamers skills (plan guide selector, lite/standard/complex plan guides, feature manifest, GitHub issue, PR description, project brief, user testing gate, logging standards, etc.).",
       "sourcePath": ".github/dreamers/templates",
       "destSubpath": "dreamers/templates"
     },

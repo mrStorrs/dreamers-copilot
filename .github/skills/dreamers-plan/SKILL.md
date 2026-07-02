@@ -1,6 +1,6 @@
 ---
 name: dreamers-plan
-description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest. Hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
+description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs the Grill phase, selects lite / standard / complex planning, produces right-sized plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
 argument-hint: '<task description>'
 ---
 
@@ -9,27 +9,47 @@ $ARGUMENTS
 If no task description was provided, halt + ask.
 
 Template read at runtime via `view`:
-- `.github/dreamers/templates/plan-writing-guide.md` — plan structure, naming, ACs, decomposition, manifest, ship-strategy heuristics.
+- `.github/dreamers/templates/plan-guide-selector.md` — plan-type selection, override rule, manifest trigger, ship-strategy heuristics.
+- One selected guide only after classification: `plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`.
 
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
-- Identify ambiguities, gaps, open decisions. Ask all clarifying questions in ONE `request_information` round.
+
+<planning-grill>
+### Phase 1A — Grill
+
+```
+Interview me relentlessly about every aspect of this plan until
+we reach a shared understanding. Walk down each branch of the design
+tree resolving dependencies between decisions one by one.
+
+If a question can be answered by exploring the codebase, explore
+the codebase instead.
+
+For each question, provide your recommended answer.
+```
+</planning-grill>
+
+- Identify ambiguities, gaps, open decisions. Use `request_information` for unresolved decision branches. Do not draft the proposal while required decisions are still open.
+
+### Phase 1B — Proposal review
+
 - Draft the proposal, then enter proposal review before approval. Present the proposal + critique together via `request_information`.
 - Proposal review stress-tests the proposal for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. Approval is valid only after this critique is shown.
 - If the user responds with questions, challenges, partial answers, corrections, or counter-proposals, fully review and answer them with reasoning, implications, and a recommended next move. Fold the result into the proposal, re-critique, and re-present proposal review until approved.
-- Decide plan count + manifest per `plan-writing-guide.md`. Manifest backfill check: existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
+- Read `plan-guide-selector.md`. Classify plan type as `lite`, `standard`, or `complex`; explicit user plan-type override wins. Decide plan count + manifest per the selector. Manifest backfill check: existing `feature-<slug>/` + `plan-01-*.md` + no `manifest.md` → manifest MUST be produced in Step 2.
 
 ## Step 2 — Write plans
-- Read `plan-writing-guide.md` in full via `view`.
+- Read only the selected guide in full via `view`: `plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`.
 - `mkdir -p .dreamers/plans/feature-<slug>/`.
-- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes.
+- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes. Each plan MUST include `**Plan-type:** <lite|standard|complex>` and follow the selected guide. Keep the smallest plan that preserves quality.
 - Component-usage check: for shared components, grep the project source root for callers; include them in scope.
 - Citation accuracy: verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
-- Self-check the written plans against the guide before exit. Hard fail on any structural rule violation → halt + fix + re-check.
-- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in Goal, Context, ACs, Out of Scope, Constraints, Design Decisions, UI, or Verification. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
+- Self-check the written plans against the selected guide + selector mandatory checks before exit. Hard fail on any structural rule violation → halt + fix + re-check.
+- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in the smallest selected-guide section that preserves meaning. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
 
 ## Step 3 — Review gate
 - Present plan paths via `request_information` with: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.

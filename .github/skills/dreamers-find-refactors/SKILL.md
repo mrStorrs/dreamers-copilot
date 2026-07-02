@@ -224,9 +224,9 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 ## Phase 5 - Plan generation
 
-Read `.github/dreamers/templates/plan-writing-guide.md` in full before writing plans.
+Read `.github/dreamers/templates/plan-guide-selector.md`, then read only the selected guide. Default to `standard`; use `complex` for cross-module, API/data, migration, or high-risk refactors. Honor explicit user plan-type override if provided.
 
-Create guide-compatible plans under:
+Create plans using the selected guide under:
 
 `.dreamers/plans/feature-refactor-<slug>/`
 
@@ -246,7 +246,7 @@ Plan content must cite:
 
 Plan content must not include unresolved open questions.
 
-Self-check every written plan against `plan-writing-guide.md`. Fix structural violations before Phase 6.
+Self-check every written plan against `plan-guide-selector.md` and its selected guide. Fix structural violations before Phase 6.
 
 ## Phase 6 - Review gate
 

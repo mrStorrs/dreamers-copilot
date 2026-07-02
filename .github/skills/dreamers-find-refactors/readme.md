@@ -24,5 +24,5 @@ flowchart TD
 - Read-only for project code.
 - Hone writes section-named `.dreamers/reviews/hone-refactor-*.md` artifacts.
 - The orchestrator groups findings into coherent plan files instead of one plan per finding.
-- Generated plans follow `plan-writing-guide.md`.
+- Generated plans follow `plan-guide-selector.md` and the selected lite / standard / complex guide.
 - No branch, implementation, commit, push, or PR.

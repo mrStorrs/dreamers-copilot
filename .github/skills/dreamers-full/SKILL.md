@@ -1,6 +1,6 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Accepts a task description, existing plan file(s), or a feature manifest. Task mode invokes /dreamers-plan and uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use the supplied artifacts directly. Implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Accepts a task description, existing plan file(s), or a feature manifest. Task mode invokes /dreamers-plan for the Grill phase and right-sized plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts directly after plan-quality checks. Implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -11,9 +11,9 @@ If no task description, plan path, or manifest was provided, halt + ask.
 ## Modes
 | Mode | `$ARGUMENTS` | Phase 1 / 1.5 behavior |
 |---|---|---|
-| 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` → capture plan paths from its output → run Phase 1.5 gate |
-| 2 | Plan path(s) | Skip planning and Phase 1.5; use supplied plan file(s) directly |
-| 3 | `manifest.md` | Skip planning and Phase 1.5; read manifest → capture plan sequence + shared-context payload |
+| 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` for the Grill phase + right-sized plans → capture plan paths from its output → run Phase 1.5 gate |
+| 2 | Plan path(s) | Skip planning and Phase 1.5; use supplied plan file(s) after plan-quality checks |
+| 3 | `manifest.md` | Skip planning and Phase 1.5; read manifest → capture plan sequence + shared-context payload → run plan-quality checks |
 
 Plan path mode:
 - Treat arguments ending in `.md` as plan paths when they resolve under `.dreamers/plans/`, or when they match `feature-<slug>/plan-NN-<name>.md`.
@@ -30,17 +30,41 @@ Manifest mode:
 - Do not invoke `/dreamers-plan`, re-plan, write replacement plan files, or ask for implementation-start approval.
 - Honor an explicit user-supplied strategy; otherwise set `strategy=ATOMIC` without asking.
 
+Plan quality check before branch setup (all modes):
+- Read each plan and detect `**Plan-type:** lite / standard / complex`.
+- Read `plan-guide-selector.md`, then read only the matching guide for each plan.
+- Do not implement from a bare plan: reject missing required sections for its plan type, placeholder content, missing AC layer annotations, unresolved open questions, or unverifiable citations presented as facts.
+- If `Plan-type` is missing, treat the plan as legacy: surface the missing-type warning and continue only after explicit user approval.
+
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry. Mode 1: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3. Modes 2 and 3: Artifact resolution / Phase 2 cycle-N / Phase 3.
 
 ## Phase 1 — Planning (Mode 1 only)
-- Invoke `/dreamers-plan $ARGUMENTS`. Wait. Capture plan paths.
+- Invoke `/dreamers-plan $ARGUMENTS`. The planning pass must include this phase before proposal approval:
+
+<planning-grill>
+### Phase 1A — Grill
+
+```
+Interview me relentlessly about every aspect of this plan until
+we reach a shared understanding. Walk down each branch of the design
+tree resolving dependencies between decisions one by one.
+
+If a question can be answered by exploring the codebase, explore
+the codebase instead.
+
+For each question, provide your recommended answer.
+```
+</planning-grill>
+
+- The planning pass must then write the smallest selected-guide plan that preserves quality.
+- Wait. Capture plan paths.
 - Halt this skill if `/dreamers-plan` halts without approval.
 
 ## Phase 1.5 — Plan review / implementation start gate (Mode 1 only)
 - Do not run Phase 1.5 for plan path or manifest mode. After artifact checks pass, proceed directly to Phase 2.
 - Read the plan path(s). If manifest mode, also read the manifest shared-context payload.
-- If multiple plans will run, score against `plan-writing-guide.md` § "Ship strategy heuristics."
+- If multiple plans will run, score against `plan-guide-selector.md` § "Ship strategy."
 - Present the written plan path(s), implementation scope, test intent, and any ship-strategy recommendation.
 - `request_information`:
   - Single-plan: `Approved — start implementation` / `Revise plan` / `Halt` / `Other`.
@@ -84,7 +108,7 @@ For each plan in sequence:
   Closed checklist. Ambiguous → fire the gate.
 - For each gate-triggering finding (or batched group sharing the same refactor scope), `request_information` with: reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, breadth estimate. Options: `Apply now` / `Defer — create follow-up plan` / `Other`.
   - **Apply now** → fix inline; stage; re-run tests after.
-  - **Defer** → do NOT apply. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per `plan-writing-guide.md`. Surface the stub path. Continue with remaining findings.
+  - **Defer** → do NOT apply. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per `plan-guide-selector.md`; default to `standard` unless the finding is clearly lite or complex. Surface the stub path. Continue with remaining findings.
   - **Other** → freeform redirect. Never silently apply/defer.
 - Apply each non-deferred fix as a targeted Edit. Stage with `git add`. Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
 
@@ -239,8 +263,6 @@ The orchestrator works directly on the feature branch. Unless explicitly request
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
 
 ## How test coverage is expressed in plans (new format)
-
-Plan ACs are numbered Given/When/Then statements with a Layer annotation per AC. See `plan-writing-guide.md` § "Acceptance Criteria format" for the canonical spec.
 
 ```
 <acceptance_criteria>
