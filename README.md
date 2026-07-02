@@ -12,7 +12,7 @@ Everything lives under `.github/`:
 ├── skills/           # Skill entry points
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (inlined into consumers at build time)
-│   └── templates/    # Plan-writing guide, PR description shape, etc.
+│   └── templates/    # Plan guide selector, lite/standard/complex guides, PR description shape, etc.
 └── instructions/     # Auto-loaded instruction files
 ```
 
@@ -21,7 +21,7 @@ Everything lives under `.github/`:
 | Agent | Type | Role |
 |---|---|---|
 | **Forge** | Persona | Implementation orchestrator. Routes user requests to the right skill. `/agents forge`. |
-| **Nova** | Persona | Planning specialist. Mirrors `/dreamers-plan` Grill and full-spec planning. `/agents nova`. |
+| **Nova** | Persona | Planning specialist. Mirrors `/dreamers-plan` Grill and right-sized planning. `/agents nova`. |
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
@@ -39,9 +39,9 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan` for the Grill phase and full-spec plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts after plan-quality checks. Implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses Vigil for normal review reruns, asks before any extra triad/selected-lane rerun, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
+| `/dreamers-full` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan` for the Grill phase and right-sized plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts after plan-quality checks. Implements each plan inline (tests-first), invokes full `/dreamers-review` once per plan, applies findings with major-refactor gate, uses Vigil for normal review reruns, asks before any extra triad/selected-lane rerun, halts for templated user testing when triggered, then close-out (inline + `/dreamers-docs` + pre-PR approval + `/dreamers-pr`). |
 | `/dreamers-lite` | Lean pipeline. Accepts a task description or existing plan path(s). Task mode reviews context, proposes a compact plan with critique, and writes the approved plan; plan path mode skips planning, plan writing, and implementation-start approval, then uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, then opens the PR. No second plan gate or pre-PR gate. |
-| `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, critiques the proposal before approval, writes full-spec plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
+| `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, honors user plan-type override, selects lite / standard / complex, writes right-sized plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, run tests. Exits at green tests. |
 | `/dreamers-review` | Spawns the selected reviewer lane, reads reviewer artifacts, and reports structured findings. Read-only. `--lens <name>` for a single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
@@ -81,7 +81,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 ```
 /dreamers-full <task | plan paths | manifest.md>
-  ├─ Phase 1   → /dreamers-plan   (Mode 1 only: Grill + full-spec planning; plan/manifest modes skip)
+  ├─ Phase 1   → /dreamers-plan   (Mode 1 only: Grill + right-sized planning; plan/manifest modes skip)
   ├─ Phase 1.5 → Plan review / implementation-start gate (Mode 1 only)
   │               multi-plan approval includes INCREMENTAL vs ATOMIC choice
   │               plan/manifest modes skip this gate and default to ATOMIC unless explicitly supplied

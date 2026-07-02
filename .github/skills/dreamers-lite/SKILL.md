@@ -42,11 +42,11 @@ Plan path mode:
 - On `Revise`, update the proposal, re-critique, and re-present. Approval is the implementation-start gate.
 
 ## Phase 2 - Plan source + branch
-- Mode 1: write approved proposal into `.dreamers/plans/feature-<slug>/` as compact guide-compatible plan file(s).
-- Mode 1: use plan sections only: Goal, Context, Acceptance Criteria, Out of Scope, Constraints, optional Design Decisions, optional UI, Verification.
+- Mode 1: write approved proposal into `.dreamers/plans/feature-<slug>/` as compact `plan-guide-lite.md` plan file(s), unless the user explicitly asks for `standard` or `complex`.
+- Mode 1: every written plan includes `**Plan-type:** lite / standard / complex`.
 - Mode 1: if multiple plans share constraints, decisions, data models, or end-to-end ACs, write `manifest.md`; otherwise skip manifest.
 - Mode 2: resolve and read each supplied plan file; halt if any file is missing, is outside `.dreamers/plans/`, or is not a `plan-*.md` file.
-- Self-check plan structure against `plan-writing-guide.md`. In Mode 1, fix violations before implementation. In Mode 2, surface violations and ask before editing supplied plan files.
+- Self-check plan structure against `plan-guide-selector.md` and the plan's selected guide. In Mode 1, fix violations before implementation. In Mode 2, surface violations and ask before editing supplied plan files.
 - Mode 2: after artifact checks pass, proceed directly to branch setup and implementation.
 - Set up branch per `git-workflow`: checkout fresh default, pull, cut `feat/<slug>`, confirm `.dreamers/` is gitignored. In Mode 2, derive `<slug>` from the supplied feature directory.
 
@@ -193,7 +193,7 @@ Every plan must express its test coverage intent through the Acceptance Criteria
 
 ## How test coverage is expressed in plans (new format)
 
-Plan ACs are numbered Given/When/Then statements with a Layer annotation per AC. See `plan-writing-guide.md` § "Acceptance Criteria format" for the canonical spec.
+Plan ACs are numbered Given/When/Then statements with a Layer annotation per AC. See the selected plan guide (`plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`) for the canonical spec.
 
 ```
 <acceptance_criteria>
