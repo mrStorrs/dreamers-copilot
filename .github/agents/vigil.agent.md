@@ -249,8 +249,6 @@ Every plan must express its test coverage intent through the Acceptance Criteria
 
 ## How test coverage is expressed in plans (new format)
 
-Plan ACs are numbered Given/When/Then statements with a Layer annotation per AC. See the selected plan guide (`plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`) for the canonical spec.
-
 ```
 <acceptance_criteria>
 1. Given <state>, when <trigger>, then <observable outcome>.
