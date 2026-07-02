@@ -4,6 +4,21 @@ Sole source of truth for plan structure, naming, content, and quality rules. Rea
 
 ---
 
+## Plan quality standard
+
+A plan is a standalone implementation spec for both humans and AI consumers. It must be readable without the planning transcript and specific enough that implementation does not require guessing architecture, touched files, contracts, tests, or verification.
+
+Before writing the plan, resolve the design tree:
+
+- Interview the user until shared understanding is reached.
+- Walk each dependent design branch in order; do not ask a later question before the prerequisite decision is resolved.
+- Explore the codebase instead of asking whenever repository inspection can answer the question.
+- For every user-facing question, provide the recommended answer and one concise rationale/tradeoff.
+
+Bare plans are invalid. Do not write "follow existing pattern," "wire up relevant files," "handle edge cases," or similar placeholders unless the plan names the exact pattern, files, and edge cases.
+
+---
+
 ## File paths + naming
 
 ### Directory layout
@@ -85,12 +100,14 @@ Anthropic recency-bias rule: Verification ALWAYS at the bottom of the file.
 
 1. **Goal** (mandatory) — one paragraph. What is true when this plan is done that wasn't true before.
 2. **Context** (mandatory) — ≤ 200 words. Bullet links to relevant files / prior plans / PRs. NO motivation prose ("this is important because..."); that belongs in Goal or the PR description.
-3. **Acceptance Criteria** (mandatory) — XML-wrapped, numbered G/W/T with Layer annotations. See "Acceptance Criteria format" below.
-4. **Out of Scope** (mandatory) — explicit bullets. "Will NOT touch X." "Will NOT change Y."
-5. **Constraints** (mandatory) — XML-wrapped. Technical / process / hard rules. See "Constraints format" below.
-6. **Design Decisions** (optional but recommended) — only when there are non-obvious choices. See "Design Decisions format" below.
-7. **UI** (optional) — only when the plan has a user-visible surface. See "UI section" below.
-8. **Verification** (mandatory, bottom of file) — commands to run + files to inspect + smoke check.
+3. **Architecture** (mandatory) — current flow, target flow, boundaries, contracts, and failure/edge states. See "Architecture format" below.
+4. **Files Touched** (mandatory) — exact production, test, docs, config, and generated/ignored workspace paths the implementer is expected to edit or inspect. See "Files Touched format" below.
+5. **Acceptance Criteria** (mandatory) — XML-wrapped, numbered G/W/T with Layer annotations. See "Acceptance Criteria format" below.
+6. **Out of Scope** (mandatory) — explicit bullets. "Will NOT touch X." "Will NOT change Y."
+7. **Constraints** (mandatory) — XML-wrapped. Technical / process / hard rules. See "Constraints format" below.
+8. **Design Decisions** (optional but recommended) — only when there are non-obvious choices. See "Design Decisions format" below.
+9. **UI** (optional) — only when the plan has a user-visible surface. See "UI section" below.
+10. **Verification** (mandatory, bottom of file) — commands to run + files to inspect + smoke check.
 
 ---
 
@@ -102,13 +119,42 @@ Before presenting plan paths for approval, compare the written plan(s) against:
 - The proposal critique and accepted mitigations.
 - Every user-discussed question, correction, decision, constraint, scope boundary, and follow-up answer from the planning conversation.
 
-Every accepted item must appear in the plan set in the most appropriate section: Goal, Context, Acceptance Criteria, Out of Scope, Constraints, Design Decisions, UI, or Verification. Fix any missing, ambiguous, contradicted, or weakened item, then re-run citation accuracy, structural self-check, and this coverage review.
+Every accepted item must appear in the plan set in the most appropriate section: Goal, Context, Architecture, Files Touched, Acceptance Criteria, Out of Scope, Constraints, Design Decisions, UI, or Verification. Fix any missing, ambiguous, contradicted, or weakened item, then re-run citation accuracy, structural self-check, and this coverage review.
 
 For multi-plan features, verify coverage across the full plan set and `manifest.md` when present. Shared decisions belong in the manifest only when each affected plan points to that manifest or repeats the decision locally.
 
 ---
 
 ## Section formats
+
+### Architecture format
+
+Mandatory. Write concise prose or bullets covering each item:
+
+- **Current flow:** existing entry points, control flow, data flow, or runtime behavior the plan changes. Cite verified files.
+- **Target flow:** how the system should behave after the plan lands.
+- **Boundaries:** which layer/module owns each responsibility; name any existing abstraction being reused.
+- **Contracts:** public APIs, data shapes, schemas, CLI/chat output, events, config keys, or persistence changes. If none, say "No contract changes."
+- **Failure/edge states:** error, empty, permission, retry, stale data, concurrency, or rollback behavior relevant to this plan.
+
+If an interface/type signature is the contract, include the minimal signature and file path only. Do not include implementation bodies.
+
+### Files Touched format
+
+Mandatory. Use a table:
+
+| Path | Action | Required change | Verification |
+|---|---|---|---|
+| `src/example.ts` | modify | Add validation branch for empty input. | Unit test covers empty input. |
+| `tests/example.test.ts` | modify | Add regression test for empty input. | Test fails before implementation, passes after. |
+
+Rules:
+
+- Use exact repo-relative paths whenever codebase exploration can identify them.
+- Include production, tests, docs, config, fixtures, generated files, and ignored workspace files when relevant.
+- Use "new" for files that do not exist yet and include their intended directory.
+- Do not use vague rows like "relevant files" or "tests as needed."
+- If a path cannot be known until implementation, list the discovery command and the decision rule that will select the file.
 
 ### Acceptance Criteria format
 

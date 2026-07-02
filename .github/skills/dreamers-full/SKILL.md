@@ -1,6 +1,6 @@
 ---
 name: dreamers-full
-description: 'End-to-end Dreamers pipeline. Accepts a task description, existing plan file(s), or a feature manifest. Task mode invokes /dreamers-plan and uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use the supplied artifacts directly. Implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers pipeline. Accepts a task description, existing plan file(s), or a feature manifest. Task mode invokes /dreamers-plan for codebase-informed discovery and full-spec plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts directly after plan-quality checks. Implements each plan inline (writes tests + code + runs tests), runs the full /dreamers-review triad once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). Triggers: /dreamers-full, full pipeline, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -11,9 +11,9 @@ If no task description, plan path, or manifest was provided, halt + ask.
 ## Modes
 | Mode | `$ARGUMENTS` | Phase 1 / 1.5 behavior |
 |---|---|---|
-| 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` → capture plan paths from its output → run Phase 1.5 gate |
-| 2 | Plan path(s) | Skip planning and Phase 1.5; use supplied plan file(s) directly |
-| 3 | `manifest.md` | Skip planning and Phase 1.5; read manifest → capture plan sequence + shared-context payload |
+| 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` for discovery interview + full-spec plans → capture plan paths from its output → run Phase 1.5 gate |
+| 2 | Plan path(s) | Skip planning and Phase 1.5; use supplied plan file(s) after plan-quality checks |
+| 3 | `manifest.md` | Skip planning and Phase 1.5; read manifest → capture plan sequence + shared-context payload → run plan-quality checks |
 
 Plan path mode:
 - Treat arguments ending in `.md` as plan paths when they resolve under `.dreamers/plans/`, or when they match `feature-<slug>/plan-NN-<name>.md`.
@@ -30,11 +30,17 @@ Manifest mode:
 - Do not invoke `/dreamers-plan`, re-plan, write replacement plan files, or ask for implementation-start approval.
 - Honor an explicit user-supplied strategy; otherwise set `strategy=ATOMIC` without asking.
 
+Plan quality check before branch setup (all modes):
+- Read each plan and check current-guide mandatory sections: Goal, Context, Architecture, Files Touched, Acceptance Criteria, Out of Scope, Constraints, and Verification.
+- Do not implement from a bare plan that leaves architecture, touched files, contracts, ACs, or verification for the implementer to infer.
+- If a current-format plan is missing mandatory full-spec sections, halt and ask for plan revision. For legacy flat plans, surface the missing-section warning and continue only after explicit user approval.
+
 ## Todo - Before you begin.
 - Declare a todo list marking all phases at entry. Mode 1: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3. Modes 2 and 3: Artifact resolution / Phase 2 cycle-N / Phase 3.
 
 ## Phase 1 — Planning (Mode 1 only)
-- Invoke `/dreamers-plan $ARGUMENTS`. Wait. Capture plan paths.
+- Invoke `/dreamers-plan $ARGUMENTS`. The planning pass must explore the codebase before asking discoverable questions, interview through dependent design decisions with recommended answers, and write full-spec plans per `plan-writing-guide.md`.
+- Wait. Capture plan paths.
 - Halt this skill if `/dreamers-plan` halts without approval.
 
 ## Phase 1.5 — Plan review / implementation start gate (Mode 1 only)

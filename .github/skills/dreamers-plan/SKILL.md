@@ -1,6 +1,6 @@
 ---
 name: dreamers-plan
-description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Produces plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest. Hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
+description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs a codebase-informed discovery interview, produces full-spec plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
 argument-hint: '<task description>'
 ---
 
@@ -9,14 +9,20 @@ $ARGUMENTS
 If no task description was provided, halt + ask.
 
 Template read at runtime via `view`:
-- `.github/dreamers/templates/plan-writing-guide.md` — plan structure, naming, ACs, decomposition, manifest, ship-strategy heuristics.
+- `.github/dreamers/templates/plan-writing-guide.md` — plan structure, naming, full-spec sections, ACs, decomposition, manifest, ship-strategy heuristics.
 
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
-- Identify ambiguities, gaps, open decisions. Ask all clarifying questions in ONE `request_information` round.
+- Run a discovery interview before proposal approval:
+  - Interview the user relentlessly about every aspect of the plan until shared understanding is reached.
+  - Walk down each branch of the design tree, resolving dependencies between decisions one by one.
+  - If a question can be answered by exploring the codebase, explore the codebase instead; cite the inspected artifacts in the proposal or plan.
+  - For each user-facing question, provide the recommended answer and one concise rationale/tradeoff.
+  - Ask dependent questions sequentially. Group only independent questions whose answers will not change the next branch.
+- Identify ambiguities, gaps, open decisions. Use `request_information` for unresolved decision branches. Do not draft the proposal while required decisions are still open.
 - Draft the proposal, then enter proposal review before approval. Present the proposal + critique together via `request_information`.
 - Proposal review stress-tests the proposal for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. Approval is valid only after this critique is shown.
 - If the user responds with questions, challenges, partial answers, corrections, or counter-proposals, fully review and answer them with reasoning, implications, and a recommended next move. Fold the result into the proposal, re-critique, and re-present proposal review until approved.
@@ -25,11 +31,11 @@ Template read at runtime via `view`:
 ## Step 2 — Write plans
 - Read `plan-writing-guide.md` in full via `view`.
 - `mkdir -p .dreamers/plans/feature-<slug>/`.
-- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes.
+- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes. Each plan is a standalone implementation spec: architecture, files touched, contracts, ACs, constraints, and verification are explicit enough that the implementer does not infer missing design.
 - Component-usage check: for shared components, grep the project source root for callers; include them in scope.
 - Citation accuracy: verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
 - Self-check the written plans against the guide before exit. Hard fail on any structural rule violation → halt + fix + re-check.
-- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in Goal, Context, ACs, Out of Scope, Constraints, Design Decisions, UI, or Verification. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
+- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in Goal, Context, Architecture, Files Touched, ACs, Out of Scope, Constraints, Design Decisions, UI, or Verification. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
 
 ## Step 3 — Review gate
 - Present plan paths via `request_information` with: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.
