@@ -9,7 +9,7 @@ flowchart TD
     ArgCheck -->|Yes| S1
 
     S1["Step 1 — Hash out"] --> Summary["Write 1-paragraph<br/>understanding summary"]
-    Summary --> Grill["Phase 1A — Grill<br/>verbatim planning phase"]
+    Summary --> Grill["Phase 1A — Grill<br/>one request_information question at a time"]
     Grill --> Shared{"Shared<br/>understanding?"}
     Shared -->|No| Grill
     Shared -->|Yes| Draft["Phase 1B — Proposal review"]
@@ -54,7 +54,7 @@ flowchart TD
 ## Key invariants
 
 - **Hard stop at Step 3.** The skill never invokes implementation — surfaces plan paths and exits.
-- **Phase 1A — Grill is mandatory.** The Grill text is the planning phase, not a checklist item, and must be followed before proposal approval.
+- **Phase 1A — Grill is mandatory.** The Grill text is the planning phase, not a checklist item, and must be followed before proposal approval. Ask one blocking question at a time through `request_information`; option 1 is the recommendation, option 2 is the strongest alternate, and option 3 is `Other`.
 - **Proposal review is mandatory and interactive.** Approval is valid only after the proposal is stress-tested for pitfalls, weak spots, tradeoffs, hidden assumptions, likely failure modes, scope risks, and simpler counter-proposals. User questions, challenges, and partial answers are handled inside the same loop with substantive reasoning, implications, and a recommended next move.
 - **Plan type is selected before writing.** User override wins; otherwise use the smallest guide that preserves quality: lite / standard / complex.
 - **Plans are right-sized specs.** Each plan follows only its selected guide and includes enough detail that implementation does not infer missing design.
