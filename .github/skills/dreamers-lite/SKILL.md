@@ -1,6 +1,6 @@
 ---
 name: dreamers-lite
-description: 'Lean end-to-end Dreamers pipeline. Accepts a task description or existing plan file(s). For task descriptions, reviews project context, proposes a compact plan with critique, then writes the approved plan. For plan paths, skips planning, plan writing, and implementation-start approval, then uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. Triggers: /dreamers-lite, lite pipeline, lightweight feature, quick ship.'
+description: 'Lean end-to-end Dreamers pipeline. Accepts a task description or existing plan file(s). For task descriptions, reviews project context, offers optional Grill, proposes a compact plan with critique, then writes the approved plan. For plan paths, skips planning, plan writing, and implementation-start approval, then uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. Triggers: /dreamers-lite, lite pipeline, lightweight feature, quick ship.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more]'
 ---
 
@@ -26,7 +26,35 @@ Plan path mode:
 ## Phase 1 - Context + proposal (Mode 1 only)
 - Anchor to remote truth per `git-workflow`: detect default branch, fetch, read `origin/$DEFAULT_BRANCH` log.
 - Read project instructions and relevant code. Verify cited artifacts before claiming behavior.
-- Ask clarifying questions.
+- Ask via `request_information`: "Would you like me to grill you on the plan?" Options: `Yes - grill me on the plan` / `No - keep lite` / `Other`.
+- On `Yes`, run the Grill phase before drafting the compact proposal:
+
+<planning-grill>
+### Phase 1A — Grill
+
+```
+Interview me relentlessly about every aspect of this plan until
+we reach a shared understanding. Walk down each branch of the design
+tree resolving dependencies between decisions one by one.
+
+If a question can be answered by exploring the codebase, explore
+the codebase instead.
+
+When a decision still needs user input, use `request_information`.
+Ask one blocking question at a time; do not dump a batch of questions
+in chat. Each question must include exactly these choices:
+
+1. Your recommended answer, labeled as recommended.
+2. The strongest viable alternate.
+3. `Other` for freeform direction.
+
+After each answer, fold the decision into the shared understanding,
+then continue to the next unresolved branch.
+```
+</planning-grill>
+
+- On `No`, continue with normal lite planning. On `Other`, follow the user's direction.
+- Ask targeted clarifying questions only when unresolved decisions remain after the optional Grill choice.
 - Respond with any critisims or feedback.
 - Draft a compact proposal in chat:
   - Goal

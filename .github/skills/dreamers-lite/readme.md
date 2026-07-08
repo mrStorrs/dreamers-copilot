@@ -7,7 +7,10 @@ flowchart TD
     Start(["/dreamers-lite $ARGUMENTS"]) --> ModeCheck{"$ARGUMENTS<br/>type?"}
     ModeCheck -->|Task description| Context["Read project context"]
     ModeCheck -->|Plan path(s)| ExistingPlan["Resolve supplied plan file(s)"]
-    Context --> Questions{"Clarification needed?"}
+    Context --> GrillChoice{"Would you like me<br/>to grill you on the plan?"}
+    GrillChoice -->|Yes| Grill["Phase 1A Grill<br/>one request_information question at a time"]
+    Grill --> Questions{"Clarification needed?"}
+    GrillChoice -->|No / Other| Questions{"Clarification needed?"}
     Questions -->|Yes| Ask["Ask one batch"]
     Questions -->|No| Proposal
     Ask --> Proposal["Proposal + critique"]
@@ -37,6 +40,7 @@ flowchart TD
 ## Invariants
 
 - One approval gate covers plan approval and implementation start.
+- Task mode asks whether to run optional Grill before the compact proposal. If accepted, Grill uses the shared one-question-at-a-time planning phase.
 - Plan path mode skips planning, plan writing, and implementation-start approval; supplied plan files are used directly after path and structure checks.
 - Vigil writes one `.dreamers/reviews/` artifact; chat output stays short.
 - Full-refactor findings are always surfaced. User may apply, defer, or continue lite scope.
