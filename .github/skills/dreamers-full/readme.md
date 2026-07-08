@@ -20,6 +20,10 @@ flowchart TD
     PlanResult -->|Plan paths| Quality
     ArtifactCheck --> Quality{"Plan quality<br/>check passes?"}
     Quality -->|No| HaltQ(["Halt + revise plan"])
+    Quality -->|Legacy missing Plan-type| LegacyGate{"User approves<br/>legacy plan?"}
+    LegacyGate -->|No| HaltQ
+    LegacyGate -->|Yes, Mode 1| P15
+    LegacyGate -->|Yes, plan/manifest| BranchSetup
     Quality -->|Yes, Mode 1| P15
     Quality -->|Yes, plan/manifest| BranchSetup
 
@@ -42,7 +46,8 @@ flowchart TD
 
     S4["Step 4<br/>Full lane<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
     ReviewResult -->|Blocked| HaltD(["Halt + surface"])
-    ReviewResult -->|Findings| S5
+    ReviewResult -->|No findings| S6Check
+    ReviewResult -->|Findings / open questions| S5
 
     S5["Step 5 — Apply findings"] --> Gate{"Major-refactor<br/>gate fires?"}
     Gate -->|No| ApplyFixes
@@ -106,7 +111,7 @@ flowchart TD
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
     class InvokePlan,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
-    class ModeCheck,PlanResult,Quality,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
+    class ModeCheck,PlanResult,Quality,LegacyGate,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH,HaltQ halt
     class P1,Cycle,P3,ArtifactCheck,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
 ```
