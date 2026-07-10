@@ -65,6 +65,33 @@ function Remove-ManagedFiles {
     return $count
 }
 
+function Remove-LegacySkillFiles {
+    param([string]$SkillsRoot)
+    $count = 0
+    foreach ($skillName in @("dreamers-lite", "dreamers-full")) {
+        $directory = Join-Path $SkillsRoot $skillName
+        foreach ($fileName in @("SKILL.md", "readme.md")) {
+            $path = Join-Path $directory $fileName
+            if (-not (Test-Path $path)) { continue }
+            if ($DryRun) {
+                Write-Host "  WOULD REMOVE legacy managed file: $path" -ForegroundColor Yellow
+            } else {
+                Remove-Item -LiteralPath $path -Force
+                Write-Host "  REMOVED legacy managed file: $path" -ForegroundColor Red
+            }
+            $count++
+        }
+        if (-not $DryRun -and (Test-Path $directory)) {
+            $remaining = Get-ChildItem $directory -Force
+            if ($remaining.Count -eq 0) {
+                Remove-Item -LiteralPath $directory -Force
+                Write-Host "  REMOVED empty legacy dir: $directory" -ForegroundColor DarkGray
+            }
+        }
+    }
+    return $count
+}
+
 $verb = if ($DryRun) { "Dreamers Remover (DRY RUN)" } else { "Dreamers Remover" }
 Write-Host "`n$verb" -ForegroundColor Cyan
 Write-Host "Source:  $Source"
@@ -80,11 +107,14 @@ $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "agents") -TargetDir
 Write-Host "[skills]" -ForegroundColor Cyan
 $skillSource = Join-Path $Source "skills"
 if (Test-Path $skillSource) {
-    $skillDirs = Get-ChildItem $skillSource -Directory | Where-Object { $_.Name -like "dreamers-*" }
+    $skillDirs = Get-ChildItem $skillSource -Directory | Where-Object {
+        $_.Name -eq "dreamers" -or $_.Name -like "dreamers-*"
+    }
     foreach ($dir in $skillDirs) {
         $targetDir = Join-Path $CopilotHome "skills" $dir.Name
         $total += Remove-ManagedFiles -SourceDir $dir.FullName -TargetDir $targetDir -Label "skills/$($dir.Name)"
     }
+    $total += Remove-LegacySkillFiles -SkillsRoot (Join-Path $CopilotHome "skills")
 }
 
 # Dreamers refs

@@ -17,7 +17,7 @@ If no bug description was provided, halt + ask.
 ## Step 2 — Scope survey + escalation
 - Read the bug surface (files identified from the description).
 - In bug-fix scope (single file or tight cluster, no architectural change) → continue.
-- Scope blowup (multiple unrelated subsystems, needs new module, schema change, etc.) → halt + recommend `/dreamers-full <bug description>` instead.
+- Scope blowup (multiple unrelated subsystems, needs new module, schema change, etc.) → halt + recommend `/dreamers <bug description>` instead.
 
 ## Step 3 — Regression test + implement + run
 - Write a failing test that captures the buggy behavior. If no test infra exists for the affected surface, note the absence.
@@ -166,7 +166,7 @@ If a layer cannot be covered automatically (e.g., camera permission flows), flag
 
 ## Probe's layer audit (consumes the new format)
 
-During the full-pipeline review lane that includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+During any review lane that includes Probe, the layer audit reads each AC's annotated Layer to verify coverage at each layer was implemented. Probe blocks the cycle if an AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 

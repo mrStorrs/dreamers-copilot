@@ -41,23 +41,57 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 
 ## Lane policy
 
-Use the full lane for the initial `/dreamers-full` review for each plan. In `/dreamers-full`, routine follow-up reviewer reruns go through Vigil, not another triad or selected triad lane. Use `/dreamers-review` follow-up lanes only when the `/dreamers-full` major-change rerun gate asks the user and the user selects a triad or selected-lane rerun, or for standalone focused audits. Reviewer work is read-only except for review artifacts; the orchestrator applies or defers findings.
+The caller selects initial and rerun review through the shared adaptive contract. This skill executes Sentinel, Probe, and Hone lanes; Vigil is spawned directly by the caller. Reviewer work is read-only except for its artifact.
+
+<review-selection>
+# Review Selection
+
+Use this contract for the initial review and any reviewer rerun in a PR-bearing Dreamers workflow.
+
+## Initial lane
+
+- A complex plan selects Sentinel + Probe + Hone through the full /dreamers-review lane.
+- A low-risk lite or standard plan selects Vigil.
+- Any danger or high-risk trigger overrides a smaller plan type and selects the triad:
+  - Security, authentication, authorization, privacy, payment, secret, or permission changes.
+  - Schema, migration, persistence, destructive-data, concurrency, or irreversible-side-effect changes.
+  - Public or breaking API, dependency, build, distribution, or cross-subsystem changes.
+  - Rollback that requires operator action or data recovery instead of reverting the feature commit.
+- PR-bearing work receives at least Vigil unless the user explicitly requests that review be skipped.
+
+## Decision behavior
+
+- State the selected reviewer lane and a one-sentence rationale, then proceed without a routine confirmation gate.
+- An explicit user override wins and remains authoritative. Before a requested downshift, surface the concrete risk being accepted.
+- If classification is genuinely ambiguous, ask once before review. Do not silently promote or downshift.
+- Record the selected lane, rationale, trigger or plan type, and any user override in the cycle summary.
+
+## Invocation
+
+- For Vigil, spawn vigil directly with the plan path, changed-file scope, branch and default names, validation commands/results, shared manifest context when present, and prior review artifacts when applicable.
+- For the triad, invoke /dreamers-review --branch with the plan path and shared manifest context.
+- Read every reviewer artifact before reporting or applying findings. Blocked halts the cycle; open questions return to the user.
+
+## Reruns
+
+- Decide reviewer reruns independently from plan type, ship strategy, documentation, and retrospective decisions.
+- Skip a rerun when fixes are small and automated validation directly covers them; record the reason.
+- Use Vigil for a normal rerun after targeted fixes.
+- Escalate a rerun to the triad only when the new change set itself meets a danger/high-risk trigger. A selected /dreamers-review lane is valid when one specific lens is sufficient.
+- State the rerun choice and rationale and proceed without a routine gate. Ask only when the new risk is genuinely ambiguous; explicit user overrides remain authoritative.
+</review-selection>
+
+Standalone lane choices:
 
 | Lane | Reviewers | Use when |
 | --- | --- | --- |
-| `sentinel` | Sentinel | Correctness/security/maintainability audit, lightweight bug fix, cleanup, logging/comment pass, or user explicitly asks for Sentinel only. |
-| `probe` | Probe | Test coverage audit, AC/layer coverage check, regression-risk review, or user explicitly asks for Probe only. |
-| `hone` | Hone | Simplicity/architecture/over-engineering audit, or user explicitly asks for Hone only. |
-| `standard` | Sentinel + Probe | Standalone or user-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
-| `full` | Sentinel + Probe + Hone | Initial `/dreamers-full` per-plan review. Invoke as `/dreamers-review` with no lens flags. After that, use only when the user selects it from the `/dreamers-full` major-change rerun gate or explicitly requests a full review. |
+| sentinel | Sentinel | Correctness, security, or maintainability audit. |
+| probe | Probe | Test coverage, AC layer, edge-case, or regression-risk audit. |
+| hone | Hone | Simplicity, architecture, or over-engineering audit. |
+| standard | Sentinel + Probe | Explicit combined correctness and coverage audit. |
+| full | Sentinel + Probe + Hone | Adaptive triad selection or explicit full review. |
 
-## Gate Rules
-
-- `/dreamers-full` PR-bearing code changes require one `full` review per plan after orchestrator-run type-checks and tests pass.
-- Do not use a narrower lane to bypass the initial full per-plan review.
-- After the full review has passed, `/dreamers-full` follow-up review reruns use Vigil by default. It may invoke `/dreamers-review` again only after the major-change rerun gate asks the user and the user selects `full` or a selected lane.
-- `/dreamers-pr-resolve` requires Sentinel for accepted fixes. Add Probe or Hone only when the accepted fixes touch coverage/regression risk or architecture/refactor risk.
-- If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lane or stop short of PR.
+/dreamers-pr-resolve retains its own artifact-backed Vigil requirement for accepted fixes.
 
 ## Dreamers Kernel
 <dreamers-kernel>

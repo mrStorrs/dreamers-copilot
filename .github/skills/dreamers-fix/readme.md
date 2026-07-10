@@ -13,7 +13,7 @@ flowchart TD
 
     S2["Step 2 — Scope survey + escalation"] --> Survey["Read the bug surface<br/>identify affected files"]
     Survey --> ScopeCheck{"Bug-fix scope<br/>or scope blowup?"}
-    ScopeCheck -->|"Scope blowup<br/>multi-subsystem / new module / schema"| HaltB(["Halt + recommend<br/>/dreamers-full instead"])
+    ScopeCheck -->|"Scope blowup<br/>multi-subsystem / new module / schema"| HaltB(["Halt + recommend<br/>/dreamers instead"])
     ScopeCheck -->|"In scope<br/>single file or tight cluster"| S3
 
     S3["Step 3 — Regression test + implement + run"] --> WriteTest["Write failing test that<br/>captures the buggy behavior"]
@@ -38,7 +38,7 @@ flowchart TD
 
 ## Key invariants
 
-- **Escalation check in Step 2.** Multi-subsystem changes, new modules, or schema changes are NOT in bug-fix scope — halt and recommend `/dreamers-full` instead.
+- **Escalation check in Step 2.** Multi-subsystem changes, new modules, or schema changes are NOT in bug-fix scope — halt and recommend `/dreamers` instead.
 - **Regression test first.** Step 3 writes the failing test BEFORE implementing the fix. If no test infra exists for the affected surface, note the absence.
 - **Files in the bug-fix surface only.** No while-I'm-here cleanup, no unrelated refactors.
 - **3-attempt fix loop.** Same as `/dreamers-implement`. Halt and surface after 3 failed attempts.

@@ -1,178 +1,123 @@
-# Dreamers — GitHub Copilot CLI
+# Dreamers for GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → full review → Vigil follow-up review → docs → PR flow.
+Dreamers provides one adaptive delivery workflow plus specialized planning, review, documentation, research, maintenance, and PR skills.
 
-Invoke any skill from Copilot CLI: `/dreamers-full <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
+Start with:
 
-## Layout
+~~~text
+/dreamers <task | plan paths | manifest>
+/dreamers
+~~~
 
-```
-.github/
-├── agents/       # Agent definitions
-├── skills/       # Skill entry points (/dreamers-*)
-├── dreamers/
-│   ├── refs/     # Shared reference docs inlined into consumers at build time
-│   └── templates/# Plan, manifest, PR description, logging standards, etc.
-└── instructions/ # Auto-loaded instruction files (Copilot CLI picks these up)
-```
+Empty or whitespace-only /dreamers input, help, --help, and -h route directly to the read-only /dreamers-help guide before any repository or external inspection or mutation.
+
+## How delivery adapts
+
+Task descriptions use /dreamers-plan with Grill by default. --no-grill or unmistakable natural-language direction skips the interview while retaining proposal critique and plan quality. Supplied plan paths and manifests preserve their sequence and skip Grill, replanning, rewriting, and implementation-start approval while retaining artifact quality and drift checks.
+
+The orchestrator chooses each checkpoint independently:
+
+- lite, standard, or complex plan depth;
+- INCREMENTAL or ATOMIC shipping;
+- Vigil for low-risk lite and standard plans, or Sentinel + Probe + Hone for complex plans and the shared danger rubric;
+- reviewer reruns;
+- documentation;
+- retrospective and improvements.
+
+It states each decision and rationale, honors explicit user overrides, and asks only when classification is genuinely ambiguous.
+
+The danger rubric covers security, authentication, authorization, privacy, payment, secret, and permission changes; schema, migration, persistence, destructive-data, concurrency, and irreversible-side-effect changes; public or breaking API, dependency, build, distribution, and cross-subsystem changes; and rollback that requires operator action or data recovery. Anything outside that list is not silently escalated.
+
+Documentation runs when the landed diff is user-facing or otherwise documentable. A retrospective and improvements entry is written only for multi-plan learning, repeated or failed validation, review-driven redesign, a user-testing bug, a deferred finding, or an explicit request; otherwise the skip is recorded.
 
 ## Agents
 
 | Agent | Type | Role |
 |---|---|---|
-| **Forge** | Persona | Implementation orchestrator. Enter via `/agents forge` for a session pre-loaded with the pipeline. Routes user intent to the right skill. |
-| **Nova** | Persona | Planning specialist. Enter via `/agents nova` for a multi-turn planning session. Hard-stops at the approval gate; does not implement. |
-| **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
-| **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
-| **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for `/dreamers-lite`, skill-internal reviews outside `/dreamers-full` and `/dreamers-review`, and `/dreamers-full` follow-up reruns. Combines Sentinel, Probe, and the shared Hone architecture rubric; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
-| **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
-| **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
+| Forge | Persona | Routes end-to-end work through /dreamers and focused work through specialized skills. |
+| Nova | Persona | Default-on Grill, proposal critique, plan writing, and plan approval. |
+| Sentinel | Subagent | Correctness, security, and maintainability. |
+| Probe | Subagent | Test coverage, AC layers, edge cases, and regression risk. |
+| Hone | Subagent | Simplicity, architecture, redundancy, and over-engineering. |
+| Vigil | Subagent | Combined proportional review for low-risk plans and normal reruns. |
+| Echo | Subagent | Documentation updates from the actual diff. |
+| Sage | Subagent | Citation-backed research. |
 
-Sentinel, Probe, and Hone spawn through `/dreamers-review` according to the selected review lane and each write a durable review artifact. `/dreamers-full` runs the full triad once per plan; follow-up review reruns use Vigil by default. Other skills that need a review call Vigil, not individual Sentinel/Probe/Hone lanes, except `/dreamers-find-refactors`, which intentionally uses section-scoped Hone calls for refactor discovery. A second triad or selected lane is user-gated for major-change reruns. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Reviewers are read-only except for one .dreamers/reviews artifact. The delivery orchestrator reads artifacts and applies accepted findings inline.
 
 ## Skills
 
-Explicit user instructions can skip or alter skill phases/actions.
-
-### Pipeline
+### Primary workflow
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-full <task | plan paths | manifest>` | End-to-end pipeline: task mode plans; plan path and manifest modes skip planning and use supplied artifacts directly. Then implementation-start gate → implement → review → templated user-test when triggered → pre-PR approval → ship. |
-| `/dreamers-lite <task | plan paths>` | Lean pipeline: task mode runs compact proposal + critique → approved plan file; plan path mode skips planning and uses supplied plans directly. Then implement → Vigil artifact review → docs when triggered → commit → PR. |
-| `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest, verifies plan coverage against the proposal and user discussion, then hard-stops at approval. |
-| `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → run tests. Exits at green tests. |
-| `/dreamers-review` | Spawns the selected reviewer lane, reads reviewer artifacts, and reports read-only structured findings. `--lens <name>` for single-lens audit; `--lenses sentinel,probe` for a selected subset; no flag keeps the full triad. |
-| `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
-| `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
-| `/dreamers-fix <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers-full` on scope blowup. |
-| `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
+| /dreamers | Plan or consume approved artifacts, implement tests-first, select proportional review, apply findings, run triggered gates/docs/retro, and open the approved PR. |
+| /dreamers-help | Read-only orientation, examples, specialized choices, overrides, and migration guidance. |
+| /dreamers-plan | Planning only; default-on Grill, right-sized plan guides, and hard stop at approval. |
+| /dreamers-implement | One approved implementation cycle through green validation. |
+| /dreamers-review | Read-only Sentinel, Probe, Hone, selected-subset, or triad execution. |
+| /dreamers-docs | Echo documentation pass. |
+| /dreamers-pr | Push once and open the PR from the shared template. |
+| /dreamers-fix | Bounded regression-first bug fix. |
+| /dreamers-find-refactors | Read-only refactor discovery and plan writing. |
 
-### Standalone reviewer audits
-
-| Skill | Purpose |
-|---|---|
-| `/dreamers-test` | Focused Vigil audit — test coverage findings on the current diff. |
-| `/dreamers-simplify` | Focused Vigil audit — over-engineering and architectural findings. |
-
-### Utility
+### Focused workflows
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Vigil reviews accepted changes before thread resolution. |
-| `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
-| `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
-| `/dreamers-new-project` | Bootstrap a new project: discovery → stack → brief → shell plans. |
-| `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
-| `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to the current feature-branch diff. |
-| `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
-| `/dreamers-clean-work` | Between-milestone maintenance: audit improvements, inspect legacy workspace files, scan for drift. |
-| `/dreamers-plan-verify <plan>` | Inline drift check: cited paths / signatures / data shapes still hold? |
+| /dreamers-test | Vigil test-coverage audit. |
+| /dreamers-simplify | Vigil architecture audit. |
+| /dreamers-pr-resolve | Address PR feedback and resolve accepted threads after Vigil. |
+| /dreamers-research | Deep research through Sage. |
+| /dreamers-issue | Structured issue creation. |
+| /dreamers-new-project | Project discovery, brief, and shell plans. |
+| /dreamers-plan-verify | Plan drift check. |
+| /dreamers-add-logging | Logging audit and improvement. |
+| /dreamers-cleanup-comments | Project comment cleanup. |
+| /dreamers-cleanup-comments-branch | Branch comment cleanup. |
+| /dreamers-clean-work | Between-milestone maintenance. |
+| /dreamers-update | Copilot-first maintenance and approved Codex transfer. |
 
-## Full (`/dreamers-full`) flow example
+## Flow
 
-```mermaid
+~~~mermaid
 flowchart TD
-    Start(["/dreamers-full $ARGUMENTS"]) --> ModeCheck{"$ARGUMENTS<br/>type?"}
+    I[/dreamers input/] --> R{Help, task, or artifact?}
+    R -->|empty or help flags| H[/dreamers-help/]
+    R -->|task| P[/dreamers-plan/]
+    R -->|plan or manifest| Q[Quality and drift checks]
+    P --> A[Approved plan sequence]
+    Q --> A
+    A --> T[Tests-first implementation]
+    T --> V[Automated validation]
+    V --> S{Plan type or risk}
+    S -->|low-risk lite or standard| G[Vigil]
+    S -->|complex or high risk| F[Sentinel + Probe + Hone]
+    G --> X[Apply findings]
+    F --> X
+    X --> U{User-testing trigger?}
+    U -->|yes| UG[User-testing gate]
+    U -->|no| C[Adaptive close-out]
+    UG --> C
+    C --> PR[Pre-PR approval and /dreamers-pr]
+~~~
 
-    ModeCheck -->|Task description| Mode1["Mode 1"]
-    ModeCheck -->|Plan paths| Mode2["Mode 2"]
-    ModeCheck -->|manifest.md| Mode3["Mode 3 + shared context"]
+Plan approval for task input authorizes implementation. The other mandatory gates are major scope expansion, triggered user testing, and pre-PR approval.
 
-    Mode1 --> P1["Phase 1 — Planning"]
-    Mode2 --> P15
-    Mode3 --> P15
+## Package layout
 
-    P1 --> InvokePlan["Invoke /dreamers-plan"]
-    InvokePlan --> PlanResult{"Plan result"}
-    PlanResult -->|Halt| HaltA(["Halt + resume cmd"])
-    PlanResult -->|Plan paths| P15
+~~~text
+.github/
+├── agents/
+├── skills/
+├── dreamers/
+│   ├── refs/
+│   └── templates/
+└── instructions/
+~~~
 
-    P15["Phase 1.5<br/>Plan review / implementation start"] --> PlanGate{"Start approved?"}
-    PlanGate -->|Single-plan approved| BranchSetup
-    PlanGate -->|INCREMENTAL| BranchSetup
-    PlanGate -->|ATOMIC| BranchSetup
-    PlanGate -->|Revise| P15
-    PlanGate -->|Halt| HaltB(["Halt + resume cmd"])
+Shared refs are synchronized into marked consumers. CI runs both package validators and exercises installer migration in an isolated Copilot home.
 
-    BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
+## Migration
 
-    Cycle["Phase 2 — cycle N"] --> S1["Step 1<br/>Read plan + write failing tests"]
-    S1 --> S2["Step 2<br/>Implement inline"]
-    S2 --> S3["Step 3<br/>Type-check + run tests"]
-
-    S3 --> S3Check{"Tests green<br/>within 3 attempts?"}
-    S3Check -->|No| HaltC(["Halt + surface"])
-    S3Check -->|Yes| S4
-
-    S4["Step 4<br/>Full lane<br/>Invoke /dreamers-review"] --> ReviewResult{"Review result"}
-    ReviewResult -->|Blocked| HaltD(["Halt + surface"])
-    ReviewResult -->|Findings| S5
-
-    S5["Step 5 — Apply findings"] --> Gate{"Major-refactor<br/>gate fires?"}
-    Gate -->|No| ApplyFixes
-    Gate -->|Yes| GateChoice{"User decides"}
-    GateChoice -->|Apply now| ApplyFixes
-    GateChoice -->|Defer| CreateStub["Create stub plan file"]
-    CreateStub --> ApplyFixes
-    GateChoice -->|Other| GateChoice
-
-    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> RerunCheck{"Review rerun<br/>needed?"}
-    RerunCheck -->|No, before user test| S6Check{"User testing<br/>triggered?"}
-    RerunCheck -->|Normal| Vigil["Spawn Vigil"]
-    RerunCheck -->|Major change| RerunGate{"User chooses<br/>review rerun"}
-    S6Check -->|No| MorePlans
-    S6Check -->|Yes| S6
-    S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
-    UserTest -->|Bug| BugFix["Fix inline + re-test"]
-    BugFix --> BugRerunCheck{"Review rerun<br/>needed?"}
-    BugRerunCheck -->|No| S6
-    BugRerunCheck -->|Normal| Vigil
-    BugRerunCheck -->|Major change| RerunGate
-    RerunGate -->|Vigil| Vigil
-    RerunGate -->|Full triad| FullRerun["Invoke /dreamers-review<br/>full lane"]
-    RerunGate -->|Selected lane| SelectedRerun["Invoke /dreamers-review<br/>selected lane"]
-    RerunGate -->|Skip before user test| S6Check
-    RerunGate -->|Skip after bug| S6
-    Vigil --> S5
-    FullRerun --> S5
-    SelectedRerun --> S5
-    UserTest -->|Halt| HaltE(["Halt"])
-    UserTest -->|Approved| MorePlans{"More plans<br/>remain?"}
-
-    MorePlans -->|No| P3
-    MorePlans -->|Yes| Between{"Strategy?"}
-
-    Between -->|INCREMENTAL| Light["Drift check<br/>Invoke /dreamers-docs if applicable<br/>commit"]
-    Between -->|ATOMIC| AtomicCommit["Drift check<br/>commit"]
-
-    Light --> IncrPRGate{"Pre-PR<br/>approved?"}
-    IncrPRGate -->|Approved| IncrPR["Invoke /dreamers-pr"]
-    IncrPRGate -->|Halt| HaltF(["Halt"])
-    IncrPR --> MergeWait(["Halt until PR merged"])
-    AtomicCommit --> Cycle
-
-    MergeWait --> ReCut["Re-cut feature branch"]
-    ReCut --> Cycle
-
-    P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
-    Improvements --> InvokeDocs["Invoke /dreamers-docs"]
-    InvokeDocs --> Retro["Write retro"]
-    Retro --> FinalCommit["Final commit if staged"]
-    FinalCommit --> Approval{"User approval"}
-    Approval -->|Halt| HaltH(["Halt"])
-    Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
-    InvokePR --> PostScan["Post-PR scan<br/>surface improvements + drift<br/>no prompt"]
-    PostScan --> End(["PR URL + summary"])
-
-    classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
-    classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
-    classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
-    classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-
-    class InvokePlan,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
-    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
-    class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
-    class P1,Cycle,P3,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
-```
+The retired /dreamers-lite and /dreamers-full commands were removed without aliases. Install and removal scripts prune only their known managed files, preserve unrelated user content, and remove legacy directories only when empty. Plan-type lite remains valid because it describes plan depth, not a delivery tier.

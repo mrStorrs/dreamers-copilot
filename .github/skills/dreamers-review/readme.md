@@ -52,17 +52,18 @@ flowchart TD
 
 | Lane | Reviewers | Normal use |
 |---|---|---|
-| `sentinel` | Sentinel | Focused correctness/security/maintainability audit. |
-| `probe` | Probe | Focused test coverage or regression-risk audit. |
-| `hone` | Hone | Focused architecture/simplicity audit. |
-| `standard` | Sentinel + Probe | Standalone or user-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
-| `full` | Sentinel + Probe + Hone | Required once per `/dreamers-full` plan; invoke with no lens flag. After that, use only when the user selects it from the `/dreamers-full` major-change rerun gate or explicitly asks for full review. |
+| sentinel | Sentinel | Focused correctness, security, or maintainability audit. |
+| probe | Probe | Focused test coverage or regression-risk audit. |
+| hone | Hone | Focused architecture or simplicity audit. |
+| standard | Sentinel + Probe | Explicit combined correctness and coverage audit. |
+| full | Sentinel + Probe + Hone | Adaptive triad selection or explicit full review. |
+
+The adaptive /dreamers caller chooses Vigil directly for low-risk lite and standard plans and invokes this skill for complex or high-risk triad work. It surfaces the selected lane and rationale without a routine confirmation gate; explicit user overrides win.
 
 ## Key invariants
 
-- **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers-full` Step 5, or whoever invoked it) decides what to do with the findings.
-- **`/dreamers-full` reruns.** Routine post-triad review reruns go through Vigil. This skill is used again only when the major-change rerun gate asks the user and the user selects a triad or selected-lane rerun.
-- **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
-- **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
-- **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
-- **`--no-apply` doesn't exist anymore** — this skill is always read-only by design.
+- **Read-only.** This skill does not apply fixes; the caller decides what to apply or defer.
+- **No major-scope gate here.** That logic remains in the caller.
+- **Artifacts are the handoff.** Each selected reviewer writes one .dreamers/reviews artifact, and this skill reads it before reporting.
+- **Every reviewer prompt includes the parent-todo prohibition.**
+- **Vigil is external to this skill.** Adaptive callers spawn Vigil directly.

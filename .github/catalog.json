@@ -4,7 +4,7 @@
       "type": "agent",
       "slug": "echo",
       "name": "echo",
-      "description": "Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), Echo-owned sections of `.github/copilot-instructions.md`, and project-specific docs based on recent changes. Spawned by `/dreamers-docs` (standalone) and by `/dreamers-full` Phase 3 close-out + Phase 2 between cycles (INCREMENTAL).",
+      "description": "Documentarian of the Dreamers — updates project docs from a branch or staged diff. Spawned by /dreamers-docs standalone and when adaptive /dreamers close-out determines documentation is needed.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -17,7 +17,7 @@
       "type": "agent",
       "slug": "forge",
       "name": "forge",
-      "description": "Coder of the Dreamers — implementation orchestrator persona. Enter via `/agents forge` for a multi-turn session pre-loaded with pipeline knowledge + coding standards. Routes work through plan → implement → close-out and enforces dreamers-kernel.md. NOT a spawned subagent.",
+      "description": "Coder of the Dreamers — implementation orchestrator persona. Enter via /agents forge for a multi-turn session. Routes end-to-end delivery through /dreamers and focused work through specialized skills; never runs as a spawned subagent.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -31,7 +31,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Writes one `.dreamers/reviews/` artifact. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Trigger-based reviewer for architecture/refactor risk in the Dreamers pipeline's review phase. The orchestrator gates major-refactor findings through user approval.",
+      "description": "Architectural protector of the Dreamers — read-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Writes one review artifact and surfaces full-refactor scope for the adaptive /dreamers major-scope gate.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -44,7 +44,7 @@
       "type": "agent",
       "slug": "nova",
       "name": "nova",
-      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs the interactive three-phase requirements conversation with Phase 1A Grill before proposal approval, asks one request_information question at a time with recommended / alternate / Other choices, honors user plan-type override, writes right-sized plan file(s) at `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` (and optional `manifest.md` in the same feature directory), verifies plan coverage against the proposal and user discussion, hard-stops at the approval gate. Never implements / commits / pushes. NOT a spawned subagent.",
+      "description": "Planning specialist of the Dreamers — planning persona. Enter via /agents nova for default-on Grill with explicit opt-out, proposal critique, right-sized lite / standard / complex plans, optional manifests, coverage review, and plan approval. Hard-stops without implementing, committing, pushing, or spawning.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -58,7 +58,7 @@
       "type": "agent",
       "slug": "probe",
       "name": "probe",
-      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Writes one `.dreamers/reviews/` artifact. Part of the full per-plan /dreamers-full review gate.",
+      "description": "Tester of the Dreamers — read-only reviewer of test coverage, AC matrices, layer coverage, edge cases, and regression risk. Writes one review artifact. Runs when the adaptive /dreamers lane selects the triad or through explicit /dreamers-review lanes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -84,7 +84,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Writes one `.dreamers/reviews/` artifact. Part of the full per-plan /dreamers-full review gate and explicit /dreamers-review selected lanes. Orchestrator applies fixes.",
+      "description": "Reviewer of the Dreamers — read-only reviewer of correctness, security, and maintainability. Writes one review artifact. Runs when adaptive /dreamers selects the triad or through explicit /dreamers-review lanes; the orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -97,7 +97,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and the shared Hone architecture rubric for correctness, security, maintainability, test coverage, and simplicity. Used by /dreamers-lite, skill-internal reviews outside /dreamers-full and /dreamers-review, and /dreamers-full follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.",
+      "description": "Single-pass reviewer of the Dreamers. Combines correctness, security, maintainability, test coverage, and the shared Hone architecture rubric. Used for low-risk lite and standard /dreamers plans, normal adaptive reruns, and focused skill-internal review. Writes one review artifact and never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -175,7 +175,7 @@
       "type": "skill",
       "slug": "dreamers-fix",
       "name": "dreamers-fix",
-      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers-full call. On scope blowup, surfaces choice to escalate to /dreamers-full; does not auto-route.",
+      "description": "Lightweight bug-fix pipeline. Cuts a fresh fix branch, writes a regression test, implements inline, and runs tests. On scope blowup it recommends /dreamers; it does not auto-route.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -199,35 +199,35 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-full",
-      "name": "dreamers-full",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes /dreamers-plan for the Grill phase and right-sized plan writing, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the implementation-start gate, then use supplied artifacts after plan-quality checks. Implements each plan inline (writes failing tests, code, runs tests), invokes artifact-backed full /dreamers-review once per plan, applies findings inline with the major-refactor gate, uses Vigil for normal review reruns, gates any extra triad/selected-lane rerun on user approval, halts for templated user testing when triggered, then close-out (inline + /dreamers-docs + pre-PR approval + /dreamers-pr). In manifest mode, threads cross-plan shared context into per-cycle reviewer prompts.",
+      "slug": "dreamers",
+      "name": "dreamers",
+      "description": "Adaptive end-to-end Dreamers delivery. Routes help read-only, plans task descriptions with default Grill, accepts approved plans and manifests, implements tests-first, selects Vigil or the triad by plan type and risk, applies artifact-backed findings, runs triggered testing/docs/retros, and opens the approved PR.",
       "author": "CJ Storrs",
       "tags": [
         "code",
         "dreamers",
         "skill"
       ],
-      "path": ".github/skills/dreamers-full/SKILL.md"
+      "path": ".github/skills/dreamers/SKILL.md"
     },
     {
       "type": "skill",
-      "slug": "dreamers-lite",
-      "name": "dreamers-lite",
-      "description": "Lean end-to-end Dreamers pipeline. Accepts a task description or existing plan path(s). Task mode reviews project context, offers optional Grill, proposes a compact plan with critique, and writes the approved plan; plan path mode skips planning, plan writing, and implementation-start approval, then uses the supplied plan file(s) directly. Implements tests-first, runs Vigil once, applies findings, runs docs when triggered, commits, and opens the PR. No second plan gate or pre-PR gate.",
+      "slug": "dreamers-help",
+      "name": "dreamers-help",
+      "description": "Read-only guide to Dreamers concepts, delivery examples, specialized skills, Grill and reviewer overrides, gates, and migration choices.",
       "author": "CJ Storrs",
       "tags": [
         "code",
         "dreamers",
         "skill"
       ],
-      "path": ".github/skills/dreamers-lite/SKILL.md"
+      "path": ".github/skills/dreamers-help/SKILL.md"
     },
     {
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Standalone implementation entry point. Writes failing tests against the plan's ACs, implements inline, runs tests. Exits at green tests; does NOT review, push, or open a PR. For full pipeline use /dreamers-full.",
+      "description": "Standalone implementation entry point. Writes failing tests against plan ACs, implements inline, and runs tests. Exits at green tests without review, push, or PR. Use /dreamers for end-to-end delivery.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -372,7 +372,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs artifact-backed specialised reviewers (correctness/security, test coverage, simplicity), the Vigil single-pass reviewer, an inline implementation orchestrator, a documentarian, and a researcher. The full pipeline gates are declared inline where they happen; lite keeps one plan approval gate and one artifact-backed review. The README at the readmePath has the full detail.",
+      "description": "Adaptive agent orchestration system for GitHub Copilot CLI. Combines right-sized planning, tests-first inline implementation, proportional artifact-backed review, triggered user testing, documentation and retrospective decisions, and approved PR delivery.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
@@ -445,11 +445,11 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-full"
+          "slug": "dreamers"
         },
         {
           "type": "skill",
-          "slug": "dreamers-lite"
+          "slug": "dreamers-help"
         },
         {
           "type": "skill",

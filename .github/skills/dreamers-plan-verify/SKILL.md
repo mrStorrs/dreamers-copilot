@@ -94,5 +94,5 @@ Return ONE of:
 ## Use cases
 
 - **Before invoking `/dreamers-implement`** on an older plan: catch drift early.
-- **Between sequential plans in `/dreamers-full`** (multi-plan mode): orchestrator can invoke this to check the next plan against the now-current state after the previous plan shipped.
+- **Between sequential plans in `/dreamers`** (multi-plan mode): orchestrator can invoke this to check the next plan against the now-current state after the previous plan shipped.
 - **Standalone** sanity check when you have a plan file and want to know if it's still relevant.

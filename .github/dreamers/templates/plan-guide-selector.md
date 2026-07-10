@@ -18,6 +18,16 @@ Use the smallest guide that preserves quality.
 - **Standard:** default for normal feature work, bug fixes touching several files, or any change needing architecture/context but not complex coordination.
 - **Complex:** cross-module or multi-plan work; schema/data migration; public API/contract changes; auth/security/privacy/payment risk; non-trivial state machine, async flow, or multi-step UI/process; high rollback cost.
 
++## Downstream review signal
+
+Plan type is the baseline initial-review signal:
+
+- Complex selects Sentinel + Probe + Hone.
+- Low-risk lite and standard select Vigil.
+- A danger or high-risk trigger overrides plan type.
+- The delivery orchestrator states its lane and rationale, honors explicit user overrides, and asks only when classification is genuinely ambiguous.
+
+
 ## Mandatory checks
 
 Every plan must:
@@ -34,8 +44,9 @@ Create `feature-<slug>/manifest.md` only when multiple plans share constraints, 
 
 ## Ship strategy
 
-When `/dreamers-full` runs multiple plans:
+When /dreamers runs multiple plans:
 
-- Recommend **INCREMENTAL** when there are 4+ independent plans, different subsystems, or plan A has standalone user value.
-- Recommend **ATOMIC** when plans overlap files, depend on ordering, include schema/migration/API contract work, or require all plans to verify.
+- Select **INCREMENTAL** for independent plans, different repositories or subsystems, or standalone value that should ship first.
+- Select **ATOMIC** when plans overlap files, depend on ordering, include schema, migration, or API contract work, or require joint verification.
 - If signals conflict, default to **ATOMIC**.
+- State the selection and rationale without a routine confirmation gate. Explicit user overrides remain authoritative.

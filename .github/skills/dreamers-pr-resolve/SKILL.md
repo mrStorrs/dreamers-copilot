@@ -125,7 +125,7 @@ Common prompt context for Vigil (subagent prompt rule — include verbatim):
 - Write exactly one `.dreamers/reviews/vigil-*.md` artifact.
 - Return only status, counts, artifact path, blocked reason, and open questions.
 
-Read the returned artifact before applying findings. Apply findings from the artifact inline per the full-pipeline apply-findings rules:
+Read the returned artifact before applying findings. Apply findings from the artifact inline per the shared /dreamers apply-findings rules:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).

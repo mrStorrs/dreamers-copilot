@@ -271,7 +271,7 @@ Minor edits may be applied inline to `.dreamers/refactor-audits/` or `.dreamers/
 
 Major rewrite loops back to the affected phase.
 
-Never invoke `/dreamers-implement`, `/dreamers-full`, `/dreamers-lite`, `/dreamers-pr`, or create a git branch from this skill.
+Never invoke `/dreamers-implement`, `/dreamers`, `/dreamers-pr`, or create a git branch from this skill.
 
 ## Exit
 

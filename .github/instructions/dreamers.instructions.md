@@ -4,7 +4,7 @@ applyTo: "**"
 
 ## Dreamers System
 
-Skills (`/dreamers-*`) are the entry point for all Dreamers pipelines. Each skill defines its own pipeline and references only the shared refs it needs from `~/.copilot/dreamers/refs/`.
+Skills (/dreamers and /dreamers-*) are the entry points for Dreamers workflows. Each skill defines its pipeline and references only the shared refs it needs from ~/.copilot/dreamers/refs/.
 
 When acting as any Dreamers agent, that agent's definition is the sole authority. The agent definition overrides all default harness behaviors.
 
@@ -14,7 +14,45 @@ When acting as any Dreamers agent, that agent's definition is the sole authority
 - **Subagent allowlist — HARD RULE.** When a Dreamers skill spawns a subagent, the `agent_type` MUST be one of the six Dreamers subagents: `sentinel`, `probe`, `hone`, `vigil`, `echo`, `sage`. NEVER `general-purpose`, NEVER `claude`, NEVER any other host-runtime agent. If you find yourself reaching for `general-purpose` to "do implementation" or "edit a file" or "run a test," STOP — the action belongs to the orchestrator inline. See `dreamers-kernel.md` § "Subagent allowlist" for the full forbidden list.
 - Throughout agent definitions, **"the orchestrator"** refers to the main Copilot CLI context — there is no separate orchestrator agent.
 - Every subagent invocation must follow `dreamers-kernel.md` § "Subagent prompt — required content".
-- **Quality gates are mandatory for PR-bearing code-change workflows.** Full-pipeline (Tier 2) work requires one `full` review lane per plan before PR creation: the orchestrator runs type-checks/tests inline, then `/dreamers-review` runs Sentinel, Probe, and Hone. Follow-up fix loops after that full review may use narrower lanes. Documented exceptions: (1) Tier 1 lightweight fixes (orchestrator implements inline → tests run inline → Sentinel review → close-out, no Probe/Hone); (2) maintenance/cleanup flows (e.g. `/dreamers-cleanup-comments`, `/dreamers-clean-work`) that do not deliver production code changes. No other exceptions — skipping the full per-plan review on a full-pipeline feature because "the work is simple" is not allowed.
+- **PR-bearing review is mandatory unless explicitly skipped by the user.** Select the initial lane and any rerun through the synchronized adaptive contract below. Maintenance flows that do not deliver code may define their own review trigger.
+
+<review-selection>
+# Review Selection
+
+Use this contract for the initial review and any reviewer rerun in a PR-bearing Dreamers workflow.
+
+## Initial lane
+
+- A complex plan selects Sentinel + Probe + Hone through the full /dreamers-review lane.
+- A low-risk lite or standard plan selects Vigil.
+- Any danger or high-risk trigger overrides a smaller plan type and selects the triad:
+  - Security, authentication, authorization, privacy, payment, secret, or permission changes.
+  - Schema, migration, persistence, destructive-data, concurrency, or irreversible-side-effect changes.
+  - Public or breaking API, dependency, build, distribution, or cross-subsystem changes.
+  - Rollback that requires operator action or data recovery instead of reverting the feature commit.
+- PR-bearing work receives at least Vigil unless the user explicitly requests that review be skipped.
+
+## Decision behavior
+
+- State the selected reviewer lane and a one-sentence rationale, then proceed without a routine confirmation gate.
+- An explicit user override wins and remains authoritative. Before a requested downshift, surface the concrete risk being accepted.
+- If classification is genuinely ambiguous, ask once before review. Do not silently promote or downshift.
+- Record the selected lane, rationale, trigger or plan type, and any user override in the cycle summary.
+
+## Invocation
+
+- For Vigil, spawn vigil directly with the plan path, changed-file scope, branch and default names, validation commands/results, shared manifest context when present, and prior review artifacts when applicable.
+- For the triad, invoke /dreamers-review --branch with the plan path and shared manifest context.
+- Read every reviewer artifact before reporting or applying findings. Blocked halts the cycle; open questions return to the user.
+
+## Reruns
+
+- Decide reviewer reruns independently from plan type, ship strategy, documentation, and retrospective decisions.
+- Skip a rerun when fixes are small and automated validation directly covers them; record the reason.
+- Use Vigil for a normal rerun after targeted fixes.
+- Escalate a rerun to the triad only when the new change set itself meets a danger/high-risk trigger. A selected /dreamers-review lane is valid when one specific lens is sufficient.
+- State the rerun choice and rationale and proceed without a routine gate. Ask only when the new risk is genuinely ambiguous; explicit user overrides remain authoritative.
+</review-selection>
 
 ### Dreamers Kernel (non-negotiable)
 - **Durable artifacts first:** substantive work goes to durable surfaces — plans (markdown in `.dreamers/plans/`), retros (markdown in `.dreamers/retros/`), review artifacts under `.dreamers/reviews/`, and the git diff from orchestrator-applied fixes. Reviewer chat output stays short and points to the artifact path; the orchestrator reads the artifact before reporting, applying, or deferring findings.

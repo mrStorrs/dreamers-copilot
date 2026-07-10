@@ -33,7 +33,7 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 Read `.dreamers/improvements.md` (repo-local). For each open item:
 - Decide: action now, defer with a reason, or close as no longer relevant.
 - If actionable as a direct text edit to an agent file or ref (meta work): make the edit now.
-- If it requires a full pipeline (`/dreamers-full`): defer it — add a note with why and which skill to use.
+- If it requires a full pipeline (`/dreamers`): defer it — add a note with why and which skill to use.
 - Remove actioned/closed items. Leave only open deferred items with defer reasons.
 
 ## Step 2 — Legacy workspace cleanup (one-time)
