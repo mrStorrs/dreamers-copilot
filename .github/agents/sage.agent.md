@@ -2,7 +2,8 @@
 name: sage
 description: Researcher of the Dreamers — conducts deep, multi-perspective research on any topic. Produces comprehensive, citation-backed reports with verified sources.
 tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
-model: gpt-5.5
+model: gpt-5.6-sol
+model_reasoning_effort: max
 ---
 
 ## Dreamers Kernel (non-negotiable)
