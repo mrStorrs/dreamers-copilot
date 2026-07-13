@@ -1,6 +1,6 @@
 # Dreamers
 
-Dreamers is an adaptive agent-orchestration system for GitHub Copilot CLI. One delivery entry point combines right-sized planning, tests-first implementation, proportional artifact-backed review, triggered user testing and documentation, and approved PR creation.
+Dreamers is an adaptive agent-orchestration system for GitHub Copilot CLI. Its thin delivery entry point invokes specialized skills for right-sized planning, tests-first implementation, proportional artifact-backed review, documentation, and approved PR creation while retaining cross-phase gates and fix loops.
 
 ## Quick start
 
@@ -17,6 +17,8 @@ Empty or whitespace-only /dreamers input, help, --help, and -h route directly to
 
 Task descriptions invoke /dreamers-plan and Grill by default. The --no-grill flag or unmistakable direction such as "do not grill" or "skip the interview" suppresses the interview without weakening proposal review or plan quality. Supplied plan paths and manifests preserve their sequence and skip Grill, replanning, rewriting, and implementation-start approval while retaining artifact quality and drift checks.
 
+Invoked skills run in the same orchestrator context and return control after their phase; they do not need a serialized handoff or composed mode. The outer /dreamers workflow retains the todo and end-to-end state. Explicit handoffs are limited to spawned agents, including each reviewer's single .dreamers/reviews artifact.
+
 ## Layout
 
 ~~~text
@@ -31,7 +33,7 @@ Task descriptions invoke /dreamers-plan and Grill by default. The --no-grill fla
 
 ## Adaptive delivery
 
-The delivery orchestrator decides these checkpoints independently and surfaces a one-sentence rationale:
+The delivery workflow keeps these checkpoints independent and surfaces a one-sentence rationale. /dreamers-plan owns plan depth; the outer /dreamers orchestrator owns the cross-phase decisions:
 
 - Plan depth: lite, standard, or complex.
 - Ship strategy: INCREMENTAL or ATOMIC.
@@ -45,11 +47,11 @@ Explicit user overrides remain authoritative. Routine decisions proceed without 
 
 | Plan or risk | Initial lane |
 |---|---|
-| Low-risk lite or standard | Vigil |
+| Low-risk lite or standard | Vigil through /dreamers-review --vigil |
 | Complex | Sentinel + Probe + Hone through /dreamers-review |
 | A danger trigger in the shared closed rubric | Sentinel + Probe + Hone, regardless of plan size |
 
-Vigil combines correctness, security, maintainability, test coverage, and the shared Hone architecture rubric in one artifact. Sentinel, Probe, and Hone each write their own artifact. Reviewers never apply fixes; the orchestrator reads the artifacts, applies accepted findings inline, and revalidates.
+The orchestrator selects the lane; /dreamers-review only executes it and reports the artifacts. The skill and its reviewers never change project code, tests, docs, config, dependencies, or git state. Vigil combines correctness, security, maintainability, test coverage, and the shared Hone architecture rubric in one artifact; Sentinel, Probe, and Hone each write one artifact. The orchestrator reads those artifacts, applies accepted findings inline, and revalidates.
 
 The danger rubric covers security, authentication, authorization, privacy, payment, secret, and permission changes; schema, migration, persistence, destructive-data, concurrency, and irreversible-side-effect changes; public or breaking API, dependency, build, distribution, and cross-subsystem changes; and rollback that requires operator action or data recovery. Anything outside that list is not silently escalated; genuine ambiguity returns to the user.
 
@@ -70,7 +72,7 @@ Documentation runs when the landed diff is user-facing or otherwise documentable
 | Echo | Subagent | Updates project documentation from the actual diff. |
 | Sage | Subagent | Conducts citation-backed research. |
 
-Every reviewer writes a durable .dreamers/reviews artifact. Echo is invoked through /dreamers-docs and Sage through /dreamers-research.
+Every reviewer writes exactly one durable .dreamers/reviews artifact. Echo is invoked through /dreamers-docs and Sage through /dreamers-research.
 
 ## Skills
 
@@ -78,11 +80,11 @@ Every reviewer writes a durable .dreamers/reviews artifact. Echo is invoked thro
 
 | Skill | Purpose |
 |---|---|
-| /dreamers | Adaptive end-to-end delivery for task text, approved plans, and manifests. |
+| /dreamers | Thin adaptive orchestrator for task text, approved plans, and manifests; owns sequencing, finding disposition, user testing, gates, and close-out. |
 | /dreamers-help | Read-only system guide, examples, overrides, and command selection. |
 | /dreamers-plan | Default-on Grill, proposal critique, right-sized plan writing, and plan approval; never implements. |
-| /dreamers-implement | One approved plan cycle: failing tests, implementation, and automated validation. |
-| /dreamers-review | Read-only Sentinel, Probe, Hone, selected-lens, or full-triad review. |
+| /dreamers-implement | Initial change for one approved plan: failing AC-layer tests, implementation, and all project-required automated validation; no review or close-out. |
+| /dreamers-review | Read-only Vigil, Sentinel, Probe, Hone, selected-lens, or full-triad review execution. |
 | /dreamers-docs | Echo documentation pass scoped to a branch or staged diff. |
 | /dreamers-pr | Push once, draft the PR body, open the PR, and archive shipped plan artifacts. |
 | /dreamers-fix | Bounded regression-first bug-fix workflow; recommends /dreamers if scope expands. |
@@ -112,13 +114,14 @@ flowchart TD
     I[/dreamers input/] --> R{Input kind}
     R -->|empty or help| H[/dreamers-help read-only guide/]
     R -->|task| P[/dreamers-plan with default Grill/]
-    R -->|plan or manifest| Q[Artifact quality and drift checks]
+    R -->|plan or manifest| Q[Artifact quality checks]
     P --> A[Approved plans]
     Q --> A
-    A --> T[Tests-first implementation and validation]
+    A --> PV[/dreamers-plan-verify once per plan/]
+    PV --> T[/dreamers-implement tests-first change and validation/]
     T --> S{Plan type or danger}
-    S -->|complex or high risk| F[Sentinel + Probe + Hone]
-    S -->|low-risk lite or standard| V[Vigil]
+    S -->|complex or high risk| F[/dreamers-review triad/]
+    S -->|low-risk lite or standard| V[/dreamers-review --vigil/]
     F --> X[Apply findings and revalidate]
     V --> X
     X --> U{User-testing trigger}

@@ -22,14 +22,16 @@ Use this contract for the initial review and any reviewer rerun in a PR-bearing 
 
 ## Invocation
 
-- For Vigil, spawn vigil directly with the plan path, changed-file scope, branch and default names, validation commands/results, shared manifest context when present, and prior review artifacts when applicable.
-- For the triad, invoke /dreamers-review --branch with the plan path and shared manifest context.
+- The caller selects the lane; /dreamers-review only executes it and reports artifact-backed results.
+- For Vigil, invoke /dreamers-review --vigil --branch with the plan path, changed-file scope, branch and default names, validation commands/results, shared manifest context when present, and prior review artifacts when applicable.
+- For the triad, invoke /dreamers-review --branch with the same context.
+- For a selected rerun, invoke /dreamers-review with --lens or --lenses and the same context.
 - Read every reviewer artifact before reporting or applying findings. Blocked halts the cycle; open questions return to the user.
 
 ## Reruns
 
 - Decide reviewer reruns independently from plan type, ship strategy, documentation, and retrospective decisions.
 - Skip a rerun when fixes are small and automated validation directly covers them; record the reason.
-- Use Vigil for a normal rerun after targeted fixes.
+- Use the /dreamers-review Vigil lane for a normal rerun after targeted fixes.
 - Escalate a rerun to the triad only when the new change set itself meets a danger/high-risk trigger. A selected /dreamers-review lane is valid when one specific lens is sufficient.
 - State the rerun choice and rationale and proceed without a routine gate. Ask only when the new risk is genuinely ambiguous; explicit user overrides remain authoritative.

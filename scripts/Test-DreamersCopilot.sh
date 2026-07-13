@@ -71,6 +71,28 @@ def assert_patterns(path: Path, patterns: list[tuple[str, str]]) -> None:
             add_error(f"Missing {label} contract in {path.relative_to(root)}")
 
 
+def assert_no_patterns(path: Path, patterns: list[tuple[str, str]]) -> None:
+    if not path.exists():
+        add_error(f"Missing contract file: {path}")
+        return
+    content = path.read_text(encoding="utf-8")
+    for label, pattern in patterns:
+        if re.search(pattern, content, re.IGNORECASE | re.MULTILINE | re.DOTALL):
+            add_error(f"Unexpected {label} contract in {path.relative_to(root)}")
+
+
+def assert_pattern_count(path: Path, label: str, pattern: str, expected: int) -> None:
+    if not path.exists():
+        add_error(f"Missing contract file: {path}")
+        return
+    content = path.read_text(encoding="utf-8")
+    actual = len(re.findall(pattern, content, re.IGNORECASE | re.MULTILINE))
+    if actual != expected:
+        add_error(
+            f"Expected {expected} {label} contract(s) in {path.relative_to(root)}, found {actual}"
+        )
+
+
 expected_agents = [
     "echo",
     "forge",
@@ -248,10 +270,17 @@ assert_patterns(
         ("default Grill", r"task description.*Grill.*default|Grill.*default.*task description"),
         ("explicit Grill opt-out", r"--no-grill.*do not grill|--no-grill.*skip the interview"),
         ("artifact mode", r"plan path.*manifest.*skip.*Grill|artifact mode.*skip.*Grill"),
+        ("startup contract loading", r"load and apply.*dreamers/refs/git-workflow\.md.*startup verification.*before reading \.dreamers.*branch.*commit.*push"),
         ("branch setup", r"git-workflow branch setup.*checkout.*pull.*feature branch"),
         ("plan quality", r"plan-guide-selector.*plan-guide-(?:lite|standard|complex)"),
         ("approval authorizes implementation", r"plan approval authorizes implementation"),
-        ("tests first", r"failing tests.*implement|tests.first"),
+        ("task planning before implementation", r"### Planning mode.*invoke\s+(?:\x60)?/dreamers-plan.*## Run each plan.*invoke\s+(?:\x60)?/dreamers-plan-verify.*invoke\s+(?:\x60)?/dreamers-implement"),
+        ("artifact verification timing", r"### Plan and manifest modes.*single verification call at cycle entry before implementation"),
+        ("verification before implementation", r"For every plan in sequence:.*1\.\s*Invoke\s+(?:\x60)?/dreamers-plan-verify exactly once.*2\.\s*Invoke\s+(?:\x60)?/dreamers-implement"),
+        ("plan verification delegation", r"invoke\s+(?:\x60)?/dreamers-plan-verify"),
+        ("implementation delegation", r"invoke\s+(?:\x60)?/dreamers-implement"),
+        ("review delegation", r"invoke\s+(?:\x60)?/dreamers-review"),
+        ("specialist call order", r"invoke\s+(?:\x60)?/dreamers-implement.*invoke\s+(?:\x60)?/dreamers-review.*invoke\s+(?:\x60)?/dreamers-docs.*invoke\s+(?:\x60)?/dreamers-pr"),
         ("review selection ref", r"<review-selection>.*</review-selection>"),
         ("visible adaptive decision", r"selected.*rationale.*without.*confirmation"),
         ("explicit review override", r"explicit user override"),
@@ -262,6 +291,60 @@ assert_patterns(
         ("triggered retrospective", r"retrospective.*trigger|retro.*trigger"),
         ("PR close-out", r"/dreamers-pr"),
     ],
+)
+assert_pattern_count(
+    skill_root / "dreamers/SKILL.md",
+    "executable plan verification",
+    r"\binvoke\s+(?:`)?/dreamers-plan-verify\b",
+    1,
+)
+assert_no_patterns(
+    skill_root / "dreamers/SKILL.md",
+    [
+        ("inline implementation heading", r"## Implement each plan inline"),
+        ("implementation-only synchronized refs", r"<(?:planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"),
+    ],
+)
+assert_patterns(
+    skill_root / "dreamers-implement/SKILL.md",
+    [
+        ("tests-first implementation", r"failing tests.*implement|tests.first"),
+        ("green-validation exit", r"exit.*green|green validation"),
+        ("complete project validation", r"every type-check, test, build, and lint command required by project instructions"),
+        ("bounded validation attempts", r"at most three attempts"),
+        ("validation result reporting", r"record every command and result"),
+        ("benchmark updates", r"test-benchmarks\.md.*after passing"),
+        ("no review boundary", r"does not review|does NOT review"),
+        ("no user-testing boundary", r"does not.*user.testing|does NOT.*user.testing"),
+    ],
+)
+assert_no_patterns(
+    skill_root / "dreamers-implement/SKILL.md",
+    [("stale seven-step todo", r"Step 5 \(review\).*Step 6 \(user test\).*Step 7 \(commit\)")],
+)
+assert_patterns(
+    skill_root / "dreamers-review/SKILL.md",
+    [
+        ("Vigil execution mode", r"--vigil.*Vigil|Vigil.*--vigil"),
+        ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
+        ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
+        ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
+    ],
+)
+assert_no_patterns(
+    skill_root / "dreamers-plan-verify/SKILL.md",
+    [("standalone-only composition prohibition", r"always invoked standalone|no composed mode|skills do not invoke other skills")],
+)
+assert_patterns(
+    instructions_root / "dreamers.instructions.md",
+    [
+        ("same-context skill invocation", r"skill.*same orchestrator context|same orchestrator context.*skill"),
+        ("outermost todo ownership", r"outermost skill.*owns.*todo|todo.*owned by.*outermost skill"),
+    ],
+)
+assert_no_patterns(
+    skill_root / "dreamers-update/SKILL.md",
+    [("implementation mirror rule", r"dreamers-implement mirror")],
 )
 assert_patterns(
     skill_root / "dreamers-help/SKILL.md",
@@ -300,7 +383,6 @@ assert_patterns(
 
 expected_review_selection_consumers = [
     skill_root / "dreamers/SKILL.md",
-    skill_root / "dreamers-review/SKILL.md",
 ]
 actual_review_selection_consumers = [
     path

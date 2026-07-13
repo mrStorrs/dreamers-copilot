@@ -54,6 +54,46 @@ function Assert-Patterns {
     }
 }
 
+function Assert-NoPatterns {
+    param(
+        [string]$Path,
+        [hashtable]$Patterns
+    )
+    if (-not (Test-Path $Path)) {
+        Add-Error "Missing contract file: $Path"
+        return
+    }
+    $content = Get-Content -Raw $Path
+    $options = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+        [System.Text.RegularExpressions.RegexOptions]::Multiline -bor
+        [System.Text.RegularExpressions.RegexOptions]::Singleline
+    foreach ($entry in $Patterns.GetEnumerator()) {
+        if ([regex]::IsMatch($content, [string]$entry.Value, $options)) {
+            Add-Error "Unexpected $($entry.Key) contract in $Path"
+        }
+    }
+}
+
+function Assert-PatternCount {
+    param(
+        [string]$Path,
+        [string]$Label,
+        [string]$Pattern,
+        [int]$Expected
+    )
+    if (-not (Test-Path $Path)) {
+        Add-Error "Missing contract file: $Path"
+        return
+    }
+    $content = Get-Content -Raw $Path
+    $options = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+        [System.Text.RegularExpressions.RegexOptions]::Multiline
+    $actual = [regex]::Matches($content, $Pattern, $options).Count
+    if ($actual -ne $Expected) {
+        Add-Error "Expected $Expected $Label contract(s) in $Path, found $actual"
+    }
+}
+
 function Assert-SynchronizedRefs {
     $refsRoot = Join-Path $Root ".github/dreamers/refs"
     $refs = @{}
@@ -245,12 +285,58 @@ Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "default Grill" = "task description.*Grill.*default|Grill.*default.*task description"
     "Grill opt-out" = "--no-grill.*do not grill|--no-grill.*skip the interview"
     "artifact mode" = "plan path.*manifest.*skip.*Grill|artifact mode.*skip.*Grill"
+    "startup contract loading" = "load and apply.*dreamers/refs/git-workflow\.md.*startup verification.*before reading \.dreamers.*branch.*commit.*push"
     "branch setup" = "git-workflow branch setup.*checkout.*pull.*feature branch"
+    "task planning before implementation" = "### Planning mode.*invoke\s+(?:\x60)?/dreamers-plan.*## Run each plan.*invoke\s+(?:\x60)?/dreamers-plan-verify.*invoke\s+(?:\x60)?/dreamers-implement"
+    "artifact verification timing" = "### Plan and manifest modes.*single verification call at cycle entry before implementation"
+    "verification before implementation" = "For every plan in sequence:.*1\.\s*Invoke\s+(?:\x60)?/dreamers-plan-verify exactly once.*2\.\s*Invoke\s+(?:\x60)?/dreamers-implement"
+    "plan verification delegation" = "invoke\s+(?:\x60)?/dreamers-plan-verify"
+    "implementation delegation" = "invoke\s+(?:\x60)?/dreamers-implement"
+    "review delegation" = "invoke\s+(?:\x60)?/dreamers-review"
+    "specialist call order" = "invoke\s+(?:\x60)?/dreamers-implement.*invoke\s+(?:\x60)?/dreamers-review.*invoke\s+(?:\x60)?/dreamers-docs.*invoke\s+(?:\x60)?/dreamers-pr"
     "review selection" = "<review-selection>.*</review-selection>"
     "approval starts implementation" = "plan approval authorizes implementation"
     "user testing" = "user.testing.*trigger"
     "pre-PR approval" = "pre-PR approval"
     "PR close-out" = "/dreamers-pr"
+}
+Assert-PatternCount `
+    -Path (Join-Path $skillRoot "dreamers/SKILL.md") `
+    -Label "executable plan verification" `
+    -Pattern '\binvoke\s+(?:`)?/dreamers-plan-verify\b' `
+    -Expected 1
+Assert-NoPatterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
+    "inline implementation heading" = "## Implement each plan inline"
+    "implementation-only synchronized refs" = "<(planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"
+}
+Assert-Patterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
+    "tests-first implementation" = "failing tests.*implement|tests.first"
+    "green-validation exit" = "exit.*green|green validation"
+    "complete project validation" = "every type-check, test, build, and lint command required by project instructions"
+    "bounded validation attempts" = "at most three attempts"
+    "validation result reporting" = "record every command and result"
+    "benchmark updates" = "test-benchmarks\.md.*after passing"
+    "no review boundary" = "does not review|does NOT review"
+    "no user-testing boundary" = "does not.*user.testing|does NOT.*user.testing"
+}
+Assert-NoPatterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
+    "stale seven-step todo" = "Step 5 \(review\).*Step 6 \(user test\).*Step 7 \(commit\)"
+}
+Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
+    "Vigil execution mode" = "--vigil.*Vigil|Vigil.*--vigil"
+    "conditional todo ownership" = "when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"
+    "project-file read-only boundary" = "read.only.*project (code|files)|project (code|files).*read.only"
+    "reviewer artifact-only writes" = "reviewer.*(only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"
+}
+Assert-NoPatterns (Join-Path $skillRoot "dreamers-plan-verify/SKILL.md") @{
+    "standalone-only composition prohibition" = "always invoked standalone|no composed mode|skills do not invoke other skills"
+}
+Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
+    "same-context skill invocation" = "skill.*same orchestrator context|same orchestrator context.*skill"
+    "outermost todo ownership" = "outermost skill.*owns.*todo|todo.*owned by.*outermost skill"
+}
+Assert-NoPatterns (Join-Path $skillRoot "dreamers-update/SKILL.md") @{
+    "implementation mirror rule" = "dreamers-implement mirror"
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-help/SKILL.md") @{
     "read-only boundary" = "read.only"
@@ -266,8 +352,7 @@ Assert-Patterns (Join-Path $dreamersRoot "refs/review-selection.md") @{
     "ambiguity" = "ambigu.*ask"
 }
 $expectedReviewSelectionConsumers = @(
-    (Join-Path $skillRoot "dreamers/SKILL.md"),
-    (Join-Path $skillRoot "dreamers-review/SKILL.md")
+    (Join-Path $skillRoot "dreamers/SKILL.md")
 )
 $reviewSelectionOptions = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
     [System.Text.RegularExpressions.RegexOptions]::Multiline -bor

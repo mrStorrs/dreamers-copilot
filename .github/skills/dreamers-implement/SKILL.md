@@ -1,6 +1,6 @@
 ---
 name: dreamers-implement
-description: 'Implementation skill — runs one cycle against an approved plan. Writes failing tests, implements, runs tests, and exits at green tests with an AC coverage matrix. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+description: 'Implementation skill — performs the initial code change for one approved plan: writes failing AC-layer tests, implements the plan, runs automated validation, and exits at green validation with an AC coverage matrix. Does NOT review, run user testing, commit, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
 argument-hint: 'feature-<slug>/plan-NN-<name>.md'
 ---
 
@@ -9,7 +9,7 @@ $ARGUMENTS
 If no plan path was provided, halt + ask. Do not invent a plan.
 
 ## Todo - Before you begin. 
-- Declare a todo list marking all steps. at entry: Step 1 / Step 2 / Step 3 / Step 4 / Step 5 (review) / Step 6 (user test) / Step 7 (commit).
+- When standalone, declare a todo list for Step 1 / Step 2 / Step 3. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Read plan + write failing tests
 - Read the plan file. For each AC (G/W/T + `*Layer: ...*`), write at least one failing test at the annotated layer. Stage with `git add`. Don't run yet.
@@ -17,12 +17,13 @@ If no plan path was provided, halt + ask. Do not invent a plan.
 ## Step 2 — Implement
 - Edit production files per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
 
-## Step 3 — Type-check + run tests
-- Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
-- Update `./test-benchmarks.md` row after passing (if the project uses one).
+## Step 3 — Run complete automated validation
+- Run every type-check, test, build, and lint command required by project instructions. Fix failures inline for at most three attempts, record every command and result, then halt if validation is not green.
+- Update each relevant `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
--  AC coverage matrix, review summary. Next step: `/dreamers-review` if last cycle, otherwise another `/dreamers-implement` for next plan (or `/dreamers` for the wrapper).
+- Return the AC coverage matrix, changed-file scope, and validation commands/results at green validation.
+- Do not invoke reviewers or perform review-finding fixes, user testing, commit, push, or PR creation. The caller decides the next phase; `/dreamers` invokes `/dreamers-review` immediately after a successful implementation.
 
 ## Dreamers Kernel
 <dreamers-kernel>

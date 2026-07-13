@@ -1,29 +1,31 @@
 ---
 name: dreamers-review
-description: 'Review skill — spawns Sentinel / Probe / Hone in the selected lane, reads their `.dreamers/reviews/` artifacts, and reports structured findings. Read-only; does NOT apply fixes. The caller decides what to do with the findings. Supports full triad, selected-lens subsets, and single-lens audits. Triggers: /dreamers-review, review my code, audit.'
-argument-hint: '[--lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
+description: 'Review skill — executes the caller-selected Vigil, Sentinel, Probe, Hone, selected-subset, or full-triad lane; reads reviewer-written `.dreamers/reviews/` artifacts; and reports structured findings. Read-only for project files and git state; does NOT apply fixes. Triggers: /dreamers-review, review my code, audit.'
+argument-hint: '[--vigil | --lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
 ---
 
 $ARGUMENTS
 
 ## Modes
 - (default) Full triad: Sentinel + Probe + Hone in parallel.
+- `--vigil` Single-agent combined review through Vigil.
 - `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`).
 - `--lenses <csv>` Selected-lens audit (`sentinel`, `probe`, `hone` in any non-empty combination).
 
 Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff vs default), default = staged + unstaged.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2.
+- When standalone, declare a todo list for Step 1 / Step 2. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Spawn reviewers
-- Determine the selected reviewers: default = `full`; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset.
-- Before spawning, record existing matching artifacts under `.dreamers/reviews/{sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
+- Determine the selected reviewers: default = `full`; `--vigil` = Vigil; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset. The caller selects the lane; this skill only executes it.
+- Before spawning, record existing matching artifacts under `.dreamers/reviews/{vigil,sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
 - For multiple selected reviewers, use one batched `task()` call with all selected sub-invocations, each `mode: "sync"`.
-- Single-lens mode: spawn only the chosen reviewer.
+- Vigil and single-lens modes spawn only the chosen reviewer.
 - Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
 - Every reviewer prompt MUST require exactly one artifact under `.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md` and short chat output containing only status, counts, artifact path, blocked reason, and open questions.
 - Per-lens prompt context:
+  - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review with the required architecture audit. Artifact contains findings, plan alignment, AC coverage, and architecture audit sections.
   - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Artifact contains findings + plan-alignment summary.
   - **Probe** — test coverage (AC matrix, layer audit, edge cases, gaps). Artifact contains findings + AC coverage table.
   - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
@@ -41,50 +43,13 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 
 ## Lane policy
 
-The caller selects initial and rerun review through the shared adaptive contract. This skill executes Sentinel, Probe, and Hone lanes; Vigil is spawned directly by the caller. Reviewer work is read-only except for its artifact.
-
-<review-selection>
-# Review Selection
-
-Use this contract for the initial review and any reviewer rerun in a PR-bearing Dreamers workflow.
-
-## Initial lane
-
-- A complex plan selects Sentinel + Probe + Hone through the full /dreamers-review lane.
-- A low-risk lite or standard plan selects Vigil.
-- Any danger or high-risk trigger overrides a smaller plan type and selects the triad:
-  - Security, authentication, authorization, privacy, payment, secret, or permission changes.
-  - Schema, migration, persistence, destructive-data, concurrency, or irreversible-side-effect changes.
-  - Public or breaking API, dependency, build, distribution, or cross-subsystem changes.
-  - Rollback that requires operator action or data recovery instead of reverting the feature commit.
-- PR-bearing work receives at least Vigil unless the user explicitly requests that review be skipped.
-
-## Decision behavior
-
-- State the selected reviewer lane and a one-sentence rationale, then proceed without a routine confirmation gate.
-- An explicit user override wins and remains authoritative. Before a requested downshift, surface the concrete risk being accepted.
-- If classification is genuinely ambiguous, ask once before review. Do not silently promote or downshift.
-- Record the selected lane, rationale, trigger or plan type, and any user override in the cycle summary.
-
-## Invocation
-
-- For Vigil, spawn vigil directly with the plan path, changed-file scope, branch and default names, validation commands/results, shared manifest context when present, and prior review artifacts when applicable.
-- For the triad, invoke /dreamers-review --branch with the plan path and shared manifest context.
-- Read every reviewer artifact before reporting or applying findings. Blocked halts the cycle; open questions return to the user.
-
-## Reruns
-
-- Decide reviewer reruns independently from plan type, ship strategy, documentation, and retrospective decisions.
-- Skip a rerun when fixes are small and automated validation directly covers them; record the reason.
-- Use Vigil for a normal rerun after targeted fixes.
-- Escalate a rerun to the triad only when the new change set itself meets a danger/high-risk trigger. A selected /dreamers-review lane is valid when one specific lens is sufficient.
-- State the rerun choice and rationale and proceed without a routine gate. Ask only when the new risk is genuinely ambiguous; explicit user overrides remain authoritative.
-</review-selection>
+The caller owns adaptive lane selection and all finding disposition. This skill executes the requested lane, reads its artifacts, and reports without modifying project code, tests, docs, config, dependencies, or git state. Each spawned reviewer is read-only for those same project files; its sole write is exactly one `.dreamers/reviews/` artifact.
 
 Standalone lane choices:
 
 | Lane | Reviewers | Use when |
 | --- | --- | --- |
+| vigil | Vigil | Combined proportional review selected by a delivery caller or explicit user request. |
 | sentinel | Sentinel | Correctness, security, or maintainability audit. |
 | probe | Probe | Test coverage, AC layer, edge-case, or regression-risk audit. |
 | hone | Hone | Simplicity, architecture, or over-engineering audit. |

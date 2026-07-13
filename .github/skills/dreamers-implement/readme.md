@@ -1,6 +1,6 @@
 # /dreamers-implement — flow
 
-Visual map of the one-cycle implementation skill. Source of truth is `SKILL.md`.
+Visual map of the initial-change implementation skill. Source of truth is `SKILL.md`.
 
 ```mermaid
 flowchart TD
@@ -17,15 +17,14 @@ flowchart TD
     EditFiles --> Stage2["git add as you go"]
     Stage2 --> S3
 
-    S3["Step 3 — Type-check + run tests"] --> TypeCheck["Run project's type-check"]
-    TypeCheck --> RunTests["Run project's test command"]
-    RunTests --> TestResult{"Tests pass?"}
-    TestResult -->|Yes| Benchmarks["Update ./test-benchmarks.md<br/>if project uses one"]
+    S3["Step 3 — Complete automated validation"] --> Validate["Run every project-required<br/>type-check, test, build, and lint command<br/>record commands + results"]
+    Validate --> TestResult{"Validation green?"}
+    TestResult -->|Yes| Benchmarks["Update relevant ./test-benchmarks.md rows<br/>if project uses them"]
     TestResult -->|No| AttemptCheck{"Attempts < 3?"}
     AttemptCheck -->|Yes| FixInline["Fix inline"]
-    FixInline --> RunTests
+    FixInline --> Validate
     AttemptCheck -->|No| HaltB(["Halt + surface"])
-    Benchmarks --> End(["Surface AC coverage matrix<br/>Next: /dreamers-review<br/>or another /dreamers-implement"])
+    Benchmarks --> End(["Return AC coverage matrix<br/>changed-file scope<br/>validation commands + results"])
 
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
@@ -33,12 +32,14 @@ flowchart TD
 
     class ArgCheck,TestResult,AttemptCheck gate
     class HaltA,HaltB halt
-    class S1,S2,S3,ReadPlan,WriteTests,Stage1,EditFiles,Stage2,TypeCheck,RunTests,FixInline,Benchmarks phase
+    class S1,S2,S3,ReadPlan,WriteTests,Stage1,EditFiles,Stage2,Validate,FixInline,Benchmarks phase
 ```
 
 ## Key invariants
 
 - **Tests-first.** Step 1 writes failing tests BEFORE Step 2's implementation. Stage but don't run yet — they should fail.
 - **Layer annotation drives test layer.** Each plan AC has a `*Layer: ...*` annotation; the test goes at that layer.
-- **3-attempt fix loop in Step 3.** If tests still fail after 3 fix attempts, halt and surface to the user.
-- **No push, no PR.** This skill exits at green tests. Review (`/dreamers-review`) and ship (`/dreamers-pr`) are separate concerns.
+- **Complete validation.** Step 3 runs every type-check, test, build, and lint command required by project instructions and records each result.
+- **3-attempt fix loop in Step 3.** If automated validation is not green after 3 fix attempts, halt and surface to the user.
+- **Phase boundary.** This skill returns after the initial change reaches green validation. It does not review, apply review findings, run user testing, commit, push, or open a PR.
+- **Same-context composition.** When /dreamers invokes this skill, it keeps the outer todo and immediately invokes /dreamers-review after a successful return. Standalone use owns its own three-step todo.

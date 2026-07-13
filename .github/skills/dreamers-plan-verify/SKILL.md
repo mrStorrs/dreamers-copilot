@@ -51,15 +51,13 @@ $ARGUMENTS
 
 ## Todo list
 
-At skill entry, declare via `manage_todo_list`:
+The outermost active Dreamers skill owns the todo. If this skill is the entry point, declare via `manage_todo_list`:
 - [ ] Read plan file
 - [ ] Read current code (cited paths, signatures, data models, test files)
 - [ ] Drift assessment (compare plan assertions against current state)
 - [ ] Report (no change or drift-detected list)
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
-
-This skill is always invoked standalone — declare its own todo. There is no composed mode (per `dreamers-kernel.md` § "Single-owner todo": skills do not invoke other skills as sub-routines in this system).
 
 ---
 
