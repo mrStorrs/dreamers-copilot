@@ -265,6 +265,25 @@ Assert-Patterns (Join-Path $dreamersRoot "refs/review-selection.md") @{
     "override" = "explicit user override.*wins|user override.*authoritative"
     "ambiguity" = "ambigu.*ask"
 }
+$expectedReviewSelectionConsumers = @(
+    (Join-Path $skillRoot "dreamers/SKILL.md"),
+    (Join-Path $skillRoot "dreamers-review/SKILL.md")
+)
+$reviewSelectionOptions = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+    [System.Text.RegularExpressions.RegexOptions]::Multiline -bor
+    [System.Text.RegularExpressions.RegexOptions]::Singleline
+$actualReviewSelectionConsumers = @(
+    Get-ChildItem (Join-Path $Root ".github") -Filter "*.md" -File -Recurse |
+        Where-Object {
+            [regex]::IsMatch(
+                (Get-Content -Raw $_.FullName),
+                "<review-selection>.*</review-selection>",
+                $reviewSelectionOptions
+            )
+        } |
+        ForEach-Object { $_.FullName }
+)
+Assert-ExactSet "review-selection consumer" $expectedReviewSelectionConsumers $actualReviewSelectionConsumers
 
 Assert-SynchronizedRefs
 

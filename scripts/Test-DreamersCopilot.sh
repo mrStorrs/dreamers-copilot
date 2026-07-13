@@ -298,16 +298,24 @@ assert_patterns(
     ],
 )
 
-for consumer in [
+expected_review_selection_consumers = [
     skill_root / "dreamers/SKILL.md",
     skill_root / "dreamers-review/SKILL.md",
-    instructions_root / "dreamers.instructions.md",
-    agent_root / "vigil.agent.md",
-]:
-    assert_patterns(
-        consumer,
-        [("synchronized review selection", r"<review-selection>.*</review-selection>")],
+]
+actual_review_selection_consumers = [
+    path
+    for path in (root / ".github").rglob("*.md")
+    if re.search(
+        r"<review-selection>.*</review-selection>",
+        path.read_text(encoding="utf-8"),
+        re.IGNORECASE | re.MULTILINE | re.DOTALL,
     )
+]
+assert_exact(
+    "review-selection consumer",
+    [path.relative_to(root).as_posix() for path in expected_review_selection_consumers],
+    [path.relative_to(root).as_posix() for path in actual_review_selection_consumers],
+)
 
 scan_roots = [
     agent_root,
