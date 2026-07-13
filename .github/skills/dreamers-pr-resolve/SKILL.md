@@ -147,7 +147,7 @@ git status                # confirm staged content
 git commit -m "fix: address PR feedback"
 ```
 
-Use a single commit covering all the PR-feedback fixes. Commit message per `.github/instructions/git.instructions.md` if present.
+Use a single commit covering all the PR-feedback fixes.
 
 **Do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count). Post-PR changes always require explicit user approval before pushing.
 

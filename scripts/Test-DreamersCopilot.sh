@@ -144,7 +144,6 @@ expected_templates = [
 expected_instructions = [
     "comment-rules.instructions.md",
     "dreamers.instructions.md",
-    "git.instructions.md",
 ]
 expected_skill_readmes = [
     "dreamers",

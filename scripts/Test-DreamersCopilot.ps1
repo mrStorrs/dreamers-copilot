@@ -150,8 +150,7 @@ $expectedTemplates = @(
 )
 $expectedInstructions = @(
     "comment-rules.instructions.md",
-    "dreamers.instructions.md",
-    "git.instructions.md"
+    "dreamers.instructions.md"
 )
 $expectedSkillReadmes = @(
     "dreamers",
