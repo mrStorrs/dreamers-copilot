@@ -7,8 +7,8 @@ flowchart TD
     Start(["/dreamers-review $ARGUMENTS"]) --> ModeCheck{"explicit lane or<br/>plan type?"}
 
     ModeCheck -->|lite plan or --vigil| Vigil["Single combined reviewer:<br/>Vigil"]
-    ModeCheck -->|standard plan| Standard["Sentinel + Probe<br/>in one batched task() call"]
-    ModeCheck -->|complex, --full, or no plan| Triad["Sentinel + Probe + Hone<br/>in one batched task() call"]
+    ModeCheck -->|standard plan| Standard["Sentinel + Probe<br/>spawned in parallel"]
+    ModeCheck -->|complex, --full, or no plan| Triad["Sentinel + Probe + Hone<br/>spawned in parallel"]
     ModeCheck -->|--lenses csv| Selected["Selected subset:<br/>any non-empty mix<br/>of Sentinel / Probe / Hone"]
     ModeCheck -->|--lens sentinel| LensS["Single-lens: Sentinel"]
     ModeCheck -->|--lens probe| LensP["Single-lens: Probe"]

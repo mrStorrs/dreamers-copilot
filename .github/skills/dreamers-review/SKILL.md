@@ -26,7 +26,7 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
   3. Otherwise read `**Plan-type:**`: `lite` = Vigil; `standard` = Sentinel + Probe; `complex` = Sentinel + Probe + Hone.
   4. If no plan or Plan-type is available, use Sentinel + Probe + Hone.
 - Before spawning, record existing matching artifacts under `.dreamers/reviews/{vigil,sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
-- For multiple selected reviewers, use one batched `task()` call with all selected sub-invocations, each `mode: "sync"`.
+- For multiple selected reviewers, launch every reviewer in parallel through the runtime's batched-spawn mechanism, each with `mode: "sync"`. Never spawn or await reviewers sequentially.
 - Vigil and single-lens modes spawn only the chosen reviewer.
 - Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
 - Every reviewer prompt MUST require exactly one artifact under `.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md` and short chat output containing only status, counts, artifact path, blocked reason, and open questions.
