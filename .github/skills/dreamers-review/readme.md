@@ -4,16 +4,18 @@ Visual map of the selected-lane review skill. Source of truth is `SKILL.md`. **R
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers-review $ARGUMENTS"]) --> ModeCheck{"review flags?"}
+    Start(["/dreamers-review $ARGUMENTS"]) --> ModeCheck{"explicit lane or<br/>plan type?"}
 
-    ModeCheck -->|No flag| Triad["Full triad:<br/>Sentinel + Probe + Hone<br/>in one batched task() call"]
-    ModeCheck -->|--vigil| Vigil["Single combined reviewer:<br/>Vigil"]
+    ModeCheck -->|lite plan or --vigil| Vigil["Single combined reviewer:<br/>Vigil"]
+    ModeCheck -->|standard plan| Standard["Sentinel + Probe<br/>in one batched task() call"]
+    ModeCheck -->|complex, --full, or no plan| Triad["Sentinel + Probe + Hone<br/>in one batched task() call"]
     ModeCheck -->|--lenses csv| Selected["Selected subset:<br/>any non-empty mix<br/>of Sentinel / Probe / Hone"]
     ModeCheck -->|--lens sentinel| LensS["Single-lens: Sentinel"]
     ModeCheck -->|--lens probe| LensP["Single-lens: Probe"]
     ModeCheck -->|--lens hone| LensH["Single-lens: Hone"]
 
     Triad --> Spawn["mode: sync<br/>each prompt MUST include<br/>Do NOT call manage_todo_list"]
+    Standard --> Spawn
     Vigil --> Spawn
     Selected --> Spawn
     LensS --> Spawn
@@ -39,7 +41,7 @@ flowchart TD
     classDef agent fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#fff
 
     class ModeCheck,CheckStatus gate
-    class Triad,Vigil,Selected,LensS,LensP,LensH agent
+    class Triad,Standard,Vigil,Selected,LensS,LensP,LensH agent
     class Spawn,WriteArtifact,Wait,Collect,Aggregate,Surface1,Surface2,Report phase
 ```
 
@@ -56,20 +58,21 @@ flowchart TD
 
 | Lane | Reviewers | Normal use |
 |---|---|---|
-| vigil | Vigil | Combined proportional review selected by a delivery caller or explicit user request. |
+| vigil | Vigil | Lite plan or explicit request. |
 | sentinel | Sentinel | Focused correctness, security, or maintainability audit. |
 | probe | Probe | Focused test coverage or regression-risk audit. |
 | hone | Hone | Focused architecture or simplicity audit. |
-| standard | Sentinel + Probe | Explicit combined correctness and coverage audit. |
-| full | Sentinel + Probe + Hone | Adaptive triad selection or explicit full review. |
+| standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
+| full | Sentinel + Probe + Hone | Complex plan, explicit full review, or standalone default. |
 
-The adaptive /dreamers caller owns lane selection and invokes this skill for every lane, including Vigil for low-risk lite and standard plans. This skill only executes the requested lane and reports artifact-backed results; explicit user overrides remain authoritative.
+Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. This skill owns selection and execution, then reports artifact-backed results.
 
 ## Key invariants
 
-- **Project-file read-only.** This skill and every reviewer leave project code, tests, docs, config, dependencies, and git state unchanged. Each reviewer may write exactly one .dreamers/reviews artifact.
-- **Caller applies findings.** This skill does not apply fixes; the caller decides what to apply or defer.
-- **No major-scope gate here.** That logic remains in the caller.
-- **Reviewer artifacts are the subagent handoff.** This skill reads every selected reviewer's artifact before reporting.
-- **Every reviewer prompt includes the parent-todo prohibition.**
+- **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers` Step 5, or whoever invoked it) decides what to do with the findings. Reviewers may write only their required `.dreamers/reviews/` artifacts.
+- **`/dreamers` reruns.** Routine follow-up review reruns use `/dreamers-review --vigil`. A full or selected-lane rerun runs only when the major-change rerun gate asks the user and the user selects it.
+- **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
+- **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
+- **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
+- **`--no-apply` doesn't exist** — this skill is always read-only by design.
 - **Todo ownership is contextual.** Standalone review owns its two-step todo; when invoked by /dreamers, it completes the phase under the outer todo.

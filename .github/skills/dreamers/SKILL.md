@@ -1,146 +1,150 @@
 ---
 name: dreamers
-description: 'Adaptive end-to-end Dreamers delivery orchestrator. Accepts a task description, approved plan path(s), or a feature manifest; routes empty/help input to read-only guidance; invokes the specialized planning, implementation, review, documentation, and PR skills; applies artifact-backed findings; runs triggered user testing and retrospectives; then opens a reviewed PR. Use for /dreamers, plan and implement, ship a feature, or deliver an existing Dreamers plan.'
-argument-hint: '<task description> | [--no-grill] | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
+description: 'End-to-end Dreamers delivery orchestrator. Accepts a task description, existing plan file(s), or a feature manifest. Preserves the full pipeline gates and close-out while invoking specialized planning, implementation, review, documentation, and PR skills. Reviewers are selected by /dreamers-review from plan complexity or explicit plan/user direction. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
+argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
 $ARGUMENTS
 
-## Route input
+If no task description, plan path, or manifest was provided, halt + ask.
 
-Normalize whitespace before routing.
+## Modes
+| Mode | `$ARGUMENTS` | Phase 1 / 1.5 behavior |
+|---|---|---|
+| 1 | Task description | Invoke `/dreamers-plan $ARGUMENTS` for the Grill phase + right-sized plans → capture plan paths from its output → run Phase 1.5 gate |
+| 2 | Plan path(s) | Skip planning and Phase 1.5; use supplied plan file(s) after plan-quality checks |
+| 3 | `manifest.md` | Skip planning and Phase 1.5; read manifest → capture plan sequence + shared-context payload → run plan-quality checks |
 
-- Empty or whitespace-only input, help, --help, or -h: invoke /dreamers-help as a read-only delegation and halt this delivery workflow. Do not inspect or mutate repository, git, mailbox, or external state first.
-- Task description: use planning mode.
-- Resolved plan path or paths: use plan mode.
-- A resolved manifest.md: use manifest mode.
-- Otherwise halt and ask for a task, plan path, or manifest.
+Plan path mode:
+- Treat arguments ending in `.md` as plan paths when they resolve under `.dreamers/plans/`, or when they match `feature-<slug>/plan-NN-<name>.md`.
+- Resolve `feature-<slug>/plan-NN-<name>.md` under `.dreamers/plans/`.
+- Preserve the provided order as the implementation sequence.
+- Resolve and read each supplied plan file before branch setup; halt if any file is missing, is outside `.dreamers/plans/`, or is not a `plan-*.md` file.
+- Do not invoke `/dreamers-plan`, re-plan, write replacement plan files, or ask for implementation-start approval.
+- For multi-plan runs, honor an explicit user-supplied strategy; otherwise set `strategy=ATOMIC` without asking.
 
-Plan paths must resolve under .dreamers/plans/ and be named plan-*.md. A manifest must resolve under .dreamers/plans/ and be named manifest.md. Reject missing or escaping paths.
+Manifest mode:
+- Treat `manifest.md` as manifest mode when it resolves under `.dreamers/plans/`, or when it matches `feature-<slug>/manifest.md`.
+- Resolve `feature-<slug>/manifest.md` under `.dreamers/plans/`.
+- Read the manifest before branch setup, capture the plan sequence and shared-context payload, and preserve that sequence through Phase 2.
+- Do not invoke `/dreamers-plan`, re-plan, write replacement plan files, or ask for implementation-start approval.
+- Honor an explicit user-supplied strategy; otherwise set `strategy=ATOMIC` without asking.
 
-## Own the delivery workflow
+Plan quality check before branch setup (all modes):
+- Read each plan and detect `**Plan-type:** lite / standard / complex`.
+- Read `plan-guide-selector.md`, then read only the matching guide for each plan.
+- Do not implement from a bare plan: reject missing required sections for its plan type, placeholder content, missing AC layer annotations, unresolved open questions, or unverifiable citations presented as facts.
+- If `Plan-type` is missing, treat the plan as legacy: surface the missing-type warning and continue only after explicit user approval.
 
-Declare the complete parent todo at entry. Invoked Dreamers skills run in this same orchestrator context, complete their owned phase, and return control without replacing the parent todo. Explicit handoffs are required only for spawned agents.
+## Todo - Before you begin.
+- Declare a todo list marking all phases at entry. Mode 1: Phase 1 / Phase 1.5 / Phase 2 cycle-N / Phase 3. Modes 2 and 3: Artifact resolution / Phase 2 cycle-N / Phase 3.
+- Before reading `.dreamers/` files, read and apply `~/.copilot/dreamers/refs/dreamers-kernel.md` and `~/.copilot/dreamers/refs/git-workflow.md`, including startup verification.
 
-After help routing, load and apply the catalog `dreamers/refs/git-workflow.md` contract (installed at `~/.copilot/dreamers/refs/git-workflow.md`). Run its startup verification before reading .dreamers files, and retain its branch, commit, and push invariants through close-out.
+## Phase 1 — Planning (Mode 1 only)
+- Invoke `/dreamers-plan $ARGUMENTS`.
+- The planning pass writes the smallest selected-guide plan that preserves quality.
+- Wait. Capture plan paths.
+- Halt this skill if `/dreamers-plan` halts without approval.
 
-### Planning mode
+## Phase 1.5 — Plan review / implementation start gate (Mode 1 only)
+- Do not run Phase 1.5 for plan path or manifest mode. After artifact checks pass, proceed directly to Phase 2.
+- Read the plan path(s). If manifest mode, also read the manifest shared-context payload.
+- If multiple plans will run, score against `plan-guide-selector.md` § "Ship strategy."
+- Present the written plan path(s), implementation scope, test intent, and any ship-strategy recommendation.
+- `request_information`:
+  - Single-plan: `Approved — start implementation` / `Revise plan` / `Halt` / `Other`.
+  - Multi-plan: `Approved — start INCREMENTAL` / `Approved — start ATOMIC` / `Revise plan` / `Halt` / `Other`.
+- On `Revise plan`, apply explicit minor edits inline when unambiguous, then re-present this gate. Major rewrite → return to `/dreamers-plan` with the correction as context. Capture selected `strategy` for multi-plan runs.
 
-- Invoke /dreamers-plan with the task description. Task descriptions run Grill by default.
-- Pass through --no-grill or unmistakable natural-language direction such as "do not grill" or "skip the interview"; strip control syntax from the actual task.
-- Capture the approved plan paths and optional manifest returned by /dreamers-plan.
-- Plan approval authorizes implementation. Do not add an implementation-start gate.
-- If planning halts without approval, halt this workflow.
+## Phase 2 — Per plan implementation + review
 
-### Plan and manifest modes
+Branch setup once per `git-workflow`: fetch + checkout default + pull + cut `feat/<slug>`. Confirm `.dreamers/` is gitignored. Action open items in `.dreamers/improvements.md` if present.
 
-- Plan path and manifest artifact modes skip Grill, replanning, plan rewriting, and implementation-start approval.
-- Preserve supplied plan order. For a manifest, carry its shared constraints, decisions, contracts, and end-to-end ACs into every cycle and reviewer call.
-- Read each plan, detect Plan-type, read plan-guide-selector.md, then only the matching plan-guide-lite.md, plan-guide-standard.md, or plan-guide-complex.md.
-- Reject missing required sections, placeholders, invalid AC Layer annotations, unresolved open questions, and unverifiable citations presented as facts.
-- A missing Plan-type is legacy input; warn and continue only with explicit user approval.
-- Every supplied plan reaches the single verification call at cycle entry before implementation. Drift detected there halts the workflow until the user revises, accepts, skips, or abandons the plan.
+For each plan in sequence:
 
-### Independent adaptive decisions
+### Steps 1–3 — Implement
+- Invoke `/dreamers-implement <absolute-plan-path>` with the shared manifest context when present.
+- Wait. A halted implementation halts this cycle.
 
-Decide independently: ship strategy, reviewer rerun, documentation need, and retrospective need. State each selected value and a one-sentence rationale. Honor explicit user overrides and ask only when classification is genuinely ambiguous.
+### Step 4 — Spawn review
+- Invoke `/dreamers-review --branch <absolute-plan-path>` once per plan.
+- `/dreamers-review` selects Vigil, Sentinel + Probe, or Sentinel + Probe + Hone from plan complexity or explicit plan/user direction.
+- This is the only automatic initial review pass for the plan.
+- Wait. Read every returned `.dreamers/reviews/` artifact before continuing.
+- Capture all reviewer artifact paths in the cycle summary.
+- `Blocked` from any reviewer artifact → halt cycle + surface verbatim with artifact path.
+- Open questions from any reviewer artifact → present each via `request_information`; capture; carry decisions into Step 5.
 
-- Select INCREMENTAL for independent plans, different repositories or subsystems, or standalone value that should ship first.
-- Select ATOMIC for overlapping files, ordered contract or migration work, or plans that require joint verification. Conflicting signals default to ATOMIC.
-- Never add a routine strategy confirmation gate.
+### Step 5 — Apply findings (orchestrator-as-fixer)
+- Concatenate findings from the reviewer artifacts; sort by severity (critical → low).
+- Conflict resolution: same `file:line` with contradicting fixes → correctness/security > test-coverage > simplicity. Genuine ambiguity → `request_information` before applying.
+- **Major-refactor gate.** A finding is "major-refactor scope" if its suggested fix meets ANY of:
+  - New module or top-level directory not in the plan's scope.
+  - Schema / data-model change.
+  - Cross-cutting refactor (touches multiple unrelated subsystems).
+  - New public exported symbols not specified in the plan.
+  - Files outside the plan's scope.
+  - Hone- or Vigil-recommended full refactor (scope language like "tear out X across N files," "rewrite Y module").
+  Closed checklist. Ambiguous → fire the gate.
+- For each gate-triggering finding (or batched group sharing the same refactor scope), `request_information` with: reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, breadth estimate. Options: `Apply now` / `Defer — create follow-up plan` / `Other`.
+  - **Apply now** → fix inline; stage; re-run tests after.
+  - **Defer** → do NOT apply. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per `plan-guide-selector.md`; default to `standard` unless the finding is clearly lite or complex. Surface the stub path. Continue with remaining findings.
+  - **Other** → freeform redirect. Never silently apply/defer.
+- Apply each non-deferred fix as a targeted Edit. Stage with `git add`. Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
 
-### Branch setup
+### Step 5.5 — Review rerun policy
+- Never re-run the initial reviewer lane automatically after Step 4. Step 4 is the single automatic review pass for this plan.
+- After Step 5 fixes or Step 6 bug fixes, skip reviewer rerun when the fix is small and validation covers it. Record why in the cycle summary.
+- If a reviewer rerun is needed and no major-change trigger applies, invoke `/dreamers-review --vigil --branch <absolute-plan-path>` once. Read the Vigil artifact before applying findings. Route Vigil findings through Step 5.
+- A major-change rerun trigger fires when the post-review fix set includes any of:
+  - New abstraction, module, or top-level directory.
+  - Schema / data-model change.
+  - Public API, exported symbol, dependency, or persistence change.
+  - Cross-subsystem refactor or broad rewrite.
+  - Files outside the plan's scope.
+  - Conflicting reviewer feedback that cannot be resolved mechanically.
+  - Hone/Vigil full-refactor scope language.
+  Ambiguous → fire the gate.
+- On a major-change trigger, ask the user before rerunning review. Provide the reason, breadth estimate, files touched, validation status, and options: `Run Vigil` / `Run full triad` / `Run selected /dreamers-review lane` / `Skip reviewer rerun` / `Other`.
+  - `Run Vigil` → invoke `/dreamers-review --vigil --branch` once as above.
+  - `Run full triad` → invoke `/dreamers-review --full --branch` once, capture artifact paths, and route findings through Step 5.
+  - `Run selected /dreamers-review lane` → ask for `sentinel`, `probe`, `hone`, or comma-separated lenses; invoke that lane once and route findings through Step 5.
+  - `Skip reviewer rerun` → record the user-approved skip and continue.
+  - `Other` → follow user direction; never infer an extra review pass.
 
-After artifact checks pass, execute git-workflow branch setup once per repository: checkout the detected default branch, pull it from origin, cut the planned feature branch, confirm branch identity with the recent log, and verify .dreamers/ is ignored. Before the first implementation edit, read open .dreamers/improvements.md items and action, defer with a reason, or close each relevant item. For a cross-repository INCREMENTAL sequence, repeat startup verification and branch setup only after the prior transfer gate is approved.
+### Step 6 — User testing gate (when triggered)
+- Trigger this gate when the plan requires manual verification, the change is user-facing, build/distribution steps are needed, reviewer findings request user validation, or the user asked to test this area.
+- If no trigger applies, record "user testing skipped — no manual verification trigger" in the cycle summary and continue.
+- When triggered, read `.github/dreamers/templates/user-testing-gate.md` and present the gate through `request_information` exactly as specified there.
+- The gate prompt must include a numbered `Testing steps` section and a `Notes` section.
+- The gate must provide exactly three options: `Approved` / `Bug found (enter text)` / `Other (enter text)`.
+- `Bug found (enter text)` and `Other (enter text)` must accept freeform text.
+- On bug → capture text, fix inline, rerun required automated validation, then apply Step 5.5. Then re-present the same templated gate.
+- On Approved → continue.
+- No commit yet (commit happens at close-out for FULL, or in the LIGHT close-out between cycles for INCREMENTAL).
 
-## Run each plan through the specialized skills
+### Between cycles (more plans remain)
+- **Drift check** (inline): read next plan; cited paths exist; signatures match; ACs valid vs landed diff. Drift → surface; user revises/skips/halts.
+- **INCREMENTAL** (light close-out for this plan):
+  - Invoke `/dreamers-docs --branch` if the just-completed plan's diff has user-facing or documentable changes.
+  - `git commit` per project commit style; body includes `Plan: feature-<slug>/plan-NN-<name>`.
+  - **Pre-PR approval gate**: present plan summary, validation status, and PR scope. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
+  - Invoke `/dreamers-pr`. Capture PR URL.
+  - Halt until the user confirms the PR has merged, then re-cut feature branch from default → next cycle.
+- **ATOMIC**:
+  - `git commit` for this plan (body includes `Plan:` line). Do NOT push. → next cycle.
 
-For every plan in sequence:
-
-1. Invoke /dreamers-plan-verify exactly once for this plan against the current branch state and shared manifest context. This is the executable verification point for task, plan, and manifest routes.
-2. Invoke /dreamers-implement with the absolute plan path and shared manifest context. Require green automated validation, an AC coverage matrix, changed-file scope, and validation commands/results before continuing.
-3. Select the initial reviewer lane through review-selection below, then invoke /dreamers-review with that lane, the plan path, shared manifest context, branch scope, and validation results.
-4. Read every reviewer artifact returned by /dreamers-review. Blocked halts the cycle with the artifact path; ask each open question before applying findings.
-5. Apply or defer findings, revalidate, and decide reviewer reruns through the rules below.
-6. Run the triggered user-testing/fix loop when required.
-7. Complete the plan cycle and either continue, ship incrementally, or enter milestone close-out.
-
-<review-selection>
-# Review Selection
-
-Use this contract for the initial review and any reviewer rerun in a PR-bearing Dreamers workflow.
-
-## Initial lane
-
-- A complex plan selects Sentinel + Probe + Hone through the full /dreamers-review lane.
-- A low-risk lite or standard plan selects Vigil.
-- Any danger or high-risk trigger overrides a smaller plan type and selects the triad:
-  - Security, authentication, authorization, privacy, payment, secret, or permission changes.
-  - Schema, migration, persistence, destructive-data, concurrency, or irreversible-side-effect changes.
-  - Public or breaking API, dependency, build, distribution, or cross-subsystem changes.
-  - Rollback that requires operator action or data recovery instead of reverting the feature commit.
-- PR-bearing work receives at least Vigil unless the user explicitly requests that review be skipped.
-
-## Decision behavior
-
-- State the selected reviewer lane and a one-sentence rationale, then proceed without a routine confirmation gate.
-- An explicit user override wins and remains authoritative. Before a requested downshift, surface the concrete risk being accepted.
-- If classification is genuinely ambiguous, ask once before review. Do not silently promote or downshift.
-- Record the selected lane, rationale, trigger or plan type, and any user override in the cycle summary.
-
-## Invocation
-
-- The caller selects the lane; /dreamers-review only executes it and reports artifact-backed results.
-- For Vigil, invoke /dreamers-review --vigil --branch with the plan path, changed-file scope, branch and default names, validation commands/results, shared manifest context when present, and prior review artifacts when applicable.
-- For the triad, invoke /dreamers-review --branch with the same context.
-- For a selected rerun, invoke /dreamers-review with --lens or --lenses and the same context.
-- Read every reviewer artifact before reporting or applying findings. Blocked halts the cycle; open questions return to the user.
-
-## Reruns
-
-- Decide reviewer reruns independently from plan type, ship strategy, documentation, and retrospective decisions.
-- Skip a rerun when fixes are small and automated validation directly covers them; record the reason.
-- Use the /dreamers-review Vigil lane for a normal rerun after targeted fixes.
-- Escalate a rerun to the triad only when the new change set itself meets a danger/high-risk trigger. A selected /dreamers-review lane is valid when one specific lens is sufficient.
-- State the rerun choice and rationale and proceed without a routine gate. Ask only when the new risk is genuinely ambiguous; explicit user overrides remain authoritative.
-</review-selection>
-
-### Apply findings
-
-Sort findings critical to low. Resolve conflicts by correctness/security, then test coverage, then simplicity. Ask when ambiguity remains.
-
-Apply targeted fixes inline using the implementation rules already loaded from /dreamers-implement unless a suggested fix triggers the major scope expansion gate through any of:
-
-- A new module or top-level directory outside planned scope.
-- A schema or data-model change.
-- A cross-subsystem refactor or broad rewrite.
-- A new public API, exported symbol, dependency, or persistence behavior not specified by the plan.
-- Files outside plan scope.
-- Full-refactor language from Hone or Vigil.
-
-For a gate-triggering finding, present reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, and breadth estimate. Offer Apply now / Defer - create follow-up plan / Other. Apply now fixes and revalidates. Defer writes a right-sized stub plan under .dreamers/plans/ and continues. Never silently apply or defer.
-
-After applied fixes, rerun the project validation commands with the existing three-attempt limit. Invoke /dreamers-review again only when review-selection requires a rerun, and route every returned artifact through this same finding process.
-
-### User-testing and fix loop
-
-Trigger user testing when the plan requires manual verification, the change is user-facing, build or distribution verification is required, a reviewer requests it, or the user asked to test the area. Otherwise record the skip.
-
-Read .github/dreamers/templates/user-testing-gate.md and present its numbered Testing steps and Notes exactly. Offer exactly Approved / Bug found (enter text) / Other (enter text). A bug is fixed inline by the orchestrator, revalidated, reviewed again when warranted, and returned to the same gate. Neither /dreamers-review nor its reviewers apply the fix.
-
-## Complete a cycle
-
-- Commit exactly once per plan after review findings, validation, and required user testing are complete. Follow the project conventional-commit style with an explicit Plan: feature-.../plan-... line and the Dreamers co-author trailer.
-- Before the next plan, carry forward the landed diff and shared manifest context so its cycle-entry verification checks the updated branch state.
-- INCREMENTAL: decide documentation need, invoke /dreamers-docs --branch when documentable, include its staged edits in the cycle commit, present the mandatory pre-PR approval gate, invoke /dreamers-pr, and halt until the user confirms merge. Start the next repository or cycle from a fresh default branch.
-- ATOMIC: commit without pushing and continue. Push exactly once at final PR creation.
-
-## Close out
-
-- Decide documentation need from the landed diff. Invoke /dreamers-docs --branch when user-facing or documentable; otherwise record the skip.
-- Write a retro and append .dreamers/improvements.md only when triggered by multi-plan learning, repeated or failed validation, review-driven redesign, a user-testing bug, a deferred finding, or explicit user request. Otherwise record that retrospective and improvements were skipped.
-- Include an AC coverage matrix and testing bugs in any retro; include regression analysis only for an originating bug fix.
-- Stage explicit paths and create the final commit only when staged work remains.
-- Present the mandatory pre-PR approval gate with milestone summary, validation, review artifacts, user-testing status, commits, and PR scope. Offer Approved / Halt / Other.
-- On approval invoke /dreamers-pr, passing any referenced issue. Capture the PR URL.
-- After PR creation, surface open retro improvements and project-state drift only. Do not auto-commit.
+## Phase 3 — Close-out (FULL, milestone end)
+- Append improvements to `.dreamers/improvements.md` (dated, one sentence each, reference retro path below).
+- Invoke `/dreamers-docs --branch`. Stage Echo's edits.
+- Write retro `.dreamers/retros/retro-d<N>-<name>.md`:
+  - What worked well
+  - Friction points
+  - Proposed improvements
+  - AC coverage matrix (rolled up from cycles)
+  - Bugs from user-testing (if any)
+  - Regression analysis (only if originating task was a bug fix)
+- Final commit: `git add <explicit-paths>` (no `-A`) + `git commit` per conventional-commits with `Plan:` body + trailer. Skip if nothing staged.
+- **User approval gate** (MANDATORY, last halt before PR): present milestone summary. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
+- Invoke `/dreamers-pr` (pass `--issue <#|url>` if `$ARGUMENTS` referenced one). Capture PR URL.
+- **Post-PR scan**: surface open retro improvements and project-state drift only (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No new prompt, no auto-commit after PR opens.

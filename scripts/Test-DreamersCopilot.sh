@@ -81,18 +81,6 @@ def assert_no_patterns(path: Path, patterns: list[tuple[str, str]]) -> None:
             add_error(f"Unexpected {label} contract in {path.relative_to(root)}")
 
 
-def assert_pattern_count(path: Path, label: str, pattern: str, expected: int) -> None:
-    if not path.exists():
-        add_error(f"Missing contract file: {path}")
-        return
-    content = path.read_text(encoding="utf-8")
-    actual = len(re.findall(pattern, content, re.IGNORECASE | re.MULTILINE))
-    if actual != expected:
-        add_error(
-            f"Expected {expected} {label} contract(s) in {path.relative_to(root)}, found {actual}"
-        )
-
-
 expected_agents = [
     "echo",
     "forge",
@@ -112,7 +100,6 @@ expected_skills = [
     "dreamers-docs",
     "dreamers-find-refactors",
     "dreamers-fix",
-    "dreamers-help",
     "dreamers-implement",
     "dreamers-issue",
     "dreamers-new-project",
@@ -135,7 +122,6 @@ expected_refs = [
     "logging-discipline.md",
     "planning-grill.md",
     "project-bootstrap.md",
-    "review-selection.md",
     "reviewer-findings-format.md",
     "testing-mandate.md",
 ]
@@ -235,7 +221,7 @@ if catalog_path.exists():
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         items = catalog.get("items", [])
         item_keys = {(item.get("type"), item.get("slug")) for item in items}
-        for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
+        for key in [("skill", "dreamers")]:
             if key not in item_keys:
                 add_error(f"Catalog missing item: {key[1]}")
         for key in [("skill", "dreamers-full"), ("skill", "dreamers-lite")]:
@@ -250,7 +236,7 @@ if catalog_path.exists():
                 (member.get("type"), member.get("slug"))
                 for member in collection.get("members", [])
             }
-            for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
+            for key in [("skill", "dreamers")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
             for key in [("skill", "dreamers-full"), ("skill", "dreamers-lite")]:
@@ -265,43 +251,34 @@ if catalog_path.exists():
 assert_patterns(
     skill_root / "dreamers/SKILL.md",
     [
-        ("input routing", r"empty|whitespace.*help|--help|-h"),
-        ("read-only help delegation", r"/dreamers-help.*read.only|read.only.*/dreamers-help"),
-        ("default Grill", r"task description.*Grill.*default|Grill.*default.*task description"),
-        ("explicit Grill opt-out", r"--no-grill.*do not grill|--no-grill.*skip the interview"),
-        ("artifact mode", r"plan path.*manifest.*skip.*Grill|artifact mode.*skip.*Grill"),
-        ("startup contract loading", r"load and apply.*dreamers/refs/git-workflow\.md.*startup verification.*before reading \.dreamers.*branch.*commit.*push"),
-        ("branch setup", r"git-workflow branch setup.*checkout.*pull.*feature branch"),
-        ("plan quality", r"plan-guide-selector.*plan-guide-(?:lite|standard|complex)"),
-        ("approval authorizes implementation", r"plan approval authorizes implementation"),
-        ("task planning before implementation", r"### Planning mode.*invoke\s+(?:\x60)?/dreamers-plan.*## Run each plan.*invoke\s+(?:\x60)?/dreamers-plan-verify.*invoke\s+(?:\x60)?/dreamers-implement"),
-        ("artifact verification timing", r"### Plan and manifest modes.*single verification call at cycle entry before implementation"),
-        ("verification before implementation", r"For every plan in sequence:.*1\.\s*Invoke\s+(?:\x60)?/dreamers-plan-verify exactly once.*2\.\s*Invoke\s+(?:\x60)?/dreamers-implement"),
-        ("plan verification delegation", r"invoke\s+(?:\x60)?/dreamers-plan-verify"),
-        ("implementation delegation", r"invoke\s+(?:\x60)?/dreamers-implement"),
-        ("review delegation", r"invoke\s+(?:\x60)?/dreamers-review"),
-        ("specialist call order", r"invoke\s+(?:\x60)?/dreamers-implement.*invoke\s+(?:\x60)?/dreamers-review.*invoke\s+(?:\x60)?/dreamers-docs.*invoke\s+(?:\x60)?/dreamers-pr"),
-        ("review selection ref", r"<review-selection>.*</review-selection>"),
-        ("visible adaptive decision", r"selected.*rationale.*without.*confirmation"),
-        ("explicit review override", r"explicit user override"),
-        ("major scope gate", r"major.*scope.*gate|scope expansion.*gate"),
-        ("triggered user testing", r"user.testing.*trigger"),
-        ("pre-PR approval", r"pre-PR approval"),
-        ("independent decisions", r"independent.*ship strategy.*reviewer rerun.*documentation.*retrospective"),
-        ("triggered retrospective", r"retrospective.*trigger|retro.*trigger"),
-        ("PR close-out", r"/dreamers-pr"),
+        ("missing-input halt", r"If no task description, plan path, or manifest was provided, halt \+ ask"),
+        ("three input modes", r"## Modes.*Task description.*Plan path\(s\).*manifest\.md"),
+        ("artifact modes skip start gate", r"Plan path mode:.*Do not invoke `/dreamers-plan`.*Manifest mode:.*Do not invoke `/dreamers-plan`"),
+        ("startup contract loading", r"Before reading `\.dreamers/` files, read and apply.*dreamers-kernel\.md.*git-workflow\.md.*startup verification"),
+        ("branch setup", r"Branch setup once per `git-workflow`:.*checkout.*pull.*feat/<slug>"),
+        ("plan quality", r"Plan quality check.*Plan-type.*plan-guide-selector"),
+        ("planning delegation", r"## Phase 1.*Invoke `/dreamers-plan \$ARGUMENTS`"),
+        ("single-plan implementation-start gate", r"Approved — start implementation.*Revise plan.*Halt.*Other"),
+        ("multi-plan implementation-start gate", r"Approved — start INCREMENTAL.*Approved — start ATOMIC.*Revise plan.*Halt.*Other"),
+        ("implementation then review", r"### Steps 1.3.*Invoke `/dreamers-implement.*### Step 4.*Invoke `/dreamers-review"),
+        ("complexity review delegation", r"/dreamers-review` selects Vigil, Sentinel \+ Probe, or Sentinel \+ Probe \+ Hone from plan complexity or explicit plan/user direction"),
+        ("major-refactor gate", r"Major-refactor gate.*Apply now.*Defer — create follow-up plan.*Other"),
+        ("major-change rerun gate", r"Run Vigil.*Run full triad.*Run selected /dreamers-review lane.*Skip reviewer rerun.*Other"),
+        ("templated user testing", r"user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)"),
+        ("incremental close-out", r"INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`"),
+        ("atomic continuation", r"ATOMIC.*Do NOT push"),
+        ("full close-out", r"Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`"),
     ],
-)
-assert_pattern_count(
-    skill_root / "dreamers/SKILL.md",
-    "executable plan verification",
-    r"\binvoke\s+(?:`)?/dreamers-plan-verify\b",
-    1,
 )
 assert_no_patterns(
     skill_root / "dreamers/SKILL.md",
     [
         ("inline implementation heading", r"## Implement each plan inline"),
+        ("retired plan verification phase", r"invoke\s+`?/dreamers-plan-verify"),
+        ("help route", r"--help"),
+        ("Grill opt-out", r"--no-grill|do not grill|skip the interview"),
+        ("separate review-selection policy", r"<review-selection>|danger rubric|low-risk lite or standard"),
+        ("conditional milestone close-out", r"triggered retrospective|retrospective need|documentation need"),
         ("implementation-only synchronized refs", r"<(?:planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"),
     ],
 )
@@ -309,13 +286,12 @@ assert_patterns(
     skill_root / "dreamers-implement/SKILL.md",
     [
         ("tests-first implementation", r"failing tests.*implement|tests.first"),
-        ("green-validation exit", r"exit.*green|green validation"),
-        ("complete project validation", r"every type-check, test, build, and lint command required by project instructions"),
-        ("bounded validation attempts", r"at most three attempts"),
-        ("validation result reporting", r"record every command and result"),
+        ("type-check and tests", r"Step 3 — Type-check \+ run tests.*type-check \+ test command"),
+        ("bounded validation attempts", r"max 3 attempts"),
         ("benchmark updates", r"test-benchmarks\.md.*after passing"),
-        ("no review boundary", r"does not review|does NOT review"),
-        ("no user-testing boundary", r"does not.*user.testing|does NOT.*user.testing"),
+        ("green exit", r"Return the AC coverage matrix at green tests.*invokes `/dreamers-review` immediately"),
+        ("phase boundary", r"Do not invoke reviewers.*user testing.*commit.*push.*PR creation"),
+        ("conditional todo ownership", r"When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"),
     ],
 )
 assert_no_patterns(
@@ -326,14 +302,16 @@ assert_patterns(
     skill_root / "dreamers-review/SKILL.md",
     [
         ("Vigil execution mode", r"--vigil.*Vigil|Vigil.*--vigil"),
+        ("full execution mode", r"--full.*Sentinel \+ Probe \+ Hone"),
+        ("selection precedence", r"explicit lane flag or explicit user direction.*explicit reviewer requirement.*Plan-type"),
+        ("lite selection", r"lite` = Vigil"),
+        ("standard selection", r"standard` = Sentinel \+ Probe"),
+        ("complex selection", r"complex` = Sentinel \+ Probe \+ Hone"),
         ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
         ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
+        ("caller owns fix loop", r"caller owns all finding disposition, gates, fixes, revalidation, and user testing"),
     ],
-)
-assert_no_patterns(
-    skill_root / "dreamers-plan-verify/SKILL.md",
-    [("standalone-only composition prohibition", r"always invoked standalone|no composed mode|skills do not invoke other skills")],
 )
 assert_patterns(
     instructions_root / "dreamers.instructions.md",
@@ -347,57 +325,37 @@ assert_no_patterns(
     [("implementation mirror rule", r"dreamers-implement mirror")],
 )
 assert_patterns(
-    skill_root / "dreamers-help/SKILL.md",
-    [
-        ("read-only boundary", r"read.only"),
-        ("system orientation", r"Dreamers system"),
-        ("delivery example", r"/dreamers\s+"),
-        ("specialized choices", r"specialized"),
-        ("Grill override", r"--no-grill"),
-        ("review override", r"Vigil|Sentinel"),
-        ("migration note", r"retired|removed|migration"),
-        ("next-command prompt", r"describe.*goal|next command"),
-    ],
-)
-assert_patterns(
-    dreamers_root / "refs/review-selection.md",
-    [
-        ("complex triad", r"complex.*Sentinel.*Probe.*Hone"),
-        ("low-risk Vigil", r"lite.*standard.*Vigil"),
-        ("danger escalation", r"security.*schema.*public.*API"),
-        ("visible rationale", r"rationale.*without.*confirmation"),
-        ("override precedence", r"explicit user override.*wins|user override.*authoritative"),
-        ("ambiguity handling", r"ambigu.*ask"),
-        ("rerun policy", r"rerun"),
-    ],
-)
-assert_patterns(
     dreamers_root / "refs/planning-grill.md",
     [
-        ("default-on task Grill", r"task description.*default"),
-        ("flag opt-out", r"--no-grill"),
-        ("natural-language opt-out", r"do not grill|skip the interview"),
-        ("artifact boundary", r"plan path.*manifest.*skip|artifact.*skip"),
+        ("relentless interview", r"Interview me relentlessly"),
+        ("codebase exploration", r"answered by exploring the codebase, explore"),
+        ("one blocking question", r"Ask one blocking question at a time"),
+        ("three choices", r"recommended answer.*strongest viable alternate.*Other"),
+    ],
+)
+assert_patterns(
+    skill_root / "dreamers-plan/SKILL.md",
+    [
+        ("conditional todo ownership", r"When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"),
+        ("invoked return boundary", r"When standalone, hard stop; when invoked by an outer delivery skill, return control"),
     ],
 )
 
-expected_review_selection_consumers = [
+for path in [
     skill_root / "dreamers/SKILL.md",
-]
-actual_review_selection_consumers = [
-    path
-    for path in (root / ".github").rglob("*.md")
-    if re.search(
-        r"<review-selection>.*</review-selection>",
-        path.read_text(encoding="utf-8"),
-        re.IGNORECASE | re.MULTILINE | re.DOTALL,
+    skill_root / "dreamers-plan/SKILL.md",
+    skill_root / "dreamers-plan/readme.md",
+    dreamers_root / "refs/planning-grill.md",
+    agent_root / "nova.agent.md",
+    root / "README.md",
+    root / ".github/README.md",
+]:
+    assert_no_patterns(
+        path,
+        [
+            ("Grill opt-out policy", r"--no-grill|do not grill|skip the interview"),
+        ],
     )
-]
-assert_exact(
-    "review-selection consumer",
-    [path.relative_to(root).as_posix() for path in expected_review_selection_consumers],
-    [path.relative_to(root).as_posix() for path in actual_review_selection_consumers],
-)
 
 scan_roots = [
     agent_root,

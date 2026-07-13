@@ -1,6 +1,6 @@
 ---
 name: dreamers-implement
-description: 'Implementation skill — performs the initial code change for one approved plan: writes failing AC-layer tests, implements the plan, runs automated validation, and exits at green validation with an AC coverage matrix. Does NOT review, run user testing, commit, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+description: 'Implementation skill — runs one cycle against an approved plan. Writes failing tests, implements, runs tests, and exits at green tests with an AC coverage matrix. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
 argument-hint: 'feature-<slug>/plan-NN-<name>.md'
 ---
 
@@ -17,13 +17,13 @@ If no plan path was provided, halt + ask. Do not invent a plan.
 ## Step 2 — Implement
 - Edit production files per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
 
-## Step 3 — Run complete automated validation
-- Run every type-check, test, build, and lint command required by project instructions. Fix failures inline for at most three attempts, record every command and result, then halt if validation is not green.
-- Update each relevant `./test-benchmarks.md` row after passing (if the project uses one).
+## Step 3 — Type-check + run tests
+- Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
+- Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
-- Return the AC coverage matrix, changed-file scope, and validation commands/results at green validation.
-- Do not invoke reviewers or perform review-finding fixes, user testing, commit, push, or PR creation. The caller decides the next phase; `/dreamers` invokes `/dreamers-review` immediately after a successful implementation.
+- Return the AC coverage matrix at green tests. `/dreamers` invokes `/dreamers-review` immediately after a successful implementation.
+- Do not invoke reviewers or perform review-finding fixes, user testing, commit, push, or PR creation.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -164,7 +164,7 @@ If a layer cannot be covered automatically (e.g., camera permission flows), flag
 
 ## Probe's layer audit (consumes the new format)
 
-During any review lane that includes Probe, the layer audit reads each AC's annotated Layer to verify coverage at each layer was implemented. Probe blocks the cycle if an AC's annotated layer lacks a corresponding green test.
+During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 

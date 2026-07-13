@@ -1,35 +1,25 @@
 ---
 name: dreamers-plan
-description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs Grill by default for task descriptions, honors --no-grill or unmistakable natural-language opt-out, selects lite / standard / complex planning, produces right-sized plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
-argument-hint: '[--no-grill] <task description>'
+description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs the Grill phase, selects lite / standard / complex planning, produces right-sized plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
+argument-hint: '<task description>'
 ---
 
 $ARGUMENTS
 
-Parse and remove --no-grill or unmistakable natural-language control text such as "do not grill" or "skip the interview." Record whether Grill is enabled and why. If no task description remains, halt + ask.
+If no task description was provided, halt + ask.
 
 Template read at runtime via `view`:
 - `.github/dreamers/templates/plan-guide-selector.md` — plan-type selection, override rule, manifest trigger, ship-strategy heuristics.
 - One selected guide only after classification: `plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
+- When standalone, declare a todo list for Step 1 / Step 2 / Step 3. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
-- When Grill was explicitly skipped, record the reason and proceed directly to Phase 1B. Do not weaken proposal critique, plan selection, citation checks, or plan coverage review.
 
 <planning-grill>
 ### Phase 1A — Grill
-
-For task descriptions, run Grill by default. Skip it only when the user supplies
---no-grill or unmistakable natural-language direction such as "do not grill"
-or "skip the interview." Record the reason, remove control syntax from the task
-description, and continue through proposal and plan-quality checks.
-
-Plan path and manifest artifact modes skip Grill because the user supplied the
-implementation specification. They still require artifact quality and drift
-checks.
 
 ```
 Interview me relentlessly about every aspect of this plan until
@@ -76,7 +66,7 @@ then continue to the next unresolved branch.
 - Major rewrite → loop back to Step 1 with the correction as new context.
 
 ## Exit
-- Surface plan paths and the approval result. Hard stop — never invokes implementation. A /dreamers caller may treat this approval as authorization to start implementation without another start gate.
+- Surface plan paths. Never invoke implementation. When standalone, hard stop; when invoked by an outer delivery skill, return control after surfacing the paths.
 
 ## Dreamers Kernel
 <dreamers-kernel>

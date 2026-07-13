@@ -74,26 +74,6 @@ function Assert-NoPatterns {
     }
 }
 
-function Assert-PatternCount {
-    param(
-        [string]$Path,
-        [string]$Label,
-        [string]$Pattern,
-        [int]$Expected
-    )
-    if (-not (Test-Path $Path)) {
-        Add-Error "Missing contract file: $Path"
-        return
-    }
-    $content = Get-Content -Raw $Path
-    $options = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
-        [System.Text.RegularExpressions.RegexOptions]::Multiline
-    $actual = [regex]::Matches($content, $Pattern, $options).Count
-    if ($actual -ne $Expected) {
-        Add-Error "Expected $Expected $Label contract(s) in $Path, found $actual"
-    }
-}
-
 function Assert-SynchronizedRefs {
     $refsRoot = Join-Path $Root ".github/dreamers/refs"
     $refs = @{}
@@ -127,7 +107,6 @@ $expectedSkills = @(
     "dreamers-docs",
     "dreamers-find-refactors",
     "dreamers-fix",
-    "dreamers-help",
     "dreamers-implement",
     "dreamers-issue",
     "dreamers-new-project",
@@ -150,7 +129,6 @@ $expectedRefs = @(
     "logging-discipline.md",
     "planning-grill.md",
     "project-bootstrap.md",
-    "review-selection.md",
     "reviewer-findings-format.md",
     "testing-mandate.md"
 )
@@ -254,7 +232,7 @@ if (Test-Path $catalogPath) {
     try {
         $catalog = Get-Content -Raw $catalogPath | ConvertFrom-Json
         $items = @($catalog.items | ForEach-Object { "$($_.type):$($_.slug)" })
-        foreach ($required in @("skill:dreamers", "skill:dreamers-help")) {
+        foreach ($required in @("skill:dreamers")) {
             if ($required -notin $items) { Add-Error "Catalog missing item: $required" }
         }
         foreach ($retired in @("skill:dreamers-full", "skill:dreamers-lite")) {
@@ -267,7 +245,7 @@ if (Test-Path $catalogPath) {
         }
         foreach ($collection in $catalog.collections) {
             $members = @($collection.members | ForEach-Object { "$($_.type):$($_.slug)" })
-            foreach ($required in @("skill:dreamers", "skill:dreamers-help")) {
+            foreach ($required in @("skill:dreamers")) {
                 if ($required -notin $members) { Add-Error "Collection missing member: $required" }
             }
             foreach ($retired in @("skill:dreamers-full", "skill:dreamers-lite")) {
@@ -281,55 +259,56 @@ if (Test-Path $catalogPath) {
 }
 
 Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
-    "help routing" = "empty|whitespace.*help|--help|-h"
-    "default Grill" = "task description.*Grill.*default|Grill.*default.*task description"
-    "Grill opt-out" = "--no-grill.*do not grill|--no-grill.*skip the interview"
-    "artifact mode" = "plan path.*manifest.*skip.*Grill|artifact mode.*skip.*Grill"
-    "startup contract loading" = "load and apply.*dreamers/refs/git-workflow\.md.*startup verification.*before reading \.dreamers.*branch.*commit.*push"
-    "branch setup" = "git-workflow branch setup.*checkout.*pull.*feature branch"
-    "task planning before implementation" = "### Planning mode.*invoke\s+(?:\x60)?/dreamers-plan.*## Run each plan.*invoke\s+(?:\x60)?/dreamers-plan-verify.*invoke\s+(?:\x60)?/dreamers-implement"
-    "artifact verification timing" = "### Plan and manifest modes.*single verification call at cycle entry before implementation"
-    "verification before implementation" = "For every plan in sequence:.*1\.\s*Invoke\s+(?:\x60)?/dreamers-plan-verify exactly once.*2\.\s*Invoke\s+(?:\x60)?/dreamers-implement"
-    "plan verification delegation" = "invoke\s+(?:\x60)?/dreamers-plan-verify"
-    "implementation delegation" = "invoke\s+(?:\x60)?/dreamers-implement"
-    "review delegation" = "invoke\s+(?:\x60)?/dreamers-review"
-    "specialist call order" = "invoke\s+(?:\x60)?/dreamers-implement.*invoke\s+(?:\x60)?/dreamers-review.*invoke\s+(?:\x60)?/dreamers-docs.*invoke\s+(?:\x60)?/dreamers-pr"
-    "review selection" = "<review-selection>.*</review-selection>"
-    "approval starts implementation" = "plan approval authorizes implementation"
-    "user testing" = "user.testing.*trigger"
-    "pre-PR approval" = "pre-PR approval"
-    "PR close-out" = "/dreamers-pr"
+    "missing-input halt" = 'If no task description, plan path, or manifest was provided, halt \+ ask'
+    "three input modes" = '## Modes.*Task description.*Plan path\(s\).*manifest\.md'
+    "artifact modes skip start gate" = 'Plan path mode:.*Do not invoke `/dreamers-plan`.*Manifest mode:.*Do not invoke `/dreamers-plan`'
+    "startup contract loading" = 'Before reading `\.dreamers/` files, read and apply.*dreamers-kernel\.md.*git-workflow\.md.*startup verification'
+    "branch setup" = 'Branch setup once per `git-workflow`:.*checkout.*pull.*feat/<slug>'
+    "plan quality" = 'Plan quality check.*Plan-type.*plan-guide-selector'
+    "planning delegation" = '## Phase 1.*Invoke `/dreamers-plan \$ARGUMENTS`'
+    "single-plan implementation-start gate" = 'Approved — start implementation.*Revise plan.*Halt.*Other'
+    "multi-plan implementation-start gate" = 'Approved — start INCREMENTAL.*Approved — start ATOMIC.*Revise plan.*Halt.*Other'
+    "implementation then review" = '### Steps 1.3.*Invoke `/dreamers-implement.*### Step 4.*Invoke `/dreamers-review'
+    "complexity review delegation" = '/dreamers-review` selects Vigil, Sentinel \+ Probe, or Sentinel \+ Probe \+ Hone from plan complexity or explicit plan/user direction'
+    "major-refactor gate" = 'Major-refactor gate.*Apply now.*Defer — create follow-up plan.*Other'
+    "major-change rerun gate" = 'Run Vigil.*Run full triad.*Run selected /dreamers-review lane.*Skip reviewer rerun.*Other'
+    "templated user testing" = 'user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)'
+    "incremental close-out" = 'INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`'
+    "atomic continuation" = 'ATOMIC.*Do NOT push'
+    "full close-out" = 'Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`'
 }
-Assert-PatternCount `
-    -Path (Join-Path $skillRoot "dreamers/SKILL.md") `
-    -Label "executable plan verification" `
-    -Pattern '\binvoke\s+(?:`)?/dreamers-plan-verify\b' `
-    -Expected 1
 Assert-NoPatterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "inline implementation heading" = "## Implement each plan inline"
+    "retired plan verification phase" = "invoke\s+`?/dreamers-plan-verify"
+    "help route" = "--help"
+    "Grill opt-out" = "--no-grill|do not grill|skip the interview"
+    "separate review-selection policy" = "<review-selection>|danger rubric|low-risk lite or standard"
+    "conditional milestone close-out" = "triggered retrospective|retrospective need|documentation need"
     "implementation-only synchronized refs" = "<(planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
     "tests-first implementation" = "failing tests.*implement|tests.first"
-    "green-validation exit" = "exit.*green|green validation"
-    "complete project validation" = "every type-check, test, build, and lint command required by project instructions"
-    "bounded validation attempts" = "at most three attempts"
-    "validation result reporting" = "record every command and result"
+    "type-check and tests" = "Step 3 — Type-check \+ run tests.*type-check \+ test command"
+    "bounded validation attempts" = "max 3 attempts"
     "benchmark updates" = "test-benchmarks\.md.*after passing"
-    "no review boundary" = "does not review|does NOT review"
-    "no user-testing boundary" = "does not.*user.testing|does NOT.*user.testing"
+    "green exit" = 'Return the AC coverage matrix at green tests.*invokes `/dreamers-review` immediately'
+    "phase boundary" = "Do not invoke reviewers.*user testing.*commit.*push.*PR creation"
+    "conditional todo ownership" = "When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"
 }
 Assert-NoPatterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
     "stale seven-step todo" = "Step 5 \(review\).*Step 6 \(user test\).*Step 7 \(commit\)"
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
     "Vigil execution mode" = "--vigil.*Vigil|Vigil.*--vigil"
+    "full execution mode" = "--full.*Sentinel \+ Probe \+ Hone"
+    "selection precedence" = "explicit lane flag or explicit user direction.*explicit reviewer requirement.*Plan-type"
+    "lite selection" = 'lite` = Vigil'
+    "standard selection" = 'standard` = Sentinel \+ Probe'
+    "complex selection" = 'complex` = Sentinel \+ Probe \+ Hone'
     "conditional todo ownership" = "when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"
     "project-file read-only boundary" = "read.only.*project (code|files)|project (code|files).*read.only"
     "reviewer artifact-only writes" = "reviewer.*(only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"
-}
-Assert-NoPatterns (Join-Path $skillRoot "dreamers-plan-verify/SKILL.md") @{
-    "standalone-only composition prohibition" = "always invoked standalone|no composed mode|skills do not invoke other skills"
+    "caller owns fix loop" = "caller owns all finding disposition, gates, fixes, revalidation, and user testing"
 }
 Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
     "same-context skill invocation" = "skill.*same orchestrator context|same orchestrator context.*skill"
@@ -338,37 +317,30 @@ Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
 Assert-NoPatterns (Join-Path $skillRoot "dreamers-update/SKILL.md") @{
     "implementation mirror rule" = "dreamers-implement mirror"
 }
-Assert-Patterns (Join-Path $skillRoot "dreamers-help/SKILL.md") @{
-    "read-only boundary" = "read.only"
-    "delivery example" = "/dreamers\s+"
-    "specialized choices" = "specialized"
-    "migration note" = "retired|removed|migration"
+Assert-Patterns (Join-Path $dreamersRoot "refs/planning-grill.md") @{
+    "relentless interview" = "Interview me relentlessly"
+    "codebase exploration" = "answered by exploring the codebase, explore"
+    "one blocking question" = "Ask one blocking question at a time"
+    "three choices" = "recommended answer.*strongest viable alternate.*Other"
 }
-Assert-Patterns (Join-Path $dreamersRoot "refs/review-selection.md") @{
-    "complex triad" = "complex.*Sentinel.*Probe.*Hone"
-    "low-risk Vigil" = "lite.*standard.*Vigil"
-    "danger escalation" = "security.*schema.*public.*API"
-    "override" = "explicit user override.*wins|user override.*authoritative"
-    "ambiguity" = "ambigu.*ask"
+Assert-Patterns (Join-Path $skillRoot "dreamers-plan/SKILL.md") @{
+    "conditional todo ownership" = "When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"
+    "invoked return boundary" = "When standalone, hard stop; when invoked by an outer delivery skill, return control"
 }
-$expectedReviewSelectionConsumers = @(
-    (Join-Path $skillRoot "dreamers/SKILL.md")
-)
-$reviewSelectionOptions = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
-    [System.Text.RegularExpressions.RegexOptions]::Multiline -bor
-    [System.Text.RegularExpressions.RegexOptions]::Singleline
-$actualReviewSelectionConsumers = @(
-    Get-ChildItem (Join-Path $Root ".github") -Filter "*.md" -File -Recurse |
-        Where-Object {
-            [regex]::IsMatch(
-                (Get-Content -Raw $_.FullName),
-                "<review-selection>.*</review-selection>",
-                $reviewSelectionOptions
-            )
-        } |
-        ForEach-Object { $_.FullName }
-)
-Assert-ExactSet "review-selection consumer" $expectedReviewSelectionConsumers $actualReviewSelectionConsumers
+
+foreach ($path in @(
+    (Join-Path $skillRoot "dreamers/SKILL.md"),
+    (Join-Path $skillRoot "dreamers-plan/SKILL.md"),
+    (Join-Path $skillRoot "dreamers-plan/readme.md"),
+    (Join-Path $dreamersRoot "refs/planning-grill.md"),
+    (Join-Path $agentRoot "nova.agent.md"),
+    (Join-Path $Root "README.md"),
+    (Join-Path $Root ".github/README.md")
+)) {
+    Assert-NoPatterns $path @{
+        "Grill opt-out policy" = "--no-grill|do not grill|skip the interview"
+    }
+}
 
 Assert-SynchronizedRefs
 
@@ -417,8 +389,7 @@ if (-not $SkipInstallSmoke) {
         & (Join-Path $Root "Install-Dreamers.ps1") -CopilotHome $tmpHome -Force | Out-Null
 
         foreach ($path in @(
-            (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
-            (Join-Path $tmpHome "skills/dreamers-help/SKILL.md")
+            (Join-Path $tmpHome "skills/dreamers/SKILL.md")
         )) {
             if (-not (Test-Path $path)) { Add-Error "Install smoke missing new skill: $path" }
         }
@@ -441,8 +412,7 @@ if (-not $SkipInstallSmoke) {
         & (Join-Path $Root "Remove-Dreamers.ps1") -CopilotHome $tmpHome | Out-Null
 
         foreach ($path in @(
-            (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
-            (Join-Path $tmpHome "skills/dreamers-help/SKILL.md")
+            (Join-Path $tmpHome "skills/dreamers/SKILL.md")
         )) {
             if (Test-Path $path) { Add-Error "Remove smoke retained managed skill: $path" }
         }

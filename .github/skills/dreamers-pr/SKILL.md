@@ -10,7 +10,7 @@ Template read at runtime via `view`:
 - `.github/dreamers/templates/pr-description.md` — PR body shape.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3 / Step 4.
+- When standalone, declare a todo list for Step 1 / Step 2 / Step 3 / Step 4. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Pre-push verification
 - `git status` — confirm clean (no unstaged/untracked production files).
