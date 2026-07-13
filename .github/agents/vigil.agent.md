@@ -2,7 +2,6 @@
 name: vigil
 description: Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and the shared Hone architecture rubric for correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: gpt-5.6-sol
 model_reasoning_effort: max
 ---
 

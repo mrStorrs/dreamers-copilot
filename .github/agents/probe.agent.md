@@ -2,7 +2,6 @@
 name: probe
 description: Tester of the Dreamers — read-only / report-only reviewer of test coverage. Audits AC coverage, layer coverage (unit / integration / E2E), edge + negative cases, and regression risk. Writes one `.dreamers/reviews/` artifact; never edits code.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: gpt-5.4
 ---
 
 ## Role
