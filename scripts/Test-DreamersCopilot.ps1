@@ -78,14 +78,18 @@ function Assert-SynchronizedRefs {
     $refsRoot = Join-Path $Root ".github/dreamers/refs"
     $refs = @{}
     foreach ($ref in Get-ChildItem $refsRoot -Filter "*.md" -File) {
-        $content = ([string](Get-Content -Raw $ref.FullName)).Replace(([string][char]13 + [char]10), [string][char]10).Replace([string][char]13, [string][char]10)
+        $content = Get-Content -Raw $ref.FullName
+        if ($null -eq $content) { $content = "" }
+        $content = $content.Replace(([string][char]13 + [char]10), [string][char]10).Replace([string][char]13, [string][char]10)
         $refs[$ref.BaseName] = $content.TrimEnd([char]10)
     }
     foreach ($consumer in Get-ChildItem (Join-Path $Root ".github") -Filter "*.md" -File -Recurse) {
         if ($consumer.FullName.StartsWith($refsRoot + [System.IO.Path]::DirectorySeparatorChar)) {
             continue
         }
-        $content = ([string](Get-Content -Raw $consumer.FullName)).Replace(([string][char]13 + [char]10), [string][char]10).Replace([string][char]13, [string][char]10)
+        $content = Get-Content -Raw $consumer.FullName
+        if ($null -eq $content) { $content = "" }
+        $content = $content.Replace(([string][char]13 + [char]10), [string][char]10).Replace([string][char]13, [string][char]10)
         foreach ($name in $refs.Keys) {
             $escapedName = [regex]::Escape($name)
             $pattern = "(?ms)^<$escapedName>\n(.*?)\n</$escapedName>"
