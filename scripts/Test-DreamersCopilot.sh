@@ -142,8 +142,9 @@ expected_templates = [
     "user-testing-gate.md",
 ]
 expected_instructions = [
-    "comment-rules.instructions.md",
+    "dreamers.comment-rules.instructions.md",
     "dreamers.instructions.md",
+    "dreamers.laws.md",
 ]
 expected_skill_readmes = [
     "dreamers",

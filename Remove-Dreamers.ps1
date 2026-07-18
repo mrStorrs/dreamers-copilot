@@ -26,6 +26,10 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
+$ObsoleteManagedFiles = @(
+    "instructions/comment-rules.instructions.md",
+    "instructions/git.instructions.md"
+)
 
 if (-not (Test-Path $Source)) {
     Write-Error "Cannot find .github/ directory at '$Source'. Run this script from the repo root or the repo directory."
@@ -92,6 +96,22 @@ function Remove-LegacySkillFiles {
     return $count
 }
 
+function Remove-ObsoleteManagedFiles {
+    $count = 0
+    foreach ($relativePath in $ObsoleteManagedFiles) {
+        $target = Join-Path $CopilotHome ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        if (-not (Test-Path $target)) { continue }
+        if ($DryRun) {
+            Write-Host "  WOULD REMOVE obsolete managed file: $target" -ForegroundColor Yellow
+        } else {
+            Remove-Item -LiteralPath $target -Force
+            Write-Host "  REMOVED obsolete managed file: $relativePath" -ForegroundColor Red
+        }
+        $count++
+    }
+    return $count
+}
+
 $verb = if ($DryRun) { "Dreamers Remover (DRY RUN)" } else { "Dreamers Remover" }
 Write-Host "`n$verb" -ForegroundColor Cyan
 Write-Host "Source:  $Source"
@@ -136,6 +156,7 @@ if (-not $DryRun -and (Test-Path (Join-Path $CopilotHome "dreamers"))) {
 
 # Instructions
 Write-Host "[instructions]" -ForegroundColor Cyan
+$total += Remove-ObsoleteManagedFiles
 $total += Remove-ManagedFiles -SourceDir (Join-Path $Source "instructions") -TargetDir (Join-Path $CopilotHome "instructions") -Label "instructions"
 
 $action = if ($DryRun) { "Would remove" } else { "Removed" }

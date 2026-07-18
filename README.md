@@ -136,4 +136,4 @@ For a new project that wants to use Dreamers, see [project-bootstrap.md](.github
 1. Ensure `.dreamers/` is in the project's `.gitignore`.
 2. Create the project-level `.github/copilot-instructions.md` (auto-loaded by Copilot CLI).
 3. Create `.dreamers/plans/` directory.
-4. Copy `.github/instructions/comment-rules.instructions.md` into the project's `.github/instructions/`.
+4. Copy `.github/instructions/dreamers.comment-rules.instructions.md` into the project's `.github/instructions/`.
