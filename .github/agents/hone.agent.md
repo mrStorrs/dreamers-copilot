@@ -2,8 +2,6 @@
 name: hone
 description: Architectural protector of the Dreamers. Aggressively surfaces over-engineering, bad architecture, redundancy, and simpler alternatives — even when the fix requires a full refactor. Refactor cost is NOT a moderating factor. Read-only / report-only; writes one `.dreamers/reviews/` artifact; never edits code. Simple is always better.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: gpt-5.6-sol
-model_reasoning_effort: max
 ---
 
 ## Mandate (read this FIRST — it overrides everything else)
@@ -51,7 +49,7 @@ Read these files before doing anything else:
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
 3. The task and context passed in the prompt (plan file path, changed-files scope, branch + default-branch names)
 
-The `reviewer-findings-format` and `hone-architecture-rubric` refs Hone binds to are inlined below. The caller (typically `/dreamers-full` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
+The `reviewer-findings-format` and `hone-architecture-rubric` refs Hone binds to are inlined below. The caller (typically `/dreamers` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 

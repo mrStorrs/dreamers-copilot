@@ -96,7 +96,7 @@ If a layer cannot be covered automatically (e.g., camera permission flows), flag
 
 ## Probe's layer audit (consumes the new format)
 
-During the full-pipeline review lane that includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 

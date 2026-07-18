@@ -34,7 +34,7 @@ Create `feature-<slug>/manifest.md` only when multiple plans share constraints, 
 
 ## Ship strategy
 
-When `/dreamers-full` runs multiple plans:
+When `/dreamers` runs multiple plans:
 
 - Recommend **INCREMENTAL** when there are 4+ independent plans, different subsystems, or plan A has standalone user value.
 - Recommend **ATOMIC** when plans overlap files, depend on ordering, include schema/migration/API contract work, or require all plans to verify.

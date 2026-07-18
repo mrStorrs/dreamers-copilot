@@ -131,7 +131,7 @@ After writing all plans, list them in chat with file paths and one-line summarie
 
 Call `request_information` with `["Shell plans look good — I'll take it from here", "Revise the milestones (split / merge / reorder / rescope)", "Other"]`.
 
-- `Look good` → exit this skill; tell the user to invoke `/dreamers-plan` on a specific milestone (or `/dreamers-full` to plan + implement in one session).
+- `Look good` → exit this skill; tell the user to invoke `/dreamers-plan` on a specific milestone (or `/dreamers` to plan + implement in one session).
 - `Revise` or `Other` → capture changes, update affected plan files, re-list all plans, re-call the gate. Repeat until the user signs off.
 
-This skill ends when the user is happy with the shell plans. From there the user invokes `/dreamers-plan` on a specific milestone (or `/dreamers-full` to plan + implement in one session).
+This skill ends when the user is happy with the shell plans. From there the user invokes `/dreamers-plan` on a specific milestone (or `/dreamers` to plan + implement in one session).

@@ -69,7 +69,7 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 1. **Script selection.** Use `.sh` validation scripts when running in bash/Linux. Use `.ps1` validation scripts when running in PowerShell/Windows. Treat the matching `.sh` and `.ps1` scripts as equivalent validation surfaces.
 2. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Copilot repo.
 3. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Codex repo.
-4. **dreamers-implement mirror.** Edits to `dreamers-implement` flow (test-writing, type-check, apply-findings, user-testing gate) must be mirrored in Copilot `.github/skills/dreamers-full/SKILL.md` and Codex `skills/dreamers-full/SKILL.md`.
+4. **Delivery ownership parity.** Preserve the full delivery gate/order wording in the `/dreamers` orchestrator. Keep planning, implementation, reviewer execution, documentation, and PR mechanics in their owning specialized skills, replacing only the former inline phase mechanics with skill calls.
 5. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
 6. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
 7. **Validation.** After transfer, run Copilot ref verify and Codex ref verify + `scripts/Test-DreamersCodex.ps1` or `scripts/Test-DreamersCodex.sh` for the active shell.
@@ -93,4 +93,4 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 
 ## Exit
 
-Report in chat: Copilot files changed, Codex files changed, sync checks performed in each repo (refs / `dreamers-full` Phase 2 mirror / READMEs / catalog), validations run, halts or questions raised.
+Report in chat: Copilot files changed, Codex files changed, sync checks performed in each repo (refs / READMEs / catalog), validations run, halts or questions raised.

@@ -84,4 +84,4 @@ prompt:
 
 Read the artifact path returned by Vigil and pass the artifact contents through to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
 
-If Vigil recommends a large refactor, suggest: "Run `/dreamers-plan` to scope the refactor, then `/dreamers-full` to execute it."
+If Vigil recommends a large refactor, suggest: "Run `/dreamers-plan` to scope the refactor, then `/dreamers` to execute it."

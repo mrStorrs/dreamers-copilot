@@ -63,6 +63,27 @@ function Copy-Files {
     return $count
 }
 
+function Remove-LegacySkillFiles {
+    param([string]$SkillsRoot)
+    foreach ($skillName in @("dreamers-lite", "dreamers-full")) {
+        $directory = Join-Path $SkillsRoot $skillName
+        foreach ($fileName in @("SKILL.md", "readme.md")) {
+            $path = Join-Path $directory $fileName
+            if (Test-Path $path) {
+                Remove-Item -LiteralPath $path -Force
+                Write-Host "  REMOVED legacy managed file: $skillName/$fileName" -ForegroundColor DarkGray
+            }
+        }
+        if (Test-Path $directory) {
+            $remaining = Get-ChildItem $directory -Force
+            if ($remaining.Count -eq 0) {
+                Remove-Item -LiteralPath $directory -Force
+                Write-Host "  REMOVED empty legacy dir: $directory" -ForegroundColor DarkGray
+            }
+        }
+    }
+}
+
 Write-Host "`nDreamers Installer" -ForegroundColor Cyan
 Write-Host "Source:  $Source"
 Write-Host "Target:  $CopilotHome`n"
@@ -77,11 +98,14 @@ $total += Copy-Files -From (Join-Path $Source "agents") -To (Join-Path $CopilotH
 Write-Host "[skills]" -ForegroundColor Cyan
 $skillSource = Join-Path $Source "skills"
 if (Test-Path $skillSource) {
-    $skillDirs = Get-ChildItem $skillSource -Directory | Where-Object { $_.Name -like "dreamers-*" }
+    $skillDirs = Get-ChildItem $skillSource -Directory | Where-Object {
+        $_.Name -eq "dreamers" -or $_.Name -like "dreamers-*"
+    }
     foreach ($dir in $skillDirs) {
         $destDir = Join-Path $CopilotHome "skills" $dir.Name
         $total += Copy-Files -From $dir.FullName -To $destDir -Label "skills/$($dir.Name)"
     }
+    Remove-LegacySkillFiles -SkillsRoot (Join-Path $CopilotHome "skills")
 }
 
 # Dreamers refs

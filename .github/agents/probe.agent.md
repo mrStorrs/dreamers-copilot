@@ -2,7 +2,6 @@
 name: probe
 description: Tester of the Dreamers — read-only / report-only reviewer of test coverage. Audits AC coverage, layer coverage (unit / integration / E2E), edge + negative cases, and regression risk. Writes one `.dreamers/reviews/` artifact; never edits code.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: gpt-5.4
 ---
 
 ## Role
@@ -97,7 +96,7 @@ If a layer cannot be covered automatically (e.g., camera permission flows), flag
 
 ## Probe's layer audit (consumes the new format)
 
-During the full-pipeline review lane that includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 

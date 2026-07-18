@@ -1,29 +1,37 @@
 ---
 name: dreamers-review
-description: 'Review skill — spawns Sentinel / Probe / Hone in the selected lane, reads their `.dreamers/reviews/` artifacts, and reports structured findings. Read-only; does NOT apply fixes. The caller decides what to do with the findings. Supports full triad, selected-lens subsets, and single-lens audits. Triggers: /dreamers-review, review my code, audit.'
-argument-hint: '[--lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
+description: 'Review skill — selects reviewers from plan complexity or explicit plan/user direction, executes Vigil, Sentinel, Probe, Hone, a selected subset, or the full triad, then reports artifact-backed findings. Read-only for project files and git state; does NOT apply fixes. Triggers: /dreamers-review, review my code, audit.'
+argument-hint: '[plan-path] [--vigil | --full | --lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
 ---
 
 $ARGUMENTS
 
 ## Modes
-- (default) Full triad: Sentinel + Probe + Hone in parallel.
+- `--full` Full triad: Sentinel + Probe + Hone in parallel.
+- `--vigil` Single-agent combined review through Vigil.
 - `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`).
 - `--lenses <csv>` Selected-lens audit (`sentinel`, `probe`, `hone` in any non-empty combination).
+- With a plan and no lane flag: select from the plan as described below.
+- Without a plan or lane flag: default to the full triad.
 
 Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff vs default), default = staged + unstaged.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2.
+- When standalone, declare a todo list for Step 1 / Step 2. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Spawn reviewers
-- Determine the selected reviewers: default = `full`; `--lens` = one reviewer; `--lenses` = the explicit reviewer subset.
-- Before spawning, record existing matching artifacts under `.dreamers/reviews/{sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
-- For multiple selected reviewers, use one batched `task()` call with all selected sub-invocations, each `mode: "sync"`.
-- Single-lens mode: spawn only the chosen reviewer.
+- Determine the selected reviewers in this order:
+  1. Honor an explicit lane flag or explicit user direction.
+  2. Honor an explicit reviewer requirement written in the plan.
+  3. Otherwise read `**Plan-type:**`: `lite` = Vigil; `standard` = Sentinel + Probe; `complex` = Sentinel + Probe + Hone.
+  4. If no plan or Plan-type is available, use Sentinel + Probe + Hone.
+- Before spawning, record existing matching artifacts under `.dreamers/reviews/{vigil,sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
+- For multiple selected reviewers, launch every reviewer in parallel through the runtime's batched-spawn mechanism, each with `mode: "sync"`. Never spawn or await reviewers sequentially.
+- Vigil and single-lens modes spawn only the chosen reviewer.
 - Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
 - Every reviewer prompt MUST require exactly one artifact under `.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md` and short chat output containing only status, counts, artifact path, blocked reason, and open questions.
 - Per-lens prompt context:
+  - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review with the required architecture audit. Artifact contains findings, plan alignment, AC coverage, and architecture audit sections.
   - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Artifact contains findings + plan-alignment summary.
   - **Probe** — test coverage (AC matrix, layer audit, edge cases, gaps). Artifact contains findings + AC coverage table.
   - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
@@ -41,23 +49,18 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 
 ## Lane policy
 
-Use the full lane for the initial `/dreamers-full` review for each plan. In `/dreamers-full`, routine follow-up reviewer reruns go through Vigil, not another triad or selected triad lane. Use `/dreamers-review` follow-up lanes only when the `/dreamers-full` major-change rerun gate asks the user and the user selects a triad or selected-lane rerun, or for standalone focused audits. Reviewer work is read-only except for review artifacts; the orchestrator applies or defers findings.
+This skill owns reviewer selection and execution. The caller owns all finding disposition, gates, fixes, revalidation, and user testing. This skill does not modify project code, tests, docs, config, dependencies, or git state. Each spawned reviewer is read-only for those same project files; its sole write is exactly one `.dreamers/reviews/` artifact.
+
+Lane choices:
 
 | Lane | Reviewers | Use when |
 | --- | --- | --- |
-| `sentinel` | Sentinel | Correctness/security/maintainability audit, lightweight bug fix, cleanup, logging/comment pass, or user explicitly asks for Sentinel only. |
-| `probe` | Probe | Test coverage audit, AC/layer coverage check, regression-risk review, or user explicitly asks for Probe only. |
-| `hone` | Hone | Simplicity/architecture/over-engineering audit, or user explicitly asks for Hone only. |
-| `standard` | Sentinel + Probe | Standalone or user-selected follow-up check when both correctness and coverage need review but Hone is not warranted. |
-| `full` | Sentinel + Probe + Hone | Initial `/dreamers-full` per-plan review. Invoke as `/dreamers-review` with no lens flags. After that, use only when the user selects it from the `/dreamers-full` major-change rerun gate or explicitly requests a full review. |
-
-## Gate Rules
-
-- `/dreamers-full` PR-bearing code changes require one `full` review per plan after orchestrator-run type-checks and tests pass.
-- Do not use a narrower lane to bypass the initial full per-plan review.
-- After the full review has passed, `/dreamers-full` follow-up review reruns use Vigil by default. It may invoke `/dreamers-review` again only after the major-change rerun gate asks the user and the user selects `full` or a selected lane.
-- `/dreamers-pr-resolve` requires Sentinel for accepted fixes. Add Probe or Hone only when the accepted fixes touch coverage/regression risk or architecture/refactor risk.
-- If the user asks for a narrower lane that conflicts with a required gate, surface the conflict before PR creation and ask whether to run the missing required lane or stop short of PR.
+| vigil | Vigil | Lite plan or explicit request. |
+| sentinel | Sentinel | Correctness, security, or maintainability audit. |
+| probe | Probe | Test coverage, AC layer, edge-case, or regression-risk audit. |
+| hone | Hone | Simplicity, architecture, or over-engineering audit. |
+| standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
+| full | Sentinel + Probe + Hone | Complex plan, explicit full review, or the standalone default. |
 
 ## Dreamers Kernel
 <dreamers-kernel>

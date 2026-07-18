@@ -43,7 +43,7 @@ flowchart TD
     ReviewGate -->|Revise| UpdatePlans["Capture changes<br/>update affected plan files<br/>re-list"]
     UpdatePlans --> ReviewGate
     ReviewGate -->|Other| ReviewGate
-    ReviewGate -->|Look good| End(["Exit<br/>Next: /dreamers-plan on a milestone<br/>or /dreamers-full to plan + implement"])
+    ReviewGate -->|Look good| End(["Exit<br/>Next: /dreamers-plan on a milestone<br/>or /dreamers to plan + implement"])
 
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
@@ -57,4 +57,4 @@ flowchart TD
 - **No disk writes until Phase 3.** Phases 1–2 are conversation-only. Phase 3 first writes anything (the brief).
 - **Approval-gated phase transitions.** Phases 2, 3, and 6 each have an approval gate that loops until explicit user sign-off.
 - **No skip-ahead.** Every phase must complete (or explicit user override) before the next starts.
-- **Hard stop at Phase 6.** This skill never invokes `/dreamers-plan` or `/dreamers-full` — surfaces the next-step command for the user.
+- **Hard stop at Phase 6.** This skill never invokes `/dreamers-plan` or `/dreamers` — surfaces the next-step command for the user.

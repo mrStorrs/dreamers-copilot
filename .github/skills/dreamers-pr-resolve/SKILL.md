@@ -125,7 +125,7 @@ Common prompt context for Vigil (subagent prompt rule — include verbatim):
 - Write exactly one `.dreamers/reviews/vigil-*.md` artifact.
 - Return only status, counts, artifact path, blocked reason, and open questions.
 
-Read the returned artifact before applying findings. Apply findings from the artifact inline per the full-pipeline apply-findings rules:
+Read the returned artifact before applying findings. Apply findings from the artifact inline per the shared /dreamers apply-findings rules:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).
@@ -147,7 +147,7 @@ git status                # confirm staged content
 git commit -m "fix: address PR feedback"
 ```
 
-Use a single commit covering all the PR-feedback fixes. Commit message per `.github/instructions/git.instructions.md` if present.
+Use a single commit covering all the PR-feedback fixes.
 
 **Do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count). Post-PR changes always require explicit user approval before pushing.
 

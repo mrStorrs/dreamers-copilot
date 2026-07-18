@@ -10,7 +10,7 @@ Template read at runtime via `view`:
 - `.github/dreamers/templates/pr-description.md` — PR body shape.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3 / Step 4.
+- When standalone, declare a todo list for Step 1 / Step 2 / Step 3 / Step 4. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Pre-push verification
 - `git status` — confirm clean (no unstaged/untracked production files).
@@ -113,8 +113,7 @@ If the user approves a post-PR commit, push with `git push` (no force). The PR w
 ## Commit structure (one commit per cycle)
 - Exactly **one** commit per plan/cycle, immediately after the reviewer findings have been applied and tests are green (and user testing, if required, is signed off).
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
-- Commit message format follows `.github/instructions/git.instructions.md` (if present). Pipeline-specific bits:
-  - Subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes — see git.instructions.md for the breaking-change footer rule)
+- Commit message subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes).
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 

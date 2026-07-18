@@ -25,7 +25,7 @@ flowchart TD
     AttemptCheck -->|Yes| FixInline["Fix inline"]
     FixInline --> RunTests
     AttemptCheck -->|No| HaltB(["Halt + surface"])
-    Benchmarks --> End(["Surface AC coverage matrix<br/>Next: /dreamers-review<br/>or another /dreamers-implement"])
+    Benchmarks --> End(["Return AC coverage matrix<br/>/dreamers invokes /dreamers-review next"])
 
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
@@ -41,4 +41,5 @@ flowchart TD
 - **Tests-first.** Step 1 writes failing tests BEFORE Step 2's implementation. Stage but don't run yet — they should fail.
 - **Layer annotation drives test layer.** Each plan AC has a `*Layer: ...*` annotation; the test goes at that layer.
 - **3-attempt fix loop in Step 3.** If tests still fail after 3 fix attempts, halt and surface to the user.
-- **No push, no PR.** This skill exits at green tests. Review (`/dreamers-review`) and ship (`/dreamers-pr`) are separate concerns.
+- **Phase boundary.** This skill returns after the initial change reaches green validation. It does not review, apply review findings, run user testing, commit, push, or open a PR.
+- **Pipeline order.** When `/dreamers` invokes this skill, `/dreamers-review` runs immediately after a successful return.

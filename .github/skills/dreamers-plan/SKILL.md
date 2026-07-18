@@ -13,7 +13,7 @@ Template read at runtime via `view`:
 - One selected guide only after classification: `plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
+- When standalone, declare a todo list for Step 1 / Step 2 / Step 3. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Hash out
 - Write a one-paragraph understanding summary of the goal.
@@ -66,7 +66,7 @@ then continue to the next unresolved branch.
 - Major rewrite → loop back to Step 1 with the correction as new context.
 
 ## Exit
-- Surface plan paths. Hard stop — never invokes implementation.
+- Surface plan paths. Never invoke implementation. When standalone, hard stop; when invoked by an outer delivery skill, return control after surfacing the paths.
 
 ## Dreamers Kernel
 <dreamers-kernel>

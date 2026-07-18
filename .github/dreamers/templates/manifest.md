@@ -19,7 +19,7 @@
 | 2 | [plan-02-<name>.md](plan-02-<name>.md) | [one line] |
 | 3 | [plan-03-<name>.md](plan-03-<name>.md) | [one line] |
 
-Plans run in this order via `/dreamers-full feature-<slug>/manifest.md` (or equivalently `/dreamers-full feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` if invoked variadically — same result, no shared context threading in variadic mode).
+Plans run in this order via `/dreamers feature-<slug>/manifest.md` (or equivalently `/dreamers feature-<slug>/plan-01-<name>.md feature-<slug>/plan-02-<name>.md ...` if invoked variadically — same result, no shared context threading in variadic mode).
 
 Each plan above is independently shippable. If a single plan is invoked alone (`/dreamers-implement feature-<slug>/plan-NN-<name>.md`), the manifest content is NOT loaded; the plan must stand on its own. Use the manifest invocation when you want the full sequence with shared context.
 
