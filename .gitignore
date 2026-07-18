@@ -3,3 +3,7 @@
 
 # JetBrains IDE
 .idea/
+
+# Python
+__pycache__/
+*.py[cod]

@@ -29,6 +29,10 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
+$ObsoleteManagedFiles = @(
+    "instructions/comment-rules.instructions.md",
+    "instructions/git.instructions.md"
+)
 
 if (-not (Test-Path $Source)) {
     Write-Error "Cannot find .github/ directory at '$Source'. Run this script from the repo root or the repo directory."
@@ -84,6 +88,15 @@ function Remove-LegacySkillFiles {
     }
 }
 
+function Remove-ObsoleteManagedFiles {
+    foreach ($relativePath in $ObsoleteManagedFiles) {
+        $target = Join-Path $CopilotHome ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        if (-not (Test-Path $target)) { continue }
+        Remove-Item -LiteralPath $target -Force
+        Write-Host "  REMOVED obsolete managed file: $relativePath" -ForegroundColor DarkGray
+    }
+}
+
 Write-Host "`nDreamers Installer" -ForegroundColor Cyan
 Write-Host "Source:  $Source"
 Write-Host "Target:  $CopilotHome`n"
@@ -119,5 +132,6 @@ $total += Copy-Files -From (Join-Path $Source "dreamers" "templates") -To (Join-
 # Instructions (auto-loaded by Copilot CLI from ~/.copilot/instructions/*.instructions.md)
 Write-Host "[instructions]" -ForegroundColor Cyan
 $total += Copy-Files -From (Join-Path $Source "instructions") -To (Join-Path $CopilotHome "instructions") -Label "instructions"
+Remove-ObsoleteManagedFiles
 
 Write-Host "`nInstalled $($total) file(s).`n" -ForegroundColor Cyan

@@ -149,8 +149,9 @@ $expectedTemplates = @(
     "user-testing-gate.md"
 )
 $expectedInstructions = @(
-    "comment-rules.instructions.md",
-    "dreamers.instructions.md"
+    "dreamers.comment-rules.instructions.md",
+    "dreamers.instructions.md",
+    "dreamers.laws.md"
 )
 $expectedSkillReadmes = @(
     "dreamers",
@@ -376,6 +377,13 @@ if (-not $SkipInstallSmoke) {
     $tmpHome = Join-Path ([System.IO.Path]::GetTempPath()) ("dreamers-copilot-test-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $tmpHome -Force | Out-Null
     try {
+        $userInstruction = Join-Path $tmpHome "instructions\user-owned.md"
+        $staleCommentRules = Join-Path $tmpHome "instructions\comment-rules.instructions.md"
+        $staleGitInstructions = Join-Path $tmpHome "instructions\git.instructions.md"
+        foreach ($path in @($userInstruction, $staleCommentRules, $staleGitInstructions)) {
+            New-Item -ItemType Directory -Path (Split-Path $path -Parent) -Force | Out-Null
+            Set-Content -Path $path -Value "preserve or remove by ownership" -Encoding utf8NoBOM
+        }
         $legacyLite = Join-Path $tmpHome "skills/dreamers-lite"
         $legacyFull = Join-Path $tmpHome "skills/dreamers-full"
         foreach ($directory in @($legacyLite, $legacyFull)) {
@@ -388,9 +396,17 @@ if (-not $SkipInstallSmoke) {
         & (Join-Path $Root "Install-Dreamers.ps1") -CopilotHome $tmpHome -Force | Out-Null
 
         foreach ($path in @(
-            (Join-Path $tmpHome "skills/dreamers/SKILL.md")
+            (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
+            (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),
+            (Join-Path $tmpHome "instructions\dreamers.laws.md")
         )) {
-            if (-not (Test-Path $path)) { Add-Error "Install smoke missing new skill: $path" }
+            if (-not (Test-Path $path)) { Add-Error "Install smoke missing managed file: $path" }
+        }
+        foreach ($path in @($staleCommentRules, $staleGitInstructions)) {
+            if (Test-Path $path) { Add-Error "Install smoke retained obsolete managed file: $path" }
+        }
+        if (-not (Test-Path $userInstruction)) {
+            Add-Error "Install smoke removed user-owned instruction: $userInstruction"
         }
         foreach ($directory in @($legacyLite, $legacyFull)) {
             foreach ($managed in @("SKILL.md", "readme.md")) {
@@ -408,12 +424,22 @@ if (-not $SkipInstallSmoke) {
         New-Item -ItemType Directory -Path $legacyFull -Force | Out-Null
         Set-Content -Path (Join-Path $legacyFull "SKILL.md") -Value "managed" -Encoding utf8NoBOM
         Set-Content -Path (Join-Path $legacyFull "readme.md") -Value "managed" -Encoding utf8NoBOM
+        Set-Content -Path $staleCommentRules -Value "managed" -Encoding utf8NoBOM
+        Set-Content -Path $staleGitInstructions -Value "managed" -Encoding utf8NoBOM
         & (Join-Path $Root "Remove-Dreamers.ps1") -CopilotHome $tmpHome | Out-Null
 
         foreach ($path in @(
-            (Join-Path $tmpHome "skills/dreamers/SKILL.md")
+            (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
+            (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),
+            (Join-Path $tmpHome "instructions\dreamers.laws.md")
         )) {
-            if (Test-Path $path) { Add-Error "Remove smoke retained managed skill: $path" }
+            if (Test-Path $path) { Add-Error "Remove smoke retained managed file: $path" }
+        }
+        foreach ($path in @($staleCommentRules, $staleGitInstructions)) {
+            if (Test-Path $path) { Add-Error "Remove smoke retained obsolete managed file: $path" }
+        }
+        if (-not (Test-Path $userInstruction)) {
+            Add-Error "Remove smoke removed user-owned instruction: $userInstruction"
         }
         if (-not (Test-Path (Join-Path $legacyLite "user-owned.md"))) {
             Add-Error "Remove smoke removed user-owned legacy file: $legacyLite"
