@@ -73,7 +73,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
 | `/dreamers-research` | Deep research via Sage. |
 | `/dreamers-issue` | Create structured GitHub issues with acceptance criteria. |
-| `/dreamers-new-project` | Bootstrap a brand new project (discovery → stack → brief → shell plans). |
+| `/dreamers-new-project` | Bootstrap a brand new project (discovery → optional existing-solutions research → stack → brief → shell plans). |
 | `/dreamers-plan-verify` | Inline drift check on a plan vs current code. |
 | `/dreamers-clean-work` | Between-milestone maintenance (improvements audit, archive, drift scan). |
 

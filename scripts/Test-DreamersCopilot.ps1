@@ -331,6 +331,12 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-plan/SKILL.md") @{
     "conditional todo ownership" = "When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"
     "invoked return boundary" = "When standalone, hard stop; when invoked by an outer delivery skill, return control"
 }
+Assert-Patterns (Join-Path $skillRoot "dreamers-new-project/SKILL.md") @{
+    "existing-solutions opt-in gate" = "Phase 1\.5.*request_information.*Research similar existing solutions.*Skip research"
+    "research blocked before approval" = "Do not perform research before the user explicitly approves it"
+    "research remains conversation-only" = "Keep this phase conversation-only: no subagent and no disk writes"
+    "research informs downstream artifacts" = "existing-solutions research.*stack recommendation.*project brief"
+}
 
 foreach ($path in @(
     (Join-Path $skillRoot "dreamers/SKILL.md"),

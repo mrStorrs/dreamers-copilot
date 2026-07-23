@@ -62,7 +62,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 | `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Vigil reviews accepted changes before thread resolution. |
 | `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
 | `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
-| `/dreamers-new-project` | Bootstrap a new project: discovery → stack → brief → shell plans. |
+| `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to the current feature-branch diff. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |

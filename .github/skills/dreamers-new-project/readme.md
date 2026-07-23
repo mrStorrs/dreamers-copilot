@@ -1,6 +1,6 @@
 # /dreamers-new-project — flow
 
-Visual map of the 6-phase project bootstrap. Source of truth is `SKILL.md`.
+Visual map of the 6-phase project bootstrap plus its optional research step. Source of truth is `SKILL.md`.
 
 ```mermaid
 flowchart TD
@@ -9,7 +9,15 @@ flowchart TD
     P1["Phase 1 — Discovery"] --> Discovery["Read discovery-questions.md<br/>conversation only<br/>NO disk writes yet"]
     Discovery --> AllAnswered{"Every question<br/>has concrete answer?"}
     AllAnswered -->|No| Discovery
-    AllAnswered -->|Yes| P2
+    AllAnswered -->|Yes| P15
+
+    P15["Phase 1.5 — Existing-solutions research<br/>optional"] --> ResearchGate{"Research similar<br/>existing solutions?"}
+    ResearchGate -->|Other| ResearchScope["Capture scope or constraints"]
+    ResearchScope --> ResearchGate
+    ResearchGate -->|Skip| P2
+    ResearchGate -->|Research| Landscape["Focused inline web scan<br/>products / open source / technical work<br/>primary + official sources"]
+    Landscape --> ResearchSummary["Present cited comparison<br/>overlap / differences / maturity / gaps"]
+    ResearchSummary --> P2
 
     P2["Phase 2 — Tech stack recommendation"] --> Recommend["Recommend stack:<br/>Frontend / Backend / DB / Auth /<br/>Hosting / CI / Testing / AI<br/>+ rationale per choice"]
     Recommend --> StackGate{"User response"}
@@ -48,13 +56,14 @@ flowchart TD
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
-    class AllAnswered,StackGate,BriefGate,RepoCheck,VisGate,ReviewGate gate
-    class P1,P2,P3,P4,P5,P6,Discovery,Recommend,ReviseStack,WriteBrief,UpdateBrief,SkipInit,CreateRepo,WriteCopilot,ReadShell,WriteShells,ListShells,UpdatePlans phase
+    class AllAnswered,ResearchGate,StackGate,BriefGate,RepoCheck,VisGate,ReviewGate gate
+    class P1,P15,P2,P3,P4,P5,P6,Discovery,ResearchScope,Landscape,ResearchSummary,Recommend,ReviseStack,WriteBrief,UpdateBrief,SkipInit,CreateRepo,WriteCopilot,ReadShell,WriteShells,ListShells,UpdatePlans phase
 ```
 
 ## Key invariants
 
 - **No disk writes until Phase 3.** Phases 1–2 are conversation-only. Phase 3 first writes anything (the brief).
-- **Approval-gated phase transitions.** Phases 2, 3, and 6 each have an approval gate that loops until explicit user sign-off.
-- **No skip-ahead.** Every phase must complete (or explicit user override) before the next starts.
+- **Research requires opt-in.** Phase 1.5 performs no web research until the user explicitly approves it; skipping research is a valid completion path.
+- **Approval-gated phase transitions.** Phases 1.5, 2, 3, and 6 each have a user gate.
+- **No skip-ahead.** Every required phase must complete, and Phase 1.5 must be approved or explicitly skipped, before the next starts.
 - **Hard stop at Phase 6.** This skill never invokes `/dreamers-plan` or `/dreamers` — surfaces the next-step command for the user.
