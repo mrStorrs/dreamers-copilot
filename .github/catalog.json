@@ -240,7 +240,7 @@
       "type": "skill",
       "slug": "dreamers-new-project",
       "name": "dreamers-new-project",
-      "description": "Bootstrap a brand new project from scratch: discovery questions, project brief, shell plans. All work inline.",
+      "description": "Bootstrap a brand new project from scratch: discovery questions, optional existing-solutions research, project brief, shell plans. All work inline.",
       "author": "CJ Storrs",
       "tags": [
         "code",

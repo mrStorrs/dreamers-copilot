@@ -1,6 +1,6 @@
 ---
 name: dreamers-new-project
-description: 'Bootstrap a brand new project from scratch: discovery questions, project brief, shell plans. Triggers: /dreamers-new-project, new project, bootstrap a project, start a new project.'
+description: 'Bootstrap a brand new project from scratch: discovery questions, optional existing-solutions research, project brief, shell plans. Triggers: /dreamers-new-project, new project, bootstrap a project, start a new project.'
 argument-hint: '(no args; discovery is conversational)'
 ---
 
@@ -55,6 +55,7 @@ $ARGUMENTS
 
 At skill entry, declare via `manage_todo_list`:
 - [ ] Phase 1 — discovery questions
+- [ ] Phase 1.5 — optional existing-solutions research
 - [ ] Phase 2 — tech stack recommendation + iteration
 - [ ] Phase 3 — project brief + approval
 - [ ] Phase 4 — repo & workspace bootstrap
@@ -71,9 +72,21 @@ Read `~/.copilot/dreamers/templates/discovery-questions.md` and use those questi
 
 ---
 
+## Phase 1.5 — Existing-solutions research (optional)
+
+Before using web search or fetching any source, call `request_information` with `["Research similar existing solutions", "Skip research", "Other"]`.
+
+- `Research similar existing solutions` → run a focused landscape scan inline. Search for current products, open-source projects, and relevant technical or academic work that substantially overlap the proposed project. Prefer primary and official sources. Present a concise cited comparison covering each solution's overlap, meaningful differences, maturity, and remaining gaps or opportunities. No results is not proof that no similar solution exists.
+- `Skip research` → continue to Phase 2 without research.
+- `Other` → capture the requested scope or constraints, re-present the gate, and wait for explicit approval before researching.
+
+Do not perform research before the user explicitly approves it. Keep this phase conversation-only: no subagent and no disk writes. Carry approved findings into the stack recommendation and project brief without silently redefining the user's project.
+
+---
+
 ## Phase 2 — Tech stack recommendation
 
-Based on the discovery answers, recommend a stack optimised for scale, fast deployment, AI-assisted development, and operational simplicity. Present it as:
+Based on the discovery answers and, when performed, the existing-solutions research, recommend a stack optimised for scale, fast deployment, AI-assisted development, and operational simplicity. Present it as:
 
 - **Frontend** (if applicable)
 - **Backend / API**
@@ -93,6 +106,8 @@ Call `request_information` with `["Stack approved — write the brief", "Adjust 
 ## Phase 3 — Project brief
 
 Read `~/.copilot/dreamers/templates/project-brief.md`. Fill it out using the discovery answers and agreed stack. Write it to `.dreamers/atlas/project-brief.md` (create the directory if it doesn't exist).
+
+If existing-solutions research was performed, use its cited findings to sharpen the brief's problem framing, differentiation, and risks. Do not turn an absence of search results into a market-validation claim.
 
 Present the brief to the user in chat, then call `request_information` with `["Brief approved — bootstrap the repo", "Revise the brief", "Other"]`. On `Revise` or `Other`, capture changes, update the brief on disk, re-present. Do not proceed to Phase 4 until explicit approval.
 

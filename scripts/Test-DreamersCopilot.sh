@@ -340,6 +340,15 @@ assert_patterns(
         ("invoked return boundary", r"When standalone, hard stop; when invoked by an outer delivery skill, return control"),
     ],
 )
+assert_patterns(
+    skill_root / "dreamers-new-project/SKILL.md",
+    [
+        ("existing-solutions opt-in gate", r"Phase 1\.5.*request_information.*Research similar existing solutions.*Skip research"),
+        ("research blocked before approval", r"Do not perform research before the user explicitly approves it"),
+        ("research remains conversation-only", r"Keep this phase conversation-only: no subagent and no disk writes"),
+        ("research informs downstream artifacts", r"existing-solutions research.*stack recommendation.*project brief"),
+    ],
+)
 
 for path in [
     skill_root / "dreamers/SKILL.md",
