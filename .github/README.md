@@ -29,7 +29,7 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-plan <task>`, 
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. A second triad or selected lane remains user-gated for major-change reruns. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. A second triad or selected lane remains user-gated for major-change reruns. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
 
 ## Skills
 
@@ -44,7 +44,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest, verifies plan coverage against the proposal and user discussion, then hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → type-check + tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
-| `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction, reads reviewer artifacts, and reports read-only structured findings. Supports Vigil, selected lenses, and the full triad. |
+| `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction; without a plan it infers intent from code and context, asking if unclear. Reads reviewer artifacts and reports read-only structured findings. Supports Vigil, selected lenses, and the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
 | `/dreamers-fix <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |

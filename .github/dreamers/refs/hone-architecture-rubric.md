@@ -45,7 +45,7 @@ Do not soften architectural findings to fit the current plan scope. The orchestr
 
 Do not file a simplicity finding when the complexity is required by:
 
-- A current acceptance criterion.
+- A current acceptance criterion or inferred requirement.
 - A real second consumer already in the codebase.
 - A project convention used consistently nearby.
 - A correctness, security, or compatibility constraint that would be violated by the simpler form.

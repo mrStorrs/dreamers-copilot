@@ -4,11 +4,17 @@ Visual map of the selected-lane review skill. Source of truth is `SKILL.md`. **R
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers-review $ARGUMENTS"]) --> ModeCheck{"explicit lane or<br/>plan type?"}
+    Start(["/dreamers-review $ARGUMENTS"]) --> Basis{"plan available?"}
+    Basis -->|yes| ModeCheck{"explicit lane or<br/>plan type?"}
+    Basis -->|no| Infer["Infer intent from user context,<br/>branch/PR, diff, tests, and code"]
+    Infer --> Clear{"one reliable<br/>interpretation?"}
+    Clear -->|no| Ask["Ask user one concise<br/>clarifying question"]
+    Ask --> Infer
+    Clear -->|yes| ModeCheck
 
     ModeCheck -->|lite plan or --vigil| Vigil["Single combined reviewer:<br/>Vigil"]
     ModeCheck -->|standard plan| Standard["Sentinel + Probe<br/>spawned in parallel"]
-    ModeCheck -->|complex, --full, or no plan| Triad["Sentinel + Probe + Hone<br/>spawned in parallel"]
+    ModeCheck -->|complex, --full, or inferred intent| Triad["Sentinel + Probe + Hone<br/>spawned in parallel"]
     ModeCheck -->|--lenses csv| Selected["Selected subset:<br/>any non-empty mix<br/>of Sentinel / Probe / Hone"]
     ModeCheck -->|--lens sentinel| LensS["Single-lens: Sentinel"]
     ModeCheck -->|--lens probe| LensP["Single-lens: Probe"]
@@ -49,9 +55,9 @@ flowchart TD
 
 | Lens | Reviewer | Returns |
 |---|---|---|
-| Combined correctness, security, maintainability, coverage, and simplicity | Vigil | One artifact with findings, plan alignment, AC coverage, and architecture audit |
-| Correctness / security / maintainability | Sentinel | Artifact with findings + plan-alignment summary |
-| Test coverage (AC matrix, layer audit, gaps) | Probe | Artifact with findings + AC coverage table |
+| Combined correctness, security, maintainability, coverage, and simplicity | Vigil | One artifact with findings, intent alignment, requirement coverage, and architecture audit |
+| Correctness / security / maintainability | Sentinel | Artifact with findings + intent-alignment summary |
+| Test coverage (requirement matrix, layer audit, gaps) | Probe | Artifact with findings + requirement coverage table |
 | Simplicity / over-engineering / architecture | Hone | Artifact with findings incl. full-refactor recommendations |
 
 ## Lane policy
@@ -65,7 +71,7 @@ flowchart TD
 | standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
 | full | Sentinel + Probe + Hone | Complex plan, explicit full review, or standalone default. |
 
-Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. This skill owns selection and execution, then reports artifact-backed results.
+Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. Without a plan, it infers the intended behavior from user context, branch/PR metadata, the selected diff, tests, changed code, and nearby conventions; an ambiguous basis gets one user question before review. Inferred-intent reviews use the full triad unless the user chose a lane. This skill owns selection and execution, then reports artifact-backed results.
 
 ## Key invariants
 
