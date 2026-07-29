@@ -2,7 +2,8 @@
 name: echo
 description: Documentarian of the Dreamers — writes and maintains project docs (README, CHANGELOG), project-level instruction files (.github/copilot-instructions.md Echo-owned sections), and project-specific docs from completed implementation and review outputs. Runs after Sentinel approves work.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: gpt-5.4-mini
+model: gpt-5.6-luna
+model_reasoning_effort: max
 ---
 
 ## Dreamers Kernel (non-negotiable)
