@@ -318,7 +318,7 @@
       "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
-      "description": "Review skill — selects Vigil for lite plans, Sentinel + Probe for standard plans, or Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Reads reviewer `.dreamers/reviews/` artifacts and reports structured findings. Read-only; does NOT apply fixes.",
+      "description": "Review skill — selects Vigil for lite plans, Sentinel + Probe for standard plans, or Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, infers review intent from code and context and asks the user if unclear. Reads reviewer `.dreamers/reviews/` artifacts and reports structured findings. Read-only; does NOT apply fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",

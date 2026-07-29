@@ -316,10 +316,27 @@ assert_patterns(
         ("lite selection", r"lite` = Vigil"),
         ("standard selection", r"standard` = Sentinel \+ Probe"),
         ("complex selection", r"complex` = Sentinel \+ Probe \+ Hone"),
+        ("planless intent inference", r"infer the intended behavior.*explicit user direction.*PR title/body.*commits and diff.*changed tests.*changed code"),
+        ("planless ambiguity question", r"one reliable interpretation.*ask the user one concise question"),
+        ("planless reviewer basis", r"review basis.*absolute plan path.*inferred-intent summary"),
         ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
         ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
         ("caller owns fix loop", r"caller owns all finding disposition, gates, fixes, revalidation, and user testing"),
+    ],
+)
+assert_patterns(
+    agent_root / "vigil.agent.md",
+    [
+        ("planless Vigil review basis", r"If no plan is bound.*inferred-intent summary.*evidence"),
+        ("planless Vigil requirements", r"plan AC or inferred requirement"),
+    ],
+)
+assert_patterns(
+    agent_root / "probe.agent.md",
+    [
+        ("planless Probe review basis", r"no plan is bound.*inferred requirements"),
+        ("planless Probe findings", r"report missing or weak coverage as findings"),
     ],
 )
 assert_patterns(

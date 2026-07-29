@@ -315,10 +315,21 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
     "lite selection" = 'lite` = Vigil'
     "standard selection" = 'standard` = Sentinel \+ Probe'
     "complex selection" = 'complex` = Sentinel \+ Probe \+ Hone'
+    "planless intent inference" = "infer the intended behavior.*explicit user direction.*PR title/body.*commits and diff.*changed tests.*changed code"
+    "planless ambiguity question" = "one reliable interpretation.*ask the user one concise question"
+    "planless reviewer basis" = "review basis.*absolute plan path.*inferred-intent summary"
     "conditional todo ownership" = "when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"
     "project-file read-only boundary" = "read.only.*project (code|files)|project (code|files).*read.only"
     "reviewer artifact-only writes" = "reviewer.*(only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"
     "caller owns fix loop" = "caller owns all finding disposition, gates, fixes, revalidation, and user testing"
+}
+Assert-Patterns (Join-Path $agentRoot "vigil.agent.md") @{
+    "planless Vigil review basis" = "If no plan is bound.*inferred-intent summary.*evidence"
+    "planless Vigil requirements" = "plan AC or inferred requirement"
+}
+Assert-Patterns (Join-Path $agentRoot "probe.agent.md") @{
+    "planless Probe review basis" = "no plan is bound.*inferred requirements"
+    "planless Probe findings" = "report missing or weak coverage as findings"
 }
 Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
     "same-context skill invocation" = "skill.*same orchestrator context|same orchestrator context.*skill"

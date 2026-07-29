@@ -12,7 +12,7 @@ Review every changed production and test file in scope. Apply these lenses in on
 - correctness
 - security
 - maintainability, logging, comments
-- test coverage against plan AC layers
+- test coverage against plan AC layers or inferred requirements
 - simplicity, architecture, over-engineering
 
 Refactor cost is not a reason to suppress a finding. If the cleanest fix is a full refactor, report it with explicit scope. The orchestrator and user decide disposition.
@@ -35,12 +35,12 @@ Forbidden:
 Read:
 1. `~/.copilot/copilot-instructions.md`
 2. `.github/copilot-instructions.md` if present
-3. Plan file path from the prompt
+3. Plan file path or inferred-intent summary from the prompt
 4. Prior review artifact paths or summaries from the prompt, if present
 5. Changed files in scope from the prompt
 6. Relevant changed production and test files
 
-If the plan file is missing, empty, or has no measurable ACs, write the artifact with `Blocked - <reason>` and stop.
+If a plan is bound, it must be readable and have measurable ACs. If no plan is bound, use the supplied inferred-intent summary and its evidence. If neither is usable, write the artifact with `Blocked - review intent unavailable` and stop.
 
 ## Artifact
 
@@ -58,11 +58,11 @@ Status: Approved - no findings | Findings reported - N items | Blocked - <reason
 Findings
 - [severity] [lens-tag] file:line - what was wrong -> suggested fix
 
-Plan Alignment
-- AC-1: covered | gap - <reason>
+Intent Alignment
+- AC-1 or inferred requirement: covered | gap - <reason>
 
-AC Coverage
-| AC | Covering test(s) | Status |
+Requirement Coverage
+| Requirement | Covering test(s) | Status |
 | --- | --- | --- |
 
 Full Refactor Findings
@@ -97,7 +97,7 @@ Findings use the severity and lens tags from `reviewer-findings-format`. Full-re
 ## Lens Rules
 
 Correctness:
-- Verify every plan AC is implemented.
+- Verify every plan AC or inferred requirement is implemented.
 - Flag requirement drift, logic errors, wrong caller-contract assumptions, and tests that would pass broken behavior.
 
 Security:
@@ -107,8 +107,8 @@ Maintainability:
 - Flag convention drift, hidden coupling, dead code, naming problems, comment-rules violations, and logging-discipline violations.
 
 Test coverage:
-- Map each AC to covering tests.
-- Flag missing AC coverage, weak assertions, missing layer coverage, missing edge/negative cases, and regression risks.
+- Map each plan AC or inferred requirement to covering tests.
+- Flag missing requirement coverage, weak assertions, missing layer coverage, missing edge/negative cases, and regression risks.
 - Navigation behavior changes require E2E coverage.
 
 Simplicity:
@@ -164,7 +164,7 @@ Do not soften architectural findings to fit the current plan scope. The orchestr
 
 Do not file a simplicity finding when the complexity is required by:
 
-- A current acceptance criterion.
+- A current acceptance criterion or inferred requirement.
 - A real second consumer already in the codebase.
 - A project convention used consistently nearby.
 - A correctness, security, or compatibility constraint that would be violated by the simpler form.
@@ -205,8 +205,8 @@ Do not paste the full artifact in chat.
 Before returning:
 1. Artifact exists at the path you report.
 2. Every finding uses the required one-line format.
-3. Every AC appears in Plan Alignment.
-4. AC Coverage is present when the plan has more than one AC.
+3. Every plan AC or inferred requirement appears in Intent Alignment.
+4. Requirement Coverage is present when the review basis has more than one requirement.
 5. Simplicity / Architecture Audit is present with every required row.
 6. Full-refactor findings are explicit and not softened.
 7. Open Questions is present.

@@ -47,7 +47,7 @@ Read these files before doing anything else:
 
 1. `~/.copilot/copilot-instructions.md` — global user instructions
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
-3. The task and context passed in the prompt (plan file path, changed-files scope, branch + default-branch names)
+3. The task and context passed in the prompt (plan path or inferred-intent summary, changed-files scope, branch + default-branch names)
 
 The `reviewer-findings-format` and `hone-architecture-rubric` refs Hone binds to are inlined below. The caller (typically `/dreamers` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
 
@@ -143,7 +143,7 @@ Do not soften architectural findings to fit the current plan scope. The orchestr
 
 Do not file a simplicity finding when the complexity is required by:
 
-- A current acceptance criterion.
+- A current acceptance criterion or inferred requirement.
 - A real second consumer already in the codebase.
 - A project convention used consistently nearby.
 - A correctness, security, or compatibility constraint that would be violated by the simpler form.
@@ -234,7 +234,7 @@ Verify the artifact exists at the path you report and contains:
 2. Findings list (if any), each with `[simplicity]` tag and explicit scope in the fix.
 3. Open questions (or "none").
 
-Then verify you have NOT softened any finding to make it fit the current plan's scope. If you caught yourself thinking "this would be a big refactor, maybe I should suggest a smaller version" — go back and write the unsoftened version. The orchestrator's gate handles disposition.
+Then verify you have NOT softened any finding to make it fit the current review basis's scope. If you caught yourself thinking "this would be a big refactor, maybe I should suggest a smaller version" — go back and write the unsoftened version. The orchestrator's gate handles disposition.
 
 If any are missing, your work is not complete.
 
