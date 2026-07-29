@@ -33,7 +33,7 @@ flowchart TD
     SpawnVigil --> ReadArtifacts["Read Vigil artifact"]
     ReadArtifacts --> ReviewResult{"Reviewer<br/>statuses?"}
     ReviewResult -->|Blocked| HaltB(["Halt + surface;<br/>resolve + re-spawn"])
-    ReviewResult -->|Findings| ApplyReviewer["Apply Vigil findings inline<br/>major-refactor gate per dreamers-review<br/>re-run tests"]
+    ReviewResult -->|Findings| ApplyReviewer["Apply or defer Vigil findings<br/>deferred → append root defered.md<br/>re-run tests after applied findings"]
     ReviewResult -->|Approved no findings| S6
     ApplyReviewer --> S6
 
@@ -67,5 +67,6 @@ flowchart TD
 - **Reject is OK.** Don't feel obligated to accept every comment. If a suggestion conflicts with the plan, architecture, or is simply wrong, reject with rationale.
 - **Rejected threads stay open** — they represent active disagreements the reviewer should see.
 - **Vigil is required for accepted fixes.** Keep PR-feedback review to one artifact-backed Vigil pass. Pass coverage/regression or architecture/refactor risk notes into Vigil's prompt, then read the artifact before applying findings.
+- **Deferred Vigil findings persist.** Append them to project-root `defered.md` without overwriting prior entries; do not create follow-up plans automatically.
 - **Push requires explicit approval.** Post-PR changes never auto-push.
 - **Hold is a valid exit** — the commit stays on the branch for the user to push manually later.

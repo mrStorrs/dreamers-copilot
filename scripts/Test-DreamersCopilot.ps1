@@ -274,12 +274,18 @@ Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "multi-plan implementation-start gate" = 'Approved — start INCREMENTAL.*Approved — start ATOMIC.*Revise plan.*Halt.*Other'
     "implementation then review" = '### Steps 1.3.*Invoke `/dreamers-implement.*### Step 4.*Invoke `/dreamers-review'
     "complexity review delegation" = '/dreamers-review` selects Vigil, Sentinel \+ Probe, or Sentinel \+ Probe \+ Hone from plan complexity or explicit plan/user direction'
-    "major-refactor gate" = 'Major-refactor gate.*Apply now.*Defer — create follow-up plan.*Other'
+    "major-refactor gate" = 'Major-refactor gate.*Apply now.*Defer — save to defered\.md.*Other'
+    "deferred findings ledger" = 'Defer.*do NOT apply or create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
     "major-change rerun gate" = 'Run Vigil.*Run full triad.*Run selected /dreamers-review lane.*Skip reviewer rerun.*Other'
     "templated user testing" = 'user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)'
     "incremental close-out" = 'INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`'
     "atomic continuation" = 'ATOMIC.*Do NOT push'
     "full close-out" = 'Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`'
+}
+Assert-Patterns (Join-Path $skillRoot "dreamers-pr-resolve/SKILL.md") @{
+    "deferred Vigil findings ledger" = 'Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
+    "deferred ledger commit" = 'If any fixes landed or Step 5 added deferred entries'
+    "deferred ledger report" = 'Deferred Vigil findings recorded in `defered\.md`'
 }
 Assert-NoPatterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "inline implementation heading" = "## Implement each plan inline"
@@ -317,6 +323,7 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
 Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
     "same-context skill invocation" = "skill.*same orchestrator context|same orchestrator context.*skill"
     "outermost todo ownership" = "outermost skill.*owns.*todo|todo.*owned by.*outermost skill"
+    "global deferred suggestions ledger" = 'Deferred suggestions.*explicitly chooses `Defer`.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
 }
 Assert-NoPatterns (Join-Path $skillRoot "dreamers-update/SKILL.md") @{
     "implementation mirror rule" = "dreamers-implement mirror"

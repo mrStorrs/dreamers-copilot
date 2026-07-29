@@ -262,12 +262,21 @@ assert_patterns(
         ("multi-plan implementation-start gate", r"Approved — start INCREMENTAL.*Approved — start ATOMIC.*Revise plan.*Halt.*Other"),
         ("implementation then review", r"### Steps 1.3.*Invoke `/dreamers-implement.*### Step 4.*Invoke `/dreamers-review"),
         ("complexity review delegation", r"/dreamers-review` selects Vigil, Sentinel \+ Probe, or Sentinel \+ Probe \+ Hone from plan complexity or explicit plan/user direction"),
-        ("major-refactor gate", r"Major-refactor gate.*Apply now.*Defer — create follow-up plan.*Other"),
+        ("major-refactor gate", r"Major-refactor gate.*Apply now.*Defer — save to defered\.md.*Other"),
+        ("deferred findings ledger", r"Defer.*do NOT apply or create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
         ("major-change rerun gate", r"Run Vigil.*Run full triad.*Run selected /dreamers-review lane.*Skip reviewer rerun.*Other"),
         ("templated user testing", r"user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)"),
         ("incremental close-out", r"INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`"),
         ("atomic continuation", r"ATOMIC.*Do NOT push"),
         ("full close-out", r"Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`"),
+    ],
+)
+assert_patterns(
+    skill_root / "dreamers-pr-resolve/SKILL.md",
+    [
+        ("deferred Vigil findings ledger", r"Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
+        ("deferred ledger commit", r"If any fixes landed or Step 5 added deferred entries"),
+        ("deferred ledger report", r"Deferred Vigil findings recorded in `defered\.md`"),
     ],
 )
 assert_no_patterns(
@@ -318,6 +327,7 @@ assert_patterns(
     [
         ("same-context skill invocation", r"skill.*same orchestrator context|same orchestrator context.*skill"),
         ("outermost todo ownership", r"outermost skill.*owns.*todo|todo.*owned by.*outermost skill"),
+        ("global deferred suggestions ledger", r"Deferred suggestions.*explicitly chooses `Defer`.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
     ],
 )
 assert_no_patterns(

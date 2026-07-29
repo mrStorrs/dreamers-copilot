@@ -28,4 +28,5 @@ flowchart TD
 - `/dreamers-review` selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane.
 - The review skill and reviewers are read-only for project files. Reviewers may write their required `.dreamers/reviews/` artifacts.
 - `/dreamers` applies findings and owns the major-refactor gate, review-rerun gate, user-testing and fix loop, and revalidation.
+- Major-refactor findings deferred at the user gate are appended to project-root `defered.md`; existing entries are preserved and no follow-up plan is created automatically.
 - INCREMENTAL and ATOMIC behavior, improvements, docs, retro, commits, mandatory pre-PR approval, and PR creation remain the full pipeline behavior.

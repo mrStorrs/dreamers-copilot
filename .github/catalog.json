@@ -201,7 +201,7 @@
       "type": "skill",
       "slug": "dreamers",
       "name": "dreamers",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, owns user testing and fix loops, preserves the full close-out gates, invokes `/dreamers-docs`, and invokes `/dreamers-pr`.",
+      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, records deferred findings in project-root `defered.md`, owns user testing and fix loops, preserves the full close-out gates, invokes `/dreamers-docs`, and invokes `/dreamers-pr`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -292,7 +292,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Vigil review of accepted changes, then resolves accepted threads via `gh api`.",
+      "description": "Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Vigil review of accepted changes, records deferred Vigil findings in project-root `defered.md`, then resolves accepted threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
