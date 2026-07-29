@@ -1,6 +1,6 @@
 ---
 name: dreamers-pr-resolve
-description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Vigil review of accepted changes, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+description: 'Resolve unresolved PR review comments inline. Orchestrator decides accept/reject per thread, applies fixes, runs required artifact-backed Vigil review of accepted changes, records deferred Vigil findings in project-root defered.md, then resolves accepted threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
@@ -129,7 +129,7 @@ Read the returned artifact before applying findings. Apply findings from the art
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).
-3. **Evaluate each finding against the Major-refactor finding gate** per `dreamers-review.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Vigil full-refactor scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — create follow-up plan` / `Other`) and route per the user's answer. On `Defer`, create the stub plan file per the canonical template; do NOT apply the deferred fix.
+3. **Evaluate each finding against the Major-refactor finding gate** per `dreamers-review.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Vigil full-refactor scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — save to defered.md` / `Other`) and route per the user's answer. On `Defer`, do NOT apply the finding or create a follow-up plan. Append a Markdown entry to `defered.md` in the project root; create it with `# Deferred Suggestions` if absent, and never overwrite existing entries. Record the date, PR + branch, Vigil artifact path, severity / lens / location, finding, suggested fix, triggered criterion, and deferral rationale. Stage `defered.md` and surface its path.
 4. Apply each (non-deferred) fix inline; stage with `git add`.
 5. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
 
@@ -140,7 +140,7 @@ Handle non-finding outputs:
 
 ## Step 6 — Commit accepted fixes (if any)
 
-If any fixes landed (Step 3 accepted + Step 5 reviewer findings applied):
+If any fixes landed or Step 5 added deferred entries (Step 3 accepted + Step 5 reviewer findings applied or recorded):
 
 ```bash
 git status                # confirm staged content
@@ -168,6 +168,7 @@ Leave rejected threads open — they represent active disagreements the reviewer
 Report to the user:
 - N comments accepted (with one-line path + decision rationale per accept)
 - M comments rejected (with one-line path + rejection rationale per reject)
+- Deferred Vigil findings recorded in `defered.md` (one line each)
 - Threads remaining open (the M rejected ones)
 - Commit hash + push status
 - Vigil artifact path and result

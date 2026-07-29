@@ -35,11 +35,13 @@ Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write
 
 Explicit user instructions can skip or alter skill phases/actions.
 
+Across Dreamers skills, an explicit user choice to defer a suggested change appends a structured entry to project-root `defered.md` without overwriting prior entries.
+
 ### Pipeline
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the gate, then use supplied artifacts after plan-quality checks. Invokes `/dreamers-implement`, then `/dreamers-review`; the review skill selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, owns user testing and fix loops, and preserves the original close-out through `/dreamers-docs`, pre-PR approval, and `/dreamers-pr`. |
+| `/dreamers` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the gate, then use supplied artifacts after plan-quality checks. Invokes `/dreamers-implement`, then `/dreamers-review`; the review skill selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, appends deferred findings to project-root `defered.md`, owns user testing and fix loops, and preserves the original close-out through `/dreamers-docs`, pre-PR approval, and `/dreamers-pr`. |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, asks one `request_information` question at a time with recommended / alternate / Other choices, honors user plan-type override, selects lite / standard / complex, writes right-sized plan file(s) + optional manifest, then verifies plan coverage against the proposal and user discussion before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, type-check, and run tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction, reads reviewer artifacts, and reports structured findings. Read-only. Supports Vigil, selected lenses, and the full triad. |
@@ -67,7 +69,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve` | Resolve PR review comments inline; Vigil reviews accepted changes before thread resolution. |
+| `/dreamers-pr-resolve` | Resolve PR review comments inline; Vigil reviews accepted changes before thread resolution, and deferred Vigil findings are appended to project-root `defered.md`. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
@@ -88,7 +90,7 @@ Explicit user instructions can skip or alter skill phases/actions.
   ├─ Phase 2   → per plan:
   │               1–3. Invoke /dreamers-implement (failing tests → implementation → type-check + tests)
   │               4. Invoke /dreamers-review (reviewers selected from plan complexity or explicit direction)
-  │               5. Apply findings + major-refactor gate
+  │               5. Apply findings + major-refactor gate (deferred → root defered.md)
   │               6. User-testing gate (when triggered; normal review reruns use Vigil)
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
   └─ Phase 3   → close-out (improvements + /dreamers-docs + retro + final commit

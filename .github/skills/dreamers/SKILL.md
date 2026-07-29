@@ -1,6 +1,6 @@
 ---
 name: dreamers
-description: 'End-to-end Dreamers delivery orchestrator. Accepts a task description, existing plan file(s), or a feature manifest. Preserves the full pipeline gates and close-out while invoking specialized planning, implementation, review, documentation, and PR skills. Reviewers are selected by /dreamers-review from plan complexity or explicit plan/user direction. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers delivery orchestrator. Accepts a task description, existing plan file(s), or a feature manifest. Preserves the full pipeline gates and close-out while invoking specialized planning, implementation, review, documentation, and PR skills. Reviewers are selected by /dreamers-review from plan complexity or explicit plan/user direction; deferred findings are recorded in project-root defered.md. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -86,9 +86,9 @@ For each plan in sequence:
   - Files outside the plan's scope.
   - Hone- or Vigil-recommended full refactor (scope language like "tear out X across N files," "rewrite Y module").
   Closed checklist. Ambiguous → fire the gate.
-- For each gate-triggering finding (or batched group sharing the same refactor scope), `request_information` with: reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, breadth estimate. Options: `Apply now` / `Defer — create follow-up plan` / `Other`.
+- For each gate-triggering finding (or batched group sharing the same refactor scope), `request_information` with: reviewer, severity, lens, location, finding, suggested fix, triggered criterion, rationale, breadth estimate. Options: `Apply now` / `Defer — save to defered.md` / `Other`.
   - **Apply now** → fix inline; stage; re-run tests after.
-  - **Defer** → do NOT apply. Create a stub plan file at `.dreamers/plans/feature-<deferred-slug>/plan-01-<short-slug>.md` per `plan-guide-selector.md`; default to `standard` unless the finding is clearly lite or complex. Surface the stub path. Continue with remaining findings.
+  - **Defer** → do NOT apply or create a follow-up plan. Append a Markdown entry to `defered.md` in the project root; create it with `# Deferred Suggestions` if absent, and never overwrite existing entries. Record the date, current plan or branch, reviewer + artifact path, severity / lens / location, finding, suggested fix, triggered criterion, and deferral rationale. Stage `defered.md`, surface its path, and continue with remaining findings.
   - **Other** → freeform redirect. Never silently apply/defer.
 - Apply each non-deferred fix as a targeted Edit. Stage with `git add`. Re-run type-check + tests after applying. Regression → fix inline (max 3 attempts) before halting.
 

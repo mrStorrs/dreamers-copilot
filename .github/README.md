@@ -35,11 +35,13 @@ Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write
 
 Explicit user instructions can skip or alter skill phases/actions.
 
+Across Dreamers skills, an explicit user choice to defer a suggested change appends a structured entry to project-root `defered.md` without overwriting prior entries.
+
 ### Pipeline
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings and preserves the original testing, close-out, approval, and PR gates. |
+| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Produces plan file(s) + optional manifest, verifies plan coverage against the proposal and user discussion, then hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → type-check + tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction, reads reviewer artifacts, and reports read-only structured findings. Supports Vigil, selected lenses, and the full triad. |
@@ -59,7 +61,7 @@ Explicit user instructions can skip or alter skill phases/actions.
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Vigil reviews accepted changes before thread resolution. |
+| `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Vigil reviews accepted changes before thread resolution, and deferred Vigil findings are appended to project-root `defered.md`. |
 | `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
 | `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
@@ -113,8 +115,8 @@ flowchart TD
     Gate -->|No| ApplyFixes
     Gate -->|Yes| GateChoice{"User decides"}
     GateChoice -->|Apply now| ApplyFixes
-    GateChoice -->|Defer| CreateStub["Create stub plan file"]
-    CreateStub --> ApplyFixes
+    GateChoice -->|Defer| RecordDeferred["Append root defered.md"]
+    RecordDeferred --> ApplyFixes
     GateChoice -->|Other| GateChoice
 
     ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> RerunCheck{"Review rerun<br/>needed?"}
