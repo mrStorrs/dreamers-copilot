@@ -110,7 +110,7 @@ $expectedSkills = @(
     "dreamers-cleanup-comments-branch",
     "dreamers-docs",
     "dreamers-find-refactors",
-    "dreamers-fix",
+    "dreamers-lite",
     "dreamers-implement",
     "dreamers-issue",
     "dreamers-new-project",
@@ -163,7 +163,7 @@ $expectedSkillReadmes = @(
     "dreamers-cleanup-comments",
     "dreamers-cleanup-comments-branch",
     "dreamers-find-refactors",
-    "dreamers-fix",
+    "dreamers-lite",
     "dreamers-implement",
     "dreamers-new-project",
     "dreamers-plan",
@@ -239,7 +239,7 @@ if (Test-Path $catalogPath) {
         foreach ($required in @("skill:dreamers")) {
             if ($required -notin $items) { Add-Error "Catalog missing item: $required" }
         }
-        foreach ($retired in @("skill:dreamers-full", "skill:dreamers-lite")) {
+        foreach ($retired in @("skill:dreamers-full")) {
             if ($retired -in $items) { Add-Error "Catalog retains retired item: $retired" }
         }
         foreach ($item in $catalog.items) {
@@ -252,7 +252,7 @@ if (Test-Path $catalogPath) {
             foreach ($required in @("skill:dreamers")) {
                 if ($required -notin $members) { Add-Error "Collection missing member: $required" }
             }
-            foreach ($retired in @("skill:dreamers-full", "skill:dreamers-lite")) {
+            foreach ($retired in @("skill:dreamers-full")) {
                 if ($retired -in $members) { Add-Error "Collection retains retired member: $retired" }
             }
         }
@@ -372,7 +372,7 @@ foreach ($path in @(
 
 Assert-SynchronizedRefs
 
-$legacyPattern = "dreamers-(full|lite)"
+$legacyPattern = "dreamers-full"
 $migrationPattern = "retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer"
 $scanRoots = @(
     $agentRoot,
@@ -412,19 +412,21 @@ if (-not $SkipInstallSmoke) {
             New-Item -ItemType Directory -Path (Split-Path $path -Parent) -Force | Out-Null
             Set-Content -Path $path -Value "preserve or remove by ownership" -Encoding utf8NoBOM
         }
-        $legacyLite = Join-Path $tmpHome "skills/dreamers-lite"
+        $activeLite = Join-Path $tmpHome "skills/dreamers-lite"
         $legacyFull = Join-Path $tmpHome "skills/dreamers-full"
-        foreach ($directory in @($legacyLite, $legacyFull)) {
+        foreach ($directory in @($activeLite, $legacyFull)) {
             New-Item -ItemType Directory -Path $directory -Force | Out-Null
             Set-Content -Path (Join-Path $directory "SKILL.md") -Value "managed" -Encoding utf8NoBOM
             Set-Content -Path (Join-Path $directory "readme.md") -Value "managed" -Encoding utf8NoBOM
         }
-        Set-Content -Path (Join-Path $legacyLite "user-owned.md") -Value "preserve" -Encoding utf8NoBOM
+        Set-Content -Path (Join-Path $activeLite "user-owned.md") -Value "preserve" -Encoding utf8NoBOM
 
         & (Join-Path $Root "Install-Dreamers.ps1") -CopilotHome $tmpHome -Force | Out-Null
 
         foreach ($path in @(
             (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
+            (Join-Path $activeLite "SKILL.md"),
+            (Join-Path $activeLite "readme.md"),
             (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),
             (Join-Path $tmpHome "instructions\dreamers.laws.md")
         )) {
@@ -436,14 +438,12 @@ if (-not $SkipInstallSmoke) {
         if (-not (Test-Path $userInstruction)) {
             Add-Error "Install smoke removed user-owned instruction: $userInstruction"
         }
-        foreach ($directory in @($legacyLite, $legacyFull)) {
-            foreach ($managed in @("SKILL.md", "readme.md")) {
-                $path = Join-Path $directory $managed
-                if (Test-Path $path) { Add-Error "Install smoke retained legacy managed file: $path" }
-            }
+        foreach ($managed in @("SKILL.md", "readme.md")) {
+            $path = Join-Path $legacyFull $managed
+            if (Test-Path $path) { Add-Error "Install smoke retained legacy managed file: $path" }
         }
-        if (-not (Test-Path (Join-Path $legacyLite "user-owned.md"))) {
-            Add-Error "Install smoke removed user-owned legacy file: $legacyLite"
+        if (-not (Test-Path (Join-Path $activeLite "user-owned.md"))) {
+            Add-Error "Install smoke removed user-owned active file: $activeLite"
         }
         if (Test-Path $legacyFull) {
             Add-Error "Install smoke did not prune empty legacy directory: $legacyFull"
@@ -469,8 +469,8 @@ if (-not $SkipInstallSmoke) {
         if (-not (Test-Path $userInstruction)) {
             Add-Error "Remove smoke removed user-owned instruction: $userInstruction"
         }
-        if (-not (Test-Path (Join-Path $legacyLite "user-owned.md"))) {
-            Add-Error "Remove smoke removed user-owned legacy file: $legacyLite"
+        if (-not (Test-Path (Join-Path $activeLite "user-owned.md"))) {
+            Add-Error "Remove smoke removed user-owned active file: $activeLite"
         }
         if (Test-Path $legacyFull) {
             Add-Error "Remove smoke did not prune empty legacy directory: $legacyFull"

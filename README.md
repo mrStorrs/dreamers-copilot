@@ -47,7 +47,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction; without a plan it infers intent from code and context, asking if unclear. Reads reviewer artifacts and reports structured findings. Read-only. Supports Vigil, selected lenses, and the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
 | `/dreamers-pr` | Pushes the branch, opens the PR using the `pr-description.md` template, and archives shipped Dreamers plan artifacts. |
-| `/dreamers-fix` | Self-contained bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-lite` | Self-contained lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
 | `/dreamers-find-refactors` | Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes Dreamers plan files, and stops. No implementation, branch, commit, push, or PR. |
 
 ### Focused Vigil audit wrappers
@@ -101,7 +101,7 @@ Lite, standard, and complex are plan-depth labels. They select the initial revie
 
 `/dreamers` is the only end-to-end pipeline. It invokes the specialized skills in order while preserving the original full-pipeline gates and close-out. Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`.
 
-The retired `/dreamers-lite` and `/dreamers-full` commands were removed without forwarding aliases. The install and removal scripts prune their known managed files while preserving unrelated user files.
+The retired `/dreamers-full` command has no forwarding alias. The install and removal scripts prune its known managed files while preserving unrelated user files.
 
 ## Maintaining Dreamers
 

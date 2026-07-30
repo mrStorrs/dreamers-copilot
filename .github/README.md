@@ -2,7 +2,7 @@
 
 An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
 
-Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-plan <task>`, `/dreamers-fix <bug>`, etc.
+Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-plan <task>`, `/dreamers-lite <bug>`, etc.
 
 ## Layout
 
@@ -47,7 +47,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction; without a plan it infers intent from code and context, asking if unclear. Reads reviewer artifacts and reports read-only structured findings. Supports Vigil, selected lenses, and the full triad. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
-| `/dreamers-fix <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-lite <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
 | `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
 
 ### Standalone reviewer audits

@@ -99,7 +99,7 @@ expected_skills = [
     "dreamers-cleanup-comments-branch",
     "dreamers-docs",
     "dreamers-find-refactors",
-    "dreamers-fix",
+    "dreamers-lite",
     "dreamers-implement",
     "dreamers-issue",
     "dreamers-new-project",
@@ -152,7 +152,7 @@ expected_skill_readmes = [
     "dreamers-cleanup-comments",
     "dreamers-cleanup-comments-branch",
     "dreamers-find-refactors",
-    "dreamers-fix",
+    "dreamers-lite",
     "dreamers-implement",
     "dreamers-new-project",
     "dreamers-plan",
@@ -224,7 +224,7 @@ if catalog_path.exists():
         for key in [("skill", "dreamers")]:
             if key not in item_keys:
                 add_error(f"Catalog missing item: {key[1]}")
-        for key in [("skill", "dreamers-full"), ("skill", "dreamers-lite")]:
+        for key in [("skill", "dreamers-full")]:
             if key in item_keys:
                 add_error(f"Catalog retains retired item: {key[1]}")
         for item in items:
@@ -239,7 +239,7 @@ if catalog_path.exists():
             for key in [("skill", "dreamers")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
-            for key in [("skill", "dreamers-full"), ("skill", "dreamers-lite")]:
+            for key in [("skill", "dreamers-full")]:
                 if key in member_keys:
                     add_error(f"Collection retains retired member: {key[1]}")
             readme_path = collection.get("readmePath")
@@ -402,7 +402,7 @@ scan_roots = [
     root / ".github/README.md",
     catalog_path,
 ]
-legacy_pattern = re.compile(r"dreamers-(?:full|lite)")
+legacy_pattern = re.compile(r"dreamers-full")
 migration_pattern = re.compile(
     r"retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer",
     re.IGNORECASE,

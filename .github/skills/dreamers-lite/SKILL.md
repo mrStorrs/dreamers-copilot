@@ -1,6 +1,6 @@
 ---
-name: dreamers-fix
-description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests. Exits at green tests. Triggers: /dreamers-fix, fix this bug, bug fix, address the bug.'
+name: dreamers-lite
+description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests. Exits at green tests. Triggers: /dreamers-lite, fix this bug, bug fix, address the bug.'
 argument-hint: '<bug description>'
 ---
 
