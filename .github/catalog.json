@@ -173,8 +173,8 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-fix",
-      "name": "dreamers-fix",
+      "slug": "dreamers-lite",
+      "name": "dreamers-lite",
       "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers call. On scope blowup, surfaces choice to escalate to /dreamers; does not auto-route.",
       "author": "CJ Storrs",
       "tags": [
@@ -182,7 +182,7 @@
         "dreamers",
         "skill"
       ],
-      "path": ".github/skills/dreamers-fix/SKILL.md"
+      "path": ".github/skills/dreamers-lite/SKILL.md"
     },
     {
       "type": "skill",
@@ -359,7 +359,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Agent orchestration system for GitHub Copilot CLI. Pairs artifact-backed specialised reviewers (correctness/security, test coverage, simplicity), the Vigil single-pass reviewer, an implementation skill, a documentarian, and a researcher. The `/dreamers` pipeline preserves the full gates while delegating planning, implementation, review, docs, and PR mechanics to their specialized skills. Review selection is based on plan complexity or explicit plan/user direction. The README at the readmePath has the full detail.",
+      "description": "Zero-setup, full coding system for GitHub Copilot CLI. Install this collection, then run `/dreamers help` for information or `/dreamers <task>` inside a repository to plan, implement, review, document, and ship.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
@@ -424,7 +424,7 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-fix"
+          "slug": "dreamers-lite"
         },
         {
           "type": "skill",

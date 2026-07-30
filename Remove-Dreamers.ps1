@@ -72,7 +72,7 @@ function Remove-ManagedFiles {
 function Remove-LegacySkillFiles {
     param([string]$SkillsRoot)
     $count = 0
-    foreach ($skillName in @("dreamers-lite", "dreamers-full")) {
+    foreach ($skillName in @("dreamers-full")) {
         $directory = Join-Path $SkillsRoot $skillName
         foreach ($fileName in @("SKILL.md", "readme.md")) {
             $path = Join-Path $directory $fileName

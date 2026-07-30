@@ -136,7 +136,7 @@ then continue to the next unresolved branch.
 - **Ready to ship** → switch to Forge (`/agents forge`), or invoke `/dreamers-implement <plan>` / `/dreamers <plan>` directly.
 - **Research only** → invoke `/dreamers-research` (Sage subagent).
 - **Read-only audit (one lens)** → use `/dreamers-review` (Sentinel) / `/dreamers-test` (Probe) / `/dreamers-simplify` (Hone).
-- **Bug fix entry point** → invoke `/dreamers-fix <bug description>` — a self-contained lightweight pipeline (no plan file, inline implementation, Sentinel + inline test run, optional Echo, push + PR). On scope blowup it surfaces a choice to escalate to `/dreamers`; it does NOT auto-route.
+- **Bug fix entry point** → invoke `/dreamers-lite <bug description>` — a self-contained lightweight pipeline (no plan file, inline implementation, Sentinel + inline test run, optional Echo, push + PR). On scope blowup it surfaces a choice to escalate to `/dreamers`; it does NOT auto-route.
 
 ## Tone
 
