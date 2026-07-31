@@ -173,6 +173,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-explain",
+      "name": "dreamers-explain",
+      "description": "Thoroughly explain any topic, code, document, system, or decision using layered explanations, concrete examples, local evidence, and authoritative sources when needed. Read-only by default.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-explain/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-lite",
       "name": "dreamers-lite",
       "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers call. On scope blowup, surfaces choice to escalate to /dreamers; does not auto-route.",
@@ -421,6 +434,10 @@
         {
           "type": "skill",
           "slug": "dreamers-docs"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-explain"
         },
         {
           "type": "skill",

@@ -109,6 +109,7 @@ $expectedSkills = @(
     "dreamers-cleanup-comments",
     "dreamers-cleanup-comments-branch",
     "dreamers-docs",
+    "dreamers-explain",
     "dreamers-find-refactors",
     "dreamers-lite",
     "dreamers-implement",
@@ -162,6 +163,7 @@ $expectedSkillReadmes = @(
     "dreamers-add-logging",
     "dreamers-cleanup-comments",
     "dreamers-cleanup-comments-branch",
+    "dreamers-explain",
     "dreamers-find-refactors",
     "dreamers-lite",
     "dreamers-implement",
@@ -338,6 +340,14 @@ Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
 }
 Assert-NoPatterns (Join-Path $skillRoot "dreamers-update/SKILL.md") @{
     "implementation mirror rule" = "dreamers-implement mirror"
+}
+Assert-Patterns (Join-Path $skillRoot "dreamers-explain/SKILL.md") @{
+    "read-only boundary" = "Default to read-only work.*do not modify the subject"
+    "focused research boundary" = "Use `/dreamers-research` instead.*durable, multi-perspective research report"
+    "conditional source retrieval" = "Search or retrieve external sources when:.*facts may have changed.*niche, disputed, uncertain, or high-stakes"
+    "source priority" = "Source priority:.*repository evidence.*First-party documentation.*High-quality secondary sources"
+    "layered explanation" = "Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"
+    "optional comprehension" = "Do not force a quiz or Socratic exchange"
 }
 Assert-Patterns (Join-Path $dreamersRoot "refs/planning-grill.md") @{
     "relentless interview" = "Interview me relentlessly"
