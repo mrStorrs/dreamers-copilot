@@ -73,6 +73,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
+| `/dreamers-explain` | Thorough, read-only explanations of topics, code, documents, systems, and decisions, with authoritative sources when needed. |
 | `/dreamers-research` | Deep research via Sage. |
 | `/dreamers-issue` | Create structured GitHub issues with acceptance criteria. |
 | `/dreamers-new-project` | Bootstrap a brand new project (discovery → optional existing-solutions research → stack → brief → shell plans). |

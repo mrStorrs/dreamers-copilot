@@ -98,6 +98,7 @@ expected_skills = [
     "dreamers-cleanup-comments",
     "dreamers-cleanup-comments-branch",
     "dreamers-docs",
+    "dreamers-explain",
     "dreamers-find-refactors",
     "dreamers-lite",
     "dreamers-implement",
@@ -151,6 +152,7 @@ expected_skill_readmes = [
     "dreamers-add-logging",
     "dreamers-cleanup-comments",
     "dreamers-cleanup-comments-branch",
+    "dreamers-explain",
     "dreamers-find-refactors",
     "dreamers-lite",
     "dreamers-implement",
@@ -350,6 +352,17 @@ assert_patterns(
 assert_no_patterns(
     skill_root / "dreamers-update/SKILL.md",
     [("implementation mirror rule", r"dreamers-implement mirror")],
+)
+assert_patterns(
+    skill_root / "dreamers-explain/SKILL.md",
+    [
+        ("read-only boundary", r"Default to read-only work.*do not modify the subject"),
+        ("focused research boundary", r"Use `/dreamers-research` instead.*durable, multi-perspective research report"),
+        ("conditional source retrieval", r"Search or retrieve external sources when:.*facts may have changed.*niche, disputed, uncertain, or high-stakes"),
+        ("source priority", r"Source priority:.*repository evidence.*First-party documentation.*High-quality secondary sources"),
+        ("layered explanation", r"Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"),
+        ("optional comprehension", r"Do not force a quiz or Socratic exchange"),
+    ],
 )
 assert_patterns(
     dreamers_root / "refs/planning-grill.md",
