@@ -343,7 +343,7 @@ Assert-NoPatterns (Join-Path $skillRoot "dreamers-update/SKILL.md") @{
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-explain/SKILL.md") @{
     "read-only boundary" = "Default to read-only work.*do not modify the subject"
-    "focused research boundary" = "Use `/dreamers-research` instead.*durable, multi-perspective research report"
+    "focused research boundary" = 'Use `/dreamers-research` instead.*durable, multi-perspective research report'
     "conditional source retrieval" = "Search or retrieve external sources when:.*facts may have changed.*niche, disputed, uncertain, or high-stakes"
     "source priority" = "Source priority:.*repository evidence.*First-party documentation.*High-quality secondary sources"
     "layered explanation" = "Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"
