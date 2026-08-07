@@ -1,6 +1,6 @@
 ---
 name: dreamers-plan
-description: 'Planning skill — 3-phase requirements conversation (Hash-out / Write / Review). Runs the Grill phase, selects lite / standard / complex planning, produces right-sized plan file(s) under .dreamers/plans/feature-<slug>/ and optional manifest, then hard-stops at the review gate; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
+description: 'Planning skill — runs the Grill, stores every question and response verbatim beside linked right-sized plans, selects lite / standard / complex, and hard-stops at review; never implements. Triggers: /dreamers-plan, plan a feature, write a plan.'
 argument-hint: '<task description>'
 ---
 
@@ -40,6 +40,18 @@ in chat. Each question must include exactly these choices:
 After each answer, fold the decision into the shared understanding,
 then continue to the next unresolved branch.
 ```
+
+Record the Grill exchange verbatim while it happens. Preserve every planner
+question and every user response in chronological order, exactly as sent or
+received. Do not summarize, paraphrase, normalize, combine, correct, or omit
+text. For `request_information`, include the complete presented question,
+choice labels, and choice descriptions. Preserve separate responses as
+separate entries.
+
+In Step 2, when the feature plan directory is known, write the accumulated
+exchange to `.dreamers/plans/feature-<slug>/grilling-transcript.md` with only
+speaker/sequence headings added around the unchanged message text. If no Grill
+question and response occurred, do not create an empty transcript.
 </planning-grill>
 
 - Identify ambiguities, gaps, open decisions. Use `request_information` for unresolved decision branches. Do not draft the proposal while required decisions are still open.
@@ -54,11 +66,12 @@ then continue to the next unresolved branch.
 ## Step 2 — Write plans
 - Read only the selected guide in full via `view`: `plan-guide-lite.md`, `plan-guide-standard.md`, or `plan-guide-complex.md`.
 - `mkdir -p .dreamers/plans/feature-<slug>/`.
-- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes. Each plan MUST include `**Plan-type:** <lite|standard|complex>` and follow the selected guide. Keep the smallest plan that preserves quality.
+- If Phase 1A produced a Grill exchange, write `grilling-transcript.md` in the feature directory before writing plans. Preserve every question and response word for word per `planning-grill`; never replace the transcript with a summary.
+- Write each `plan-NN-<name>.md` + manifest if Step 1 decided yes. Each plan MUST include `**Plan-type:** <lite|standard|complex>` and follow the selected guide. When `grilling-transcript.md` exists, each plan MUST include `**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)`. Keep the smallest plan that preserves quality.
 - Component-usage check: for shared components, grep the project source root for callers; include them in scope.
 - Citation accuracy: verify every cited artifact exists; mark unverifiable citations as "assumption pending verification."
 - Self-check the written plans against the selected guide + selector mandatory checks before exit. Hard fail on any structural rule violation → halt + fix + re-check.
-- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in the smallest selected-guide section that preserves meaning. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
+- Plan coverage review: compare the written plan(s) against the approved proposal, proposal critique, the verbatim Grill transcript when present, and all user-discussed questions, corrections, decisions, and constraints. Every accepted item MUST appear in the smallest selected-guide section that preserves meaning. If any item is missing, ambiguous, contradicted, or weakened, fix the plan(s), then re-run citation accuracy + structural self-check + coverage review before Step 3.
 
 ## Step 3 — Review gate
 - Present plan paths via `request_information` with: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.

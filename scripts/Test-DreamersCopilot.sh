@@ -321,6 +321,8 @@ assert_patterns(
         ("planless intent inference", r"infer the intended behavior.*explicit user direction.*PR title/body.*commits and diff.*changed tests.*changed code"),
         ("planless ambiguity question", r"one reliable interpretation.*ask the user one concise question"),
         ("planless reviewer basis", r"review basis.*absolute plan path.*inferred-intent summary"),
+        ("Grill transcript resolution", r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full"),
+        ("Grill transcript reviewer context", r"absolute path and full verbatim contents.*plan/transcript conflict"),
         ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
         ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
@@ -371,6 +373,8 @@ assert_patterns(
         ("codebase exploration", r"answered by exploring the codebase, explore"),
         ("one blocking question", r"Ask one blocking question at a time"),
         ("three choices", r"recommended answer.*strongest viable alternate.*Other"),
+        ("verbatim transcript", r"every planner.*question and every user response.*exactly as sent or.*received.*Do not summarize"),
+        ("transcript path", r"\.dreamers/plans/feature-<slug>/grilling-transcript\.md"),
     ],
 )
 assert_patterns(
@@ -378,8 +382,15 @@ assert_patterns(
     [
         ("conditional todo ownership", r"When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"),
         ("invoked return boundary", r"When standalone, hard stop; when invoked by an outer delivery skill, return control"),
+        ("verbatim transcript write", r"write `grilling-transcript\.md`.*Preserve every question and response word for word"),
+        ("plan transcript link", r"each plan MUST include `\*\*Grilling transcript:\*\* \[grilling-transcript\.md\]\(\./grilling-transcript\.md\)`"),
     ],
 )
+for guide_name in ["plan-guide-lite.md", "plan-guide-standard.md", "plan-guide-complex.md"]:
+    assert_patterns(
+        dreamers_root / "templates" / guide_name,
+        [("optional Grill transcript metadata", r"\*\*Grilling transcript:\*\*.*grilling-transcript\.md.*when the sibling artifact exists")],
+    )
 assert_patterns(
     skill_root / "dreamers-new-project/SKILL.md",
     [

@@ -10,6 +10,7 @@ Default for normal feature work.
 - `**Plan-type:** standard`
 - `**Branch:** feat/{slug}` or `**Branch:** fix/{slug}`
 - `**User-testing-required:** yes/no`
+- `**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)` when the sibling artifact exists
 
 ## Required sections
 

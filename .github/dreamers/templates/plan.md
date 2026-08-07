@@ -5,6 +5,7 @@
 **Plan-type:** standard
 **Branch:** feat/<slug>
 **User-testing-required:** yes/no
+**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md) *(include when the sibling artifact exists)*
 
 ---
 

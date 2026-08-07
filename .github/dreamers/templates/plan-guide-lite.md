@@ -10,6 +10,7 @@ Use for tiny localized work. If architecture, contracts, data, UI flow, or risk 
 - `**Plan-type:** lite`
 - `**Branch:** feat/{slug}` or `**Branch:** fix/{slug}`
 - `**User-testing-required:** yes/no`
+- `**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)` when the sibling artifact exists
 
 ## Required sections
 
