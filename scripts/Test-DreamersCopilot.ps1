@@ -320,6 +320,8 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
     "planless intent inference" = "infer the intended behavior.*explicit user direction.*PR title/body.*commits and diff.*changed tests.*changed code"
     "planless ambiguity question" = "one reliable interpretation.*ask the user one concise question"
     "planless reviewer basis" = "review basis.*absolute plan path.*inferred-intent summary"
+    "Grill transcript resolution" = 'Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full'
+    "Grill transcript reviewer context" = "absolute path and full verbatim contents.*plan/transcript conflict"
     "conditional todo ownership" = "when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"
     "project-file read-only boundary" = "read.only.*project (code|files)|project (code|files).*read.only"
     "reviewer artifact-only writes" = "reviewer.*(only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"
@@ -354,10 +356,19 @@ Assert-Patterns (Join-Path $dreamersRoot "refs/planning-grill.md") @{
     "codebase exploration" = "answered by exploring the codebase, explore"
     "one blocking question" = "Ask one blocking question at a time"
     "three choices" = "recommended answer.*strongest viable alternate.*Other"
+    "verbatim transcript" = "every planner.*question and every user response.*exactly as sent or.*received.*Do not summarize"
+    "transcript path" = "\.dreamers/plans/feature-<slug>/grilling-transcript\.md"
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-plan/SKILL.md") @{
     "conditional todo ownership" = "When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"
     "invoked return boundary" = "When standalone, hard stop; when invoked by an outer delivery skill, return control"
+    "verbatim transcript write" = 'write `grilling-transcript\.md`.*Preserve every question and response word for word'
+    "plan transcript link" = 'each plan MUST include `\*\*Grilling transcript:\*\* \[grilling-transcript\.md\]\(\./grilling-transcript\.md\)`'
+}
+foreach ($guideName in @("plan-guide-lite.md", "plan-guide-standard.md", "plan-guide-complex.md")) {
+    Assert-Patterns (Join-Path $dreamersRoot "templates/$guideName") @{
+        "optional Grill transcript metadata" = "\*\*Grilling transcript:\*\*.*grilling-transcript\.md.*when the sibling artifact exists"
+    }
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-new-project/SKILL.md") @{
     "existing-solutions opt-in gate" = "Phase 1\.5.*request_information.*Research similar existing solutions.*Skip research"

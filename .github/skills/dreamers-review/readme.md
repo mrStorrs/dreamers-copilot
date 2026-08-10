@@ -5,7 +5,12 @@ Visual map of the selected-lane review skill. Source of truth is `SKILL.md`. **R
 ```mermaid
 flowchart TD
     Start(["/dreamers-review $ARGUMENTS"]) --> Basis{"plan available?"}
-    Basis -->|yes| ModeCheck{"explicit lane or<br/>plan type?"}
+    Basis -->|yes| Transcript{"linked or sibling<br/>Grill transcript?"}
+    Transcript -->|readable| BindTranscript["Bind full verbatim transcript<br/>as user-intent context"]
+    Transcript -->|referenced but unreadable| BlockTranscript["Block: referenced<br/>transcript unavailable"]
+    Transcript -->|absent| ModeCheck{"explicit lane or<br/>plan type?"}
+    BindTranscript --> ModeCheck
+    BlockTranscript --> End
     Basis -->|no| Infer["Infer intent from user context,<br/>branch/PR, diff, tests, and code"]
     Infer --> Clear{"one reliable<br/>interpretation?"}
     Clear -->|no| Ask["Ask user one concise<br/>clarifying question"]
@@ -46,9 +51,9 @@ flowchart TD
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
     classDef agent fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#fff
 
-    class ModeCheck,CheckStatus gate
+    class Transcript,ModeCheck,CheckStatus gate
     class Triad,Standard,Vigil,Selected,LensS,LensP,LensH agent
-    class Spawn,WriteArtifact,Wait,Collect,Aggregate,Surface1,Surface2,Report phase
+    class BindTranscript,BlockTranscript,Spawn,WriteArtifact,Wait,Collect,Aggregate,Surface1,Surface2,Report phase
 ```
 
 ## Lens scope (read-only)
@@ -76,6 +81,7 @@ Selection precedence is explicit user direction or lane flag, then an explicit r
 ## Key invariants
 
 - **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers` Step 5, or whoever invoked it) decides what to do with the findings. Reviewers may write only their required `.dreamers/reviews/` artifacts.
+- **Grill context follows the plan.** Resolve the plan's `**Grilling transcript:**` link, falling back to a sibling `grilling-transcript.md`; when readable, pass its full verbatim contents to every reviewer for intent alignment. A referenced but unreadable transcript blocks review.
 - **`/dreamers` reruns.** Routine follow-up review reruns use `/dreamers-review --vigil`. A full or selected-lane rerun runs only when the major-change rerun gate asks the user and the user selects it.
 - **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
 - **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.

@@ -10,6 +10,7 @@ Use for high-risk, cross-module, multi-plan, data/API, migration, security, or n
 - `**Plan-type:** complex`
 - `**Branch:** feat/{slug}` or `**Branch:** fix/{slug}`
 - `**User-testing-required:** yes/no`
+- `**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)` when the sibling artifact exists
 
 ## Required sections
 
