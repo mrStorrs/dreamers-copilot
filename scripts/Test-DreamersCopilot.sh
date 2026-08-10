@@ -109,6 +109,7 @@ expected_skills = [
     "dreamers-pr",
     "dreamers-pr-resolve",
     "dreamers-research",
+    "dreamers-retro",
     "dreamers-review",
     "dreamers-simplify",
     "dreamers-test",
@@ -160,6 +161,7 @@ expected_skill_readmes = [
     "dreamers-plan",
     "dreamers-pr-resolve",
     "dreamers-research",
+    "dreamers-retro",
     "dreamers-review",
 ]
 
@@ -223,7 +225,7 @@ if catalog_path.exists():
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         items = catalog.get("items", [])
         item_keys = {(item.get("type"), item.get("slug")) for item in items}
-        for key in [("skill", "dreamers")]:
+        for key in [("skill", "dreamers"), ("skill", "dreamers-retro")]:
             if key not in item_keys:
                 add_error(f"Catalog missing item: {key[1]}")
         for key in [("skill", "dreamers-full")]:
@@ -238,7 +240,7 @@ if catalog_path.exists():
                 (member.get("type"), member.get("slug"))
                 for member in collection.get("members", [])
             }
-            for key in [("skill", "dreamers")]:
+            for key in [("skill", "dreamers"), ("skill", "dreamers-retro")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
             for key in [("skill", "dreamers-full")]:
@@ -270,7 +272,8 @@ assert_patterns(
         ("templated user testing", r"user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)"),
         ("incremental close-out", r"INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`"),
         ("atomic continuation", r"ATOMIC.*Do NOT push"),
-        ("full close-out", r"Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`"),
+        ("terminal retrospective hook", r"Retrospective exit hook.*Invoke `/dreamers-retro` exactly once before every terminal response.*completed or halted"),
+        ("full close-out", r"Phase 3.*Invoke `/dreamers-docs --branch`.*Final commit.*User approval gate.*Invoke `/dreamers-pr`.*Invoke `/dreamers-retro`.*Post-PR scan"),
     ],
 )
 assert_patterns(
@@ -289,8 +292,27 @@ assert_no_patterns(
         ("help route", r"--help"),
         ("Grill opt-out", r"--no-grill|do not grill|skip the interview"),
         ("separate review-selection policy", r"<review-selection>|danger rubric|low-risk lite or standard"),
-        ("conditional milestone close-out", r"triggered retrospective|retrospective need|documentation need"),
         ("implementation-only synchronized refs", r"<(?:planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"),
+    ],
+)
+assert_patterns(
+    skill_root / "dreamers-lite/SKILL.md",
+    [
+        ("terminal retrospective hook", r"Retrospective exit hook.*Invoke `/dreamers-retro` exactly once before every terminal response.*completed or halted"),
+        ("green retrospective", r"Step 4 — Retrospective.*Invoke `/dreamers-retro` after tests pass"),
+    ],
+)
+assert_patterns(
+    skill_root / "dreamers-retro/SKILL.md",
+    [
+        ("observed evidence sources", r"A blocker caused by.*An AI mistake.*An explicit developer correction"),
+        ("repo-local target", r"Target only AI-facing scaffolding inside the current repository"),
+        ("core exclusion", r"Never target global files.*Dreamers-owned skills.*A Dreamers core concern is out of scope"),
+        ("no-evidence no-write", r"If no candidate survives, do not create or modify any file.*No retrospective warranted"),
+        ("minimal verified proposal", r"Name one exact target file and one minimal proposed change.*confirm the rule is not already clear"),
+        ("bounded suggestions", r"Keep at most three high-confidence suggestions"),
+        ("artifact and queue", r"Write `\.dreamers/retros/retro-YYYY-MM-DD-<short-label>\.md`.*Append one dated sentence.*`\.dreamers/improvements\.md`"),
+        ("suggestions only", r"Suggest only\. Do not apply scaffolding changes"),
     ],
 )
 assert_patterns(

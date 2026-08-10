@@ -1,10 +1,16 @@
 ---
 name: dreamers
-description: 'End-to-end Dreamers delivery orchestrator. Accepts a task description, existing plan file(s), or a feature manifest. Preserves the full pipeline gates and close-out while invoking specialized planning, implementation, review, documentation, and PR skills. Reviewers are selected by /dreamers-review from plan complexity or explicit plan/user direction; deferred findings are recorded in project-root defered.md. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
+description: 'End-to-end Dreamers delivery orchestrator. Accepts a task description, existing plan file(s), or a feature manifest. Preserves the full pipeline gates and close-out while invoking specialized planning, implementation, review, documentation, PR, and evidence-gated retrospective skills. Reviewers are selected by /dreamers-review from plan complexity or explicit plan/user direction; deferred findings are recorded in project-root defered.md. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
 argument-hint: '<task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
 $ARGUMENTS
+
+## Retrospective exit hook
+
+- Invoke `/dreamers-retro` exactly once before every terminal response from this skill, whether the run completed or halted.
+- Do not invoke it while an active `request_information` gate or merge-confirmation gate is waiting; those are pauses in the same run.
+- The successful Phase 3 invocation below satisfies this hook. On an earlier terminal halt, invoke `/dreamers-retro` before reporting the halt.
 
 If no task description, plan path, or manifest was provided, halt + ask.
 
@@ -135,16 +141,9 @@ For each plan in sequence:
   - `git commit` for this plan (body includes `Plan:` line). Do NOT push. → next cycle.
 
 ## Phase 3 — Close-out (FULL, milestone end)
-- Append improvements to `.dreamers/improvements.md` (dated, one sentence each, reference retro path below).
 - Invoke `/dreamers-docs --branch`. Stage Echo's edits.
-- Write retro `.dreamers/retros/retro-d<N>-<name>.md`:
-  - What worked well
-  - Friction points
-  - Proposed improvements
-  - AC coverage matrix (rolled up from cycles)
-  - Bugs from user-testing (if any)
-  - Regression analysis (only if originating task was a bug fix)
 - Final commit: `git add <explicit-paths>` (no `-A`) + `git commit` per conventional-commits with `Plan:` body + trailer. Skip if nothing staged.
 - **User approval gate** (MANDATORY, last halt before PR): present milestone summary. `request_information` Approved/Halt/Other. Halt → emit resume command + stop.
 - Invoke `/dreamers-pr` (pass `--issue <#|url>` if `$ARGUMENTS` referenced one). Capture PR URL.
-- **Post-PR scan**: surface open retro improvements and project-state drift only (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). No new prompt, no auto-commit after PR opens.
+- Invoke `/dreamers-retro` after PR creation. Capture its exact outcome and do not invoke it again.
+- **Post-PR scan**: surface open retro improvements and project-state drift only (PR description vs plans shipped; `git log origin/$DEFAULT -10`; `.dreamers/improvements.md` open items; `.dreamers/retros/` open items). Do not repeat the current retrospective text. No new prompt, no auto-commit after PR opens.

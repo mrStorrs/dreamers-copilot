@@ -120,6 +120,7 @@ $expectedSkills = @(
     "dreamers-pr",
     "dreamers-pr-resolve",
     "dreamers-research",
+    "dreamers-retro",
     "dreamers-review",
     "dreamers-simplify",
     "dreamers-test",
@@ -171,6 +172,7 @@ $expectedSkillReadmes = @(
     "dreamers-plan",
     "dreamers-pr-resolve",
     "dreamers-research",
+    "dreamers-retro",
     "dreamers-review"
 )
 
@@ -238,7 +240,7 @@ if (Test-Path $catalogPath) {
     try {
         $catalog = Get-Content -Raw $catalogPath | ConvertFrom-Json
         $items = @($catalog.items | ForEach-Object { "$($_.type):$($_.slug)" })
-        foreach ($required in @("skill:dreamers")) {
+        foreach ($required in @("skill:dreamers", "skill:dreamers-retro")) {
             if ($required -notin $items) { Add-Error "Catalog missing item: $required" }
         }
         foreach ($retired in @("skill:dreamers-full")) {
@@ -251,7 +253,7 @@ if (Test-Path $catalogPath) {
         }
         foreach ($collection in $catalog.collections) {
             $members = @($collection.members | ForEach-Object { "$($_.type):$($_.slug)" })
-            foreach ($required in @("skill:dreamers")) {
+            foreach ($required in @("skill:dreamers", "skill:dreamers-retro")) {
                 if ($required -notin $members) { Add-Error "Collection missing member: $required" }
             }
             foreach ($retired in @("skill:dreamers-full")) {
@@ -282,7 +284,8 @@ Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "templated user testing" = 'user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)'
     "incremental close-out" = 'INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`'
     "atomic continuation" = 'ATOMIC.*Do NOT push'
-    "full close-out" = 'Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`'
+    "terminal retrospective hook" = 'Retrospective exit hook.*Invoke `/dreamers-retro` exactly once before every terminal response.*completed or halted'
+    "full close-out" = 'Phase 3.*Invoke `/dreamers-docs --branch`.*Final commit.*User approval gate.*Invoke `/dreamers-pr`.*Invoke `/dreamers-retro`.*Post-PR scan'
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-pr-resolve/SKILL.md") @{
     "deferred Vigil findings ledger" = 'Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
@@ -295,8 +298,21 @@ Assert-NoPatterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "help route" = "--help"
     "Grill opt-out" = "--no-grill|do not grill|skip the interview"
     "separate review-selection policy" = "<review-selection>|danger rubric|low-risk lite or standard"
-    "conditional milestone close-out" = "triggered retrospective|retrospective need|documentation need"
     "implementation-only synchronized refs" = "<(planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"
+}
+Assert-Patterns (Join-Path $skillRoot "dreamers-lite/SKILL.md") @{
+    "terminal retrospective hook" = 'Retrospective exit hook.*Invoke `/dreamers-retro` exactly once before every terminal response.*completed or halted'
+    "green retrospective" = 'Step 4 — Retrospective.*Invoke `/dreamers-retro` after tests pass'
+}
+Assert-Patterns (Join-Path $skillRoot "dreamers-retro/SKILL.md") @{
+    "observed evidence sources" = "A blocker caused by.*An AI mistake.*An explicit developer correction"
+    "repo-local target" = "Target only AI-facing scaffolding inside the current repository"
+    "core exclusion" = "Never target global files.*Dreamers-owned skills.*A Dreamers core concern is out of scope"
+    "no-evidence no-write" = "If no candidate survives, do not create or modify any file.*No retrospective warranted"
+    "minimal verified proposal" = "Name one exact target file and one minimal proposed change.*confirm the rule is not already clear"
+    "bounded suggestions" = "Keep at most three high-confidence suggestions"
+    "artifact and queue" = 'Write `\.dreamers/retros/retro-YYYY-MM-DD-<short-label>\.md`.*Append one dated sentence.*`\.dreamers/improvements\.md`'
+    "suggestions only" = "Suggest only\. Do not apply scaffolding changes"
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
     "tests-first implementation" = "failing tests.*implement|tests.first"
@@ -446,6 +462,8 @@ if (-not $SkipInstallSmoke) {
 
         foreach ($path in @(
             (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
+            (Join-Path $tmpHome "skills/dreamers-retro/SKILL.md"),
+            (Join-Path $tmpHome "skills/dreamers-retro/readme.md"),
             (Join-Path $activeLite "SKILL.md"),
             (Join-Path $activeLite "readme.md"),
             (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),

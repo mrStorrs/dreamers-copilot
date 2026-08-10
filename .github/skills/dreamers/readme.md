@@ -1,6 +1,6 @@
 # /dreamers — flow
 
-Visual map of the end-to-end pipeline. Source of truth is `SKILL.md`. The flow preserves the original full-pipeline gates and close-out while invoking the specialized skills for planning, implementation, review, docs, and PR creation.
+Visual map of the end-to-end pipeline. Source of truth is `SKILL.md`. The flow preserves the original full-pipeline gates and close-out while invoking the specialized skills for planning, implementation, review, docs, PR creation, and retrospective.
 
 ~~~mermaid
 flowchart TD
@@ -17,8 +17,9 @@ flowchart TD
     U -->|yes| UT[User-testing gate and fix loop]
     U -->|no| C[Full close-out]
     UT --> C
-    C --> D[/dreamers-docs, improvements, retro, final commit/]
+    C --> D[/dreamers-docs, final commit/]
     D --> PR[Mandatory pre-PR approval then /dreamers-pr]
+    PR --> RR[/dreamers-retro evidence gate/]
 ~~~
 
 ## Key invariants
@@ -29,4 +30,5 @@ flowchart TD
 - The review skill and reviewers are read-only for project files. Reviewers may write their required `.dreamers/reviews/` artifacts.
 - `/dreamers` applies findings and owns the major-refactor gate, review-rerun gate, user-testing and fix loop, and revalidation.
 - Major-refactor findings deferred at the user gate are appended to project-root `defered.md`; existing entries are preserved and no follow-up plan is created automatically.
-- INCREMENTAL and ATOMIC behavior, improvements, docs, retro, commits, mandatory pre-PR approval, and PR creation remain the full pipeline behavior.
+- INCREMENTAL and ATOMIC behavior, docs, commits, mandatory pre-PR approval, and PR creation remain the full pipeline behavior.
+- `/dreamers-retro` runs exactly once before a terminal response. It records only evidence-backed repo-scaffolding suggestions and creates no retro when none qualify.
