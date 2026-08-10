@@ -1,6 +1,6 @@
 # Dreamers — GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR → evidence-gated retrospective flow.
 
 Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-plan <task>`, `/dreamers-lite <bug>`, etc.
 
@@ -41,13 +41,14 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
+| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, PR, and retrospective gates. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Stores every Grill question and response word for word in a transcript linked from each plan, produces plan file(s) + optional manifest, verifies coverage, then hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → type-check + tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
-| `/dreamers-lite <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-lite <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests + `/dreamers-retro`. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-retro [label]` | Evidence-gated retrospective. Suggests minimal current-repo AI scaffolding improvements only for observed blockers, AI mistakes, or developer corrections. Writes nothing when none qualify and never targets Dreamers core. |
 | `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
 
 ### Standalone reviewer audits
@@ -158,14 +159,13 @@ flowchart TD
     MergeWait --> ReCut["Re-cut feature branch"]
     ReCut --> Cycle
 
-    P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
-    Improvements --> InvokeDocs["Invoke /dreamers-docs"]
-    InvokeDocs --> Retro["Write retro"]
-    Retro --> FinalCommit["Final commit if staged"]
+    P3["Phase 3 — Close-out FULL"] --> InvokeDocs["Invoke /dreamers-docs"]
+    InvokeDocs --> FinalCommit["Final commit if staged"]
     FinalCommit --> Approval{"User approval"}
     Approval -->|Halt| HaltH(["Halt"])
     Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
-    InvokePR --> PostScan["Post-PR scan<br/>surface improvements + drift<br/>no prompt"]
+    InvokePR --> Retro["Invoke /dreamers-retro<br/>evidence gate"]
+    Retro --> PostScan["Post-PR scan<br/>surface improvements + drift<br/>no prompt"]
     PostScan --> End(["PR URL + summary"])
 
     classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
@@ -173,8 +173,8 @@ flowchart TD
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
-    class InvokePlan,Implement,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
+    class InvokePlan,Implement,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR,Retro skill
     class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
     class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
-    class P1,Cycle,P3,TaskQuality,ArtifactQuality,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
+    class P1,Cycle,P3,TaskQuality,ArtifactQuality,BranchSetup,Light,AtomicCommit,FinalCommit,PostScan phase
 ```

@@ -188,7 +188,7 @@
       "type": "skill",
       "slug": "dreamers-lite",
       "name": "dreamers-lite",
-      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers call. On scope blowup, surfaces choice to escalate to /dreamers; does not auto-route.",
+      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, invokes /dreamers-retro, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers call. On scope blowup, surfaces choice to escalate to /dreamers; does not auto-route.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -214,7 +214,7 @@
       "type": "skill",
       "slug": "dreamers",
       "name": "dreamers",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, records deferred findings in project-root `defered.md`, owns user testing and fix loops, preserves the full close-out gates, invokes `/dreamers-docs`, and invokes `/dreamers-pr`.",
+      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, records deferred findings in project-root `defered.md`, owns user testing and fix loops, preserves the full close-out gates, and invokes `/dreamers-docs`, `/dreamers-pr`, and `/dreamers-retro`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -329,6 +329,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-retro",
+      "name": "dreamers-retro",
+      "description": "Evidence-gated retrospective for Dreamers delivery sessions. Suggests up to three minimal repo-local AI scaffolding improvements only when an observed blocker, AI mistake, or developer correction justifies them. Writes no retro when evidence is absent, applies no scaffolding changes, and never targets Dreamers core.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-retro/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
       "description": "Review skill — selects Vigil for lite plans, Sentinel + Probe for standard plans, or Sentinel + Probe + Hone for complex plans unless explicitly directed otherwise. For plan-bound reviews, reads the linked or sibling verbatim Grill transcript when present and supplies it as intent context. Without a plan, infers intent from code and asks if unclear. Read-only.",
@@ -372,7 +385,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Zero-setup, full coding system for GitHub Copilot CLI. Install this collection, then run `/dreamers help` for information or `/dreamers <task>` inside a repository to plan, implement, review, document, and ship.",
+      "description": "Zero-setup, full coding system for GitHub Copilot CLI. Install this collection, then run `/dreamers help` for information or `/dreamers <task>` inside a repository to plan, implement, review, document, ship, and run an evidence-gated retrospective.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
@@ -482,6 +495,10 @@
         {
           "type": "skill",
           "slug": "dreamers-research"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-retro"
         },
         {
           "type": "skill",

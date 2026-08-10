@@ -1,15 +1,20 @@
 ---
 name: dreamers-lite
-description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests. Exits at green tests. Triggers: /dreamers-lite, fix this bug, bug fix, address the bug.'
+description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests, then invokes an evidence-gated retrospective. Exits at green tests. Triggers: /dreamers-lite, fix this bug, bug fix, address the bug.'
 argument-hint: '<bug description>'
 ---
 
 $ARGUMENTS
 
+## Retrospective exit hook
+
+- Invoke `/dreamers-retro` exactly once before every terminal response from this skill, whether the run completed or halted.
+- The successful Step 4 invocation below satisfies this hook. On an earlier terminal halt, invoke `/dreamers-retro` before reporting the halt.
+
 If no bug description was provided, halt + ask.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
+- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3 / Step 4.
 
 ## Step 1 — Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
@@ -24,8 +29,11 @@ If no bug description was provided, halt + ask.
 - Implement the fix per `comment-rules` + `testing-mandate` (Kernel). Edit only files in the bug-fix surface from Step 2. Stage with `git add`.
 - Type-check + run tests. Fix inline (max 3 attempts) then halt.
 
+## Step 4 — Retrospective
+- Invoke `/dreamers-retro` after tests pass. Report its exact outcome and do not invoke it again.
+
 ## Exit
-- Bug-fix surface, regression test name, test status. Next step: Vigil review for a quick audit, then commit + `/dreamers-pr` to ship.
+- Bug-fix surface, regression test name, test status, retrospective outcome. Next step: Vigil review for a quick audit, then commit + `/dreamers-pr` to ship.
 
 ## Dreamers Kernel
 <dreamers-kernel>

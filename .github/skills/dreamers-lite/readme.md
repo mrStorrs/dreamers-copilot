@@ -21,18 +21,21 @@ flowchart TD
     Implement --> Stage["git add"]
     Stage --> RunTests["Type-check + run tests"]
     RunTests --> TestResult{"Tests pass?"}
-    TestResult -->|Yes| End(["Surface:<br/>bug-fix surface<br/>regression test name<br/>test status<br/><br/>Next: Vigil review<br/>then commit + /dreamers-pr"])
+    TestResult -->|Yes| Retro["Invoke /dreamers-retro<br/>evidence gate"]
+    Retro --> End(["Surface:<br/>bug-fix surface<br/>regression test name<br/>test status<br/>retrospective outcome<br/><br/>Next: Vigil review<br/>then commit + /dreamers-pr"])
     TestResult -->|No| AttemptCheck{"Attempts < 3?"}
     AttemptCheck -->|Yes| FixInline["Fix inline"]
     FixInline --> RunTests
     AttemptCheck -->|No| HaltC(["Halt + surface"])
 
+    classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
 
     class ArgCheck,ScopeCheck,TestResult,AttemptCheck gate
     class HaltA,HaltB,HaltC halt
+    class Retro skill
     class S1,S2,S3,Branch,Survey,WriteTest,Implement,Stage,RunTests,FixInline phase
 ```
 
@@ -42,4 +45,5 @@ flowchart TD
 - **Regression test first.** Step 3 writes the failing test BEFORE implementing the fix. If no test infra exists for the affected surface, note the absence.
 - **Files in the bug-fix surface only.** No while-I'm-here cleanup, no unrelated refactors.
 - **3-attempt fix loop.** Same as `/dreamers-implement`. Halt and surface after 3 failed attempts.
+- **Evidence-gated retrospective.** Invoke `/dreamers-retro` exactly once before a terminal response; it writes nothing when no repo-scaffolding evidence qualifies.
 - **No review, no commit, no push.** This skill exits at green tests. The user runs Vigil for the audit, then commits + `/dreamers-pr` to ship.

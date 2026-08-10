@@ -1,6 +1,6 @@
 # Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR → evidence-gated retrospective flow.
 
 ## Structure
 
@@ -41,13 +41,14 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the gate, then use supplied artifacts after plan-quality checks. Invokes `/dreamers-implement`, then `/dreamers-review`; the review skill selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, appends deferred findings to project-root `defered.md`, owns user testing and fix loops, and preserves the original close-out through `/dreamers-docs`, pre-PR approval, and `/dreamers-pr`. |
+| `/dreamers` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the gate, then use supplied artifacts after plan-quality checks. Invokes `/dreamers-implement`, then `/dreamers-review`; the review skill selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, appends deferred findings to project-root `defered.md`, owns user testing and fix loops, and preserves the original close-out through `/dreamers-docs`, pre-PR approval, `/dreamers-pr`, and `/dreamers-retro`. |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, stores every Grill question and response word for word in `grilling-transcript.md`, links it from each plan, selects lite / standard / complex, writes right-sized plan file(s) + optional manifest, then verifies coverage before the review gate. Hard-stops at the review gate. |
 | `/dreamers-implement` | One-shot implementation: write failing tests, implement, type-check, and run tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction. For plan-bound reviews, it reads the linked or sibling verbatim Grill transcript when present and supplies it as intent context. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
 | `/dreamers-pr` | Pushes the branch, opens the PR using the `pr-description.md` template, and archives shipped Dreamers plan artifacts. |
-| `/dreamers-lite` | Self-contained lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-lite` | Self-contained lightweight bug-fix pipeline: branch + regression test + implement + run tests + `/dreamers-retro`. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-retro` | Evidence-gated retrospective. Suggests up to three minimal repo-local AI scaffolding improvements only when the session contains a real blocker, AI mistake, or developer correction. Never applies changes or targets Dreamers core. |
 | `/dreamers-find-refactors` | Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes Dreamers plan files, and stops. No implementation, branch, commit, push, or PR. |
 
 ### Focused Vigil audit wrappers
@@ -94,9 +95,11 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
   │               5. Apply findings + major-refactor gate (deferred → root defered.md)
   │               6. User-testing gate (when triggered; normal review reruns use Vigil)
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
-  └─ Phase 3   → close-out (improvements + /dreamers-docs + retro + final commit
-                   → user approval gate → /dreamers-pr → post-PR scan)
+  └─ Phase 3   → close-out (/dreamers-docs + final commit → user approval gate
+                   → /dreamers-pr → /dreamers-retro → post-PR scan)
 ```
+
+`/dreamers` and `/dreamers-lite` invoke `/dreamers-retro` exactly once before a terminal response. No qualifying repo-scaffolding evidence means no retro artifact or improvement entry.
 
 Lite, standard, and complex are plan-depth labels. They select the initial review lane through `/dreamers-review`: Vigil; Sentinel + Probe; or Sentinel + Probe + Hone. Explicit plan or user direction overrides that mapping. The review skill and its reviewers are read-only for project files; reviewers write the required `.dreamers/reviews/` artifacts. `/dreamers` applies findings and owns revalidation, review-rerun gates, user testing, and fix loops.
 
