@@ -100,6 +100,7 @@ expected_skills = [
     "dreamers-docs",
     "dreamers-explain",
     "dreamers-find-refactors",
+    "dreamers-help",
     "dreamers-lite",
     "dreamers-implement",
     "dreamers-issue",
@@ -238,7 +239,7 @@ if catalog_path.exists():
                 (member.get("type"), member.get("slug"))
                 for member in collection.get("members", [])
             }
-            for key in [("skill", "dreamers")]:
+            for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
             for key in [("skill", "dreamers-full")]:
@@ -253,7 +254,8 @@ if catalog_path.exists():
 assert_patterns(
     skill_root / "dreamers/SKILL.md",
     [
-        ("missing-input halt", r"If no task description, plan path, or manifest was provided, halt \+ ask"),
+        ("help route", r"## Route input.*Empty or whitespace-only input.*`help`.*`--help`.*`-h`.*invoke `/dreamers-help`.*read-only"),
+        ("unrecognized-input halt", r"Otherwise halt and ask for a task, plan path, manifest, or help"),
         ("three input modes", r"## Modes.*Task description.*Plan path\(s\).*manifest\.md"),
         ("artifact modes skip start gate", r"Plan path mode:.*Do not invoke `/dreamers-plan`.*Manifest mode:.*Do not invoke `/dreamers-plan`"),
         ("startup contract loading", r"Before reading `\.dreamers/` files, read and apply.*dreamers-kernel\.md.*git-workflow\.md.*startup verification"),
@@ -274,6 +276,17 @@ assert_patterns(
     ],
 )
 assert_patterns(
+    skill_root / "dreamers-help/SKILL.md",
+    [
+        ("read-only boundary", r"## Boundary.*read-only guidance.*Do not inspect or change"),
+        ("primary examples", r"/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md"),
+        ("review lanes", r"lite plans use Vigil.*standard plans use Sentinel \+ Probe.*complex plans use Sentinel \+ Probe \+ Hone"),
+        ("specialized choices", r"/dreamers-plan.* /dreamers-implement.* /dreamers-review.* /dreamers-lite"),
+        ("mandatory gates", r"plan approval.*major scope expansion.*triggered user testing.*final pre-PR approval"),
+        ("invitation", r"Describe your goal and I can suggest the next command"),
+    ],
+)
+assert_patterns(
     skill_root / "dreamers-pr-resolve/SKILL.md",
     [
         ("deferred Vigil findings ledger", r"Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
@@ -286,7 +299,6 @@ assert_no_patterns(
     [
         ("inline implementation heading", r"## Implement each plan inline"),
         ("retired plan verification phase", r"invoke\s+`?/dreamers-plan-verify"),
-        ("help route", r"--help"),
         ("Grill opt-out", r"--no-grill|do not grill|skip the interview"),
         ("separate review-selection policy", r"<review-selection>|danger rubric|low-risk lite or standard"),
         ("conditional milestone close-out", r"triggered retrospective|retrospective need|documentation need"),
