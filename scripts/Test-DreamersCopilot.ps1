@@ -111,6 +111,7 @@ $expectedSkills = @(
     "dreamers-docs",
     "dreamers-explain",
     "dreamers-find-refactors",
+    "dreamers-help",
     "dreamers-lite",
     "dreamers-implement",
     "dreamers-issue",
@@ -251,7 +252,7 @@ if (Test-Path $catalogPath) {
         }
         foreach ($collection in $catalog.collections) {
             $members = @($collection.members | ForEach-Object { "$($_.type):$($_.slug)" })
-            foreach ($required in @("skill:dreamers")) {
+            foreach ($required in @("skill:dreamers", "skill:dreamers-help")) {
                 if ($required -notin $members) { Add-Error "Collection missing member: $required" }
             }
             foreach ($retired in @("skill:dreamers-full")) {
@@ -265,7 +266,8 @@ if (Test-Path $catalogPath) {
 }
 
 Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
-    "missing-input halt" = 'If no task description, plan path, or manifest was provided, halt \+ ask'
+    "help route" = '## Route input.*Empty or whitespace-only input.*`help`.*`--help`.*`-h`.*invoke `/dreamers-help`.*read-only'
+    "unrecognized-input halt" = 'Otherwise halt and ask for a task, plan path, manifest, or help'
     "three input modes" = '## Modes.*Task description.*Plan path\(s\).*manifest\.md'
     "artifact modes skip start gate" = 'Plan path mode:.*Do not invoke `/dreamers-plan`.*Manifest mode:.*Do not invoke `/dreamers-plan`'
     "startup contract loading" = 'Before reading `\.dreamers/` files, read and apply.*dreamers-kernel\.md.*git-workflow\.md.*startup verification'
@@ -284,6 +286,14 @@ Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "atomic continuation" = 'ATOMIC.*Do NOT push'
     "full close-out" = 'Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`'
 }
+Assert-Patterns (Join-Path $skillRoot "dreamers-help/SKILL.md") @{
+    "read-only boundary" = '## Boundary.*read-only guidance.*Do not inspect or change'
+    "primary examples" = '/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md'
+    "review lanes" = 'lite plans use Vigil.*standard plans use Sentinel \+ Probe.*complex plans use Sentinel \+ Probe \+ Hone'
+    "specialized choices" = '/dreamers-plan.* /dreamers-implement.* /dreamers-review.* /dreamers-lite'
+    "mandatory gates" = 'plan approval.*major scope expansion.*triggered user testing.*final pre-PR approval'
+    "invitation" = 'Describe your goal and I can suggest the next command'
+}
 Assert-Patterns (Join-Path $skillRoot "dreamers-pr-resolve/SKILL.md") @{
     "deferred Vigil findings ledger" = 'Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
     "deferred ledger commit" = 'If any fixes landed or Step 5 added deferred entries'
@@ -292,7 +302,6 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-pr-resolve/SKILL.md") @{
 Assert-NoPatterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
     "inline implementation heading" = "## Implement each plan inline"
     "retired plan verification phase" = "invoke\s+`?/dreamers-plan-verify"
-    "help route" = "--help"
     "Grill opt-out" = "--no-grill|do not grill|skip the interview"
     "separate review-selection policy" = "<review-selection>|danger rubric|low-risk lite or standard"
     "conditional milestone close-out" = "triggered retrospective|retrospective need|documentation need"

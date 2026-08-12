@@ -214,7 +214,7 @@
       "type": "skill",
       "slug": "dreamers",
       "name": "dreamers",
-      "description": "End-to-end Dreamers pipeline. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, records deferred findings in project-root `defered.md`, owns user testing and fix loops, preserves the full close-out gates, invokes `/dreamers-docs`, and invokes `/dreamers-pr`.",
+      "description": "End-to-end Dreamers pipeline. Routes empty and help input to the read-only `/dreamers-help` guide. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, records deferred findings in project-root `defered.md`, owns user testing and fix loops, preserves the full close-out gates, invokes `/dreamers-docs`, and invokes `/dreamers-pr`.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -222,6 +222,19 @@
         "skill"
       ],
       "path": ".github/skills/dreamers/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-help",
+      "name": "dreamers-help",
+      "description": "Read-only guide to Dreamers concepts, delivery examples, specialized skills, reviewer lanes, gates, and migration choices.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-help/SKILL.md"
     },
     {
       "type": "skill",
@@ -372,7 +385,7 @@
       "type": "collection",
       "slug": "dreamers-system",
       "name": "Dreamers System",
-      "description": "Zero-setup, full coding system for GitHub Copilot CLI. Install this collection, then run `/dreamers help` for information or `/dreamers <task>` inside a repository to plan, implement, review, document, and ship.",
+      "description": "Zero-setup, full coding system for GitHub Copilot CLI. Install this collection, then run `/dreamers help` or `/dreamers-help` for information, or `/dreamers <task>` inside a repository to plan, implement, review, document, and ship.",
       "author": "CJ Storrs",
       "readmePath": ".github/README.md",
       "tags": [
@@ -450,6 +463,10 @@
         {
           "type": "skill",
           "slug": "dreamers"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-help"
         },
         {
           "type": "skill",

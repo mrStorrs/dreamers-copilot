@@ -2,7 +2,7 @@
 
 An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
 
-Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-plan <task>`, `/dreamers-lite <bug>`, etc.
+Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <bug>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
 
 ## Layout
 
@@ -42,6 +42,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | Skill | Purpose |
 |---|---|
 | `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
+| `/dreamers-help` | Read-only orientation, examples, reviewer lanes, gates, specialized choices, and migration guidance. Empty or help-like `/dreamers` input routes here before repository or external inspection. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Stores every Grill question and response word for word in a transcript linked from each plan, produces plan file(s) + optional manifest, verifies coverage, then hard-stops at approval. |
 | `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → type-check + tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
