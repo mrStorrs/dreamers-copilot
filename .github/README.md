@@ -1,6 +1,6 @@
 # Dreamers — GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
 
 Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <bug>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
 
@@ -20,12 +20,10 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dream
 
 | Agent | Type | Role |
 |---|---|---|
-| **Forge** | Persona | Implementation orchestrator. Enter via `/agents forge` for a session pre-loaded with the pipeline. Routes user intent to the right skill. |
-| **Nova** | Persona | Planning specialist. Enter via `/agents nova` for a multi-turn planning session. Stores the Grill exchange verbatim beside linked plans, then hard-stops at approval. |
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Combines Sentinel, Probe, and the shared Hone architecture rubric; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
+| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
@@ -44,7 +42,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
 | `/dreamers-help` | Read-only orientation, examples, reviewer lanes, gates, specialized choices, and migration guidance. Empty or help-like `/dreamers` input routes here before repository or external inspection. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Stores every Grill question and response word for word in a transcript linked from each plan, produces plan file(s) + optional manifest, verifies coverage, then hard-stops at approval. |
-| `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → type-check + tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
+| `/dreamers-implement <plan>` | One cycle against an approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
@@ -94,7 +92,7 @@ flowchart TD
     TaskQuality --> P15
     ArtifactQuality --> BranchSetup
 
-    P15["Phase 1.5<br/>Plan review / implementation start"] --> PlanGate{"Start approved?"}
+    P15["Plan review / implementation start"] --> PlanGate{"Start approved?"}
     PlanGate -->|Single-plan approved| BranchSetup
     PlanGate -->|INCREMENTAL| BranchSetup
     PlanGate -->|ATOMIC| BranchSetup
@@ -103,17 +101,17 @@ flowchart TD
 
     BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
 
-    Cycle["Phase 2 — cycle N"] --> Implement["Steps 1–3<br/>Invoke /dreamers-implement"]
+    Cycle["Phase 2 — cycle N"] --> Implement["Implement<br/>Invoke /dreamers-implement"]
 
     Implement --> S3Check{"Tests green<br/>within 3 attempts?"}
     S3Check -->|No| HaltC(["Halt + surface"])
     S3Check -->|Yes| S4
 
-    S4["Step 4<br/>Invoke /dreamers-review<br/>selected from plan complexity"] --> ReviewResult{"Review result"}
+    S4["Review<br/>Invoke /dreamers-review<br/>selected from plan complexity"] --> ReviewResult{"Review result"}
     ReviewResult -->|Blocked| HaltD(["Halt + surface"])
     ReviewResult -->|Findings| S5
 
-    S5["Step 5 — Apply findings"] --> Gate{"Major-refactor<br/>gate fires?"}
+    S5["Apply findings"] --> Gate{"Major-refactor<br/>gate fires?"}
     Gate -->|No| ApplyFixes
     Gate -->|Yes| GateChoice{"User decides"}
     GateChoice -->|Apply now| ApplyFixes
@@ -127,7 +125,7 @@ flowchart TD
     RerunCheck -->|Major change| RerunGate{"User chooses<br/>review rerun"}
     S6Check -->|No| MorePlans
     S6Check -->|Yes| S6
-    S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
+    S6["User testing<br/>User testing gate"] --> UserTest{"User response"}
     UserTest -->|Bug| BugFix["Fix inline + re-test"]
     BugFix --> BugRerunCheck{"Review rerun<br/>needed?"}
     BugRerunCheck -->|No| S6

@@ -46,7 +46,7 @@ Read these files before doing anything else:
 1. `~/.copilot/copilot-instructions.md` — global user instructions
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
 
-The `reviewer-findings-format` and `hone-architecture-rubric` refs Hone binds to are inlined below. The caller (typically `/dreamers` Step 5 or `/dreamers-review`) applies findings and runs the major-refactor gate.
+The `reviewer-findings-format` ref is inlined below. The caller (typically `/dreamers` Apply findings or `/dreamers-review`) applies findings and runs the major-refactor gate.
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 

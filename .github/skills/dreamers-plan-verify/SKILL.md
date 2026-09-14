@@ -5,8 +5,6 @@ argument-hint: 'path/to/plan.md'
 ---
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.

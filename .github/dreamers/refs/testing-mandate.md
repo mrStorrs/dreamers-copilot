@@ -1,5 +1,5 @@
 ## Plan template
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. 
+Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
 ## Acceptance Criteria

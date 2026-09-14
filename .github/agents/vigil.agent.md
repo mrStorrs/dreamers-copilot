@@ -1,6 +1,6 @@
 ---
 name: vigil
-description: Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and the shared Hone architecture rubric for correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.
+description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -118,8 +118,6 @@ Simplicity:
 
 
 <comment-rules>
-# Comment Rules
-
 ## Core principle
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.
 
@@ -127,7 +125,6 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
-- License headers
 
 ## When NOT to comment
 - Code that reads naturally from well-named functions and variables
@@ -147,21 +144,15 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <testing-mandate>
-# Testing Coverage Mandate (MANDATORY)
-
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
-
-## How test coverage is expressed in plans (new format)
+## Plan template
+Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
-<acceptance_criteria>
+## Acceptance Criteria
 1. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: unit.*
 2. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: integration.*
-3. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
 ```
 
 Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
@@ -190,14 +181,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-**Regression risks**
-- Anything touching existing behavior that could break — call out the specific existing test or flow at risk in the plan's Context section.
-
 If a layer cannot be covered automatically (e.g., camera permission flows), flag it explicitly as a manual-verification requirement in the plan's Verification section with a reason.
-
-## Probe's layer audit (consumes the new format)
-
-During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 
@@ -210,17 +194,11 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 </testing-mandate>
 
 <logging-discipline>
-# Logging Discipline
-
-Rules for log calls — what to write, what to flag in review.
-
 1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
 2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
    - Logger library / import path (do not introduce a new logger where one already exists).
    - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
    - Message format (structured fields vs interpolated strings, key names, casing).
-3. **Never log:** secrets, tokens, PII, full request/response bodies. No exceptions.
-4. **Neither rule yields a clear answer** → raise an open question via `request_information` rather than guessing.
 </logging-discipline>
 
 ## Self-check (before signaling done)

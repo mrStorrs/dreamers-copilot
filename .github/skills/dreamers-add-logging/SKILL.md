@@ -9,8 +9,6 @@ Also load at runtime (not inlined — these are templates / project files):
 - `.github/copilot-instructions.md` (project, if present) — project-specific logging conventions (logger library, format)
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.

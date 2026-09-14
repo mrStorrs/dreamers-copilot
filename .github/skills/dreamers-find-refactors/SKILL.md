@@ -5,8 +5,6 @@ argument-hint: '[scope or directive]'
 ---
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.

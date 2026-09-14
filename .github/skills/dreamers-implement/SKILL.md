@@ -1,25 +1,23 @@
 ---
 name: dreamers-implement
-description: 'Implementation skill — runs one cycle against an approved plan. Writes failing tests, implements, runs tests, and exits at green tests with an AC coverage matrix. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+description: 'Implement an approved plan and its tests; return an AC coverage matrix at green validation. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
 argument-hint: 'feature-<slug>/plan-NN-<name>.md'
 ---
 
-## Todo - Before you begin. 
-- When standalone, declare a todo list for Step 1 / Step 2 / Step 3. When invoked by an outer delivery skill, complete these steps under its existing todo.
+## Todo
+- When standalone, declare a todo list for Step 1 / Step 2. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## 1: Implement
-- Implement per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
+- Implement the approved plan in `$ARGUMENTS` per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
 
 ## 2: Type-check + run tests
 - Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
-- Return the AC coverage matrix at green tests. 
+- Return the AC coverage matrix at green tests.
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
@@ -104,21 +102,15 @@ The orchestrator works directly on the feature branch. Unless explicitly request
 </git-workflow>
 
 <testing-mandate>
-# Testing Coverage Mandate (MANDATORY)
-
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
-
-## How test coverage is expressed in plans (new format)
+## Plan template
+Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
-<acceptance_criteria>
+## Acceptance Criteria
 1. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: unit.*
 2. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: integration.*
-3. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
 ```
 
 Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
@@ -147,14 +139,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-**Regression risks**
-- Anything touching existing behavior that could break — call out the specific existing test or flow at risk in the plan's Context section.
-
 If a layer cannot be covered automatically (e.g., camera permission flows), flag it explicitly as a manual-verification requirement in the plan's Verification section with a reason.
-
-## Probe's layer audit (consumes the new format)
-
-During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
 
 ## Test benchmarks
 
@@ -167,8 +152,6 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 </testing-mandate>
 
 <comment-rules>
-# Comment Rules
-
 ## Core principle
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.
 
@@ -176,7 +159,6 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
-- License headers
 
 ## When NOT to comment
 - Code that reads naturally from well-named functions and variables
@@ -196,16 +178,10 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <logging-discipline>
-# Logging Discipline
-
-Rules for log calls — what to write, what to flag in review.
-
 1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
 2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
    - Logger library / import path (do not introduce a new logger where one already exists).
    - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
    - Message format (structured fields vs interpolated strings, key names, casing).
-3. **Never log:** secrets, tokens, PII, full request/response bodies. No exceptions.
-4. **Neither rule yields a clear answer** → raise an open question via `request_information` rather than guessing.
 </logging-discipline>
 

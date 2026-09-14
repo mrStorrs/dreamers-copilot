@@ -1,6 +1,6 @@
 # Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
 
 ## Structure
 
@@ -20,12 +20,10 @@ Everything lives under `.github/`:
 
 | Agent | Type | Role |
 |---|---|---|
-| **Forge** | Persona | Implementation orchestrator. Routes user requests to the right skill. `/agents forge`. |
-| **Nova** | Persona | Planning specialist. Mirrors `/dreamers-plan`, stores every Grill question and response verbatim beside the plans, and writes right-sized plans that link that transcript. `/agents nova`. |
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Combines Sentinel, Probe, and the shared Hone architecture rubric; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
+| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 | **Sage** | Subagent | Researcher — deep multi-perspective research. |
 
@@ -46,7 +44,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers` | End-to-end pipeline. Accepts a task description, existing plan path(s), or manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and the gate, then use supplied artifacts after plan-quality checks. Invokes `/dreamers-implement`, then `/dreamers-review`; the review skill selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, appends deferred findings to project-root `defered.md`, owns user testing and fix loops, and preserves the original close-out through `/dreamers-docs`, pre-PR approval, and `/dreamers-pr`. |
 | `/dreamers-help` | Read-only orientation, examples, reviewer lanes, gates, specialized choices, and migration guidance. |
 | `/dreamers-plan` | 3-phase planning (interactive Hash-out → Write → Review). Runs Phase 1A Grill before proposal approval, stores every Grill question and response word for word in `grilling-transcript.md`, links it from each plan, selects lite / standard / complex, writes right-sized plan file(s) + optional manifest, then verifies coverage before the review gate. Hard-stops at the review gate. |
-| `/dreamers-implement` | One-shot implementation: write failing tests, implement, type-check, and run tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
+| `/dreamers-implement` | One-shot implementation: implement the approved plan and its tests, then type-check and run tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction. For plan-bound reviews, it reads the linked or sibling verbatim Grill transcript when present and supplies it as intent context. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
 | `/dreamers-pr` | Pushes the branch, opens the PR using the `pr-description.md` template, and archives shipped Dreamers plan artifacts. |
@@ -87,15 +85,14 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 ```
 /dreamers <task | plan paths | manifest.md>
-  ├─ Phase 1   → /dreamers-plan   (Mode 1 only: Grill + right-sized planning; plan/manifest modes skip)
-  ├─ Phase 1.5 → Plan review / implementation-start gate (Mode 1 only)
+  ├─ Phase 1   → /dreamers-plan + plan review / implementation-start gate (task input only)
   │               multi-plan approval includes INCREMENTAL vs ATOMIC choice
   │               plan/manifest modes skip this gate and default to ATOMIC unless explicitly supplied
   ├─ Phase 2   → per plan:
-  │               1–3. Invoke /dreamers-implement (failing tests → implementation → type-check + tests)
-  │               4. Invoke /dreamers-review (reviewers selected from plan complexity or explicit direction)
-  │               5. Apply findings + major-refactor gate (deferred → root defered.md)
-  │               6. User-testing gate (when triggered; normal review reruns use Vigil)
+  │               Implement: /dreamers-implement (code + tests → type-check + test run)
+  │               Review: /dreamers-review (reviewers selected from plan complexity or explicit direction)
+  │               Apply findings + major-refactor gate (deferred → root defered.md)
+  │               User-testing gate (when triggered; normal review reruns use Vigil)
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
   └─ Phase 3   → close-out (improvements + /dreamers-docs + retro + final commit
                    → user approval gate → /dreamers-pr → post-PR scan)

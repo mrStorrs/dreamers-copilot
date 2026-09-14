@@ -15,20 +15,6 @@
     },
     {
       "type": "agent",
-      "slug": "forge",
-      "name": "forge",
-      "description": "Coder of the Dreamers — implementation orchestrator persona. Enter via `/agents forge` for a multi-turn session pre-loaded with pipeline knowledge + coding standards. Routes work through plan → implement → close-out and enforces dreamers-kernel.md. NOT a spawned subagent.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent",
-        "persona"
-      ],
-      "path": ".github/agents/forge.agent.md"
-    },
-    {
-      "type": "agent",
       "slug": "hone",
       "name": "hone",
       "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Writes one `.dreamers/reviews/` artifact. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Part of the complex per-plan `/dreamers` review gate. The orchestrator gates major-refactor findings through user approval.",
@@ -39,20 +25,6 @@
         "agent"
       ],
       "path": ".github/agents/hone.agent.md"
-    },
-    {
-      "type": "agent",
-      "slug": "nova",
-      "name": "nova",
-      "description": "Planning specialist of the Dreamers — planning persona. Enter via `/agents nova` for a multi-turn planning session. Runs Phase 1A Grill, stores every question and response word for word in `.dreamers/plans/feature-<slug>/grilling-transcript.md`, links it from each right-sized plan, verifies plan coverage, and hard-stops at approval. Never implements / commits / pushes. NOT a spawned subagent.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent",
-        "persona"
-      ],
-      "path": ".github/agents/nova.agent.md"
     },
     {
       "type": "agent",
@@ -97,7 +69,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Combines Sentinel, Probe, and the shared Hone architecture rubric for correctness, security, maintainability, test coverage, and simplicity. Used for lite `/dreamers` plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and normal `/dreamers` follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.",
+      "description": "Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used for lite `/dreamers` plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and normal `/dreamers` follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -214,7 +186,7 @@
       "type": "skill",
       "slug": "dreamers",
       "name": "dreamers",
-      "description": "End-to-end Dreamers pipeline. Routes empty and help input to the read-only `/dreamers-help` guide. Accepts a task description, existing plan path(s), or a feature manifest. Task mode invokes `/dreamers-plan`, then uses the plan review / implementation-start gate; plan path and manifest modes skip planning and that gate. Invokes `/dreamers-implement`, then `/dreamers-review`; review selects reviewers from plan complexity or explicit plan/user direction. The orchestrator applies findings, records deferred findings in project-root `defered.md`, owns user testing and fix loops, preserves the full close-out gates, invokes `/dreamers-docs`, and invokes `/dreamers-pr`.",
+      "description": "Deliver a task, approved plan(s), or manifest through planning, implementation, review, user testing, docs, and PR. Empty/help input opens /dreamers-help. Triggers: /dreamers, plan and implement, new feature, ship a feature.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -240,7 +212,7 @@
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Standalone implementation entry point. Writes failing tests against the plan's ACs, implements inline, runs tests. Exits at green tests; does NOT review, push, or open a PR. For full pipeline use /dreamers.",
+      "description": "Implement an approved plan and its tests; return an AC coverage matrix at green validation. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -402,15 +374,7 @@
         },
         {
           "type": "agent",
-          "slug": "forge"
-        },
-        {
-          "type": "agent",
           "slug": "hone"
-        },
-        {
-          "type": "agent",
-          "slug": "nova"
         },
         {
           "type": "agent",

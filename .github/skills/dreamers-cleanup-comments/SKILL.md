@@ -5,8 +5,6 @@ argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
 <comment-rules>
-# Comment Rules
-
 ## Core principle
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.
 
@@ -14,7 +12,6 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
-- License headers
 
 ## When NOT to comment
 - Code that reads naturally from well-named functions and variables
@@ -34,8 +31,6 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.

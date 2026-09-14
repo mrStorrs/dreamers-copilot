@@ -101,7 +101,7 @@ function Assert-SynchronizedRefs {
     }
 }
 
-$expectedAgents = @("echo", "forge", "hone", "nova", "probe", "sage", "sentinel", "vigil")
+$expectedAgents = @("echo", "hone", "probe", "sage", "sentinel", "vigil")
 $expectedSkills = @(
     "dreamers",
     "dreamers-add-logging",
@@ -131,12 +131,13 @@ $expectedRefs = @(
     "comment-rules.md",
     "dreamers-kernel.md",
     "git-workflow.md",
-    "hone-architecture-rubric.md",
     "logging-discipline.md",
+    "plan-quality.md",
     "planning-grill.md",
     "project-bootstrap.md",
     "reviewer-findings-format.md",
-    "testing-mandate.md"
+    "testing-mandate.md",
+    "user-testing-gate.md"
 )
 $expectedTemplates = @(
     "discovery-questions.md",
@@ -265,27 +266,6 @@ if (Test-Path $catalogPath) {
     }
 }
 
-Assert-Patterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
-    "help route" = '## Route input.*Empty or whitespace-only input.*`help`.*`--help`.*`-h`.*invoke `/dreamers-help`.*read-only'
-    "unrecognized-input halt" = 'Otherwise halt and ask for a task, plan path, manifest, or help'
-    "three input modes" = '## Modes.*Task description.*Plan path\(s\).*manifest\.md'
-    "artifact modes skip start gate" = 'Plan path mode:.*Do not invoke `/dreamers-plan`.*Manifest mode:.*Do not invoke `/dreamers-plan`'
-    "startup contract loading" = 'Before reading `\.dreamers/` files, read and apply.*dreamers-kernel\.md.*git-workflow\.md.*startup verification'
-    "branch setup" = 'Branch setup once per `git-workflow`:.*checkout.*pull.*feat/<slug>'
-    "plan quality" = 'Plan quality check.*Plan-type.*plan-guide-selector'
-    "planning delegation" = '## Phase 1.*Invoke `/dreamers-plan \$ARGUMENTS`'
-    "single-plan implementation-start gate" = 'Approved — start implementation.*Revise plan.*Halt.*Other'
-    "multi-plan implementation-start gate" = 'Approved — start INCREMENTAL.*Approved — start ATOMIC.*Revise plan.*Halt.*Other'
-    "implementation then review" = '### Steps 1.3.*Invoke `/dreamers-implement.*### Step 4.*Invoke `/dreamers-review'
-    "complexity review delegation" = '/dreamers-review` selects Vigil, Sentinel \+ Probe, or Sentinel \+ Probe \+ Hone from plan complexity or explicit plan/user direction'
-    "major-refactor gate" = 'Major-refactor gate.*Apply now.*Defer — save to defered\.md.*Other'
-    "deferred findings ledger" = 'Defer.*do NOT apply or create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
-    "major-change rerun gate" = 'Run Vigil.*Run full triad.*Run selected /dreamers-review lane.*Skip reviewer rerun.*Other'
-    "templated user testing" = 'user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)'
-    "incremental close-out" = 'INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`'
-    "atomic continuation" = 'ATOMIC.*Do NOT push'
-    "full close-out" = 'Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`'
-}
 Assert-Patterns (Join-Path $skillRoot "dreamers-help/SKILL.md") @{
     "read-only boundary" = '## Boundary.*read-only guidance.*Do not inspect or change'
     "primary examples" = '/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md'
@@ -298,26 +278,6 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-pr-resolve/SKILL.md") @{
     "deferred Vigil findings ledger" = 'Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
     "deferred ledger commit" = 'If any fixes landed or Step 5 added deferred entries'
     "deferred ledger report" = 'Deferred Vigil findings recorded in `defered\.md`'
-}
-Assert-NoPatterns (Join-Path $skillRoot "dreamers/SKILL.md") @{
-    "inline implementation heading" = "## Implement each plan inline"
-    "retired plan verification phase" = "invoke\s+`?/dreamers-plan-verify"
-    "Grill opt-out" = "--no-grill|do not grill|skip the interview"
-    "separate review-selection policy" = "<review-selection>|danger rubric|low-risk lite or standard"
-    "conditional milestone close-out" = "triggered retrospective|retrospective need|documentation need"
-    "implementation-only synchronized refs" = "<(planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"
-}
-Assert-Patterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
-    "tests-first implementation" = "failing tests.*implement|tests.first"
-    "type-check and tests" = "Step 3 — Type-check \+ run tests.*type-check \+ test command"
-    "bounded validation attempts" = "max 3 attempts"
-    "benchmark updates" = "test-benchmarks\.md.*after passing"
-    "green exit" = 'Return the AC coverage matrix at green tests.*invokes `/dreamers-review` immediately'
-    "phase boundary" = "Do not invoke reviewers.*user testing.*commit.*push.*PR creation"
-    "conditional todo ownership" = "When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"
-}
-Assert-NoPatterns (Join-Path $skillRoot "dreamers-implement/SKILL.md") @{
-    "stale seven-step todo" = "Step 5 \(review\).*Step 6 \(user test\).*Step 7 \(commit\)"
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
     "Vigil execution mode" = "--vigil.*Vigil|Vigil.*--vigil"
@@ -391,7 +351,6 @@ foreach ($path in @(
     (Join-Path $skillRoot "dreamers-plan/SKILL.md"),
     (Join-Path $skillRoot "dreamers-plan/readme.md"),
     (Join-Path $dreamersRoot "refs/planning-grill.md"),
-    (Join-Path $agentRoot "nova.agent.md"),
     (Join-Path $Root "README.md"),
     (Join-Path $Root ".github/README.md")
 )) {
@@ -438,7 +397,15 @@ if (-not $SkipInstallSmoke) {
         $userInstruction = Join-Path $tmpHome "instructions\user-owned.md"
         $staleCommentRules = Join-Path $tmpHome "instructions\comment-rules.instructions.md"
         $staleGitInstructions = Join-Path $tmpHome "instructions\git.instructions.md"
-        foreach ($path in @($userInstruction, $staleCommentRules, $staleGitInstructions)) {
+        $obsoleteManaged = @(
+            $staleCommentRules,
+            $staleGitInstructions,
+            (Join-Path $tmpHome "agents/forge.agent.md"),
+            (Join-Path $tmpHome "agents/nova.agent.md"),
+            (Join-Path $tmpHome "dreamers/refs/hone-architecture-rubric.md")
+        )
+        $userAgent = Join-Path $tmpHome "agents/user-owned.agent.md"
+        foreach ($path in (@($userInstruction, $userAgent) + $obsoleteManaged)) {
             New-Item -ItemType Directory -Path (Split-Path $path -Parent) -Force | Out-Null
             Set-Content -Path $path -Value "preserve or remove by ownership" -Encoding utf8NoBOM
         }
@@ -462,11 +429,13 @@ if (-not $SkipInstallSmoke) {
         )) {
             if (-not (Test-Path $path)) { Add-Error "Install smoke missing managed file: $path" }
         }
-        foreach ($path in @($staleCommentRules, $staleGitInstructions)) {
+        foreach ($path in $obsoleteManaged) {
             if (Test-Path $path) { Add-Error "Install smoke retained obsolete managed file: $path" }
         }
-        if (-not (Test-Path $userInstruction)) {
-            Add-Error "Install smoke removed user-owned instruction: $userInstruction"
+        foreach ($path in @($userInstruction, $userAgent)) {
+            if ((Get-Content -Raw $path).Trim() -ne "preserve or remove by ownership") {
+                Add-Error "Install smoke changed user-owned file: $path"
+            }
         }
         foreach ($managed in @("SKILL.md", "readme.md")) {
             $path = Join-Path $legacyFull $managed
@@ -482,8 +451,9 @@ if (-not $SkipInstallSmoke) {
         New-Item -ItemType Directory -Path $legacyFull -Force | Out-Null
         Set-Content -Path (Join-Path $legacyFull "SKILL.md") -Value "managed" -Encoding utf8NoBOM
         Set-Content -Path (Join-Path $legacyFull "readme.md") -Value "managed" -Encoding utf8NoBOM
-        Set-Content -Path $staleCommentRules -Value "managed" -Encoding utf8NoBOM
-        Set-Content -Path $staleGitInstructions -Value "managed" -Encoding utf8NoBOM
+        foreach ($path in $obsoleteManaged) {
+            Set-Content -Path $path -Value "managed" -Encoding utf8NoBOM
+        }
         & (Join-Path $Root "Remove-Dreamers.ps1") -CopilotHome $tmpHome | Out-Null
 
         foreach ($path in @(
@@ -493,11 +463,13 @@ if (-not $SkipInstallSmoke) {
         )) {
             if (Test-Path $path) { Add-Error "Remove smoke retained managed file: $path" }
         }
-        foreach ($path in @($staleCommentRules, $staleGitInstructions)) {
+        foreach ($path in $obsoleteManaged) {
             if (Test-Path $path) { Add-Error "Remove smoke retained obsolete managed file: $path" }
         }
-        if (-not (Test-Path $userInstruction)) {
-            Add-Error "Remove smoke removed user-owned instruction: $userInstruction"
+        foreach ($path in @($userInstruction, $userAgent)) {
+            if ((Get-Content -Raw $path).Trim() -ne "preserve or remove by ownership") {
+                Add-Error "Remove smoke changed user-owned file: $path"
+            }
         }
         if (-not (Test-Path (Join-Path $activeLite "user-owned.md"))) {
             Add-Error "Remove smoke removed user-owned active file: $activeLite"

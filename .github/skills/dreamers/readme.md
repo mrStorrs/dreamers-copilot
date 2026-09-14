@@ -26,10 +26,12 @@ flowchart TD
 ## Key invariants
 
 - Empty or whitespace-only input, `help`, `--help`, and `-h` route directly to `/dreamers-help` before repository or external inspection or mutation.
-- Task mode invokes `/dreamers-plan`, then runs the original Phase 1.5 implementation-start gate. Plan path and manifest modes skip both phases and proceed after plan-quality checks.
-- `/dreamers-implement` owns the tests-first implementation pass. `/dreamers-review` always runs after it succeeds.
+- Task mode invokes `/dreamers-plan`, then runs the implementation-start gate in Phase 1. Plan path and manifest modes skip both phases and proceed after plan-quality checks.
+- `/dreamers-implement` implements the plan and its tests without requiring tests-first ordering. `/dreamers-review` always runs after it succeeds.
 - `/dreamers-review` selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane.
 - The review skill and reviewers are read-only for project files. Reviewers may write their required `.dreamers/reviews/` artifacts.
 - `/dreamers` applies findings and owns the major-refactor gate, review-rerun gate, user-testing and fix loop, and revalidation.
 - Major-refactor findings deferred at the user gate are appended to project-root `defered.md`; existing entries are preserved and no follow-up plan is created automatically.
 - INCREMENTAL and ATOMIC behavior, improvements, docs, retro, commits, mandatory pre-PR approval, and PR creation remain the full pipeline behavior.
+
+Kernel, git workflow, plan-quality checks, and the user-testing gate are embedded through XML ref sync. The delivery skill does not load Dreamers rule files at runtime.

@@ -39,8 +39,6 @@ Template read at runtime via `view`:
 
 ## Dreamers Kernel
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.

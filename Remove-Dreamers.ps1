@@ -27,6 +27,9 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
 $ObsoleteManagedFiles = @(
+    "agents/forge.agent.md",
+    "agents/nova.agent.md",
+    "dreamers/refs/hone-architecture-rubric.md",
     "instructions/comment-rules.instructions.md",
     "instructions/git.instructions.md"
 )

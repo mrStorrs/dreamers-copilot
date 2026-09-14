@@ -9,8 +9,6 @@ Resolve unresolved PR review comments. All work inline except required artifact-
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
