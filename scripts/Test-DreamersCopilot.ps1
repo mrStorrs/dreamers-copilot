@@ -12,6 +12,19 @@ function Assert {
     if (-not $Condition) { throw $Message }
 }
 
+function Invoke-RefSync {
+    param([string]$Repository, [string]$Extension, [string]$Mode)
+    $script = Join-Path $Repository "scripts/sync-refs.$Extension"
+    $PSNativeCommandUseErrorActionPreference = $false
+    $output = if ($Extension -eq "ps1") {
+        $executable = Join-Path $PSHOME $(if ($IsWindows) { "pwsh.exe" } else { "pwsh" })
+        & $executable -NoLogo -NoProfile -File $script $Mode 2>&1
+    } else {
+        & bash $script $Mode 2>&1
+    }
+    return @{ ExitCode = $LASTEXITCODE; Output = ($output -join "`n") }
+}
+
 function Read-Metadata {
     param([string]$Path)
     $content = Get-Content -Raw -LiteralPath $Path
@@ -67,6 +80,9 @@ foreach ($instruction in Get-ChildItem (Join-Path $Root ".github/instructions") 
 }
 Assert-Links @($managed.Values)
 
+$syncResult = Invoke-RefSync $Root "ps1" "-Verify"
+Assert ($syncResult.ExitCode -eq 0) "Inlined reference verification failed: $($syncResult.Output)"
+
 $catalog = Get-Content -Raw (Join-Path $Root ".github/catalog.json") | ConvertFrom-Json
 $keys = @{}
 foreach ($entry in @($catalog.items) + @($catalog.folderTargets)) {
@@ -121,8 +137,6 @@ if (-not $SkipInstallSmoke) {
         "instructions/comment-rules.instructions.md",
         "instructions/git.instructions.md",
         "instructions/dreamers.laws.md",
-        "dreamers/refs/comment-rules.md",
-        "dreamers/refs/dreamers-kernel.md",
         "dreamers/refs/agent-recovery.md",
         "skills/dreamers-full/SKILL.md",
         "skills/dreamers-full/readme.md"
@@ -136,6 +150,54 @@ if (-not $SkipInstallSmoke) {
     )
     $sentinel = 'Personal data: $value, literal text, quotes "unchanged".'
     try {
+        $syncExtensions = if ($IsWindows) { @("ps1") } else { @("ps1", "sh") }
+        foreach ($extension in $syncExtensions) {
+            $syncRoot = Join-Path $testRoot "sync $extension"
+            $refs = Join-Path $syncRoot ".github/dreamers/refs"
+            $consumers = Join-Path $syncRoot ".github/agents"
+            $scripts = Join-Path $syncRoot "scripts"
+            New-Item -ItemType Directory -Path $refs, $consumers, $scripts -Force | Out-Null
+            Copy-Item (Join-Path $Root "scripts/sync-refs.$extension") $scripts
+
+            $source = Join-Path $refs "sample.md"
+            $consumer = Join-Path $consumers "example.agent.md"
+            $stale = "<Sample>`nbefore`n<sample>`nexample café`n</sample>`nafter`n</Sample>`n"
+            $expected = $stale.Replace("example café", "EXAMPLE café")
+            [IO.File]::WriteAllText($source, "EXAMPLE café`n")
+            [IO.File]::WriteAllText($consumer, $stale)
+
+            $result = Invoke-RefSync $syncRoot $extension "-Verify"
+            Assert ($result.ExitCode -eq 1) "$extension failed to detect reference drift: $($result.Output)"
+            Assert ([IO.File]::ReadAllText($consumer) -ceq $stale) "$extension Verify wrote a consumer"
+
+            $result = Invoke-RefSync $syncRoot $extension "-Sync"
+            Assert ($result.ExitCode -eq 0) "$extension sync failed: $($result.Output)"
+            Assert ([IO.File]::ReadAllText($consumer) -ceq $expected) "$extension sync changed surrounding content or missed source content"
+            Assert ([IO.File]::ReadAllText($source) -ceq "EXAMPLE café`n") "$extension sync changed its source"
+            $result = Invoke-RefSync $syncRoot $extension "-Verify"
+            Assert ($result.ExitCode -eq 0) "$extension still reports drift after sync: $($result.Output)"
+            $result = Invoke-RefSync $syncRoot $extension "-Sync"
+            Assert ($result.ExitCode -eq 0) "$extension repeated sync failed: $($result.Output)"
+            Assert ([IO.File]::ReadAllText($consumer) -ceq $expected) "$extension repeated sync was not idempotent"
+
+            [IO.File]::WriteAllText($consumer, $stale)
+            $malformed = Join-Path $consumers "malformed.agent.md"
+            [IO.File]::WriteAllText((Join-Path $refs "second.md"), "second reference`n")
+            $invalidBlocks = @(
+                "<sample>`nunclosed`n",
+                "</sample>`n",
+                "<sample>`n</sample>`n<sample>`n</sample>`n",
+                "<sample>`n<second>`n</second>`n</sample>`n"
+            )
+            foreach ($invalid in $invalidBlocks) {
+                [IO.File]::WriteAllText($malformed, $invalid)
+                $result = Invoke-RefSync $syncRoot $extension "-Sync"
+                Assert ($result.ExitCode -eq 3) "$extension accepted malformed markers: $($result.Output)"
+                Assert ([IO.File]::ReadAllText($consumer) -ceq $stale) "$extension partially wrote a malformed batch"
+                Assert ([IO.File]::ReadAllText($malformed) -ceq $invalid) "$extension changed a malformed consumer"
+            }
+        }
+
         foreach ($relative in $personal) { Write-Fixture $relative $sentinel }
         & (Join-Path $Root "Install-Dreamers.ps1") -CopilotHome $installRoot 6>$null | Out-Null
         Assert-Installed

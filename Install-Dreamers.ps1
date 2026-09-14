@@ -33,8 +33,6 @@ $ObsoleteManagedFiles = @(
     "instructions/comment-rules.instructions.md",
     "instructions/git.instructions.md",
     "instructions/dreamers.laws.md",
-    "dreamers/refs/comment-rules.md",
-    "dreamers/refs/dreamers-kernel.md",
     "dreamers/refs/agent-recovery.md"
 )
 

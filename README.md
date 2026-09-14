@@ -49,12 +49,14 @@ Echo updates docs; Sage researches. Forge and Nova are user-entered implementati
 
 ## Package layout
 
-- .github/skills/: entry points with short steps.
+- .github/skills/: entry points with explicit phase steps.
 - .github/agents/: role definitions.
 - .github/instructions/: shared execution, code, and comment rules.
-- .github/dreamers/refs/ and templates/: task-specific material read on demand.
+- .github/dreamers/refs/ and templates/: canonical shared rules and artifact formats.
 
-Relative links work in both the repository and installed layout. Reference blocks are no longer copied into each consumer; there is no sync build step. Review/implementation boundaries remain explicit.
+Forge and /dreamers-implement are the first two entry points restored to synchronized XML blocks. Their shared Dreamers rules are embedded before installation, so execution does not depend on reading reference/template files. Code and comment instruction files use the same canonical sources. Other entry points still use linked rules while this two-entry-point revision is evaluated.
+
+Edit shared rules in `.github/dreamers/refs/<name>.md` and run the sync command below. Consumers declare a block with `<name>` and `</name>`, each on its own line at column zero. Keep workflow-specific steps outside those blocks. Project instructions, approved plans, and verification artifacts remain runtime inputs.
 
 Local work lives in gitignored .dreamers/. Root test-benchmarks.md records successful test durations; defered.md records explicit user deferrals.
 
@@ -80,9 +82,18 @@ Removal includes known retired managed files and preserves unrelated files.
 
 ## Maintain and verify
 
+    ./scripts/sync-refs.sh -Sync
+    ./scripts/sync-refs.sh -Verify
     ./scripts/Test-DreamersCopilot.sh
+
+Or with PowerShell:
+
+    pwsh -File ./scripts/sync-refs.ps1 -Sync
+    pwsh -File ./scripts/sync-refs.ps1 -Verify
     pwsh -File ./scripts/Test-DreamersCopilot.ps1
 
-Both run the same PowerShell validator. It checks package metadata, catalog targets, relative links in source and installed layouts, and real install/upgrade/removal behavior using a temporary target. It verifies preservation of personal files, non-force behavior, idempotence, and DryRun. It does not assert prompt wording. Use -SkipInstallSmoke for structural checks only.
+Sync replaces declared XML regions with their canonical reference content. Reference names and content match case-sensitively. Keep reference blocks separate; nested references overlap replacement regions and are rejected. Verify reports drift without writing. Malformed marker pairs stop synchronization before any files are changed. The Bash sync command requires Python 3.
+
+Both package test commands run the same PowerShell validator. It checks XML drift, package metadata, catalog targets, links, and real install/upgrade/removal behavior in a temporary target. Synthetic sync cases cover exact content replacement, surrounding-content preservation, idempotence, and refusing malformed batches without partial writes. Linux exercises both sync implementations; Windows exercises PowerShell. Installer cases protect personal files, non-force behavior, idempotence, and DryRun. These checks exercise tooling behavior; they do not assert prompt wording. Use -SkipInstallSmoke for structural checks, including XML drift, without temporary behavior fixtures.
 
 For a consuming project, follow [bootstrap rules](.github/dreamers/refs/project-bootstrap.md). For system maintenance, update the relevant rules, entry points, and docs together.

@@ -17,7 +17,7 @@
       "type": "agent",
       "slug": "forge",
       "name": "forge",
-      "description": "User-entered implementation persona; route tasks through the appropriate Dreamers skill.",
+      "description": "User-entered implementation orchestrator. Routes the requested scope through Dreamers skills, owns code and validation, and preserves delivery gates.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -240,7 +240,7 @@
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Implement an approved proposal or detailed plan and return verified outcomes. No review or shipping.",
+      "description": "Implement an approved proposal or plan inline, enforce scope and branch identity, and return verified outcomes. Stops before review or shipping.",
       "author": "CJ Storrs",
       "tags": [
         "code",
