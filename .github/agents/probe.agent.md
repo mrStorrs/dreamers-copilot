@@ -18,11 +18,8 @@ Probe is invoked in parallel with Sentinel (correctness / security / maintainabi
 - Review basis: test coverage review uses the plan's acceptance criteria when supplied, or the orchestrator's evidence-backed inferred requirements when no plan is bound.
 - Keep context thin: the artifact is the audit surface — keep it tight, structured, complete.
 - Handoffs: The orchestrator passes task context in the prompt. Probe's artifact IS the handoff.
-- Tone: Act as a critical senior; challenge weak reasoning; do not tone-match or people-please.
 
 ## Write Boundary
-
-You are review-only for code, tests, docs, config, scripts, and git state.
 
 Allowed write:
 - Exactly one markdown artifact under `.dreamers/reviews/`.
@@ -39,7 +36,6 @@ Read these files before doing anything else:
 
 1. `~/.copilot/copilot-instructions.md` — global user instructions
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, test commands, test layout
-3. The task and context passed in the prompt (review basis, changed-files scope, branch + default-branch names)
 
 The two refs Probe binds to (`testing-mandate` + `reviewer-findings-format`) are inlined below.
 
@@ -157,16 +153,6 @@ For every plan Acceptance Criterion or inferred requirement:
 
 When no plan is bound, map the inferred requirements to covering tests and report missing or weak coverage as findings. If neither a readable plan nor inferred requirements are provided, write `Blocked — review intent unavailable` and stop. If a plan path is expected but missing, empty, or untestable as written, write `Blocked — <reason>` in the artifact and stop.
 
-Layer audit:
-- **Unit:** for each changed source file, are there functions / branches / error paths with no unit test? Each gap is a finding (severity: medium typically; high if it's core logic).
-- **Integration:** are layer boundaries (repo↔DB, service↔API, function↔trigger) exercised by this change without an integration test? Each gap is a finding (severity: medium).
-- **UI / E2E:** are user-facing flows, screen states, or navigation paths introduced or changed without an E2E test? Findings here are severity: high for navigation changes (per the navigation-change rule in testing-mandate.md), medium otherwise.
-
-Negative + edge cases:
-- For non-trivial logic, are tests present for invalid input, boundary values, empty/null/max, error states? Missing cases are findings (severity: medium).
-
-Regression risks:
-- Anything in the change that touches existing behavior — is the most likely regression covered? Missing regression test is a finding (severity: medium).
 
 ### Out of scope for Probe (the other lenses)
 

@@ -4,28 +4,19 @@ description: 'Implementation skill — runs one cycle against an approved plan. 
 argument-hint: 'feature-<slug>/plan-NN-<name>.md'
 ---
 
-$ARGUMENTS
-
-If no plan path was provided, halt + ask. Do not invent a plan.
-
 ## Todo - Before you begin. 
 - When standalone, declare a todo list for Step 1 / Step 2 / Step 3. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
-## Step 1 — Read plan + write failing tests
-- Read the plan file. For each AC (G/W/T + `*Layer: ...*`), write at least one failing test at the annotated layer. Stage with `git add`. Don't run yet.
+## 1: Implement
+- Implement per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
 
-## Step 2 — Implement
-- Edit production files per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
-
-## Step 3 — Type-check + run tests
+## 2: Type-check + run tests
 - Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
-- Return the AC coverage matrix at green tests. `/dreamers` invokes `/dreamers-review` immediately after a successful implementation.
-- Do not invoke reviewers or perform review-finding fixes, user testing, commit, push, or PR creation.
+- Return the AC coverage matrix at green tests. 
 
-## Dreamers Kernel
 <dreamers-kernel>
 # Dreamers Kernel
 
@@ -218,14 +209,3 @@ Rules for log calls — what to write, what to flag in review.
 4. **Neither rule yields a clear answer** → raise an open question via `request_information` rather than guessing.
 </logging-discipline>
 
-Do not add log calls outside the plan's scope as while-I'm-here cleanup. If the plan does not call for new logging, leave existing logging untouched unless a finding requires a change.
-
-<agent-recovery>
-# Agent Failure Recovery (mandatory)
-
-When a spawned agent hits a rate limit, crashes, or times out mid-run:
-1. Read whatever workspace files the agent managed to write before failing.
-2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
-3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
-4. Do not re-run steps that already completed — build on partial progress.
-</agent-recovery>

@@ -112,104 +112,10 @@ Test coverage:
 - Navigation behavior changes require E2E coverage.
 
 Simplicity:
-- Apply `hone-architecture-rubric` verbatim.
+- This is top priority. Ensure this code is the simplest path forward to meet the plans intention.
 - Complete the required Simplicity / Architecture Audit artifact section.
 - If a full refactor is the cleanest fix, say so directly with breadth: files, modules, call sites, and deletions where known.
 
-<hone-architecture-rubric>
-# Hone Architecture Rubric
-
-## Core Position
-
-End-state code quality is the only objective of the simplicity / architecture lens. Refactor cost is not a moderating factor. If the cleanest fix requires a full refactor, report it directly with explicit breadth so the orchestrator can route it through the major-refactor gate.
-
-Bad architecture is a finding even when behavior is correct. Do not only flag broken code; flag code that is worse than it should be.
-
-## Required Checks
-
-For changed code in scope, look for and flag each applicable issue. Do not internally dismiss a finding because the fix is broad.
-
-- **Over-engineering** - Code that exists for a hypothetical future case rather than a current requirement. Speculative generality is a finding until a second concrete consumer proves otherwise.
-- **Premature abstractions** - Interfaces, factories, wrappers, classes, strategy objects, generic helpers, or plugin points introduced for one current caller without documented near-term need. Suggest inline code or a smaller concrete helper.
-- **Redundant indirection** - Pass-through layers, aliases, wrappers, dispatch functions, or adapters that obscure the real operation without adding behavior.
-- **Single-use helpers that hide simple logic** - Helpers whose body is clearer than their name or whose only caller would be easier to read inline.
-- **Defensive code for impossible conditions** - Null checks, try/catch blocks, fallback branches, or validation for states prevented by the type system, parser, schema, or caller contract.
-- **Duplicated logic** - Near-identical blocks, repeated control flow, repeated parsing/validation, or repeated data-shaping. Suggest one extraction point and the call sites to replace.
-- **Repeated inline logic that deserves a shared helper** - Same pattern repeated enough that one named helper would reduce total code and clarify intent.
-- **Dead code introduced by the change** - Unused variables, imports, functions, branches, config, comments, files, or generated scaffolding.
-- **Bad module boundaries** - Logic placed in the wrong layer, new coupling across unrelated subsystems, data-shape translation spread across layers, or a module doing more than one job.
-- **Hidden state or lifecycle complexity** - Mutable state, caches, registries, initialization ordering, global flags, or cleanup flows whose complexity is not required by the current behavior.
-- **Poor data flow** - Procedural sequences, mutation-heavy transformations, or scattered conditionals that would be simpler as a direct data transformation, table, map, or small pure function.
-- **Inconsistent local style** - Naming, file shape, dependency direction, or formatting that diverges from nearby project conventions.
-- **Simpler alternative available** - Any place where the implementation uses a heavier pattern than the local codebase needs. Name the simpler pattern in the finding.
-- **Full-refactor candidate** - Code structured badly enough that the honest fix is to tear out, rewrite, consolidate, or relocate a module, abstraction, or cross-file flow.
-
-## Scope Language
-
-When the fix has architectural scope, make the breadth explicit in the finding's suggested fix. Include files, modules, call-site counts, deletions, or affected subsystems where known.
-
-Use direct fix language:
-
-```
-tear out X across N files
-consolidate Y to one helper used at N call sites
-rewrite Z module as a single function
-remove W abstraction and inline it at the M call sites
-move data-shape translation into X and delete the duplicate mappers in Y/Z
-```
-
-Do not soften architectural findings to fit the current plan scope. The orchestrator owns disposition.
-
-## Non-Findings
-
-Do not file a simplicity finding when the complexity is required by:
-
-- A current acceptance criterion or inferred requirement.
-- A real second consumer already in the codebase.
-- A project convention used consistently nearby.
-- A correctness, security, or compatibility constraint that would be violated by the simpler form.
-
-When a real constraint justifies the complexity, leave it alone or mention the constraint under Observations only if it helps the orchestrator.
-
-## Self-Check
-
-Before approving a review with no simplicity findings, explicitly re-scan for:
-
-- One-caller abstractions.
-- Pass-through wrappers.
-- Duplicate logic.
-- Impossible defensive paths.
-- New mutable state or lifecycle ordering.
-- Cross-layer coupling.
-- Full-refactor candidates.
-
-If any item exists, report it as a finding.
-</hone-architecture-rubric>
-
-## Chat Output
-
-Return only:
-
-```
-Status: <status>
-Artifact: <path>
-Counts: critical=N high=N medium=N low=N
-Blocked: none | <reason>
-Open questions: none | <short list>
-```
-
-Do not paste the full artifact in chat.
-
-## Self-check
-
-Before returning:
-1. Artifact exists at the path you report.
-2. Every finding uses the required one-line format.
-3. Every plan AC or inferred requirement appears in Intent Alignment.
-4. Requirement Coverage is present when the review basis has more than one requirement.
-5. Simplicity / Architecture Audit is present with every required row.
-6. Full-refactor findings are explicit and not softened.
-7. Open Questions is present.
 
 <comment-rules>
 # Comment Rules
@@ -303,42 +209,6 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
 </testing-mandate>
 
-<reviewer-findings-format>
-# Reviewer Findings Format
-
-## Artifact contract
-
-Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
-
-`.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md`
-
-Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
-
-The artifact is the durable handoff. Chat output is only a short status pointer with the artifact path. The caller must read the artifact before reporting, applying, or deferring findings.
-
-**Status line** (one of):
-- `Approved — no findings`
-- `Findings reported — N items`
-- `Blocked — <reason>`
-
-**Findings** (if any) — one bullet per finding, exact format:
-
-```
-[severity] [lens-tag] file:line — what was wrong → suggested fix
-```
-
-- `severity` ∈ `critical` / `high` / `medium` / `low`
-- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
-- `file:line` — absolute or repo-relative path + line number
-- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
-
-**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
-
-**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
-
-Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
-</reviewer-findings-format>
-
 <logging-discipline>
 # Logging Discipline
 
@@ -352,3 +222,11 @@ Rules for log calls — what to write, what to flag in review.
 3. **Never log:** secrets, tokens, PII, full request/response bodies. No exceptions.
 4. **Neither rule yields a clear answer** → raise an open question via `request_information` rather than guessing.
 </logging-discipline>
+
+## Self-check (before signaling done)
+
+Verify the artifact exists at the path you report and contains:
+1. Status line.
+2. Findings list (if any), each with `[correctness]` / `[security]` / `[maintainability]` lens-tag.
+3. Intent-alignment summary covering every plan AC or inferred requirement.
+4. One final time, answer the question "Could this be done simpler?" If the answer is yes, go back and update the artifact with how it could be. 
