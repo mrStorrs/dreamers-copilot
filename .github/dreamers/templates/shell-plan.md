@@ -1,51 +1,22 @@
-# Plan: {{MILESTONE_NAME}}
+# Milestone: <name>
 
-**Status:** Shell — ready for planning via `/dreamers-plan`
-**Milestone:** {{N}} of {{TOTAL}}
-**Project:** {{PROJECT_NAME}}
+**Status:** Shell (not executable)
+**Project:** <name>
+**Order:** <N>
 
----
-
-## Goal
-
-{{One sentence — what this milestone delivers to the user or system. Written as an outcome, not a task.}}
-
----
-
-## Scope
-
-{{Bullet list of what is explicitly in. Keep it tight — if it's not listed, it's out.}}
-
----
-
-## Out of scope
-
-{{What this milestone deliberately does NOT do. Prevents scope creep and gives the planner clear boundaries.}}
-
----
+## Goal and scope
+Intended outcome, included work, and exclusions.
 
 ## Rough acceptance criteria
-
-{{3–5 bullets. Measurable outcomes — not implementation steps. The planning phase will refine these into full testability contracts.}}
-
-- [ ]
-- [ ]
-- [ ]
-
----
+Measurable user/system outcomes.
 
 ## Dependencies
+Prior milestones and known constraints.
 
-{{Which prior milestones must be complete before this one starts. Or "None."}}
+## User testing
+Expected manual verification.
 
----
+## Open questions
+Decisions needed before implementation.
 
-## User testing required
-
-**{{yes / no}}** — {{One line reason.}}
-
----
-
-## Open questions / risks
-
-{{Known risks, open design questions, or decisions to flag during planning. If none, write "None."}}
+Use this as task context for /dreamers to resolve a proposal, or request /dreamers-plan for detailed planning. Do not execute a shell draft as an approved plan.

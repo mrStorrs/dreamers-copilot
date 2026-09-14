@@ -1,28 +1,7 @@
-# dreamers-find-refactors - flow
+# /dreamers-find-refactors
 
-Source of truth is `SKILL.md`.
+Select refactor lenses, divide the codebase into useful audit scopes, and run Vigil per section. Other reviewers require explicit direction.
 
-```mermaid
-flowchart TD
-    Start(["/dreamers-find-refactors"]) --> Lens["Ask for refactor lenses"]
-    Lens --> Section["Map repo into sections"]
-    Section --> Manifest["Write sections.md"]
-    Manifest --> Hone["Spawn section-scoped Hone audits"]
-    Hone --> Artifacts["Read hone-refactor artifacts"]
-    Artifacts --> Synthesis["Deduplicate + group findings"]
-    Synthesis --> Summary["Write summary.md"]
-    Summary --> Plans["Write Dreamers plan files"]
-    Plans --> Gate{"Review gate"}
-    Gate -->|Minor edit| Plans
-    Gate -->|Major rewrite| Lens
-    Gate -->|Approved| Stop(["Stop - no implementation"])
-    Gate -->|Halt| Stop
-```
+Read the artifacts, group coherent improvements, and produce candidate plans with evidence. Stop after plan approval; this skill does not implement or change git state.
 
-## Invariants
-
-- Read-only for project code.
-- Hone writes section-named `.dreamers/reviews/hone-refactor-*.md` artifacts.
-- The orchestrator groups findings into coherent plan files instead of one plan per finding.
-- Generated plans follow `plan-guide-selector.md` and the selected lite / standard / complex guide.
-- No branch, implementation, commit, push, or PR.
+See [the workflow](SKILL.md).

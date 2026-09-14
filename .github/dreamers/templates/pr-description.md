@@ -1,24 +1,12 @@
-# PR Description Template
-
-Use this structure for `gh pr create --body`.
-
----
+# PR body
 
 ## Summary
-plan/task summary here
+The concrete problem and resulting behavior.
 
-- [bullet: what was delivered]
-- [bullet: why / what problem it solves]
+## Validation
+Relevant checks, actual results, and manual verification or gaps.
 
-## Test counts
+## Review
+Reviewer result and important fixes or deferred findings. Omit when no review applies.
 
-- Desktop Vitest: N pass
-- Mobile Jest: N pass
-
-*(Omit platforms not touched by this PR.)*
-
-## Fixes applied
-
-- [SEVERITY] file:line — what was fixed (from reviewer artifacts / commit messages)
-
-*(Omit if no fixes applied.)*
+Mention shipped proposal/plan identifiers when useful. Keep detail proportional to the change; omit empty sections.

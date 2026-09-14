@@ -1,33 +1,9 @@
-### Phase 1A — Grill
+# Grill and proposal
 
-```
-Interview me relentlessly about every aspect of this plan until
-we reach a shared understanding. Walk down each branch of the design
-tree resolving dependencies between decisions one by one.
+Explore code to answer factual questions. Ask one unresolved decision at a time, give a recommendation with its tradeoff, and allow freeform direction. Follow the user's preferred question interface. Continue until requirements, boundaries, and verification are clear.
 
-If a question can be answered by exploring the codebase, explore
-the codebase instead.
+Preserve every question and user answer verbatim, including presented choices and corrections, in .dreamers/plans/feature-<slug>/grilling-transcript.md. Add only speaker/sequence headings. Save as the exchange proceeds; never replace it with a summary. Do not create an empty transcript.
 
-When a decision still needs user input, use `request_information`.
-Ask one blocking question at a time; do not dump a batch of questions
-in chat. Each question must include exactly these choices:
+Present the proposal with its weak points, assumptions, tradeoffs, and a simpler alternative where one exists. Address corrections before approval. Include every accepted decision in the proposal; link the transcript. The proposal is the normal execution context. Consult the transcript only to resolve uncertainty or conflicts; do not copy it into downstream prompts.
 
-1. Your recommended answer, labeled as recommended.
-2. The strongest viable alternate.
-3. `Other` for freeform direction.
-
-After each answer, fold the decision into the shared understanding,
-then continue to the next unresolved branch.
-```
-
-Record the Grill exchange verbatim while it happens. Preserve every planner
-question and every user response in chronological order, exactly as sent or
-received. Do not summarize, paraphrase, normalize, combine, correct, or omit
-text. For `request_information`, include the complete presented question,
-choice labels, and choice descriptions. Preserve separate responses as
-separate entries.
-
-In Step 2, when the feature plan directory is known, write the accumulated
-exchange to `.dreamers/plans/feature-<slug>/grilling-transcript.md` with only
-speaker/sequence headings added around the unchanged message text. If no Grill
-question and response occurred, do not create an empty transcript.
+In /dreamers, proposal approval starts implementation immediately. When detailed planning is requested, prepare the detailed plan before that approval; do not approve a proposal and then insert another start gate.

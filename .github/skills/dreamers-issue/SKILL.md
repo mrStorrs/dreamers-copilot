@@ -1,53 +1,14 @@
 ---
 name: dreamers-issue
-description: 'Create a structured GitHub issue with acceptance criteria from a task description. Triggers: /dreamers-issue, create an issue, open a GitHub issue, file an issue.'
-argument-hint: '[#]<task description>  (# prefix triggers discussion mode with clarifying questions)'
+description: "Create a GitHub issue with outcome-based acceptance criteria; # prefix enables discussion first."
+argument-hint: "[#]<task>"
 ---
-
-Create a GitHub issue for the following request:
 
 $ARGUMENTS
 
----
+Read [shared rules](../../instructions/dreamers.instructions.md) if not already loaded.
 
-## User overrides
-
-- Explicit user instructions can skip or alter phases/actions.
-
-**Routing — check for `#` prefix**
-
-If the arguments start with `#`, enter **discussion mode**:
-- Strip the `#` and treat the rest as the topic.
-- Ask focused questions to clarify scope, intent, and acceptance criteria.
-- Continue the conversation until you have enough to write concrete, testable ACs.
-- Then proceed to Step 1 below. ACs produced this way are **real** — no "potential" qualifier.
-
-If the arguments do NOT start with `#`, enter **direct mode**:
-- Do NOT ask questions.
-- Proceed immediately to Step 1. ACs produced this way are **potential** — prefix each with `[potential]`.
-
----
-
-**Step 1 — Repo detection**
-Run `gh repo view --json nameWithOwner` to confirm the current repo. If not in a git repo or no remote is set, call `request_information` asking the user which repo to target (`OWNER/REPO` format) before proceeding.
-
-**Step 2 — Label check**
-Run `gh label list` to see available labels. Pick the most appropriate existing label(s) — do not invent labels. Common mappings:
-- New capability → `feature`
-- Something broken → `bug`
-- Docs gap → `documentation`
-- Unclear ownership → `question`
-
-**Step 3 — Minimal exploration (optional)**
-Light exploration is allowed — e.g. confirm a feature exists, glance at a config, check a directory structure. Keep it to 1-3 lookups max. Deep codebase analysis belongs in `/dreamers-plan`, not here.
-
-**Step 4 — Draft the issue**
-Write a focused, minimal issue from the user's input (and any brief exploration from Step 3).
-
-Use the template at `~/.copilot/dreamers/templates/github-issue.md` as the structure. Keep the body concise — no padding, no restatement of the title.
-
-ACs must be written from a **product owner perspective** — user-facing outcomes, not technical implementation. "User can filter by date" not "Add dateFilter param to query handler".
-
-**Step 5 — Create**
-Run `gh issue create` with the drafted title, body, and label(s). Report the issue URL when done.
-
+1. A # prefix selects discussion: clarify scope and outcomes before drafting. Otherwise create directly from the request, marking inferred criteria [potential].
+2. Confirm the target repository with gh repo view; ask if unavailable. Read existing labels and choose applicable ones. Limit code inspection to what the issue needs.
+3. Use [the issue template](../../dreamers/templates/github-issue.md). Describe observable user outcomes, not prescribed implementation.
+4. Create with gh issue create and --body-file, preserving literal Markdown. Return the URL.
