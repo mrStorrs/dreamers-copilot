@@ -28,7 +28,9 @@ $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
 $ObsoleteManagedFiles = @(
     "instructions/comment-rules.instructions.md",
-    "instructions/git.instructions.md"
+    "instructions/git.instructions.md",
+    "instructions/dreamers.laws.md",
+    "dreamers/refs/agent-recovery.md"
 )
 
 if (-not (Test-Path $Source)) {
@@ -39,8 +41,7 @@ if (-not (Test-Path $Source)) {
 function Remove-ManagedFiles {
     param(
         [string]$SourceDir,
-        [string]$TargetDir,
-        [string]$Label
+        [string]$TargetDir
     )
     if (-not (Test-Path $SourceDir)) { return 0 }
     if (-not (Test-Path $TargetDir)) { return 0 }
@@ -121,7 +122,7 @@ $total = 0
 
 # Agents
 Write-Host "[agents]" -ForegroundColor Cyan
-$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "agents") -TargetDir (Join-Path $CopilotHome "agents") -Label "agents"
+$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "agents") -TargetDir (Join-Path $CopilotHome "agents")
 
 # Skills
 Write-Host "[skills]" -ForegroundColor Cyan
@@ -132,18 +133,18 @@ if (Test-Path $skillSource) {
     }
     foreach ($dir in $skillDirs) {
         $targetDir = Join-Path $CopilotHome "skills" $dir.Name
-        $total += Remove-ManagedFiles -SourceDir $dir.FullName -TargetDir $targetDir -Label "skills/$($dir.Name)"
+        $total += Remove-ManagedFiles -SourceDir $dir.FullName -TargetDir $targetDir
     }
     $total += Remove-LegacySkillFiles -SkillsRoot (Join-Path $CopilotHome "skills")
 }
 
 # Dreamers refs
 Write-Host "[dreamers/refs]" -ForegroundColor Cyan
-$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "refs") -TargetDir (Join-Path $CopilotHome "dreamers" "refs") -Label "refs"
+$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "refs") -TargetDir (Join-Path $CopilotHome "dreamers" "refs")
 
 # Dreamers templates
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
-$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "templates") -TargetDir (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
+$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "dreamers" "templates") -TargetDir (Join-Path $CopilotHome "dreamers" "templates")
 
 # Clean up empty dreamers directory
 if (-not $DryRun -and (Test-Path (Join-Path $CopilotHome "dreamers"))) {
@@ -157,7 +158,7 @@ if (-not $DryRun -and (Test-Path (Join-Path $CopilotHome "dreamers"))) {
 # Instructions
 Write-Host "[instructions]" -ForegroundColor Cyan
 $total += Remove-ObsoleteManagedFiles
-$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "instructions") -TargetDir (Join-Path $CopilotHome "instructions") -Label "instructions"
+$total += Remove-ManagedFiles -SourceDir (Join-Path $Source "instructions") -TargetDir (Join-Path $CopilotHome "instructions")
 
 $action = if ($DryRun) { "Would remove" } else { "Removed" }
 Write-Host "`n$action $total file(s).`n" -ForegroundColor Cyan

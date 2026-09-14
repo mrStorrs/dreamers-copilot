@@ -77,6 +77,10 @@ for consumer in sorted(github_dir.rglob("*.md")):
             if name not in refs:
                 continue
             has_markers = True
+            if open_stack and name not in open_stack:
+                errors.append(
+                    f"  {rel} line {index + 1}: nested reference <{name}> would overlap replacement regions."
+                )
             if name in open_stack:
                 errors.append(
                     f"  {rel} line {index + 1}: duplicate opening tag <{name}> "

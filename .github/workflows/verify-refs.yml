@@ -22,12 +22,17 @@ on:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-      - name: Validate Dreamers package with Bash
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate through Bash launcher
+        if: runner.os == 'Linux'
         shell: bash
         run: scripts/Test-DreamersCopilot.sh
-      - name: Validate Dreamers package and migration with PowerShell
+      - name: Validate package with PowerShell
+        if: runner.os == 'Windows'
         shell: pwsh
         run: ./scripts/Test-DreamersCopilot.ps1

@@ -1,45 +1,13 @@
-# /dreamers-implement — flow
+# /dreamers-implement
 
-Visual map of the one-cycle implementation skill. Source of truth is `SKILL.md`.
+Implement a supplied approved proposal or detailed plan in the main session. An approved proposal is enough to start; detailed planning and tests-first are optional.
 
-```mermaid
-flowchart TD
-    Start(["/dreamers-implement $ARGUMENTS"]) --> ArgCheck{"Plan path<br/>provided?"}
-    ArgCheck -->|No| HaltA(["Halt + ask<br/>do not invent a plan"])
-    ArgCheck -->|Yes| S1
+Standalone runs inspect git state and create/resume the appropriate feature branch; calls from /dreamers reuse its branch. Verify branch identity before editing, resolve stale or incomplete plan inputs, and obtain direction before expanding scope.
 
-    S1["Step 1 — Read plan + write failing tests"] --> ReadPlan["Read the plan file"]
-    ReadPlan --> WriteTests["For each AC G/W/T + Layer:<br/>write at least one failing test<br/>at the annotated layer"]
-    WriteTests --> Stage1["git add"]
-    Stage1 --> S2
+Execution, git, code, comment, verification, and logging rules are embedded as synchronized XML blocks. The skill needs no runtime reads of Dreamers reference or template files. Project instructions and the approved work artifacts remain runtime inputs.
 
-    S2["Step 2 — Implement"] --> EditFiles["Edit production files<br/>per comment-rules + testing-mandate"]
-    EditFiles --> Stage2["git add as you go"]
-    Stage2 --> S3
+Reuse sufficient tests or add meaningful behavior coverage. Run applicable checks, record successful test timings, inspect the final diff, and return each required outcome's evidence and gaps. Required failing or blocked checks prevent a verified result.
 
-    S3["Step 3 — Type-check + run tests"] --> TypeCheck["Run project's type-check"]
-    TypeCheck --> RunTests["Run project's test command"]
-    RunTests --> TestResult{"Tests pass?"}
-    TestResult -->|Yes| Benchmarks["Update ./test-benchmarks.md<br/>if project uses one"]
-    TestResult -->|No| AttemptCheck{"Attempts < 3?"}
-    AttemptCheck -->|Yes| FixInline["Fix inline"]
-    FixInline --> RunTests
-    AttemptCheck -->|No| HaltB(["Halt + surface"])
-    Benchmarks --> End(["Return AC coverage matrix<br/>/dreamers invokes /dreamers-review next"])
+Stage explicit changes and stop before review, user testing, commits, or PR creation. The caller owns those phases.
 
-    classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
-    classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
-    classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-
-    class ArgCheck,TestResult,AttemptCheck gate
-    class HaltA,HaltB halt
-    class S1,S2,S3,ReadPlan,WriteTests,Stage1,EditFiles,Stage2,TypeCheck,RunTests,FixInline,Benchmarks phase
-```
-
-## Key invariants
-
-- **Tests-first.** Step 1 writes failing tests BEFORE Step 2's implementation. Stage but don't run yet — they should fail.
-- **Layer annotation drives test layer.** Each plan AC has a `*Layer: ...*` annotation; the test goes at that layer.
-- **3-attempt fix loop in Step 3.** If tests still fail after 3 fix attempts, halt and surface to the user.
-- **Phase boundary.** This skill returns after the initial change reaches green validation. It does not review, apply review findings, run user testing, commit, push, or open a PR.
-- **Pipeline order.** When `/dreamers` invokes this skill, `/dreamers-review` runs immediately after a successful return.
+See [the workflow](SKILL.md).

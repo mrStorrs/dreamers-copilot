@@ -1,60 +1,27 @@
-# Testing Coverage Mandate (MANDATORY)
+# Verification
 
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
+## Coverage
 
-## How test coverage is expressed in plans (new format)
+Read the project's instructions and existing tests to identify validation commands and coverage for each required outcome. Reuse sufficient tests; add or improve a test only when it protects behavior or a likely regression. Prefer the narrowest layer that proves the requirement:
 
-```
-<acceptance_criteria>
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: unit.*
-2. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: integration.*
-3. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
-```
+- Unit: logic, boundaries, invalid input, and failure states that can be proved in isolation.
+- Integration: important contracts and side effects across services, storage, APIs, or other boundaries.
+- E2E: user actions through to observable results. Navigation changes need an E2E check; if automation is unavailable, name a specific manual check and record the coverage gap.
+- Bug fixes: preserve a verified reproduction in a meaningful regression test when feasible. Otherwise explain the limitation and the evidence used to verify the fix.
 
-Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
+Test order is flexible. Do not add a test per function or checklist row. Tests must survive harmless refactors: no source/prompt wording assertions, implementation snapshots, duplicate coverage, or mocks that merely confirm themselves. Inspect docs/comment-only changes instead of manufacturing tests.
 
-**Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
+## Execution and evidence
 
-## Coverage requirement (every plan)
+Run relevant project type-check, build, lint, and test commands. Verify affected callers, required outcomes, meaningful edges, and failure behavior. A passing test count does not prove the whole requirement.
 
-Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
+Map each required outcome to a named test, manual check, or inspection result. Identify unverified outcomes explicitly. After three unsuccessful fix-and-retry attempts, stop and report the failing command, failure, attempted fixes, and blocker. Do not report green while a required check is failing or blocked.
 
-**Unit layer**
-- Each significant function, method, or class in isolation.
-- All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
-- Any pure logic that does not require a real device, network, or database.
+## Test timings
 
-**Integration layer**
-- Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
-- Database reads/writes (real or in-memory, not mocked).
-- Auth flows end-to-end within the backend.
-- Cloud function triggers and side-effects.
+After every successful test command, create/update its row in root test-benchmarks.md, including post-fix runs. Record measured duration and date; preserve human Notes. Use max(last duration × 2, 30 seconds) for the next timeout. If no prior row exists, use the project's normal timeout until a measurement is available.
 
-**UI / E2E layer**
-- Full user journeys through the UI: screen load → interaction → outcome visible on screen.
-- Navigation flows between screens.
-- Error and empty states rendered correctly in the UI.
-- Any flow that requires a real device or emulator.
-- **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
+| Command | Last run | Updated | Recommended timeout | Notes |
+| --- | --- | --- | --- | --- |
 
-**Regression risks**
-- Anything touching existing behavior that could break — call out the specific existing test or flow at risk in the plan's Context section.
-
-If a layer cannot be covered automatically (e.g., camera permission flows), flag it explicitly as a manual-verification requirement in the plan's Verification section with a reason.
-
-## Probe's layer audit (consumes the new format)
-
-During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
-
-## Test benchmarks
-
-Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
-
-- **File path:** `./test-benchmarks.md` at the project root (committed to version control).
-- **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
-- **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
-- Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
+The main session runs validation and updates timings. Reviewers assess supplied evidence and report gaps; they do not run tests or edit benchmark records.

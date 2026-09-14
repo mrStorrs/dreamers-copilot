@@ -31,7 +31,9 @@ $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
 $ObsoleteManagedFiles = @(
     "instructions/comment-rules.instructions.md",
-    "instructions/git.instructions.md"
+    "instructions/git.instructions.md",
+    "instructions/dreamers.laws.md",
+    "dreamers/refs/agent-recovery.md"
 )
 
 if (-not (Test-Path $Source)) {
@@ -42,8 +44,7 @@ if (-not (Test-Path $Source)) {
 function Copy-Files {
     param(
         [string]$From,
-        [string]$To,
-        [string]$Label
+        [string]$To
     )
     if (-not (Test-Path $From)) {
         Write-Warning "Source not found, skipping: $From"
@@ -105,7 +106,7 @@ $total = 0
 
 # Agents
 Write-Host "[agents]" -ForegroundColor Cyan
-$total += Copy-Files -From (Join-Path $Source "agents") -To (Join-Path $CopilotHome "agents") -Label "agents"
+$total += Copy-Files -From (Join-Path $Source "agents") -To (Join-Path $CopilotHome "agents")
 
 # Skills (each skill is a subdirectory with SKILL.md)
 Write-Host "[skills]" -ForegroundColor Cyan
@@ -116,22 +117,26 @@ if (Test-Path $skillSource) {
     }
     foreach ($dir in $skillDirs) {
         $destDir = Join-Path $CopilotHome "skills" $dir.Name
-        $total += Copy-Files -From $dir.FullName -To $destDir -Label "skills/$($dir.Name)"
+        $total += Copy-Files -From $dir.FullName -To $destDir
     }
-    Remove-LegacySkillFiles -SkillsRoot (Join-Path $CopilotHome "skills")
+    if ($Force) {
+        Remove-LegacySkillFiles -SkillsRoot (Join-Path $CopilotHome "skills")
+    }
 }
 
 # Dreamers refs
 Write-Host "[dreamers/refs]" -ForegroundColor Cyan
-$total += Copy-Files -From (Join-Path $Source "dreamers" "refs") -To (Join-Path $CopilotHome "dreamers" "refs") -Label "refs"
+$total += Copy-Files -From (Join-Path $Source "dreamers" "refs") -To (Join-Path $CopilotHome "dreamers" "refs")
 
 # Dreamers templates
 Write-Host "[dreamers/templates]" -ForegroundColor Cyan
-$total += Copy-Files -From (Join-Path $Source "dreamers" "templates") -To (Join-Path $CopilotHome "dreamers" "templates") -Label "templates"
+$total += Copy-Files -From (Join-Path $Source "dreamers" "templates") -To (Join-Path $CopilotHome "dreamers" "templates")
 
 # Instructions (auto-loaded by Copilot CLI from ~/.copilot/instructions/*.instructions.md)
 Write-Host "[instructions]" -ForegroundColor Cyan
-$total += Copy-Files -From (Join-Path $Source "instructions") -To (Join-Path $CopilotHome "instructions") -Label "instructions"
-Remove-ObsoleteManagedFiles
+$total += Copy-Files -From (Join-Path $Source "instructions") -To (Join-Path $CopilotHome "instructions")
+if ($Force) {
+    Remove-ObsoleteManagedFiles
+}
 
 Write-Host "`nInstalled $($total) file(s).`n" -ForegroundColor Cyan

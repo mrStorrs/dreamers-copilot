@@ -1,11 +1,7 @@
-# Logging Discipline
+# Logging
 
-Rules for log calls — what to write, what to flag in review.
-
-1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
-2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
-   - Logger library / import path (do not introduce a new logger where one already exists).
-   - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
-   - Message format (structured fields vs interpolated strings, key names, casing).
-3. **Never log:** secrets, tokens, PII, full request/response bodies. No exceptions.
-4. **Neither rule yields a clear answer** → raise an open question via `request_information` rather than guessing.
+1. Use the consuming project's .github/instructions/logging.instructions.md when present. Otherwise match the logger library, levels, and message format in the same module or its nearest neighbors. Do not introduce a second logger alongside an existing one.
+2. Never log secrets, credentials, tokens, PII, or complete request/response bodies. Sanitize arguments, configuration, URLs, return values, and errors before logging.
+3. Record useful events at the project's established levels. Avoid noisy loop logging and redundant entry/exit calls that add no diagnostic value.
+4. Keep logging changes within the approved scope. Leave unrelated logging alone unless an accepted finding requires a change.
+5. If neither project instructions nor surrounding code provide a usable convention, ask one focused question before adding log calls.

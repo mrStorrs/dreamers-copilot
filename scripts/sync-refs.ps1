@@ -89,7 +89,7 @@ function Split-Lines {
 }
 
 $refFiles = Get-ChildItem -Path $refsDir -Filter '*.md' -File
-$refs = @{}
+$refs = [System.Collections.Hashtable]::new([System.StringComparer]::Ordinal)
 foreach ($f in $refFiles) {
     $name = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
     $refs[$name] = @{
@@ -126,7 +126,7 @@ foreach ($consumer in $consumers) {
     $lines = Split-Lines $text
 
     $pairs = @()
-    $openStack = @{}
+    $openStack = [System.Collections.Hashtable]::new([System.StringComparer]::Ordinal)
     $hasMarkers = $false
 
     for ($i = 0; $i -lt $lines.Length; $i++) {
@@ -137,6 +137,9 @@ foreach ($consumer in $consumers) {
             $name = $openMatch.Groups[1].Value
             if (-not $refs.ContainsKey($name)) { continue }
             $hasMarkers = $true
+            if ($openStack.Count -gt 0 -and -not $openStack.ContainsKey($name)) {
+                $errors += "  ${relPath} line $($i + 1): nested reference <$name> would overlap replacement regions."
+            }
             if ($openStack.ContainsKey($name)) {
                 $errors += "  ${relPath} line $($i + 1): duplicate opening tag <$name> (previous opening at line $($openStack[$name] + 1) not closed)."
                 continue
@@ -151,8 +154,8 @@ foreach ($consumer in $consumers) {
                 $errors += "  ${relPath} line $($i + 1): closing tag </$name> without matching opening tag."
                 continue
             }
-            if ($pairs.Where({ $_.Name -eq $name }).Count -gt 0) {
-                $existing = ($pairs | Where-Object { $_.Name -eq $name } | Select-Object -First 1).OpenLine
+            if ($pairs.Where({ $_.Name -ceq $name }).Count -gt 0) {
+                $existing = ($pairs | Where-Object { $_.Name -ceq $name } | Select-Object -First 1).OpenLine
                 $errors += "  ${relPath}: ref '$name' appears in more than one marker pair (lines $($existing + 1) and $($openStack[$name] + 1)). Same-name duplication is forbidden."
                 $openStack.Remove($name)
                 continue
@@ -210,7 +213,7 @@ foreach ($entry in $plan) {
         }
         $currentJoined = ($currentInner -join "`n")
         $expectedJoined = ($expectedInner -join "`n")
-        if ($currentJoined -ne $expectedJoined) {
+        if ($currentJoined -cne $expectedJoined) {
             $stalePairs += $p.Name
         }
 
@@ -224,7 +227,7 @@ foreach ($entry in $plan) {
 
     $newText = ($newLines -join "`n")
 
-    if ($newText -ne $entry.Text) {
+    if ($newText -cne $entry.Text) {
         if ($Sync) {
             Write-FileText -Path $entry.Path -Content $newText
             $updatedFiles += $entry.RelPath
