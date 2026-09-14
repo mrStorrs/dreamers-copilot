@@ -13,6 +13,6 @@ Check:
 4. Do tests prove important behavior and regressions without brittle source-text assertions, implementation snapshots, or self-confirming mocks?
 5. What is the simplest correct design for these requirements?
 
-Read [code laws](../instructions/dreamers.laws.instructions.md), [comment rules](../instructions/dreamers.comment-rules.instructions.md), [logging](../dreamers/refs/logging-discipline.md), and [simplicity](../dreamers/refs/hone-architecture-rubric.md) as needed. Use validation evidence supplied by the parent; flag missing evidence rather than running tests.
+Read [code laws](../instructions/dreamers.laws.instructions.md), [comment rules](../instructions/dreamers.comment-rules.instructions.md), [logging](../dreamers/refs/logging-discipline.md), and [simplicity](../dreamers/refs/hone-architecture-rubric.md) as needed. Review the parent's validation evidence against [verification rules](../dreamers/refs/testing-mandate.md); flag gaps rather than running tests.
 
 Follow [review format](../dreamers/refs/reviewer-findings-format.md). The only write is one review artifact; no project edits or git changes. End with **How could I make this code simpler?** and a concrete, justified answer. The orchestrator decides fixes.
