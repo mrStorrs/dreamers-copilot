@@ -245,3 +245,4 @@ if (-not $SkipInstallSmoke) {
 }
 
 Write-Host "Dreamers package validation passed."
+exit 0
