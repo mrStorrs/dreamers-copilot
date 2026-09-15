@@ -9,7 +9,7 @@ This is read-only guidance. Do not inspect or change repository, git, mailbox, f
 
 ## Response
 
-Orient the user briefly: the Dreamers system combines planning, tests-first implementation, artifact-backed review, targeted user gates, documentation, and PR delivery.
+Orient the user briefly: the Dreamers system combines planning, implementation and tests, artifact-backed review, targeted user gates, documentation, and PR delivery.
 
 Explain the primary entry point with concrete examples:
 
@@ -40,6 +40,6 @@ Offer specialized choices when they fit better:
 
 State the mandatory gates: plan approval for task input, major scope expansion, triggered user testing, and final pre-PR approval.
 
-Explain that `/dreamers` is the only end-to-end delivery pipeline and that lite, standard, and complex are plan-depth labels, not separate delivery tiers. The retired `/dreamers-full` command has no forwarding alias.
+Explain that `/dreamers` is the only end-to-end delivery pipeline and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
 
 End with one invitation: "Describe your goal and I can suggest the next command."

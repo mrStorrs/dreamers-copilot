@@ -119,10 +119,14 @@ expected_refs = [
     "dreamers-kernel.md",
     "git-workflow.md",
     "logging-discipline.md",
+    "manifest-format.md",
+    "plan-format.md",
     "plan-quality.md",
+    "plan-selection.md",
     "planning-grill.md",
     "project-bootstrap.md",
     "reviewer-findings-format.md",
+    "shell-plan.md",
     "testing-mandate.md",
     "user-testing-gate.md",
 ]
@@ -131,10 +135,7 @@ expected_templates = [
     "github-issue.md",
     "logging-standards.md",
     "manifest.md",
-    "plan-guide-complex.md",
-    "plan-guide-lite.md",
     "plan-guide-selector.md",
-    "plan-guide-standard.md",
     "plan.md",
     "pr-description.md",
     "project-brief.md",
@@ -326,31 +327,6 @@ assert_patterns(
         ("optional comprehension", r"Do not force a quiz or Socratic exchange"),
     ],
 )
-assert_patterns(
-    dreamers_root / "refs/planning-grill.md",
-    [
-        ("relentless interview", r"Interview me relentlessly"),
-        ("codebase exploration", r"answered by exploring the codebase, explore"),
-        ("one blocking question", r"Ask one blocking question at a time"),
-        ("three choices", r"recommended answer.*strongest viable alternate.*Other"),
-        ("verbatim transcript", r"every planner.*question and every user response.*exactly as sent or.*received.*Do not summarize"),
-        ("transcript path", r"\.dreamers/plans/feature-<slug>/grilling-transcript\.md"),
-    ],
-)
-assert_patterns(
-    skill_root / "dreamers-plan/SKILL.md",
-    [
-        ("conditional todo ownership", r"When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"),
-        ("invoked return boundary", r"When standalone, hard stop; when invoked by an outer delivery skill, return control"),
-        ("verbatim transcript write", r"write `grilling-transcript\.md`.*Preserve every question and response word for word"),
-        ("plan transcript link", r"each plan MUST include `\*\*Grilling transcript:\*\* \[grilling-transcript\.md\]\(\./grilling-transcript\.md\)`"),
-    ],
-)
-for guide_name in ["plan-guide-lite.md", "plan-guide-standard.md", "plan-guide-complex.md"]:
-    assert_patterns(
-        dreamers_root / "templates" / guide_name,
-        [("optional Grill transcript metadata", r"\*\*Grilling transcript:\*\*.*grilling-transcript\.md.*when the sibling artifact exists")],
-    )
 assert_patterns(
     skill_root / "dreamers-new-project/SKILL.md",
     [

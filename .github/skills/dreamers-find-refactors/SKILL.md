@@ -222,29 +222,94 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 ## Phase 5 - Plan generation
 
-Read `.github/dreamers/templates/plan-guide-selector.md`, then read only the selected guide. Default to `standard`; use `complex` for cross-module, API/data, migration, or high-risk refactors. Honor explicit user plan-type override if provided.
+Use `plan-selection` to classify each plan. Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`, and `manifest-format` when shared context or sequencing needs a manifest. Fill the outlines without their outer sync tags.
 
-Create plans using the selected guide under:
+Group findings into a few coherent refactor plans, not one plan per finding. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
 
-`.dreamers/plans/feature-refactor-<slug>/`
+Apply `plan-quality` checks; resolve open decisions and fix gaps before Phase 6.
 
-Plan grouping rules:
-- Group by coherent refactor unit.
-- Do not create one plan per raw Hone finding.
-- Prefer a small number of high-signal plans.
-- Use `manifest.md` when multiple plans share context, constraints, or sequencing.
-- Do not include code snippets except minimal interface/type contracts when the signature is the design decision.
-- Every plan must include Given/When/Then acceptance criteria with `*Layer: ...*`.
-- Verification stays last.
+<plan-selection>
+## Plan selection
 
-Plan content must cite:
-- source Hone artifact path(s)
-- summary path
-- affected files verified by the orchestrator
+`Plan-type` labels complexity for review routing; all types use the same structure. Honor an explicit user choice, noting any mismatch in the proposal. Otherwise choose:
 
-Plan content must not include unresolved open questions.
+- **lite:** tiny localized work without new architecture, contracts, migration, public API, multi-step flows, or meaningful risk.
+- **standard:** normal feature work and other changes that do not need complex coordination.
+- **complex:** cross-module or multi-plan work; data/API changes; security/privacy/payment risk; non-trivial state, async, or UI flows; high rollback cost.
 
-Self-check every written plan against `plan-guide-selector.md` and its selected guide. Fix structural violations before Phase 6.
+Use `feature-<slug>/manifest.md` when multiple plans share context, constraints, contracts, or feature-level ACs. Backfill a missing manifest when adding a second plan. Each plan must remain usable alone; `/dreamers <manifest>` passes shared context through the sequence, while direct plan invocations do not.
+</plan-selection>
+
+<plan-format>
+Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+
+```markdown
+# Plan-NN: <short title>
+
+**Date:** YYYY-MM-DD
+**Status:** Draft
+**Plan-type:** <lite|standard|complex>
+**Branch:** <feat/slug|fix/slug>
+**User-testing-required:** <yes|no>
+**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
+
+## Goal
+<The outcome this plan delivers.>
+
+## Scope and context
+<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
+
+## Acceptance Criteria
+<acceptance_criteria>
+1. Given <state>, when <trigger>, then <observable outcome>.
+   *Layer: <unit|integration|E2E|perf>.*
+</acceptance_criteria>
+```
+
+Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+</plan-format>
+
+<manifest-format>
+```markdown
+# Feature: <short name>
+
+**Date:** YYYY-MM-DD
+**Status:** Draft
+
+## Summary
+<The outcome delivered by the complete feature.>
+
+## Plan sequence
+| Order | Plan file | Summary |
+|---|---|---|
+| 1 | [plan-01-<name>.md](plan-01-<name>.md) | <Outcome> |
+
+## Shared context
+<Only constraints, decisions and their rationale, or contracts needed by multiple plans. Include cross-plan rollback conditions and order when needed.>
+
+## Acceptance Criteria
+<acceptance_criteria>
+1. Given <feature-level state>, when <whole-feature trigger>, then <observable outcome>.
+   *Layer: E2E.*
+</acceptance_criteria>
+```
+
+Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
+</manifest-format>
+
+<plan-quality>
+## Plan quality
+
+Check plans against `plan-format`: complete metadata, clear scope, and measurable ACs with layers. Preserve every accepted requirement, decision, correction, and constraint from the proposal and user discussion, using the verbatim transcript when present. Reject unresolved decisions, placeholders, and unverifiable citations presented as facts. Fix gaps before presenting a plan or starting implementation.
+
+If implementation reveals required adjacent files, update scope before editing them; keep changes within the same goal.
+
+Existing plans may retain older headings if they contain the same information. A missing `Plan-type` requires a warning and explicit user approval. Shell plans must go through planning before implementation.
+
+## Multi-plan ship strategy
+
+Recommend INCREMENTAL for 4+ independent plans, different subsystems, or standalone user value from plan A. Recommend ATOMIC for overlapping files, ordering dependencies, schema/migration/API contracts, or verification requiring all plans. Conflicting signals default to ATOMIC.
+</plan-quality>
 
 ## Phase 6 - Review gate
 

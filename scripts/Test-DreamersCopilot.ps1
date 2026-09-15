@@ -132,10 +132,14 @@ $expectedRefs = @(
     "dreamers-kernel.md",
     "git-workflow.md",
     "logging-discipline.md",
+    "manifest-format.md",
+    "plan-format.md",
     "plan-quality.md",
+    "plan-selection.md",
     "planning-grill.md",
     "project-bootstrap.md",
     "reviewer-findings-format.md",
+    "shell-plan.md",
     "testing-mandate.md",
     "user-testing-gate.md"
 )
@@ -144,10 +148,7 @@ $expectedTemplates = @(
     "github-issue.md",
     "logging-standards.md",
     "manifest.md",
-    "plan-guide-complex.md",
-    "plan-guide-lite.md",
     "plan-guide-selector.md",
-    "plan-guide-standard.md",
     "plan.md",
     "pr-description.md",
     "project-brief.md",
@@ -320,25 +321,6 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-explain/SKILL.md") @{
     "layered explanation" = "Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"
     "optional comprehension" = "Do not force a quiz or Socratic exchange"
 }
-Assert-Patterns (Join-Path $dreamersRoot "refs/planning-grill.md") @{
-    "relentless interview" = "Interview me relentlessly"
-    "codebase exploration" = "answered by exploring the codebase, explore"
-    "one blocking question" = "Ask one blocking question at a time"
-    "three choices" = "recommended answer.*strongest viable alternate.*Other"
-    "verbatim transcript" = "every planner.*question and every user response.*exactly as sent or.*received.*Do not summarize"
-    "transcript path" = "\.dreamers/plans/feature-<slug>/grilling-transcript\.md"
-}
-Assert-Patterns (Join-Path $skillRoot "dreamers-plan/SKILL.md") @{
-    "conditional todo ownership" = "When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"
-    "invoked return boundary" = "When standalone, hard stop; when invoked by an outer delivery skill, return control"
-    "verbatim transcript write" = 'write `grilling-transcript\.md`.*Preserve every question and response word for word'
-    "plan transcript link" = 'each plan MUST include `\*\*Grilling transcript:\*\* \[grilling-transcript\.md\]\(\./grilling-transcript\.md\)`'
-}
-foreach ($guideName in @("plan-guide-lite.md", "plan-guide-standard.md", "plan-guide-complex.md")) {
-    Assert-Patterns (Join-Path $dreamersRoot "templates/$guideName") @{
-        "optional Grill transcript metadata" = "\*\*Grilling transcript:\*\*.*grilling-transcript\.md.*when the sibling artifact exists"
-    }
-}
 Assert-Patterns (Join-Path $skillRoot "dreamers-new-project/SKILL.md") @{
     "existing-solutions opt-in gate" = "Phase 1\.5.*request_information.*Research similar existing solutions.*Skip research"
     "research blocked before approval" = "Do not perform research before the user explicitly approves it"
@@ -402,7 +384,10 @@ if (-not $SkipInstallSmoke) {
             $staleGitInstructions,
             (Join-Path $tmpHome "agents/forge.agent.md"),
             (Join-Path $tmpHome "agents/nova.agent.md"),
-            (Join-Path $tmpHome "dreamers/refs/hone-architecture-rubric.md")
+            (Join-Path $tmpHome "dreamers/refs/hone-architecture-rubric.md"),
+            (Join-Path $tmpHome "dreamers/templates/plan-guide-lite.md"),
+            (Join-Path $tmpHome "dreamers/templates/plan-guide-standard.md"),
+            (Join-Path $tmpHome "dreamers/templates/plan-guide-complex.md")
         )
         $userAgent = Join-Path $tmpHome "agents/user-owned.agent.md"
         foreach ($path in (@($userInstruction, $userAgent) + $obsoleteManaged)) {
@@ -422,6 +407,11 @@ if (-not $SkipInstallSmoke) {
 
         foreach ($path in @(
             (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
+            (Join-Path $tmpHome "skills/dreamers-plan/SKILL.md"),
+            (Join-Path $tmpHome "dreamers/refs/plan-format.md"),
+            (Join-Path $tmpHome "dreamers/refs/plan-selection.md"),
+            (Join-Path $tmpHome "dreamers/refs/manifest-format.md"),
+            (Join-Path $tmpHome "dreamers/refs/shell-plan.md"),
             (Join-Path $activeLite "SKILL.md"),
             (Join-Path $activeLite "readme.md"),
             (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),
@@ -458,6 +448,11 @@ if (-not $SkipInstallSmoke) {
 
         foreach ($path in @(
             (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
+            (Join-Path $tmpHome "skills/dreamers-plan/SKILL.md"),
+            (Join-Path $tmpHome "dreamers/refs/plan-format.md"),
+            (Join-Path $tmpHome "dreamers/refs/plan-selection.md"),
+            (Join-Path $tmpHome "dreamers/refs/manifest-format.md"),
+            (Join-Path $tmpHome "dreamers/refs/shell-plan.md"),
             (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),
             (Join-Path $tmpHome "instructions\dreamers.laws.md")
         )) {

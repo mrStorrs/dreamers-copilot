@@ -1,4 +1,3 @@
-<manifest-format>
 ```markdown
 # Feature: <short name>
 
@@ -24,4 +23,3 @@
 ```
 
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
-</manifest-format>

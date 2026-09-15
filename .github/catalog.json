@@ -251,7 +251,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Standalone planning entry point. Runs the three-phase requirements conversation, stores every Phase 1A Grill question and response word for word in `.dreamers/plans/feature-<slug>/grilling-transcript.md`, links it from each generated plan, produces right-sized plan file(s) and an optional manifest, then verifies coverage. Hard-stops at the review gate; never implements.",
+      "description": "Grill, critique a proposal, and write concise plans with Goal, Scope and context, and Acceptance Criteria. Preserve the verbatim transcript and stop at plan approval; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.",
       "author": "CJ Storrs",
       "tags": [
         "code",

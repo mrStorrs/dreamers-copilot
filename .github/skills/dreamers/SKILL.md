@@ -181,38 +181,43 @@ Nothing in `.dreamers/` is committed — all workspace files (plans, retros, imp
 The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
 </git-workflow>
 
+<plan-format>
+Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+
+```markdown
+# Plan-NN: <short title>
+
+**Date:** YYYY-MM-DD
+**Status:** Draft
+**Plan-type:** <lite|standard|complex>
+**Branch:** <feat/slug|fix/slug>
+**User-testing-required:** <yes|no>
+**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
+
+## Goal
+<The outcome this plan delivers.>
+
+## Scope and context
+<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
+
+## Acceptance Criteria
+<acceptance_criteria>
+1. Given <state>, when <trigger>, then <observable outcome>.
+   *Layer: <unit|integration|E2E|perf>.*
+</acceptance_criteria>
+```
+
+Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+</plan-format>
+
 <plan-quality>
 ## Plan quality
 
-Before branch setup, read every plan and check the following. Reject missing requirements, unresolved questions, missing AC layers, or unverifiable citations presented as facts. Reject placeholders such as "relevant files", "handle edge cases", or "follow existing pattern" without exact details. A missing `Plan-type` is legacy: warn and require explicit user approval to continue.
+Check plans against `plan-format`: complete metadata, clear scope, and measurable ACs with layers. Preserve every accepted requirement, decision, correction, and constraint from the proposal and user discussion, using the verbatim transcript when present. Reject unresolved decisions, placeholders, and unverifiable citations presented as facts. Fix gaps before presenting a plan or starting implementation.
 
-### Common requirements
+If implementation reveals required adjacent files, update scope before editing them; keep changes within the same goal.
 
-- Metadata: `# Plan-NN: {short-title}`, `**Date:**` YYYY-MM-DD, `**Status:**` Draft / Active / Completed / Superseded, `**Plan-type:**` lite / standard / complex, `**Branch:**` feat/{slug} or fix/{slug}, and `**User-testing-required:**` yes/no.
-- When the sibling transcript exists: `**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)`.
-- `Files Touched`: exact paths in a `Path | Action | Required change | Verification` table. No vague rows. Add adjacent required files only when discovered during implementation, justified by the same goal, and recorded before continuing.
-- `Acceptance Criteria`: measurable Given/When/Then outcomes inside `<acceptance_criteria>`, each with `*Layer: ...*`. Labels: `unit`, `integration`, `E2E`, `perf`; compounds only when one assertion serves both purposes. No separate Test Cases section.
-- `Verification` is last: project test and type-check commands, exact files to inspect, and specific smoke checks (one for lite; one or two for standard/complex).
-
-### Required sections by type
-
-| Type | Sections, in order | Additional requirements |
-|---|---|---|
-| lite | Goal, Files Touched, Acceptance Criteria, Verification | One-paragraph Goal. Context / Out of Scope only when useful. No code snippets except a minimal public interface contract. |
-| standard | Goal, Context, Architecture, Files Touched, Acceptance Criteria, Out of Scope, Constraints, Verification | Design Decisions for non-obvious architecture/API/data/persistence/UI choices; UI for user-visible surfaces. |
-| complex | Goal, Context, Architecture, Decision Log, Files Touched, Acceptance Criteria, Traceability, Out of Scope, Constraints, Quality Attributes, Risk / Mitigation, Verification | UI for user-visible surfaces. |
-
-For standard/complex:
-- Architecture covers current/target flow, boundary ownership, contracts (or `No contract changes.`), and failure/edge states. Include Mermaid for non-trivial flows, processes, state machines, lifecycles, async handoffs, branching, or multi-step workflows.
-- Constraints use `<constraints>` with Technical (stack/perf/libraries), Process (gates/review/tests), and Hard rules (never-do constraints with rationale).
-
-For complex:
-- Context uses `Artifact | Verified fact` evidence; keep prose short.
-- Architecture also covers data shapes, schema/API changes, retry, rollback, and migration behavior.
-- Decision Log: `Decision | Recommended answer | User choice | Rationale | Rejected`.
-- Traceability: `Decision / requirement | AC | Verification`.
-- Quality Attributes: one line each, or `N/A - <reason>`, for security, privacy, accessibility, performance, migration, and observability.
-- Risk / Mitigation: at most three `Risk | Mitigation | Verification` rows.
+Existing plans may retain older headings if they contain the same information. A missing `Plan-type` requires a warning and explicit user approval. Shell plans must go through planning before implementation.
 
 ## Multi-plan ship strategy
 

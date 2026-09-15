@@ -33,6 +33,9 @@ $ObsoleteManagedFiles = @(
     "agents/forge.agent.md",
     "agents/nova.agent.md",
     "dreamers/refs/hone-architecture-rubric.md",
+    "dreamers/templates/plan-guide-lite.md",
+    "dreamers/templates/plan-guide-standard.md",
+    "dreamers/templates/plan-guide-complex.md",
     "instructions/comment-rules.instructions.md",
     "instructions/git.instructions.md"
 )
