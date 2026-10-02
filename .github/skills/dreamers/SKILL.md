@@ -8,7 +8,7 @@ $ARGUMENTS
 
 ## Route input
 
-Normalize whitespace. Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and stop before inspecting or changing repository, git, mailbox, or external state.
+Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and stop before inspecting or changing repository, git, mailbox, or external state.
 
 For delivery, declare a todo covering planning/start approval or artifact resolution, each plan cycle, and close-out. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
 
@@ -18,60 +18,29 @@ For delivery, declare a todo covering planning/start approval or artifact resolu
 | Plan path(s) | Resolve and read the plans in supplied order; skip Phase 1 and its start gate. |
 | `manifest.md` | Resolve and read the manifest; capture its plan sequence and shared context; skip Phase 1 and its start gate. |
 
-Treat `.md` path arguments, including `feature-<slug>/plan-NN-<name>.md` and `feature-<slug>/manifest.md`, as artifact input. Resolve feature-relative paths under `.dreamers/plans/`. Plans must be named `plan-*.md`; manifests must be named `manifest.md`. Reject missing paths or paths escaping `.dreamers/plans/`. Unrecognized input: halt and ask for a task, plan path, manifest, or help.
+Treat `.md` path arguments, including `feature-<slug>/plan-NN-<name>.md` and `feature-<slug>/manifest.md`, as artifact input. Resolve feature-relative paths under `.dreamers/plans/`. Unrecognized input: halt and ask for a task, plan path, manifest, or help.
 
-Supplied artifacts are implementation authorization: do not re-plan, replace them, or ask to start. For multiple supplied plans, honor the user's ship strategy; otherwise use ATOMIC without asking. Validate every plan with `plan-quality` before branch setup.
+Supplied artifacts are implementation authorization: do not re-plan, replace them, or ask to start. 
 
-## Phase 1 — Planning and start approval (task input only)
+## Phase 1: Planning and start approval (task input only)
 
-1. Invoke `/dreamers-plan $ARGUMENTS`; capture the returned plan paths. If it halts without approval, halt here.
-2. Read and validate the plans. Present paths, implementation scope, test intent, and the ship-strategy recommendation when multiple plans will run.
+1. Invoke `/dreamers-plan $ARGUMENTS`; capture the returned plan paths.
+2. Validate the plans artifacts were created. Present paths, implementation scope, test intent, and the ship-strategy recommendation when multiple plans will run.
 3. Use `request_information`:
    - Single plan: `Approved — start implementation` / `Revise plan` / `Halt` / `Other`.
    - Multiple plans: `Approved — start INCREMENTAL` / `Approved — start ATOMIC` / `Revise plan` / `Halt` / `Other`.
-4. Capture the selected strategy. For revisions, apply unambiguous minor edits inline; return major rewrites to `/dreamers-plan` with the correction. Validate and re-present this gate.
+4. Capture the selected strategy. For revisions, apply unambiguous minor edits inline.
 
 ## Phase 2 — Per-plan cycle
 
-Set up the feature branch once per `git-workflow`. Action open items in `.dreamers/improvements.md` if present. Process plans in sequence, carrying manifest shared context into implementation.
+Set up the feature branch once per `git-workflow`.  Process plans in sequence, carrying manifest shared context into implementation.
 
 ### Implement and review
 
-1. Invoke `/dreamers-implement <absolute-plan-path>`. A halted implementation halts the cycle.
-2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once. It owns reviewer selection from plan complexity or explicit plan/user direction.
-3. Read every returned review artifact and record its path in the cycle summary. Any `Blocked` result halts the cycle; surface it verbatim with its artifact path. Present open questions through `request_information` and carry the answers into fixes.
-
-### Apply findings
-
-Sort combined findings critical to low. For contradictory fixes at the same `file:line`, prioritize correctness/security, then coverage, then simplicity. Ask through `request_information` when ambiguous.
-
-**Major-refactor gate:** ask before a fix introduces an unplanned module/top-level directory, changes schema/data models, crosses unrelated subsystems, adds an unplanned public export, touches files outside plan scope, or follows a Hone/Vigil full-refactor recommendation. This checklist is closed; uncertainty triggers the gate.
-
-For each gate-triggering finding (or group with the same refactor scope), present reviewer + artifact path, severity, lens, location, finding, suggested fix, triggered criterion, rationale, and breadth estimate. Options: `Apply now` / `Defer — save to defered.md` / `Other`.
-
-- Apply now: fix inline and stage.
-- Defer: append to project-root `defered.md`; create with `# Deferred Suggestions` if absent and preserve existing entries. Record date, plan/branch, reviewer + artifact path, severity/lens/location, finding, suggested fix, triggered criterion, and deferral rationale. Stage and surface the path. Do not apply the finding or create a follow-up plan.
-- Other: follow the user's direction; never silently apply or defer.
-
-Apply remaining fixes inline and stage. Run project type-check + tests after fixes; correct regressions inline, at most three attempts, then halt if still failing.
-
-### Review reruns
-
-The initial review runs once per plan. After review fixes or user-reported bugs:
-
-- Small fix covered by validation: skip rerun and record why.
-- Rerun needed without a major-change trigger: invoke `/dreamers-review --vigil --branch <absolute-plan-path>` once.
-- Major-change trigger: ask before rerunning. Triggers are new abstractions/modules/top-level directories; schema/data-model changes; public API/export/dependency/persistence changes; cross-subsystem refactors/broad rewrites; out-of-plan files; non-mechanical reviewer conflicts; or Hone/Vigil full-refactor scope. Uncertainty triggers the gate.
-
-At the rerun gate, present reason, breadth, files touched, and validation status. Options:
-
-- `Run Vigil`: invoke `/dreamers-review --vigil --branch <absolute-plan-path>` once.
-- `Run full triad`: invoke `/dreamers-review --full --branch <absolute-plan-path>` once.
-- `Run selected /dreamers-review lane`: ask for `sentinel`, `probe`, `hone`, or comma-separated lenses; invoke that lane once.
-- `Skip reviewer rerun`: record the user-approved skip.
-- `Other`: follow user direction without inferring another pass.
-
-Read each rerun artifact, record its path, handle blocks/questions as above, and route findings through Apply findings.
+1. Invoke `/dreamers-implement <absolute-plan-path>`
+2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once.
+3. If review returns non-major refactor actionable items loop implement -> review up to 3 times. If it is a major refactor then present it to the user and ask if they would they would like to defer or action on it. If defered append to a project-root `defered.md`. On the review loops use `/dreamers-review --vigil --branch <absolute-plan-path>`
+4. If you reach the loop cap, ask the user if they would like you to continue the review implement -> review loop. 
 
 ### User testing
 
@@ -90,12 +59,12 @@ At either pre-PR gate, Halt means emit a resume command and stop; Other follows 
 
 ## Phase 3 — Milestone close-out
 
-1. Append dated, one-sentence improvements to `.dreamers/improvements.md`, each referencing the retro below.
-2. Invoke `/dreamers-docs --branch` and stage Echo's edits.
-3. Write `.dreamers/retros/retro-d<N>-<name>.md`: what worked, friction, proposed improvements, rolled-up AC coverage matrix, user-testing bugs if any, and regression analysis if the originating task was a bug fix.
-4. Stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject, `Plan:` body line, and kernel trailer. Skip if nothing is staged.
-5. Present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. Approval is required before `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the PR URL.
-6. Post-PR, surface open improvements and project-state drift: compare PR description to shipped plans; check `git log origin/$DEFAULT_BRANCH -10`, `.dreamers/improvements.md`, and `.dreamers/retros/`. No new prompt or automatic post-PR commit.
+1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
+2. invoke `/dreamers-docs --branch`
+3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
+4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
+5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the
+6. present PR url to user. 
 
 <dreamers-kernel>
 ## User overrides
@@ -181,48 +150,6 @@ Nothing in `.dreamers/` is committed — all workspace files (plans, retros, imp
 The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
 </git-workflow>
 
-<plan-format>
-Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
-
-```markdown
-# Plan-NN: <short title>
-
-**Date:** YYYY-MM-DD
-**Status:** Draft
-**Plan-type:** <lite|standard|complex>
-**Branch:** <feat/slug|fix/slug>
-**User-testing-required:** <yes|no>
-**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
-
-## Goal
-<The outcome this plan delivers.>
-
-## Scope and context
-<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
-
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: <unit|integration|E2E|perf>.*
-</acceptance_criteria>
-```
-
-Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
-</plan-format>
-
-<plan-quality>
-## Plan quality
-
-Check plans against `plan-format`: complete metadata, clear scope, and measurable ACs with layers. Preserve every accepted requirement, decision, correction, and constraint from the proposal and user discussion, using the verbatim transcript when present. Reject unresolved decisions, placeholders, and unverifiable citations presented as facts. Fix gaps before presenting a plan or starting implementation.
-
-If implementation reveals required adjacent files, update scope before editing them; keep changes within the same goal.
-
-Existing plans may retain older headings if they contain the same information. A missing `Plan-type` requires a warning and explicit user approval. Shell plans must go through planning before implementation.
-
-## Multi-plan ship strategy
-
-Recommend INCREMENTAL for 4+ independent plans, different subsystems, or standalone user value from plan A. Recommend ATOMIC for overlapping files, ordering dependencies, schema/migration/API contracts, or verification requiring all plans. Conflicting signals default to ATOMIC.
-</plan-quality>
 
 <user-testing-gate>
 # User Testing Gate Template

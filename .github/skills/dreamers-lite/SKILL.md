@@ -1,7 +1,7 @@
 ---
 name: dreamers-lite
-description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests. Exits at green tests. Triggers: /dreamers-lite, fix this bug, bug fix, address the bug.'
-argument-hint: '<bug description>'
+description: 'Lightweight dreamers pipeline - skips planning and jumps straight to task.'
+argument-hint: '<task description>'
 ---
 
 $ARGUMENTS
@@ -11,21 +11,27 @@ If no bug description was provided, halt + ask.
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
-## Step 1 — Branch setup
+## Phase 1: Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
 
-## Step 2 — Scope survey + escalation
-- Read the bug surface (files identified from the description).
-- In bug-fix scope (single file or tight cluster, no architectural change) → continue.
-- Scope blowup (multiple unrelated subsystems, needs new module, schema change, etc.) → halt + recommend `/dreamers <bug description>` instead.
+## Phase 2: Prepare to complete task
+- inspect project, if anything is ambiguous or you have questions lift them to use using request_information
+- if you have any critiques lift them to user using request_information
+- do not make things up just to complete this task. if nothing needs to be lifted then continue to the next phase. 
 
-## Step 3 — Regression test + implement + run
-- Write a failing test that captures the buggy behavior. If no test infra exists for the affected surface, note the absence.
-- Implement the fix per `comment-rules` + `testing-mandate` (Kernel). Edit only files in the bug-fix surface from Step 2. Stage with `git add`.
-- Type-check + run tests. Fix inline (max 3 attempts) then halt.
+## Phase 2: Implement loop
+1. Implement task using `dreamers-implement`
+2. Review implementation using `/dreamers-review --vigil --branch <task>`
+3. If review returns non-major refactor actionable items loop implement -> review up to 2 times. If it is a major refactor then present it to the user and ask if they would they would like to defer or action on it.
+4. If you reach the loop cap, ask the user if they would like you to continue the review implement -> review loop.
 
-## Exit
-- Bug-fix surface, regression test name, test status. Next step: Vigil review for a quick audit, then commit + `/dreamers-pr` to ship.
+## Phase 3 - Close out
+1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
+2. invoke `/dreamers-docs --branch`
+3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
+4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
+5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the
+6. present PR url to user. 
 
 ## Dreamers Kernel
 <dreamers-kernel>
