@@ -39,7 +39,7 @@ If no bug description was provided, halt + ask.
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist (HARD RULE)
+## Subagent allowlist
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
@@ -52,17 +52,14 @@ Every `task()` invocation MUST include in the prompt:
 - **Constraints** — hard rules the agent must not violate
 - **Definition of Done** — how to know the work is complete
 - **Plan file path** — absolute path to the relevant plan file (if applicable)
-- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
 ## Implementation discipline
 
 - **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-- **Type-check before declaring implementation done.** Run the project's type-check command from `.github/copilot-instructions.md` and fix errors before moving on.
 
 ## Commit trailer
 
@@ -170,7 +167,7 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 
 <comment-rules>
 ## Core principle
-Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.
+Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
 ## When to comment
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
@@ -187,6 +184,7 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
 - **No redundant JSDoc/KDoc** that only repeats the function signature
 - **No em dashes. no exceptions**
+- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 
 ## Style
 - One line when possible; never exceed two lines for inline comments
