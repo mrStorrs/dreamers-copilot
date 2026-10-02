@@ -5,13 +5,11 @@ argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist (HARD RULE)
+## Subagent allowlist
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
@@ -24,17 +22,14 @@ Every `task()` invocation MUST include in the prompt:
 - **Constraints** — hard rules the agent must not violate
 - **Definition of Done** — how to know the work is complete
 - **Plan file path** — absolute path to the relevant plan file (if applicable)
-- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
 ## Implementation discipline
 
 - **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-- **Type-check before declaring implementation done.** Run the project's type-check command from `.github/copilot-instructions.md` and fix errors before moving on.
 
 ## Commit trailer
 
@@ -46,21 +41,15 @@ Co-authored-by: The Dreamers System
 </dreamers-kernel>
 
 <testing-mandate>
-# Testing Coverage Mandate (MANDATORY)
-
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
-
-## How test coverage is expressed in plans (new format)
+## Plan template
+Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
-<acceptance_criteria>
+## Acceptance Criteria
 1. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: unit.*
 2. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: integration.*
-3. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
 ```
 
 Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
@@ -89,14 +78,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-**Regression risks**
-- Anything touching existing behavior that could break — call out the specific existing test or flow at risk in the plan's Context section.
-
-If a layer cannot be covered automatically (e.g., camera permission flows), flag it explicitly as a manual-verification requirement in the plan's Verification section with a reason.
-
-## Probe's layer audit (consumes the new format)
-
-During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
 
 ## Test benchmarks
 

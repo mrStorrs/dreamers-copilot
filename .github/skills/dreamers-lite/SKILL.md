@@ -1,7 +1,7 @@
 ---
 name: dreamers-lite
-description: 'Lightweight bug-fix pipeline — cuts a fresh feature branch, surveys scope, writes a regression test, implements the fix, runs tests. Exits at green tests. Triggers: /dreamers-lite, fix this bug, bug fix, address the bug.'
-argument-hint: '<bug description>'
+description: 'Lightweight dreamers pipeline - skips planning and jumps straight to task.'
+argument-hint: '<task description>'
 ---
 
 $ARGUMENTS
@@ -11,31 +11,35 @@ If no bug description was provided, halt + ask.
 ## Todo - Before you begin.
 - Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
 
-## Step 1 — Branch setup
+## Phase 1: Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
 
-## Step 2 — Scope survey + escalation
-- Read the bug surface (files identified from the description).
-- In bug-fix scope (single file or tight cluster, no architectural change) → continue.
-- Scope blowup (multiple unrelated subsystems, needs new module, schema change, etc.) → halt + recommend `/dreamers <bug description>` instead.
+## Phase 2: Prepare to complete task
+- inspect project, if anything is ambiguous or you have questions lift them to use using request_information
+- if you have any critiques lift them to user using request_information
+- do not make things up just to complete this task. if nothing needs to be lifted then continue to the next phase. 
 
-## Step 3 — Regression test + implement + run
-- Write a failing test that captures the buggy behavior. If no test infra exists for the affected surface, note the absence.
-- Implement the fix per `comment-rules` + `testing-mandate` (Kernel). Edit only files in the bug-fix surface from Step 2. Stage with `git add`.
-- Type-check + run tests. Fix inline (max 3 attempts) then halt.
+## Phase 2: Implement loop
+1. Implement task using `dreamers-implement`
+2. Review implementation using `/dreamers-review --vigil --branch <task>`
+3. If review returns non-major refactor actionable items loop implement -> review up to 2 times. If it is a major refactor then present it to the user and ask if they would they would like to defer or action on it.
+4. If you reach the loop cap, ask the user if they would like you to continue the review implement -> review loop.
 
-## Exit
-- Bug-fix surface, regression test name, test status. Next step: Vigil review for a quick audit, then commit + `/dreamers-pr` to ship.
+## Phase 3 - Close out
+1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
+2. invoke `/dreamers-docs --branch`
+3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
+4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
+5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the
+6. present PR url to user. 
 
 ## Dreamers Kernel
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist (HARD RULE)
+## Subagent allowlist
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
@@ -48,17 +52,14 @@ Every `task()` invocation MUST include in the prompt:
 - **Constraints** — hard rules the agent must not violate
 - **Definition of Done** — how to know the work is complete
 - **Plan file path** — absolute path to the relevant plan file (if applicable)
-- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
 ## Implementation discipline
 
 - **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-- **Type-check before declaring implementation done.** Run the project's type-check command from `.github/copilot-instructions.md` and fix errors before moving on.
 
 ## Commit trailer
 
@@ -115,21 +116,15 @@ The orchestrator works directly on the feature branch. Unless explicitly request
 </git-workflow>
 
 <testing-mandate>
-# Testing Coverage Mandate (MANDATORY)
-
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations. The planner specifies *what observable outcome* the AC requires and *which test layer* covers it. The implementer (orchestrator at `/dreamers-implement` Step 1) writes the actual tests from each AC's Given/When/Then.
-
-## How test coverage is expressed in plans (new format)
+## Plan template
+Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
-<acceptance_criteria>
+## Acceptance Criteria
 1. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: unit.*
 2. Given <state>, when <trigger>, then <observable outcome>.
    *Layer: integration.*
-3. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
 ```
 
 Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
@@ -158,14 +153,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-**Regression risks**
-- Anything touching existing behavior that could break — call out the specific existing test or flow at risk in the plan's Context section.
-
-If a layer cannot be covered automatically (e.g., camera permission flows), flag it explicitly as a manual-verification requirement in the plan's Verification section with a reason.
-
-## Probe's layer audit (consumes the new format)
-
-During the selected review lane when it includes Probe, the layer audit reads each AC's `*Layer: ...*` annotation to verify coverage at each layer was implemented. Probe blocks the cycle if any AC's annotated layer lacks a corresponding green test.
+If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
 
 ## Test benchmarks
 
@@ -178,16 +166,13 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 </testing-mandate>
 
 <comment-rules>
-# Comment Rules
-
 ## Core principle
-Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.
+Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
 ## When to comment
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
-- License headers
 
 ## When NOT to comment
 - Code that reads naturally from well-named functions and variables
@@ -199,6 +184,7 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
 - **No redundant JSDoc/KDoc** that only repeats the function signature
 - **No em dashes. no exceptions**
+- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 
 ## Style
 - One line when possible; never exceed two lines for inline comments

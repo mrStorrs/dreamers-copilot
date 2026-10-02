@@ -9,13 +9,11 @@ Resolve unresolved PR review comments. All work inline except required artifact-
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist (HARD RULE)
+## Subagent allowlist
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
@@ -28,17 +26,14 @@ Every `task()` invocation MUST include in the prompt:
 - **Constraints** — hard rules the agent must not violate
 - **Definition of Done** — how to know the work is complete
 - **Plan file path** — absolute path to the relevant plan file (if applicable)
-- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
 ## Implementation discipline
 
 - **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-- **Type-check before declaring implementation done.** Run the project's type-check command from `.github/copilot-instructions.md` and fix errors before moving on.
 
 ## Commit trailer
 

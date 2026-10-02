@@ -42,7 +42,7 @@ flowchart TD
     SkipInit --> WriteCopilot["Create project-level<br/>.github/copilot-instructions.md"]
     WriteCopilot --> P5
 
-    P5["Phase 5 — Shell plans"] --> ReadShell["Read shell-plan.md template"]
+    P5["Phase 5 — Shell plans"] --> ReadShell["Use embedded shell-plan outline"]
     ReadShell --> WriteShells["For each milestone in brief:<br/>create shell plan in<br/>.dreamers/plans/feature-slug/"]
     WriteShells --> ListShells["List all plans in chat<br/>with file paths + summaries"]
     ListShells --> P6

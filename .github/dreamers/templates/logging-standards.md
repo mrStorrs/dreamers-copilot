@@ -1,7 +1,5 @@
 # Logging Standards
 
-Shared standard used by Forge (when writing log calls) and Sentinel (when reviewing them).
-
 ---
 
 ## Log levels
@@ -34,11 +32,3 @@ High-traceability internal flow. Be liberal — the goal is that enabling DEBUG 
 - Config values resolved at startup (non-secret)
 
 High-frequency loop internals are **allowed** at DEBUG if they add traceability value. Mark them with a `// high-freq` comment so Sentinel can assess the noise risk.
-
----
-
-## Never log (hard rules — no exceptions)
-
-- Passwords, API keys, tokens, secrets of any kind
-- PII: email addresses, phone numbers, names, addresses, payment data
-- Full request or response bodies (log status codes and durations instead)

@@ -5,13 +5,11 @@ argument-hint: 'path/to/plan.md'
 ---
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist (HARD RULE)
+## Subagent allowlist
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
@@ -24,17 +22,14 @@ Every `task()` invocation MUST include in the prompt:
 - **Constraints** — hard rules the agent must not violate
 - **Definition of Done** — how to know the work is complete
 - **Plan file path** — absolute path to the relevant plan file (if applicable)
-- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
 ## Implementation discipline
 
 - **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-- **Type-check before declaring implementation done.** Run the project's type-check command from `.github/copilot-instructions.md` and fix errors before moving on.
 
 ## Commit trailer
 
@@ -72,17 +67,17 @@ For each element the plan references, verify against the current codebase:
 3. **Data model shapes** — if the plan references a DB table, model class, or interface, read it and verify the plan's assumptions hold.
 4. **Test files / cases** — if the plan cites existing tests as a starting point, verify those tests exist and are scoped as the plan describes.
 5. **Acceptance Criteria measurability** — re-evaluate whether each AC is still measurable against the current code. (An AC like "user can filter by date" requires a filter mechanism to exist or be plannable; if the underlying API has changed, the AC may need rewording.)
-6. **Constraints** — re-check whether stated constraints (technical, process, hard rules) still hold (e.g., "must not change the existing API" — does the API still look as the plan described?). Note: in the new plan format, risks are folded into Constraints as hard rules; there is no separate Risks section to verify.
+6. **Constraints** — re-check whether stated constraints (technical, process, hard rules) still hold (e.g., "must not change the existing API" — does the API still look as the plan described?). In compact plans, constraints and relevant risks are in Scope and context; validation instructions are attached to ACs.
 
 ## Output
 
 Return ONE of:
 
 - **`No change — proceed`** — the plan still applies as written. The user / orchestrator can invoke `/dreamers-implement <plan>` confidently.
-- **`Drift detected — halt`** — list specific drift items in chat. Each item identifies WHERE in the plan (AC #, §Scope entry, Test Case ID, or line range) and WHAT diverged:
+- **`Drift detected — halt`** — list specific drift items in chat. Each item identifies WHERE in the plan (AC #, Scope and context entry, or line range) and WHAT diverged:
   ```
   - AC #3 — expected: filter by date range / actual: filter API removed in last cycle
-  - §Scope file list — expected: src/auth/session.ts / actual: file renamed to src/auth/sessionStore.ts
+  - Scope and context — expected: src/auth/session.ts / actual: file renamed to src/auth/sessionStore.ts
   ```
   The user decides whether to:
   - Revise the plan inline (and re-run `/dreamers-plan-verify`).
