@@ -119,8 +119,6 @@ expected_refs = [
     "logging-discipline.md",
     "manifest-format.md",
     "plan-format.md",
-    "plan-quality.md",
-    "plan-selection.md",
     "planning-grill.md",
     "project-bootstrap.md",
     "reviewer-findings-format.md",
@@ -133,7 +131,6 @@ expected_templates = [
     "github-issue.md",
     "logging-standards.md",
     "manifest.md",
-    "plan-guide-selector.md",
     "plan.md",
     "pr-description.md",
     "project-brief.md",
@@ -357,7 +354,7 @@ scan_roots = [
     root / ".github/README.md",
     catalog_path,
 ]
-legacy_pattern = re.compile(r"dreamers-full|dreamers-research|\bsage\b", re.IGNORECASE)
+legacy_pattern = re.compile(r"dreamers-full|dreamers-research|\bsage\b|plan-quality|plan-selection|plan-guide-selector", re.IGNORECASE)
 migration_pattern = re.compile(
     r"retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer",
     re.IGNORECASE,

@@ -219,23 +219,9 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 ## Phase 5 - Plan generation
 
-Use `plan-selection` to classify each plan. Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`, and `manifest-format` when shared context or sequencing needs a manifest. Fill the outlines without their outer sync tags.
+Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`. For multiple plans, add `manifest.md` using `manifest-format`. Fill the outlines without their outer sync tags.
 
-Group findings into a few coherent refactor plans, not one plan per finding. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
-
-Apply `plan-quality` checks; resolve open decisions and fix gaps before Phase 6.
-
-<plan-selection>
-## Plan selection
-
-`Plan-type` labels complexity for review routing; all types use the same structure. Honor an explicit user choice, noting any mismatch in the proposal. Otherwise choose:
-
-- **lite:** tiny localized work without new architecture, contracts, migration, public API, multi-step flows, or meaningful risk.
-- **standard:** normal feature work and other changes that do not need complex coordination.
-- **complex:** cross-module or multi-plan work; data/API changes; security/privacy/payment risk; non-trivial state, async, or UI flows; high rollback cost.
-
-Use `feature-<slug>/manifest.md` when multiple plans share context, constraints, contracts, or feature-level ACs. Backfill a missing manifest when adding a second plan. Each plan must remain usable alone; `/dreamers <manifest>` passes shared context through the sequence, while direct plan invocations do not.
-</plan-selection>
+Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
 
 <plan-format>
 Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
@@ -294,20 +280,6 @@ Include the transcript link only when the sibling artifact exists. Compound laye
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
 </manifest-format>
 
-<plan-quality>
-## Plan quality
-
-Check plans against `plan-format`: complete metadata, clear scope, and measurable ACs with layers. Preserve every accepted requirement, decision, correction, and constraint from the proposal and user discussion, using the verbatim transcript when present. Reject unresolved decisions, placeholders, and unverifiable citations presented as facts. Fix gaps before presenting a plan or starting implementation.
-
-If implementation reveals required adjacent files, update scope before editing them; keep changes within the same goal.
-
-Existing plans may retain older headings if they contain the same information. A missing `Plan-type` requires a warning and explicit user approval. Shell plans must go through planning before implementation.
-
-## Multi-plan ship strategy
-
-Recommend INCREMENTAL for 4+ independent plans, different subsystems, or standalone user value from plan A. Recommend ATOMIC for overlapping files, ordering dependencies, schema/migration/API contracts, or verification requiring all plans. Conflicting signals default to ATOMIC.
-</plan-quality>
-
 ## Phase 6 - Review gate
 
 Present:
@@ -327,7 +299,7 @@ Stop and ask the user:
 - `Halt`
 - `Other`
 
-Minor edits may be applied inline to `.dreamers/refactor-audits/` or `.dreamers/plans/` outputs, then re-run the plan self-check and re-present the gate.
+Minor edits may be applied inline to `.dreamers/refactor-audits/` or `.dreamers/plans/` outputs, then re-present the gate.
 
 Major rewrite loops back to the affected phase.
 

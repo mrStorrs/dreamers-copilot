@@ -119,7 +119,9 @@ Then create the project-level `.github/copilot-instructions.md` per `project-boo
 
 ## Phase 5 — Shell plans
 
-For each milestone in the approved brief, create `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` using `shell-plan` and classify complexity with `plan-selection`. Fill the outline without its outer sync tags. Use `manifest-format` if `plan-selection` requires a manifest. These drafts must be expanded through `/dreamers-plan` before implementation.
+For each milestone in the approved brief, create `.dreamers/plans/feature-<slug>/plan-NN-<name>.md` using `shell-plan`. Keep plans to the smallest coherent shippable chunks. For multiple plans, add `manifest.md` using `manifest-format`. Fill the outlines without their outer sync tags.
+
+Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. These drafts must be expanded through `/dreamers-plan` before implementation.
 
 After writing all plans, list them in chat with file paths and one-line summaries.
 
@@ -133,18 +135,6 @@ Call `request_information` with `["Shell plans look good — I'll take it from h
 - `Revise` or `Other` → capture changes, update affected plan files, re-list all plans, re-call the gate. Repeat until the user signs off.
 
 This skill ends when the user is happy with the shell plans. From there the user invokes `/dreamers-plan` on a specific milestone (or `/dreamers` to plan + implement in one session).
-
-<plan-selection>
-## Plan selection
-
-`Plan-type` labels complexity for review routing; all types use the same structure. Honor an explicit user choice, noting any mismatch in the proposal. Otherwise choose:
-
-- **lite:** tiny localized work without new architecture, contracts, migration, public API, multi-step flows, or meaningful risk.
-- **standard:** normal feature work and other changes that do not need complex coordination.
-- **complex:** cross-module or multi-plan work; data/API changes; security/privacy/payment risk; non-trivial state, async, or UI flows; high rollback cost.
-
-Use `feature-<slug>/manifest.md` when multiple plans share context, constraints, contracts, or feature-level ACs. Backfill a missing manifest when adding a second plan. Each plan must remain usable alone; `/dreamers <manifest>` passes shared context through the sequence, while direct plan invocations do not.
-</plan-selection>
 
 <shell-plan>
 Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use this outline for each milestone; leave unresolved decisions visible for planning.

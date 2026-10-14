@@ -62,6 +62,7 @@ flowchart TD
 
 ## Key invariants
 
+- **Shell plans are drafts.** Use the smallest coherent shippable chunks, a manifest for multiple plans, and `Plan-type` for reviewer selection. Expand them through `/dreamers-plan` before implementation.
 - **No disk writes until Phase 3.** Phases 1–2 are conversation-only. Phase 3 first writes anything (the brief).
 - **Research requires opt-in.** Phase 1.5 performs no web research until the user explicitly approves it; skipping research is a valid completion path.
 - **Approval-gated phase transitions.** Phases 1.5, 2, 3, and 6 each have a user gate.

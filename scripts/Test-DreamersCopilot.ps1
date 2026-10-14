@@ -133,8 +133,6 @@ $expectedRefs = @(
     "logging-discipline.md",
     "manifest-format.md",
     "plan-format.md",
-    "plan-quality.md",
-    "plan-selection.md",
     "planning-grill.md",
     "project-bootstrap.md",
     "reviewer-findings-format.md",
@@ -147,7 +145,6 @@ $expectedTemplates = @(
     "github-issue.md",
     "logging-standards.md",
     "manifest.md",
-    "plan-guide-selector.md",
     "plan.md",
     "pr-description.md",
     "project-brief.md",
@@ -340,7 +337,7 @@ foreach ($path in @(
 
 Assert-SynchronizedRefs
 
-$legacyPattern = "dreamers-full|dreamers-research|\bsage\b"
+$legacyPattern = "dreamers-full|dreamers-research|\bsage\b|plan-quality|plan-selection|plan-guide-selector"
 $migrationPattern = "retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer"
 $scanRoots = @(
     $agentRoot,
@@ -383,6 +380,9 @@ if (-not $SkipInstallSmoke) {
             (Join-Path $tmpHome "agents/nova.agent.md"),
             (Join-Path $tmpHome "agents/sage.agent.md"),
             (Join-Path $tmpHome "dreamers/refs/hone-architecture-rubric.md"),
+            (Join-Path $tmpHome "dreamers/refs/plan-quality.md"),
+            (Join-Path $tmpHome "dreamers/refs/plan-selection.md"),
+            (Join-Path $tmpHome "dreamers/templates/plan-guide-selector.md"),
             (Join-Path $tmpHome "dreamers/templates/plan-guide-lite.md"),
             (Join-Path $tmpHome "dreamers/templates/plan-guide-standard.md"),
             (Join-Path $tmpHome "dreamers/templates/plan-guide-complex.md")
@@ -411,7 +411,6 @@ if (-not $SkipInstallSmoke) {
             (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
             (Join-Path $tmpHome "skills/dreamers-plan/SKILL.md"),
             (Join-Path $tmpHome "dreamers/refs/plan-format.md"),
-            (Join-Path $tmpHome "dreamers/refs/plan-selection.md"),
             (Join-Path $tmpHome "dreamers/refs/manifest-format.md"),
             (Join-Path $tmpHome "dreamers/refs/shell-plan.md"),
             (Join-Path $activeLite "SKILL.md"),
@@ -458,7 +457,6 @@ if (-not $SkipInstallSmoke) {
             (Join-Path $tmpHome "skills/dreamers/SKILL.md"),
             (Join-Path $tmpHome "skills/dreamers-plan/SKILL.md"),
             (Join-Path $tmpHome "dreamers/refs/plan-format.md"),
-            (Join-Path $tmpHome "dreamers/refs/plan-selection.md"),
             (Join-Path $tmpHome "dreamers/refs/manifest-format.md"),
             (Join-Path $tmpHome "dreamers/refs/shell-plan.md"),
             (Join-Path $tmpHome "instructions\dreamers.comment-rules.instructions.md"),
