@@ -87,4 +87,4 @@ Selection precedence is explicit user direction or lane flag, then an explicit r
 - **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
 - **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
 - **`--no-apply` doesn't exist** — this skill is always read-only by design.
-- **Todo ownership is contextual.** Standalone review owns its two-step todo; when invoked by /dreamers, it completes the phase under the outer todo.
+- **Todo ownership is contextual.** Standalone todos are optional; when invoked by a delivery skill, review completes the phase under its existing todo.

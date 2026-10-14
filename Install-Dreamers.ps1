@@ -30,6 +30,16 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
 $ObsoleteManagedFiles = @(
+    "agents/forge.agent.md",
+    "agents/nova.agent.md",
+    "agents/sage.agent.md",
+    "dreamers/refs/hone-architecture-rubric.md",
+    "dreamers/refs/plan-quality.md",
+    "dreamers/refs/plan-selection.md",
+    "dreamers/templates/plan-guide-selector.md",
+    "dreamers/templates/plan-guide-lite.md",
+    "dreamers/templates/plan-guide-standard.md",
+    "dreamers/templates/plan-guide-complex.md",
     "instructions/comment-rules.instructions.md",
     "instructions/git.instructions.md"
 )
@@ -69,7 +79,7 @@ function Copy-Files {
 
 function Remove-LegacySkillFiles {
     param([string]$SkillsRoot)
-    foreach ($skillName in @("dreamers-full")) {
+    foreach ($skillName in @("dreamers-full", "dreamers-research")) {
         $directory = Join-Path $SkillsRoot $skillName
         foreach ($fileName in @("SKILL.md", "readme.md")) {
             $path = Join-Path $directory $fileName

@@ -5,13 +5,11 @@ argument-hint: '[scope or directive]'
 ---
 
 <dreamers-kernel>
-# Dreamers Kernel
-
 ## User overrides
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist (HARD RULE)
+## Subagent allowlist
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
@@ -24,17 +22,14 @@ Every `task()` invocation MUST include in the prompt:
 - **Constraints** — hard rules the agent must not violate
 - **Definition of Done** — how to know the work is complete
 - **Plan file path** — absolute path to the relevant plan file (if applicable)
-- **Mandatory line:** `Do NOT call manage_todo_list. The skill that invoked you owns its todo.`
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
 ## Implementation discipline
 
-- **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
+- **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-- **Type-check before declaring implementation done.** Run the project's type-check command from `.github/copilot-instructions.md` and fix errors before moving on.
 
 ## Commit trailer
 
@@ -224,29 +219,66 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 ## Phase 5 - Plan generation
 
-Read `.github/dreamers/templates/plan-guide-selector.md`, then read only the selected guide. Default to `standard`; use `complex` for cross-module, API/data, migration, or high-risk refactors. Honor explicit user plan-type override if provided.
+Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`. For multiple plans, add `manifest.md` using `manifest-format`. Fill the outlines without their outer sync tags.
 
-Create plans using the selected guide under:
+Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
 
-`.dreamers/plans/feature-refactor-<slug>/`
+<plan-format>
+Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
 
-Plan grouping rules:
-- Group by coherent refactor unit.
-- Do not create one plan per raw Hone finding.
-- Prefer a small number of high-signal plans.
-- Use `manifest.md` when multiple plans share context, constraints, or sequencing.
-- Do not include code snippets except minimal interface/type contracts when the signature is the design decision.
-- Every plan must include Given/When/Then acceptance criteria with `*Layer: ...*`.
-- Verification stays last.
+```markdown
+# Plan-NN: <short title>
 
-Plan content must cite:
-- source Hone artifact path(s)
-- summary path
-- affected files verified by the orchestrator
+**Date:** YYYY-MM-DD
+**Status:** Draft
+**Plan-type:** <lite|standard|complex>
+**Branch:** <feat/slug|fix/slug>
+**User-testing-required:** <yes|no>
+**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
 
-Plan content must not include unresolved open questions.
+## Goal
+<The outcome this plan delivers.>
 
-Self-check every written plan against `plan-guide-selector.md` and its selected guide. Fix structural violations before Phase 6.
+## Scope and context
+<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
+
+## Acceptance Criteria
+<acceptance_criteria>
+1. Given <state>, when <trigger>, then <observable outcome>.
+   *Layer: <unit|integration|E2E|perf>.*
+</acceptance_criteria>
+```
+
+Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+</plan-format>
+
+<manifest-format>
+```markdown
+# Feature: <short name>
+
+**Date:** YYYY-MM-DD
+**Status:** Draft
+
+## Summary
+<The outcome delivered by the complete feature.>
+
+## Plan sequence
+| Order | Plan file | Summary |
+|---|---|---|
+| 1 | [plan-01-<name>.md](plan-01-<name>.md) | <Outcome> |
+
+## Shared context
+<Only constraints, decisions and their rationale, or contracts needed by multiple plans. Include cross-plan rollback conditions and order when needed.>
+
+## Acceptance Criteria
+<acceptance_criteria>
+1. Given <feature-level state>, when <whole-feature trigger>, then <observable outcome>.
+   *Layer: E2E.*
+</acceptance_criteria>
+```
+
+Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
+</manifest-format>
 
 ## Phase 6 - Review gate
 
@@ -267,7 +299,7 @@ Stop and ask the user:
 - `Halt`
 - `Other`
 
-Minor edits may be applied inline to `.dreamers/refactor-audits/` or `.dreamers/plans/` outputs, then re-run the plan self-check and re-present the gate.
+Minor edits may be applied inline to `.dreamers/refactor-audits/` or `.dreamers/plans/` outputs, then re-present the gate.
 
 Major rewrite loops back to the affected phase.
 

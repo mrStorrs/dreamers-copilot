@@ -1,8 +1,8 @@
 # Dreamers — GitHub Copilot CLI
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → tests-first → implementation → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI. Runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
 
-Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <bug>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
+Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <task>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
 
 ## Layout
 
@@ -20,16 +20,13 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dream
 
 | Agent | Type | Role |
 |---|---|---|
-| **Forge** | Persona | Implementation orchestrator. Enter via `/agents forge` for a session pre-loaded with the pipeline. Routes user intent to the right skill. |
-| **Nova** | Persona | Planning specialist. Enter via `/agents nova` for a multi-turn planning session. Stores the Grill exchange verbatim beside linked plans, then hard-stops at approval. |
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Read-only except one `.dreamers/reviews/` artifact. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Combines Sentinel, Probe, and the shared Hone architecture rubric; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
+| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
-| **Sage** | Subagent | Researcher — deep multi-perspective research with citation verification. |
 
-Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. A second triad or selected lane remains user-gated for major-change reruns. Echo spawns per milestone via `/dreamers-docs`. Sage is invoked by `/dreamers-research`.
+Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone via `/dreamers-docs`.
 
 ## Skills
 
@@ -41,14 +38,14 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both after plan-quality checks. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
+| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode invokes `/dreamers-plan`, then the implementation-start gate; plan path and manifest modes skip both using human-approved input. Per plan it invokes `/dreamers-implement`, then complexity-selected `/dreamers-review`; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
 | `/dreamers-help` | Read-only orientation, examples, reviewer lanes, gates, specialized choices, and migration guidance. Empty or help-like `/dreamers` input routes here before repository or external inspection. |
-| `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Stores every Grill question and response word for word in a transcript linked from each plan, produces plan file(s) + optional manifest, verifies coverage, then hard-stops at approval. |
-| `/dreamers-implement <plan>` | One cycle against an approved plan: failing tests → code → type-check + tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
+| `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Stores every Grill question and response word for word in a transcript linked from each plan, produces plans with Goal, Scope and context, and Acceptance Criteria, plus an optional manifest, verifies coverage, then hard-stops at approval. |
+| `/dreamers-implement <task or plan>` | One cycle against a task or approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
-| `/dreamers-lite <bug>` | Lightweight bug-fix pipeline: branch + regression test + implement + run tests. Escalates to `/dreamers` on scope blowup. |
+| `/dreamers-lite <task>` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from the uncommitted diff, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
 | `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
 
 ### Standalone reviewer audits
@@ -64,7 +61,6 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 |---|---|
 | `/dreamers-pr-resolve [#PR]` | Resolve unresolved PR review comments. Apply accepted fixes inline; Vigil reviews accepted changes before thread resolution, and deferred Vigil findings are appended to project-root `defered.md`. |
 | `/dreamers-explain <question, topic, path, code, or URL>` | Thorough, read-only explanation with layered mental models, concrete examples, local evidence, and authoritative sources when needed. |
-| `/dreamers-research <topic>` | Deep research via Sage: scoping → parallel sub-topic research → synthesis. |
 | `/dreamers-issue <task>` | Create a structured GitHub issue with acceptance criteria. Prefix with `#` for discussion mode. |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
@@ -73,109 +69,93 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-clean-work` | Between-milestone maintenance: audit improvements, inspect legacy workspace files, scan for drift. |
 | `/dreamers-plan-verify <plan>` | Inline drift check: cited paths / signatures / data shapes still hold? |
 
-## `/dreamers` flow example
+## Delivery
+
+`/dreamers`: plan and approve task input, or use supplied human-approved plans; implement and test, review, then complete triggered user testing, docs, commit, and PR approval. Review fixes use Vigil, with at most 3 fix cycles. A blocked review or unresolved findings at the cap stops delivery.
+
+`/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
+
+Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports authorize fixes unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
+
+## `/dreamers` first delivery example
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers $ARGUMENTS"]) --> ModeCheck{"$ARGUMENTS<br/>type?"}
+    Start(["/dreamers $ARGUMENTS"]) --> ModeCheck{"Input type?"}
+    ModeCheck -->|Empty or help| Help["/dreamers-help"]
+    Help --> HelpEnd(["Return guidance"])
+    ModeCheck -->|Task description| InvokePlan["Invoke /dreamers-plan"]
+    ModeCheck -->|Plan paths| Plans["Read human-approved plans"]
+    ModeCheck -->|Manifest| Manifest["Read human-approved plans<br/>and shared context"]
 
-    ModeCheck -->|Task description| Mode1["Mode 1"]
-    ModeCheck -->|Plan paths| Mode2["Mode 2"]
-    ModeCheck -->|manifest.md| Mode3["Mode 3 + shared context"]
+    InvokePlan --> PlanResult{"Plans returned?"}
+    PlanResult -->|No| Halt(["Halt + report"])
+    PlanResult -->|Yes| PlanGate{"Human plan review<br/>and start approval"}
+    PlanGate -->|Revise| Revise["Revise plans"]
+    Revise --> PlanGate
+    PlanGate -->|Halt| Halt
+    PlanGate -->|Approved, with strategy| Branch["Create feature branch"]
+    Plans --> Branch
+    Manifest --> Branch
 
-    Mode1 --> P1["Phase 1 — Planning"]
-    Mode2 --> ArtifactQuality["Plan-quality checks"]
-    Mode3 --> ArtifactQuality
+    Branch --> Implement["Invoke /dreamers-implement<br/>implement + tests"]
+    Implement --> Tests{"Validation green<br/>within fix limit?"}
+    Tests -->|No| Halt
+    Tests -->|Yes| Review["Invoke /dreamers-review<br/>lane selected from plan or user direction"]
+    Review --> Result{"Review result?"}
+    Result -->|Blocked| Halt
+    Result -->|Approved| UserTesting{"User testing triggered?"}
+    Result -->|Findings| Major{"Major refactor?"}
+    Major -->|Yes| Choice{"User direction"}
+    Choice -->|Apply| Cap
+    Choice -->|Defer| Deferred["Append root defered.md"]
+    Choice -->|Other| Direction["Follow user direction"]
+    Major -->|No| Cap{"Fewer than 3<br/>review fix cycles?"}
+    Deferred --> Remaining{"Actionable findings remain?"}
+    Remaining -->|Yes| Cap
+    Remaining -->|No| UserTesting
+    Cap -->|No| Halt
+    Cap -->|Yes| Fix["Apply findings<br/>implement + validate"]
+    Fix --> FixTests{"Validation green?"}
+    FixTests -->|No| Halt
+    FixTests -->|Yes| Vigil["Invoke /dreamers-review --vigil"]
+    Vigil --> Result
 
-    P1 --> InvokePlan["Invoke /dreamers-plan"]
-    InvokePlan --> PlanResult{"Plan result"}
-    PlanResult -->|Halt| HaltA(["Halt + resume cmd"])
-    PlanResult -->|Plan paths| TaskQuality["Plan-quality checks"]
-    TaskQuality --> P15
-    ArtifactQuality --> BranchSetup
+    UserTesting -->|No| MorePlans{"More plans?"}
+    UserTesting -->|Yes| TestGate{"User-testing gate"}
+    TestGate -->|Approved| MorePlans
+    TestGate -->|Bug found| BugFix["Fix bug + automated validation"]
+    TestGate -->|Other| Direction
+    BugFix --> BugTests{"Validation green?"}
+    BugTests -->|No| Halt
+    BugTests -->|Yes| Vigil
 
-    P15["Phase 1.5<br/>Plan review / implementation start"] --> PlanGate{"Start approved?"}
-    PlanGate -->|Single-plan approved| BranchSetup
-    PlanGate -->|INCREMENTAL| BranchSetup
-    PlanGate -->|ATOMIC| BranchSetup
-    PlanGate -->|Revise| P15
-    PlanGate -->|Halt| HaltB(["Halt + resume cmd"])
+    MorePlans -->|Yes| Drift["Check next-plan drift<br/>resolve with user when needed"]
+    Drift --> Strategy{"Ship strategy?"}
+    Strategy -->|ATOMIC| Atomic["Commit plan; do not push"]
+    Atomic --> Implement
+    Strategy -->|INCREMENTAL| Incremental["Update docs if needed<br/>commit plan"]
+    Incremental --> IncrGate{"PR approved?"}
+    IncrGate -->|Halt| Halt
+    IncrGate -->|Other| Direction
+    IncrGate -->|Approved| IncrPR["Invoke /dreamers-pr"]
+    IncrPR --> Merge["Wait for user to confirm merge"]
+    Merge --> Branch
 
-    BranchSetup["Branch setup<br/>cut feat slug + check improvements.md"] --> Cycle
-
-    Cycle["Phase 2 — cycle N"] --> Implement["Steps 1–3<br/>Invoke /dreamers-implement"]
-
-    Implement --> S3Check{"Tests green<br/>within 3 attempts?"}
-    S3Check -->|No| HaltC(["Halt + surface"])
-    S3Check -->|Yes| S4
-
-    S4["Step 4<br/>Invoke /dreamers-review<br/>selected from plan complexity"] --> ReviewResult{"Review result"}
-    ReviewResult -->|Blocked| HaltD(["Halt + surface"])
-    ReviewResult -->|Findings| S5
-
-    S5["Step 5 — Apply findings"] --> Gate{"Major-refactor<br/>gate fires?"}
-    Gate -->|No| ApplyFixes
-    Gate -->|Yes| GateChoice{"User decides"}
-    GateChoice -->|Apply now| ApplyFixes
-    GateChoice -->|Defer| RecordDeferred["Append root defered.md"]
-    RecordDeferred --> ApplyFixes
-    GateChoice -->|Other| GateChoice
-
-    ApplyFixes["Apply non-deferred fixes<br/>re-run tests"] --> RerunCheck{"Review rerun<br/>needed?"}
-    RerunCheck -->|No, before user test| S6Check{"User testing<br/>triggered?"}
-    RerunCheck -->|Normal| Vigil["Invoke /dreamers-review --vigil"]
-    RerunCheck -->|Major change| RerunGate{"User chooses<br/>review rerun"}
-    S6Check -->|No| MorePlans
-    S6Check -->|Yes| S6
-    S6["Step 6<br/>User testing gate"] --> UserTest{"User response"}
-    UserTest -->|Bug| BugFix["Fix inline + re-test"]
-    BugFix --> BugRerunCheck{"Review rerun<br/>needed?"}
-    BugRerunCheck -->|No| S6
-    BugRerunCheck -->|Normal| Vigil
-    BugRerunCheck -->|Major change| RerunGate
-    RerunGate -->|Vigil| Vigil
-    RerunGate -->|Full triad| FullRerun["Invoke /dreamers-review<br/>full lane"]
-    RerunGate -->|Selected lane| SelectedRerun["Invoke /dreamers-review<br/>selected lane"]
-    RerunGate -->|Skip before user test| S6Check
-    RerunGate -->|Skip after bug| S6
-    Vigil --> S5
-    FullRerun --> S5
-    SelectedRerun --> S5
-    UserTest -->|Halt| HaltE(["Halt"])
-    UserTest -->|Approved| MorePlans{"More plans<br/>remain?"}
-
-    MorePlans -->|No| P3
-    MorePlans -->|Yes| Between{"Strategy?"}
-
-    Between -->|INCREMENTAL| Light["Drift check<br/>Invoke /dreamers-docs if applicable<br/>commit"]
-    Between -->|ATOMIC| AtomicCommit["Drift check<br/>commit"]
-
-    Light --> IncrPRGate{"Pre-PR<br/>approved?"}
-    IncrPRGate -->|Approved| IncrPR["Invoke /dreamers-pr"]
-    IncrPRGate -->|Halt| HaltF(["Halt"])
-    IncrPR --> MergeWait(["Halt until PR merged"])
-    AtomicCommit --> Cycle
-
-    MergeWait --> ReCut["Re-cut feature branch"]
-    ReCut --> Cycle
-
-    P3["Phase 3 — Close-out FULL"] --> Improvements["Append .dreamers/improvements.md"]
-    Improvements --> InvokeDocs["Invoke /dreamers-docs"]
-    InvokeDocs --> Retro["Write retro"]
-    Retro --> FinalCommit["Final commit if staged"]
-    FinalCommit --> Approval{"User approval"}
-    Approval -->|Halt| HaltH(["Halt"])
-    Approval -->|Approved| InvokePR["Invoke /dreamers-pr"]
-    InvokePR --> PostScan["Post-PR scan<br/>surface improvements + drift<br/>no prompt"]
-    PostScan --> End(["PR URL + summary"])
+    MorePlans -->|No| Docs["Invoke /dreamers-docs --branch<br/>suggest relevant workflow improvements"]
+    Docs --> Commit["Stage explicit paths<br/>commit remaining changes"]
+    Commit --> PRGate{"Final PR approved?"}
+    PRGate -->|Halt| Halt
+    PRGate -->|Other| Direction
+    PRGate -->|Approved| PR["Invoke /dreamers-pr"]
+    PR --> Done(["Return PR URL"])
 
     classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-
-    class InvokePlan,Implement,S4,Vigil,FullRerun,SelectedRerun,InvokeDocs,InvokePR,IncrPR skill
-    class ModeCheck,PlanResult,PlanGate,S3Check,ReviewResult,Gate,GateChoice,S6Check,UserTest,RerunCheck,BugRerunCheck,RerunGate,MorePlans,Between,IncrPRGate,Approval gate
-    class HaltA,HaltB,HaltC,HaltD,HaltE,HaltF,HaltH halt
-    class P1,Cycle,P3,TaskQuality,ArtifactQuality,BranchSetup,Light,AtomicCommit,Improvements,Retro,FinalCommit,PostScan phase
+    class Help,InvokePlan,Implement,Review,Vigil,IncrPR,Docs,PR skill
+    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,FixTests,UserTesting,TestGate,BugTests,MorePlans,Strategy,IncrGate,PRGate gate
+    class Halt halt
+    class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,BugFix,Drift,Atomic,Incremental,Merge,Commit phase
 ```

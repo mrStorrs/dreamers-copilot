@@ -83,11 +83,8 @@ def assert_no_patterns(path: Path, patterns: list[tuple[str, str]]) -> None:
 
 expected_agents = [
     "echo",
-    "forge",
     "hone",
-    "nova",
     "probe",
-    "sage",
     "sentinel",
     "vigil",
 ]
@@ -109,7 +106,6 @@ expected_skills = [
     "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
-    "dreamers-research",
     "dreamers-review",
     "dreamers-simplify",
     "dreamers-test",
@@ -120,22 +116,21 @@ expected_refs = [
     "comment-rules.md",
     "dreamers-kernel.md",
     "git-workflow.md",
-    "hone-architecture-rubric.md",
     "logging-discipline.md",
+    "manifest-format.md",
+    "plan-format.md",
     "planning-grill.md",
     "project-bootstrap.md",
     "reviewer-findings-format.md",
+    "shell-plan.md",
     "testing-mandate.md",
+    "user-testing-gate.md",
 ]
 expected_templates = [
     "discovery-questions.md",
     "github-issue.md",
     "logging-standards.md",
     "manifest.md",
-    "plan-guide-complex.md",
-    "plan-guide-lite.md",
-    "plan-guide-selector.md",
-    "plan-guide-standard.md",
     "plan.md",
     "pr-description.md",
     "project-brief.md",
@@ -160,7 +155,6 @@ expected_skill_readmes = [
     "dreamers-new-project",
     "dreamers-plan",
     "dreamers-pr-resolve",
-    "dreamers-research",
     "dreamers-review",
 ]
 
@@ -227,7 +221,7 @@ if catalog_path.exists():
         for key in [("skill", "dreamers")]:
             if key not in item_keys:
                 add_error(f"Catalog missing item: {key[1]}")
-        for key in [("skill", "dreamers-full")]:
+        for key in [("skill", "dreamers-full"), ("skill", "dreamers-research"), ("agent", "sage")]:
             if key in item_keys:
                 add_error(f"Catalog retains retired item: {key[1]}")
         for item in items:
@@ -242,7 +236,7 @@ if catalog_path.exists():
             for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
-            for key in [("skill", "dreamers-full")]:
+            for key in [("skill", "dreamers-full"), ("skill", "dreamers-research"), ("agent", "sage")]:
                 if key in member_keys:
                     add_error(f"Collection retains retired member: {key[1]}")
             readme_path = collection.get("readmePath")
@@ -251,30 +245,6 @@ if catalog_path.exists():
     except Exception as exc:
         add_error(f"Invalid catalog JSON: {exc}")
 
-assert_patterns(
-    skill_root / "dreamers/SKILL.md",
-    [
-        ("help route", r"## Route input.*Empty or whitespace-only input.*`help`.*`--help`.*`-h`.*invoke `/dreamers-help`.*read-only"),
-        ("unrecognized-input halt", r"Otherwise halt and ask for a task, plan path, manifest, or help"),
-        ("three input modes", r"## Modes.*Task description.*Plan path\(s\).*manifest\.md"),
-        ("artifact modes skip start gate", r"Plan path mode:.*Do not invoke `/dreamers-plan`.*Manifest mode:.*Do not invoke `/dreamers-plan`"),
-        ("startup contract loading", r"Before reading `\.dreamers/` files, read and apply.*dreamers-kernel\.md.*git-workflow\.md.*startup verification"),
-        ("branch setup", r"Branch setup once per `git-workflow`:.*checkout.*pull.*feat/<slug>"),
-        ("plan quality", r"Plan quality check.*Plan-type.*plan-guide-selector"),
-        ("planning delegation", r"## Phase 1.*Invoke `/dreamers-plan \$ARGUMENTS`"),
-        ("single-plan implementation-start gate", r"Approved — start implementation.*Revise plan.*Halt.*Other"),
-        ("multi-plan implementation-start gate", r"Approved — start INCREMENTAL.*Approved — start ATOMIC.*Revise plan.*Halt.*Other"),
-        ("implementation then review", r"### Steps 1.3.*Invoke `/dreamers-implement.*### Step 4.*Invoke `/dreamers-review"),
-        ("complexity review delegation", r"/dreamers-review` selects Vigil, Sentinel \+ Probe, or Sentinel \+ Probe \+ Hone from plan complexity or explicit plan/user direction"),
-        ("major-refactor gate", r"Major-refactor gate.*Apply now.*Defer — save to defered\.md.*Other"),
-        ("deferred findings ledger", r"Defer.*do NOT apply or create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
-        ("major-change rerun gate", r"Run Vigil.*Run full triad.*Run selected /dreamers-review lane.*Skip reviewer rerun.*Other"),
-        ("templated user testing", r"user-testing-gate\.md.*Testing steps.*Notes.*Approved.*Bug found \(enter text\).*Other \(enter text\)"),
-        ("incremental close-out", r"INCREMENTAL.*Invoke `/dreamers-docs --branch`.*Pre-PR approval gate.*Invoke `/dreamers-pr`"),
-        ("atomic continuation", r"ATOMIC.*Do NOT push"),
-        ("full close-out", r"Phase 3.*improvements\.md.*Invoke `/dreamers-docs --branch`.*Write retro.*Final commit.*User approval gate.*Invoke `/dreamers-pr`"),
-    ],
-)
 assert_patterns(
     skill_root / "dreamers-help/SKILL.md",
     [
@@ -293,33 +263,6 @@ assert_patterns(
         ("deferred ledger commit", r"If any fixes landed or Step 5 added deferred entries"),
         ("deferred ledger report", r"Deferred Vigil findings recorded in `defered\.md`"),
     ],
-)
-assert_no_patterns(
-    skill_root / "dreamers/SKILL.md",
-    [
-        ("inline implementation heading", r"## Implement each plan inline"),
-        ("retired plan verification phase", r"invoke\s+`?/dreamers-plan-verify"),
-        ("Grill opt-out", r"--no-grill|do not grill|skip the interview"),
-        ("separate review-selection policy", r"<review-selection>|danger rubric|low-risk lite or standard"),
-        ("conditional milestone close-out", r"triggered retrospective|retrospective need|documentation need"),
-        ("implementation-only synchronized refs", r"<(?:planning-grill|testing-mandate|comment-rules|logging-discipline|reviewer-findings-format|agent-recovery)>"),
-    ],
-)
-assert_patterns(
-    skill_root / "dreamers-implement/SKILL.md",
-    [
-        ("tests-first implementation", r"failing tests.*implement|tests.first"),
-        ("type-check and tests", r"Step 3 — Type-check \+ run tests.*type-check \+ test command"),
-        ("bounded validation attempts", r"max 3 attempts"),
-        ("benchmark updates", r"test-benchmarks\.md.*after passing"),
-        ("green exit", r"Return the AC coverage matrix at green tests.*invokes `/dreamers-review` immediately"),
-        ("phase boundary", r"Do not invoke reviewers.*user testing.*commit.*push.*PR creation"),
-        ("conditional todo ownership", r"When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"),
-    ],
-)
-assert_no_patterns(
-    skill_root / "dreamers-implement/SKILL.md",
-    [("stale seven-step todo", r"Step 5 \(review\).*Step 6 \(user test\).*Step 7 \(commit\)")],
 )
 assert_patterns(
     skill_root / "dreamers-review/SKILL.md",
@@ -371,38 +314,12 @@ assert_patterns(
     skill_root / "dreamers-explain/SKILL.md",
     [
         ("read-only boundary", r"Default to read-only work.*do not modify the subject"),
-        ("focused research boundary", r"Use `/dreamers-research` instead.*durable, multi-perspective research report"),
         ("conditional source retrieval", r"Search or retrieve external sources when:.*facts may have changed.*niche, disputed, uncertain, or high-stakes"),
         ("source priority", r"Source priority:.*repository evidence.*First-party documentation.*High-quality secondary sources"),
         ("layered explanation", r"Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"),
         ("optional comprehension", r"Do not force a quiz or Socratic exchange"),
     ],
 )
-assert_patterns(
-    dreamers_root / "refs/planning-grill.md",
-    [
-        ("relentless interview", r"Interview me relentlessly"),
-        ("codebase exploration", r"answered by exploring the codebase, explore"),
-        ("one blocking question", r"Ask one blocking question at a time"),
-        ("three choices", r"recommended answer.*strongest viable alternate.*Other"),
-        ("verbatim transcript", r"every planner.*question and every user response.*exactly as sent or.*received.*Do not summarize"),
-        ("transcript path", r"\.dreamers/plans/feature-<slug>/grilling-transcript\.md"),
-    ],
-)
-assert_patterns(
-    skill_root / "dreamers-plan/SKILL.md",
-    [
-        ("conditional todo ownership", r"When standalone.*todo.*When invoked by an outer delivery skill.*existing todo"),
-        ("invoked return boundary", r"When standalone, hard stop; when invoked by an outer delivery skill, return control"),
-        ("verbatim transcript write", r"write `grilling-transcript\.md`.*Preserve every question and response word for word"),
-        ("plan transcript link", r"each plan MUST include `\*\*Grilling transcript:\*\* \[grilling-transcript\.md\]\(\./grilling-transcript\.md\)`"),
-    ],
-)
-for guide_name in ["plan-guide-lite.md", "plan-guide-standard.md", "plan-guide-complex.md"]:
-    assert_patterns(
-        dreamers_root / "templates" / guide_name,
-        [("optional Grill transcript metadata", r"\*\*Grilling transcript:\*\*.*grilling-transcript\.md.*when the sibling artifact exists")],
-    )
 assert_patterns(
     skill_root / "dreamers-new-project/SKILL.md",
     [
@@ -418,7 +335,6 @@ for path in [
     skill_root / "dreamers-plan/SKILL.md",
     skill_root / "dreamers-plan/readme.md",
     dreamers_root / "refs/planning-grill.md",
-    agent_root / "nova.agent.md",
     root / "README.md",
     root / ".github/README.md",
 ]:
@@ -438,7 +354,7 @@ scan_roots = [
     root / ".github/README.md",
     catalog_path,
 ]
-legacy_pattern = re.compile(r"dreamers-full")
+legacy_pattern = re.compile(r"dreamers-full|dreamers-research|\bsage\b|plan-quality|plan-selection|plan-guide-selector", re.IGNORECASE)
 migration_pattern = re.compile(
     r"retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer",
     re.IGNORECASE,

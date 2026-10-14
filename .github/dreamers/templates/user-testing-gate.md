@@ -1,3 +1,4 @@
+<user-testing-gate>
 # User Testing Gate Template
 
 Use this template whenever the Dreamers pipeline pauses for user testing.
@@ -47,3 +48,4 @@ Provide exactly these three options:
 - `Approved` -> continue the pipeline.
 - `Bug found (enter text)` -> capture the bug text, fix inline, rerun required automated validation, then present this same user-testing gate again.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
+</user-testing-gate>

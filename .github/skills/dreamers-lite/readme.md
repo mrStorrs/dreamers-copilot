@@ -1,45 +1,63 @@
-# /dreamers-lite — flow
+# /dreamers-lite
 
-Visual map of the lightweight bug-fix pipeline. Source of truth is `SKILL.md`.
+Deliver a task without creating a plan. Source of truth: `SKILL.md`.
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers-lite $ARGUMENTS"]) --> ArgCheck{"Bug description<br/>provided?"}
-    ArgCheck -->|No| HaltA(["Halt + ask"])
-    ArgCheck -->|Yes| S1
+    Start(["/dreamers-lite $ARGUMENTS"]) --> Task{"Task provided?"}
+    Task -->|No| Halt(["Halt + report"])
+    Task -->|Yes| Branch["Create fresh fix/slug branch"]
+    Branch --> Scope["Inspect scope<br/>raise ambiguities or critiques"]
+    Scope --> Implement["/dreamers-implement<br/>task + agreed scope"]
+    Implement --> Tests{"Validation green<br/>within 3 fix attempts?"}
+    Tests -->|No| Halt
+    Tests -->|Yes| Review["/dreamers-review --vigil --branch"]
+    Review --> Result{"Review result?"}
+    Result -->|Blocked| Halt
+    Result -->|Approved| Docs["/dreamers-docs --staged<br/>include uncommitted changes"]
+    Result -->|Findings| Major{"Major refactor?"}
+    Major -->|No| Cap{"Fewer than 2<br/>review fix cycles?"}
+    Major -->|Yes| Choice{"User direction"}
+    Choice -->|Apply| Cap
+    Choice -->|Defer| Deferred["Append root defered.md"]
+    Choice -->|Other| Direction["Follow user direction"]
+    Deferred --> Remaining{"Actionable findings remain?"}
+    Remaining -->|Yes| Cap
+    Remaining -->|No| Docs
+    Cap -->|No| Halt
+    Cap -->|Yes| Fix["Pass findings to /dreamers-implement<br/>apply fixes + validate"]
+    Fix --> Tests
+    Docs --> Existing{"Updating an open PR?"}
+    Existing -->|No| Commit["Stage explicit paths<br/>commit changes"]
+    Existing -->|Yes| UpdateApproval{"Commit + push approved?"}
+    UpdateApproval -->|Halt| Halt
+    UpdateApproval -->|Other| Direction
+    UpdateApproval -->|Approved| Update["Commit + push existing PR"]
+    Update --> Done
+    Commit --> Approval{"PR approved?"}
+    Approval -->|Halt| Halt
+    Approval -->|Other| Direction
+    Approval -->|Approved| PR["/dreamers-pr"]
+    PR --> Done(["Return PR URL"])
+    Done -.->|Related bug or correction| Implement
 
-    S1["Step 1 — Branch setup"] --> Branch["fetch + checkout default + pull<br/>cut fix/slug branch"]
-    Branch --> S2
-
-    S2["Step 2 — Scope survey + escalation"] --> Survey["Read the bug surface<br/>identify affected files"]
-    Survey --> ScopeCheck{"Bug-fix scope<br/>or scope blowup?"}
-    ScopeCheck -->|"Scope blowup<br/>multi-subsystem / new module / schema"| HaltB(["Halt + recommend<br/>/dreamers instead"])
-    ScopeCheck -->|"In scope<br/>single file or tight cluster"| S3
-
-    S3["Step 3 — Regression test + implement + run"] --> WriteTest["Write failing test that<br/>captures the buggy behavior"]
-    WriteTest --> Implement["Implement the fix<br/>per comment-rules + testing-mandate<br/>edit only files in bug-fix surface"]
-    Implement --> Stage["git add"]
-    Stage --> RunTests["Type-check + run tests"]
-    RunTests --> TestResult{"Tests pass?"}
-    TestResult -->|Yes| End(["Surface:<br/>bug-fix surface<br/>regression test name<br/>test status<br/><br/>Next: Vigil review<br/>then commit + /dreamers-pr"])
-    TestResult -->|No| AttemptCheck{"Attempts < 3?"}
-    AttemptCheck -->|Yes| FixInline["Fix inline"]
-    FixInline --> RunTests
-    AttemptCheck -->|No| HaltC(["Halt + surface"])
-
+    classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-
-    class ArgCheck,ScopeCheck,TestResult,AttemptCheck gate
-    class HaltA,HaltB,HaltC halt
-    class S1,S2,S3,Branch,Survey,WriteTest,Implement,Stage,RunTests,FixInline phase
+    class Implement,Review,Fix,Docs,PR skill
+    class Task,Tests,Result,Major,Choice,Remaining,Cap,Existing,UpdateApproval,Approval gate
+    class Halt halt
+    class Branch,Scope,Deferred,Direction,Commit,Update phase
 ```
 
-## Key invariants
+1. Create a fresh `fix/<slug>` branch. Inspect the task and raise ambiguities or critiques.
+2. Pass the task and agreed scope to `/dreamers-implement`; it implements, type-checks, and tests.
+3. Run `/dreamers-review --vigil --branch <task>`. Apply findings through at most 2 implementation/review fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
+4. Update docs with `/dreamers-docs --staged`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then invoke `/dreamers-pr` and return its URL.
 
-- **Escalation check in Step 2.** Multi-subsystem changes, new modules, or schema changes are NOT in bug-fix scope — halt and recommend `/dreamers` instead.
-- **Regression test first.** Step 3 writes the failing test BEFORE implementing the fix. If no test infra exists for the affected surface, note the absence.
-- **Files in the bug-fix surface only.** No while-I'm-here cleanup, no unrelated refactors.
-- **3-attempt fix loop.** Same as `/dreamers-implement`. Halt and surface after 3 failed attempts.
-- **No review, no commit, no push.** This skill exits at green tests. The user runs Vigil for the audit, then commits + `/dreamers-pr` to ship.
+Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports authorize fixes. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, and docs; ask approval before committing and pushing the update.
+
+Keep one delivery todo aligned with confirmed results, reopening affected stages after changes and reconciling stale entries after detours. New corrections after completed close-out start a new capped cycle; detours within a cycle keep its review count.
+
+Implementation validation halts after 3 failed fix attempts. User instructions can override commit or PR steps.

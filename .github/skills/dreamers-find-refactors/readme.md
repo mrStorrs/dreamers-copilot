@@ -23,6 +23,6 @@ flowchart TD
 
 - Read-only for project code.
 - Hone writes section-named `.dreamers/reviews/hone-refactor-*.md` artifacts.
-- The orchestrator groups findings into coherent plan files instead of one plan per finding.
-- Generated plans follow `plan-guide-selector.md` and the selected lite / standard / complex guide.
+- The orchestrator groups findings into the smallest coherent shippable plans, with a manifest when there are multiple plans.
+- Generated plans use the shared Goal, Scope and context, and Acceptance Criteria format. Plan-type controls review routing, and validation details belong with the ACs.
 - No branch, implementation, commit, push, or PR.

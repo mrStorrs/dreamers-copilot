@@ -16,7 +16,6 @@ $ARGUMENTS
 
 - Default to read-only work. Inspect relevant files, history, documentation, and external sources; do not modify the subject being explained.
 - Answer in the conversation unless the user explicitly requests a durable artifact.
-- Use `/dreamers-research` instead when the requested outcome is a durable, multi-perspective research report with scoped sub-topics and review loops. Do not turn a focused explanation into that pipeline.
 - If no subject or question was provided, halt and ask what to explain.
 
 ## Resolve the request
