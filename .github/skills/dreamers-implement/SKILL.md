@@ -1,21 +1,21 @@
 ---
 name: dreamers-implement
-description: 'Implement an approved plan and its tests; return an AC coverage matrix at green validation. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
-argument-hint: 'feature-<slug>/plan-NN-<name>.md'
+description: 'Implement a task or approved plan with tests; return requirement coverage at green validation. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.'
+argument-hint: '<task description | approved plan path>'
 ---
 
 ## Todo
 - When standalone, declare a todo list for Step 1 / Step 2. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## 1: Implement
-- Implement the approved plan in `$ARGUMENTS` per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). Stage as you go.
+- Implement the task or approved plan in `$ARGUMENTS` per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage as you go.
 
 ## 2: Type-check + run tests
 - Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
-- Return the AC coverage matrix at green tests.
+- Return requirement/AC coverage and validation results at green tests.
 
 <dreamers-kernel>
 ## User overrides
@@ -40,7 +40,7 @@ All `task()` calls use `mode: "sync"` — the call blocks until the agent return
 
 ## Implementation discipline
 
-- **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
+- **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
@@ -182,4 +182,3 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
    - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
    - Message format (structured fields vs interpolated strings, key names, casing).
 </logging-discipline>
-

@@ -17,7 +17,7 @@ Explain the primary entry point with concrete examples:
 - /dreamers feature-search/plan-01-indexing.md
 - /dreamers feature-search/manifest.md
 
-Explain that task descriptions use /dreamers-plan with Grill by default. Existing plan and manifest inputs skip planning and the implementation-start gate while retaining plan-quality and drift checks.
+Explain that task descriptions use /dreamers-plan with Grill by default. Existing plan and manifest inputs skip planning and the implementation-start gate using the human-reviewed artifacts.
 
 Explain adaptive review:
 
@@ -30,16 +30,16 @@ Explicit plan or user direction overrides the default reviewer lane. Reviewers a
 Offer specialized choices when they fit better:
 
 - /dreamers-plan for planning only.
-- /dreamers-implement for an approved plan without end-to-end close-out.
+- /dreamers-implement for a task or approved plan without end-to-end close-out.
 - /dreamers-review, /dreamers-test, or /dreamers-simplify for read-only audits.
-- /dreamers-lite for a bounded bug fix.
-- /dreamers-research, /dreamers-issue, /dreamers-new-project, /dreamers-find-refactors, and /dreamers-explain for focused discovery or explanation.
+- /dreamers-lite for task delivery without planning, with up to 2 Vigil fix cycles, docs, commit, and PR approval.
+- /dreamers-issue, /dreamers-new-project, /dreamers-find-refactors, and /dreamers-explain for focused discovery or explanation.
 - /dreamers-docs, /dreamers-pr, and /dreamers-pr-resolve for documentation, PR creation, or PR feedback.
 - /dreamers-add-logging, /dreamers-cleanup-comments, /dreamers-cleanup-comments-branch, /dreamers-clean-work, and /dreamers-plan-verify for maintenance and verification.
 - /dreamers-update for Dreamers system-file maintenance and the approved Copilot-to-Codex transfer.
 
-State the mandatory gates: plan approval for task input, major scope expansion, triggered user testing, and final pre-PR approval.
+State the `/dreamers` gates: plan approval for task input, major scope expansion, triggered user testing, and final pre-PR approval.
 
-Explain that `/dreamers` is the only end-to-end delivery pipeline and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
+Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
 
 End with one invitation: "Describe your goal and I can suggest the next command."

@@ -41,19 +41,6 @@
     },
     {
       "type": "agent",
-      "slug": "sage",
-      "name": "sage",
-      "description": "Researcher of the Dreamers — conducts deep, multi-perspective research on any topic. Produces comprehensive, citation-backed reports with verified sources.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "agent"
-      ],
-      "path": ".github/agents/sage.agent.md"
-    },
-    {
-      "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
       "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Writes one `.dreamers/reviews/` artifact. Part of the standard and complex per-plan `/dreamers` review gate and explicit `/dreamers-review` selected lanes. Orchestrator applies fixes.",
@@ -160,7 +147,7 @@
       "type": "skill",
       "slug": "dreamers-lite",
       "name": "dreamers-lite",
-      "description": "Lightweight bug-fix pipeline. Self-contained: cuts fix/<slug> from fresh origin/<default>, writes a regression test, implements inline, runs project tests, and exits at green tests. Next step is Vigil review, then commit + /dreamers-pr. No /dreamers call. On scope blowup, surfaces choice to escalate to /dreamers; does not auto-route.",
+      "description": "Deliver a task without planning: implementation, tests, Vigil review, docs, and PR approval.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -212,7 +199,7 @@
       "type": "skill",
       "slug": "dreamers-implement",
       "name": "dreamers-implement",
-      "description": "Implement an approved plan and its tests; return an AC coverage matrix at green validation. Does NOT review, push, or open a PR. Triggers: /dreamers-implement, implement this plan, execute the plan.",
+      "description": "Implement a task or approved plan with tests; return requirement coverage at green validation.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -301,19 +288,6 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-research",
-      "name": "dreamers-research",
-      "description": "Deep research with phased workflow: scoping, parallel sub-topic research, synthesis, final report.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-research/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
       "description": "Review skill — selects Vigil for lite plans, Sentinel + Probe for standard plans, or Sentinel + Probe + Hone for complex plans unless explicitly directed otherwise. For plan-bound reviews, reads the linked or sibling verbatim Grill transcript when present and supplies it as intent context. Without a plan, infers intent from code and asks if unclear. Read-only.",
@@ -379,10 +353,6 @@
         {
           "type": "agent",
           "slug": "probe"
-        },
-        {
-          "type": "agent",
-          "slug": "sage"
         },
         {
           "type": "agent",
@@ -459,10 +429,6 @@
         {
           "type": "skill",
           "slug": "dreamers-pr-resolve"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-research"
         },
         {
           "type": "skill",

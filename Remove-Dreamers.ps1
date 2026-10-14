@@ -29,6 +29,7 @@ $Source = Join-Path $RepoRoot ".github"
 $ObsoleteManagedFiles = @(
     "agents/forge.agent.md",
     "agents/nova.agent.md",
+    "agents/sage.agent.md",
     "dreamers/refs/hone-architecture-rubric.md",
     "dreamers/templates/plan-guide-lite.md",
     "dreamers/templates/plan-guide-standard.md",
@@ -78,7 +79,7 @@ function Remove-ManagedFiles {
 function Remove-LegacySkillFiles {
     param([string]$SkillsRoot)
     $count = 0
-    foreach ($skillName in @("dreamers-full")) {
+    foreach ($skillName in @("dreamers-full", "dreamers-research")) {
         $directory = Join-Path $SkillsRoot $skillName
         foreach ($fileName in @("SKILL.md", "readme.md")) {
             $path = Join-Path $directory $fileName

@@ -85,7 +85,6 @@ expected_agents = [
     "echo",
     "hone",
     "probe",
-    "sage",
     "sentinel",
     "vigil",
 ]
@@ -107,7 +106,6 @@ expected_skills = [
     "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
-    "dreamers-research",
     "dreamers-review",
     "dreamers-simplify",
     "dreamers-test",
@@ -160,7 +158,6 @@ expected_skill_readmes = [
     "dreamers-new-project",
     "dreamers-plan",
     "dreamers-pr-resolve",
-    "dreamers-research",
     "dreamers-review",
 ]
 
@@ -227,7 +224,7 @@ if catalog_path.exists():
         for key in [("skill", "dreamers")]:
             if key not in item_keys:
                 add_error(f"Catalog missing item: {key[1]}")
-        for key in [("skill", "dreamers-full")]:
+        for key in [("skill", "dreamers-full"), ("skill", "dreamers-research"), ("agent", "sage")]:
             if key in item_keys:
                 add_error(f"Catalog retains retired item: {key[1]}")
         for item in items:
@@ -242,7 +239,7 @@ if catalog_path.exists():
             for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
-            for key in [("skill", "dreamers-full")]:
+            for key in [("skill", "dreamers-full"), ("skill", "dreamers-research"), ("agent", "sage")]:
                 if key in member_keys:
                     add_error(f"Collection retains retired member: {key[1]}")
             readme_path = collection.get("readmePath")
@@ -320,7 +317,6 @@ assert_patterns(
     skill_root / "dreamers-explain/SKILL.md",
     [
         ("read-only boundary", r"Default to read-only work.*do not modify the subject"),
-        ("focused research boundary", r"Use `/dreamers-research` instead.*durable, multi-perspective research report"),
         ("conditional source retrieval", r"Search or retrieve external sources when:.*facts may have changed.*niche, disputed, uncertain, or high-stakes"),
         ("source priority", r"Source priority:.*repository evidence.*First-party documentation.*High-quality secondary sources"),
         ("layered explanation", r"Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"),
@@ -361,7 +357,7 @@ scan_roots = [
     root / ".github/README.md",
     catalog_path,
 ]
-legacy_pattern = re.compile(r"dreamers-full")
+legacy_pattern = re.compile(r"dreamers-full|dreamers-research|\bsage\b", re.IGNORECASE)
 migration_pattern = re.compile(
     r"retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer",
     re.IGNORECASE,

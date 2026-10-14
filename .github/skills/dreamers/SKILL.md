@@ -39,8 +39,8 @@ Set up the feature branch once per `git-workflow`.  Process plans in sequence, c
 
 1. Invoke `/dreamers-implement <absolute-plan-path>`
 2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once.
-3. If review returns non-major refactor actionable items loop implement -> review up to 3 times. If it is a major refactor then present it to the user and ask if they would they would like to defer or action on it. If defered append to a project-root `defered.md`. On the review loops use `/dreamers-review --vigil --branch <absolute-plan-path>`
-4. If you reach the loop cap, ask the user if they would like you to continue the review implement -> review loop. 
+3. Apply findings and repeat implementation + `/dreamers-review --vigil --branch <absolute-plan-path>` up to 3 times. Ask before major refactors; record deferred findings in root `defered.md`.
+4. Halt temporarily on a blocked review or unresolved findings at the cap; report what remains. Ask user if you should proceed with another review, or closeout.
 
 ### User testing
 
@@ -89,7 +89,7 @@ All `task()` calls use `mode: "sync"` — the call blocks until the agent return
 
 ## Implementation discipline
 
-- **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
+- **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 

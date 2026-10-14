@@ -206,6 +206,6 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 
 Verify the artifact exists at the path you report and contains:
 1. Status line.
-2. Findings list (if any), each with `[correctness]` / `[security]` / `[maintainability]` lens-tag.
+2. Findings list (if any), each with `[correctness]` / `[security]` / `[maintainability]` / `[test-coverage]` / `[simplicity]` lens-tag.
 3. Intent-alignment summary covering every plan AC or inferred requirement.
-4. One final time, answer the question "Could this be done simpler?" If the answer is yes, go back and update the artifact with how it could be. 
+4. One final time, answer the question "Could this be done simpler?" If the answer is yes, go back and update the artifact with how it could be.

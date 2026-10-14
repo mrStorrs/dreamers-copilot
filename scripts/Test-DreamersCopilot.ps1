@@ -101,7 +101,7 @@ function Assert-SynchronizedRefs {
     }
 }
 
-$expectedAgents = @("echo", "hone", "probe", "sage", "sentinel", "vigil")
+$expectedAgents = @("echo", "hone", "probe", "sentinel", "vigil")
 $expectedSkills = @(
     "dreamers",
     "dreamers-add-logging",
@@ -120,7 +120,6 @@ $expectedSkills = @(
     "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
-    "dreamers-research",
     "dreamers-review",
     "dreamers-simplify",
     "dreamers-test",
@@ -173,7 +172,6 @@ $expectedSkillReadmes = @(
     "dreamers-new-project",
     "dreamers-plan",
     "dreamers-pr-resolve",
-    "dreamers-research",
     "dreamers-review"
 )
 
@@ -244,7 +242,7 @@ if (Test-Path $catalogPath) {
         foreach ($required in @("skill:dreamers")) {
             if ($required -notin $items) { Add-Error "Catalog missing item: $required" }
         }
-        foreach ($retired in @("skill:dreamers-full")) {
+        foreach ($retired in @("skill:dreamers-full", "skill:dreamers-research", "agent:sage")) {
             if ($retired -in $items) { Add-Error "Catalog retains retired item: $retired" }
         }
         foreach ($item in $catalog.items) {
@@ -257,7 +255,7 @@ if (Test-Path $catalogPath) {
             foreach ($required in @("skill:dreamers", "skill:dreamers-help")) {
                 if ($required -notin $members) { Add-Error "Collection missing member: $required" }
             }
-            foreach ($retired in @("skill:dreamers-full")) {
+            foreach ($retired in @("skill:dreamers-full", "skill:dreamers-research", "agent:sage")) {
                 if ($retired -in $members) { Add-Error "Collection retains retired member: $retired" }
             }
         }
@@ -315,7 +313,6 @@ Assert-NoPatterns (Join-Path $skillRoot "dreamers-update/SKILL.md") @{
 }
 Assert-Patterns (Join-Path $skillRoot "dreamers-explain/SKILL.md") @{
     "read-only boundary" = "Default to read-only work.*do not modify the subject"
-    "focused research boundary" = 'Use `/dreamers-research` instead.*durable, multi-perspective research report'
     "conditional source retrieval" = "Search or retrieve external sources when:.*facts may have changed.*niche, disputed, uncertain, or high-stakes"
     "source priority" = "Source priority:.*repository evidence.*First-party documentation.*High-quality secondary sources"
     "layered explanation" = "Direct answer.*Orientation.*Mental model.*Mechanics.*Concrete example.*Edges and alternatives.*Takeaway"
@@ -343,7 +340,7 @@ foreach ($path in @(
 
 Assert-SynchronizedRefs
 
-$legacyPattern = "dreamers-full"
+$legacyPattern = "dreamers-full|dreamers-research|\bsage\b"
 $migrationPattern = "retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer"
 $scanRoots = @(
     $agentRoot,
@@ -384,6 +381,7 @@ if (-not $SkipInstallSmoke) {
             $staleGitInstructions,
             (Join-Path $tmpHome "agents/forge.agent.md"),
             (Join-Path $tmpHome "agents/nova.agent.md"),
+            (Join-Path $tmpHome "agents/sage.agent.md"),
             (Join-Path $tmpHome "dreamers/refs/hone-architecture-rubric.md"),
             (Join-Path $tmpHome "dreamers/templates/plan-guide-lite.md"),
             (Join-Path $tmpHome "dreamers/templates/plan-guide-standard.md"),
@@ -396,12 +394,16 @@ if (-not $SkipInstallSmoke) {
         }
         $activeLite = Join-Path $tmpHome "skills/dreamers-lite"
         $legacyFull = Join-Path $tmpHome "skills/dreamers-full"
-        foreach ($directory in @($activeLite, $legacyFull)) {
+        $legacyResearch = Join-Path $tmpHome "skills/dreamers-research"
+        foreach ($directory in @($activeLite, $legacyFull, $legacyResearch)) {
             New-Item -ItemType Directory -Path $directory -Force | Out-Null
             Set-Content -Path (Join-Path $directory "SKILL.md") -Value "managed" -Encoding utf8NoBOM
             Set-Content -Path (Join-Path $directory "readme.md") -Value "managed" -Encoding utf8NoBOM
         }
-        Set-Content -Path (Join-Path $activeLite "user-owned.md") -Value "preserve" -Encoding utf8NoBOM
+        $userSkillFiles = @($activeLite, $legacyResearch) | ForEach-Object { Join-Path $_ "user-owned.md" }
+        foreach ($path in $userSkillFiles) {
+            Set-Content -Path $path -Value "preserve" -Encoding utf8NoBOM
+        }
 
         & (Join-Path $Root "Install-Dreamers.ps1") -CopilotHome $tmpHome -Force | Out-Null
 
@@ -427,20 +429,26 @@ if (-not $SkipInstallSmoke) {
                 Add-Error "Install smoke changed user-owned file: $path"
             }
         }
-        foreach ($managed in @("SKILL.md", "readme.md")) {
-            $path = Join-Path $legacyFull $managed
-            if (Test-Path $path) { Add-Error "Install smoke retained legacy managed file: $path" }
+        foreach ($directory in @($legacyFull, $legacyResearch)) {
+            foreach ($managed in @("SKILL.md", "readme.md")) {
+                $path = Join-Path $directory $managed
+                if (Test-Path $path) { Add-Error "Install smoke retained legacy managed file: $path" }
+            }
         }
-        if (-not (Test-Path (Join-Path $activeLite "user-owned.md"))) {
-            Add-Error "Install smoke removed user-owned active file: $activeLite"
+        foreach ($path in $userSkillFiles) {
+            if ((Get-Content -Raw $path).Trim() -ne "preserve") {
+                Add-Error "Install smoke changed user-owned skill file: $path"
+            }
         }
         if (Test-Path $legacyFull) {
             Add-Error "Install smoke did not prune empty legacy directory: $legacyFull"
         }
 
-        New-Item -ItemType Directory -Path $legacyFull -Force | Out-Null
-        Set-Content -Path (Join-Path $legacyFull "SKILL.md") -Value "managed" -Encoding utf8NoBOM
-        Set-Content -Path (Join-Path $legacyFull "readme.md") -Value "managed" -Encoding utf8NoBOM
+        foreach ($directory in @($legacyFull, $legacyResearch)) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+            Set-Content -Path (Join-Path $directory "SKILL.md") -Value "managed" -Encoding utf8NoBOM
+            Set-Content -Path (Join-Path $directory "readme.md") -Value "managed" -Encoding utf8NoBOM
+        }
         foreach ($path in $obsoleteManaged) {
             Set-Content -Path $path -Value "managed" -Encoding utf8NoBOM
         }
@@ -466,8 +474,16 @@ if (-not $SkipInstallSmoke) {
                 Add-Error "Remove smoke changed user-owned file: $path"
             }
         }
-        if (-not (Test-Path (Join-Path $activeLite "user-owned.md"))) {
-            Add-Error "Remove smoke removed user-owned active file: $activeLite"
+        foreach ($directory in @($legacyFull, $legacyResearch)) {
+            foreach ($managed in @("SKILL.md", "readme.md")) {
+                $path = Join-Path $directory $managed
+                if (Test-Path $path) { Add-Error "Remove smoke retained legacy managed file: $path" }
+            }
+        }
+        foreach ($path in $userSkillFiles) {
+            if ((Get-Content -Raw $path).Trim() -ne "preserve") {
+                Add-Error "Remove smoke changed user-owned skill file: $path"
+            }
         }
         if (Test-Path $legacyFull) {
             Add-Error "Remove smoke did not prune empty legacy directory: $legacyFull"

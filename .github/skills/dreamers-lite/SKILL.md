@@ -1,37 +1,33 @@
 ---
 name: dreamers-lite
-description: 'Lightweight dreamers pipeline - skips planning and jumps straight to task.'
+description: 'Deliver a task without planning: implement, test, review with Vigil, update docs, and request PR approval.'
 argument-hint: '<task description>'
 ---
 
 $ARGUMENTS
 
-If no bug description was provided, halt + ask.
+If no task description was provided, halt + ask.
 
 ## Todo - Before you begin.
-- Declare a todo list marking all steps at entry: Step 1 / Step 2 / Step 3.
+- Declare a todo for setup, implementation/review, and close-out.
 
 ## Phase 1: Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
 
-## Phase 2: Prepare to complete task
-- inspect project, if anything is ambiguous or you have questions lift them to use using request_information
-- if you have any critiques lift them to user using request_information
-- do not make things up just to complete this task. if nothing needs to be lifted then continue to the next phase. 
+- Inspect the task's scope. Raise ambiguities or critiques through `request_information`; otherwise continue.
 
 ## Phase 2: Implement loop
-1. Implement task using `dreamers-implement`
+1. Invoke `/dreamers-implement <task description and agreed scope>`.
 2. Review implementation using `/dreamers-review --vigil --branch <task>`
-3. If review returns non-major refactor actionable items loop implement -> review up to 2 times. If it is a major refactor then present it to the user and ask if they would they would like to defer or action on it.
-4. If you reach the loop cap, ask the user if they would like you to continue the review implement -> review loop.
+3. Apply findings and repeat implementation + review up to 2 times. Ask before major refactors; record deferred findings in root `defered.md`.
+4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 
 ## Phase 3 - Close out
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. invoke `/dreamers-docs --branch`
+2. invoke `/dreamers-docs --staged`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
-5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the
-6. present PR url to user. 
+5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -57,7 +53,7 @@ All `task()` calls use `mode: "sync"` — the call blocks until the agent return
 
 ## Implementation discipline
 
-- **Plan adherence:** edit only files in the plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
+- **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
