@@ -11,7 +11,6 @@ applyTo: "**"
 5. All commited tests should provide value and protection against regressions. They follow the same code laws above. 
 6. Do not create fragile tests that could break at any minor change. 
 7. Every test should have a meaninful outcome and not duplicate work in other tests. 
-8. If a bug is surfaced, a test must be created (or existing modified) to address it. 
-9. Comments must add value that the code cannot express itself. Concise, no fluff, no separators, no emojies. 
-10. If you make a mistake that could have been avoided if more robust AI scaffolding (instructions, skills, etc.) could have solved, surface that to the user with recommended fixes.
-11. After all code you write re-read these laws and ensure your output does not break them. If it does, follow the first law.
+8. Comments must add value that the code cannot express itself. Concise, no fluff, no separators, no emojies. 
+9. If you make a mistake that could have been avoided if more robust AI scaffolding (instructions, skills, etc.) could have solved, surface that to the user with recommended fixes.
+10. After all code you write re-read these laws and ensure your output does not break them. If it does, follow the first law.
