@@ -224,7 +224,7 @@ Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using
 Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
 
 <plan-format>
-Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
 
 ```markdown
 # Plan-NN: <short title>

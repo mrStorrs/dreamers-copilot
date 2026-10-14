@@ -50,7 +50,7 @@ Present plan paths through `request_information`: `Approved` / `Minor edit` / `M
 On approval, return plan paths. If standalone use and not invoked from an outerskill, ask user if they would like to proceed with `/dreamers-implement`
 
 <plan-format>
-Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
 
 ```markdown
 # Plan-NN: <short title>

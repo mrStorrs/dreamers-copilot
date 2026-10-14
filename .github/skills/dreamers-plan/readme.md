@@ -16,7 +16,7 @@ flowchart TD
     R -->|halt| H[Stop and surface paths]
 ```
 
-Every plan uses **Goal**, **Scope and context**, and **Acceptance Criteria**. Keep relevant decisions, constraints, contracts, UI details, and risks within scope; attach validation details to ACs when needed. There are no separate Approach or Verification sections.
+Every plan uses **Goal**, **Scope and context**, and **Acceptance Criteria**. Keep relevant decisions, constraints, contracts, UI details, and risks within scope; include Mermaid flow diagrams or example UI layouts/wireframes when they clarify the change. Attach validation details to ACs when needed. There are no separate Approach or Verification sections.
 
 - `Plan-type` still labels lite / standard / complex for reviewer selection; it does not select a document format.
 - Grill one unresolved decision at a time. Save questions and responses verbatim and link the transcript from each plan when present.
