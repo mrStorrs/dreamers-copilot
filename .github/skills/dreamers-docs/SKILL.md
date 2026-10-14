@@ -7,7 +7,7 @@ argument-hint: '[--branch | --staged]'
 $ARGUMENTS
 
 ## Todo - Before you begin.
-- When standalone, declare a todo list for Step 1 / Step 2 / Step 3. When invoked by an outer delivery skill, complete these steps under its existing todo.
+- When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Resolve diff scope
 - `--branch` (default): scope = `git diff --name-only origin/$DEFAULT...HEAD`.

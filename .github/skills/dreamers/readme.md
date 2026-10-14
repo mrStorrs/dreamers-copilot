@@ -26,9 +26,15 @@ flowchart TD
     F --> Result
     Result -->|Approved or findings deferred| U{"User testing triggered?"}
     U -->|Yes| UT["User-testing gate<br/>bug fixes + validation + review as needed"]
-    U -->|No| More{"More plans?"}
-    UT -->|Approved| More
+    U -->|No| Existing{"Updating an open PR?"}
+    UT -->|Approved| Existing
     UT -->|Blocked or review cap reached| Stop
+    Existing -->|No| More{"More plans?"}
+    Existing -->|Yes| RevisionDocs["/dreamers-docs --staged"]
+    RevisionDocs --> RevisionApproval{"Commit + push approved?"}
+    RevisionApproval -->|Halt| Stop
+    RevisionApproval -->|Approved| Update["Commit + push existing PR"]
+    Update --> Done
     More -->|Yes| Next["Check drift; commit plan<br/>INCREMENTAL: approved PR + merge<br/>ATOMIC: continue without pushing"]
     Next --> T
     More -->|No| D["/dreamers-docs<br/>commit remaining changes"]
@@ -36,6 +42,7 @@ flowchart TD
     Approval -->|Halt| Stop
     Approval -->|Approved| PR["/dreamers-pr"]
     PR --> Done(["Return PR URL"])
+    Done -.->|Related bug or correction| X
 ```
 
 1. Empty/help input opens `/dreamers-help`. Task input invokes `/dreamers-plan`, then human plan review and start approval. Supplied plans/manifests are already implementation authorization.
@@ -43,5 +50,9 @@ flowchart TD
 3. Apply findings through at most 3 implementation/Vigil fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
 4. Complete triggered user testing. Between plans, check drift; ATOMIC commits and continues, while INCREMENTAL requests PR approval and waits for merge before continuing.
 5. Update docs, commit remaining changes, request PR approval, and return the PR URL.
+
+Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports authorize fixes. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, required user testing, and docs from the uncommitted diff; ask approval before committing and pushing the update. Review caps still stop the loop.
+
+Keep one delivery todo aligned with confirmed results, reopening affected stages after changes and reconciling stale entries after detours. New corrections after completed close-out start a new capped cycle; detours within a cycle keep its review count.
 
 Reviewers only write review artifacts; the orchestrator applies fixes. Kernel, git workflow, and the user-testing gate are embedded through ref sync. User instructions can override workflow steps.

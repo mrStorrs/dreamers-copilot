@@ -10,7 +10,7 @@ $ARGUMENTS
 
 Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and stop before inspecting or changing repository, git, mailbox, or external state.
 
-For delivery, declare a todo covering planning/start approval or artifact resolution, each plan cycle, and close-out. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
+For delivery, keep one todo covering planning/start approval or artifact resolution, implementation/tests, review, user testing, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
 
 | Input | Route |
 |---|---|
@@ -46,7 +46,9 @@ Set up the feature branch once per `git-workflow`.  Process plans in sequence, c
 
 Trigger when the plan requires manual verification, the change is user-facing, build/distribution is needed, reviewers request user validation, or the user asked to test the area. Otherwise record `user testing skipped — no manual verification trigger` in the cycle summary.
 
-When triggered, use `user-testing-gate` below. After bug fixes and automated validation, apply Review reruns before re-presenting the gate. Commit only at the applicable close-out.
+When triggered, use `user-testing-gate` below. After bug fixes and automated validation, invoke `/dreamers-review --vigil` on the staged + unstaged changes within the review cap before re-presenting the gate. Commit only at the applicable close-out.
+
+For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the between-cycle or milestone close-out below.
 
 ### Between cycles
 

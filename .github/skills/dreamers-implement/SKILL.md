@@ -5,7 +5,7 @@ argument-hint: '<task description | approved plan path>'
 ---
 
 ## Todo
-- When standalone, declare a todo list for Step 1 / Step 2. When invoked by an outer delivery skill, complete these steps under its existing todo.
+- When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## 1: Implement
 - Implement the task or approved plan in `$ARGUMENTS` per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage as you go.

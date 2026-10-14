@@ -9,7 +9,7 @@ $ARGUMENTS
 If no task description was provided, halt + ask.
 
 ## Todo - Before you begin.
-- Declare a todo for setup, implementation/review, and close-out.
+- Keep one todo for setup, implementation/tests, review, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup.
 
 ## Phase 1: Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
@@ -23,6 +23,9 @@ If no task description was provided, halt + ask.
 4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 
 ## Phase 3 - Close out
+
+For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the initial close-out below.
+
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
 2. invoke `/dreamers-docs --staged`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject

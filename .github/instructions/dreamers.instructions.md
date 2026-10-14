@@ -17,6 +17,15 @@ When acting as any Dreamers agent, that agent's definition is the sole authority
 - Every subagent invocation must follow `dreamers-kernel.md` § "Subagent prompt — required content".
 - **Quality gates are mandatory for PR-bearing code-change workflows.** `/dreamers` requires one initial artifact-backed review per plan after `/dreamers-implement` passes. `/dreamers-review` selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Follow-up review and all other gates remain owned by `/dreamers`.
 
+### Delivery continuation
+
+For work started by `/dreamers` or `/dreamers-lite`, including related follow-ups after PR creation:
+
+- Keep the goal, owning skill, branch/PR, next phase, and review count in one todo with one item per major stage. Update when phases finish, changes reopen work, and before pausing. Mark complete only from confirmed outcomes or explicit user skips.
+- Answer questions, incorporate decisions, then resume the pending phase through close-out. Reconcile stale or missing todos from actual results. Respect discussion-first requests, pauses, cancellations, unresolved input, and review caps; detours do not reset an active review count.
+- Related bug reports authorize fixes unless the user says otherwise. Return to the owning skill's implementation/test and review loop; reopen affected user testing, docs, and close-out.
+- For an open PR, reuse its branch. Corrections after completed close-out start a new capped cycle. Review corrections with `/dreamers-review --vigil` over staged + unstaged changes, within the owning skill's cap. After required user testing, run `/dreamers-docs --staged`, present results, and request approval for the current changes before committing and pushing to the same PR. Reuse approval already given for those changes. Then return to any pending plan sequence. For a merged or closed PR, use normal fresh-branch setup.
+
 ### Dreamers Kernel (non-negotiable)
 - **Durable artifacts first:** substantive work goes to durable surfaces — plans (markdown in `.dreamers/plans/`), retros (markdown in `.dreamers/retros/`), review artifacts under `.dreamers/reviews/`, and the git diff from orchestrator-applied fixes. Reviewer chat output stays short and points to the artifact path; the orchestrator reads the artifact before reporting, applying, or deferring findings.
 - **Deferred suggestions:** whenever the user explicitly chooses `Defer` for a suggested change, append a structured Markdown entry to `defered.md` in the project root. Create it with `# Deferred Suggestions` if absent; never overwrite existing entries. Record the date, source context, original suggestion, proposed action, and deferral reason. A skill may require additional fields. Stage `defered.md` when the active workflow stages project changes.

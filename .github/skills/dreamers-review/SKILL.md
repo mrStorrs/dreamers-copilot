@@ -17,7 +17,7 @@ $ARGUMENTS
 Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff vs default), default = staged + unstaged.
 
 ## Todo - Before you begin.
-- When standalone, declare a todo list for Steps 1–3. When invoked by an outer delivery skill, complete these steps under its existing todo.
+- When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## Step 1 — Establish the review basis
 - If a readable plan is supplied, use it as the review basis. A user-supplied path that cannot be read remains a blocking error; do not silently replace it with an inferred basis.
