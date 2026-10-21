@@ -14,7 +14,7 @@ Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and st
 
 For delivery, keep one todo covering planning/start approval or artifact resolution, implementation/tests, review, user testing, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
 
-Resolve related follow-ups against the existing delivery state before routing fresh input below. Questions and gate responses resume the pending phase. Related bug reports or corrections use `Follow-up fixes` below, including during user testing or after PR creation.
+Resolve related follow-ups against the existing delivery state before routing fresh input below. Questions and gate responses resume the pending phase. Related bug reports or corrections resume `Fix loop` at `Implementation`, including during user testing or after PR creation.
 
 | Input | Route |
 |---|---|
@@ -25,13 +25,6 @@ Resolve related follow-ups against the existing delivery state before routing fr
 Treat `.md` path arguments, including `feature-<slug>/plan-NN-<name>.md` and `feature-<slug>/manifest.md`, as artifact input. Resolve feature-relative paths under `.dreamers/plans/`. Unrecognized input: halt and ask for a task, plan path, manifest, or help.
 
 Supplied artifacts are implementation authorization: do not re-plan, replace them, or ask to start. 
-
-## Follow-up fixes
-
-1. Keep the owning workflow, plan/task context, branch/PR, pending phases, and review count. Reopen implementation/tests and affected later stages. For an open PR, reuse its branch; resolve shipped plans from `.dreamers/plans/archive/` when needed. For a merged or closed PR, use fresh-branch setup per `Delivery continuation`.
-2. Invoke `/dreamers-implement <reported problem and agreed correction>` with the existing plan/task context. Do not restart `/dreamers`, repeat planning/start approval, or repeat branch setup for active delivery or an open PR.
-3. After green validation, invoke `/dreamers-review --vigil` over staged + unstaged changes within the existing review cap. Route accepted findings through `/dreamers-implement` again. Detours keep the active count; corrections after completed close-out start a new capped cycle.
-4. Complete required user testing and docs, then the applicable close-out. For an open PR, follow `Delivery continuation` to obtain any required commit/push approval and update the same PR.
 
 ## Phase 1: Planning and start approval (task input only)
 
@@ -46,18 +39,31 @@ Supplied artifacts are implementation authorization: do not re-plan, replace the
 
 Set up the feature branch once per `git-workflow`.  Process plans in sequence, carrying manifest shared context into implementation.
 
-### Implement and review
+### Initial implementation and review
 
 1. Invoke `/dreamers-implement <absolute-plan-path>`
 2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once.
-3. Ask before major refactors; record deferred findings in root `defered.md`. Invoke `/dreamers-implement <accepted findings and plan context>`, then `/dreamers-review --vigil --branch <absolute-plan-path>` up to 3 times.
-4. Halt temporarily on a blocked review or unresolved findings at the cap; report what remains. Ask user if you should proceed with another review, or closeout.
+3. For actionable findings, resume `Fix loop` at `Implementation`. Halt on a blocked review; otherwise continue to `User testing`.
+
+### Fix loop
+
+Retain the owning workflow, todo, plan/task context, and branch/PR; reopen affected later stages. Resolve shipped plans from `.dreamers/plans/archive/` when needed. Follow `Delivery continuation` for branch reuse and post-PR handling. Do not repeat planning/start approval or branch setup for active delivery or an open PR.
+
+Allow at most 3 fix cycles. Keep the active count across detours; corrections after completed close-out start a new capped cycle. Before each iteration, check the cap, ask before major refactors, and record deferred findings in root `defered.md`.
+
+Set review scope on entry: `--branch` for findings from the initial branch review; staged + unstaged for other corrections, including user-testing and post-PR bugs. Retain that scope on subsequent iterations.
+
+1. **Implementation.** Invoke `/dreamers-implement <accepted findings or reported problem and agreed correction>` with the current plan/task context.
+2. **Review.** After green validation, invoke `/dreamers-review --vigil` with the selected scope and current plan/task context. Actionable findings return to `Implementation` under this loop's gates and cap.
+3. **Continue delivery.** Once review passes or all remaining findings are deferred, resume `User testing`, then the applicable between-cycle or milestone close-out. For an open PR, use the post-PR close-out in `Delivery continuation`.
+
+Halt temporarily on blocked validation/review or unresolved findings at the cap; report what remains. Ask the user before another review or close-out at the cap.
 
 ### User testing
 
 Trigger when the plan requires manual verification, the change is user-facing, build/distribution is needed, reviewers request user validation, or the user asked to test the area. Otherwise record `user testing skipped — no manual verification trigger` in the cycle summary.
 
-When triggered, use `user-testing-gate` below. Route bug reports through `Follow-up fixes`: `/dreamers-implement`, then capped `/dreamers-review --vigil` on staged + unstaged changes, then re-present this gate. Commit only at the applicable close-out.
+When triggered, use `user-testing-gate` below. Bug reports resume `Fix loop` at `Implementation`; after the loop succeeds, re-present this gate. Commit only at the applicable close-out.
 
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the between-cycle or milestone close-out below.
 
@@ -209,6 +215,6 @@ Provide exactly these three options:
 ## Response handling
 
 - `Approved` -> continue the pipeline.
-- `Bug found (enter text)` -> capture the bug text. The active delivery orchestrator invokes `/dreamers-implement` with the bug text and current plan/task context, completes its required review within the existing cap, then presents this same gate again. Do not re-invoke the delivery skill.
+- `Bug found (enter text)` -> capture the bug text and resume the active delivery skill's `Fix loop` at `Implementation` with the current plan/task context. Follow that loop's review-count rules; after it succeeds, present this same gate again. Do not re-invoke the delivery skill.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
 </user-testing-gate>

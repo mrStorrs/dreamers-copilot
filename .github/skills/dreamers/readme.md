@@ -20,7 +20,7 @@ flowchart TD
     Result -->|Blocked| Stop
     Result -->|Actionable findings| Cap{"Fewer than 3<br/>review fix cycles?"}
     Cap -->|No| Stop
-    Cap -->|Yes| X["Resolve major refactors with user<br/>/dreamers-implement fixes + tests"]
+    Cap -->|Yes| X["Fix loop: Implementation<br/>resolve major refactors; /dreamers-implement"]
     X --> F["/dreamers-review --vigil"]
     X -->|Validation blocked| Stop
     F --> Result
@@ -48,13 +48,13 @@ flowchart TD
 
 1. Empty/help input opens `/dreamers-help`. Task input invokes `/dreamers-plan`, then human plan review and start approval. Supplied plans/manifests are already implementation authorization.
 2. Implement each plan with `/dreamers-implement`, then invoke `/dreamers-review`. Plan complexity selects the initial lane unless the plan or user specifies one.
-3. Apply accepted findings through `/dreamers-implement`, then Vigil review, for at most 3 fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
+3. Resume `Fix loop` at `Implementation` for accepted findings. The loop owns implementation, Vigil review, major-refactor gates, deferrals, and the 3-fix-cycle cap. Halt on blocked review or unresolved findings at the cap.
 4. Complete triggered user testing. Between plans, check drift; ATOMIC commits and continues, while INCREMENTAL requests PR approval and waits for merge before continuing.
 5. Update docs, commit remaining changes, request PR approval, and return the PR URL.
 
 `/dreamers` invokes specialized phase skills only; it never invokes itself. Wrapped skills return control to the existing orchestrator without invoking their caller. Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction.
 
-Related bug reports during user testing or after PR creation authorize fixes through `/dreamers-implement` with the current plan/task context, followed by capped Vigil review and required user testing. For an open PR, reuse its branch, resolve archived plans when needed, and update docs from the uncommitted diff; ask approval before committing and pushing the update. Do not repeat planning/start approval or branch setup for that continuation. Review caps still stop the loop.
+Related bug reports during user testing or after PR creation resume `Fix loop` at `Implementation` with the current plan/task context. The loop defines the skill calls once and returns to required testing and close-out. It retains branch review scope for initial-review findings and uses staged + unstaged changes for testing or post-PR corrections. For an open PR, reuse its branch, resolve archived plans when needed, and update docs from the uncommitted diff; ask approval before committing and pushing the update. Do not repeat planning/start approval or branch setup for that continuation.
 
 Keep one delivery todo aligned with confirmed results, reopening affected stages after changes and reconciling stale entries after detours. New corrections after completed close-out start a new capped cycle; detours within a cycle keep its review count.
 
