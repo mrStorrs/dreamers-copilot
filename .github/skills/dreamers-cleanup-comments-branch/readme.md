@@ -57,6 +57,6 @@ flowchart TD
 - **Branch-only scope.** Files come from `git diff origin/$DEFAULT...HEAD --name-only` — nothing outside the branch diff is touched.
 - **Refuses to run on the default branch.** Halt with a redirect to `/dreamers-cleanup-comments` for project-wide sweeps.
 - **Fetch before diff.** Stale `origin/$DEFAULT` produces wrong scope — always fetch first.
-- **Shared cleanup ref.** Both cleanup skills read the same workflow directly, passing their own scope and commit message. An empty branch diff never broadens to project-wide cleanup.
+- **Shared cleanup ref.** Both cleanup skills embed the same workflow through XML sync, passing their own scope and commit message. An empty branch diff never broadens to project-wide cleanup.
 - **Review artifacts are read before fixes.** Optional Vigil review writes `.dreamers/reviews/vigil-*.md`; Phase 4 applies findings from that artifact.
 - **Pre-PR positioning.** Designed to run before opening a PR; commit stays on branch for `/dreamers-pr` to push.

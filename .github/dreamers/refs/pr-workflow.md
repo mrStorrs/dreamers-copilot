@@ -1,9 +1,8 @@
 # PR workflow
 
-Execute this workflow inline with the supplied input. Resolve links relative to this ref. Read the linked standards before acting. Keep the active skill's todo, gates, and delivery state.
+Apply the embedded `dreamers-kernel`, `git-workflow`, `pr-description` standards.
 
-Template read at runtime via `view`:
-- [pr-description.md](../templates/pr-description.md) — PR body shape.
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
 
 ## Todo - Before you begin.
 - When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
@@ -18,8 +17,7 @@ Template read at runtime via `view`:
 - If push is rejected (non-fast-forward): `git fetch origin` + rebase + re-push. Never force.
 
 ## Step 3 — Open the PR
-- Read `pr-description.md` template via `view`.
-- Draft PR body using its shape (Summary / Plans shipped / Cumulative diff / End-to-end ACs / Review summary / Test plan).
+- Draft the PR body using the embedded `pr-description` template below.
 - `gh pr create --base <DEFAULT> --head <branch> --title "<short title>" --body <body>`. Capture PR URL.
 - If `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
 
@@ -32,8 +30,3 @@ Template read at runtime via `view`:
 
 ## Exit
 - PR URL. Include moved archive path(s) when Step 4 archived anything.
-
-## Dreamers Kernel
-Read and apply [dreamers-kernel](dreamers-kernel.md).
-
-Read and apply [git-workflow](git-workflow.md).

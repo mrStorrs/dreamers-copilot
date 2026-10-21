@@ -1,3 +1,4 @@
+<pr-description>
 # PR Description Template
 
 Use this structure for `gh pr create --body`.
@@ -22,3 +23,4 @@ plan/task summary here
 - [SEVERITY] file:line — what was fixed (from reviewer artifacts / commit messages)
 
 *(Omit if no fixes applied.)*
+</pr-description>

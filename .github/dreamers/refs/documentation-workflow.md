@@ -1,6 +1,8 @@
 # Documentation workflow
 
-Execute this workflow inline with the supplied input. Resolve links relative to this ref. Read the linked standards before acting. Keep the active skill's todo, gates, and delivery state.
+Apply the embedded `dreamers-kernel` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
 
 ## Todo - Before you begin.
 - When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
@@ -23,6 +25,3 @@ Execute this workflow inline with the supplied input. Resolve links relative to 
 
 ## Exit
 - Files Echo touched. The caller commits (this workflow does NOT commit, push, or open a PR).
-
-## Dreamers Kernel
-Read and apply [dreamers-kernel](dreamers-kernel.md).

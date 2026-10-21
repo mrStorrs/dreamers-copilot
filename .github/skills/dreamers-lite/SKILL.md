@@ -8,7 +8,7 @@ $ARGUMENTS
 
 If no task description was provided, halt + ask.
 
-Read each linked workflow ref when its phase begins and execute it inline with that phase's input. Resolve links relative to this file. Keep ownership of the todo, gates, review count, and delivery state; do not invoke other skills or load their `SKILL.md` files.
+Use the embedded workflow blocks below when their phases begin, with each phase's input. Each block's write restrictions and exit apply only to that phase. Keep ownership of the todo, gates, review count, and delivery state; do not invoke other skills or load their `SKILL.md` files.
 
 ## Todo - Before you begin.
 - Keep one todo for setup, implementation/tests, review, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup.
@@ -19,8 +19,8 @@ Read each linked workflow ref when its phase begins and execute it inline with t
 - Inspect the task's scope. Raise ambiguities or critiques through `request_information`; otherwise continue.
 
 ## Phase 2: Implement loop
-1. Read and execute [implementation-workflow](../../dreamers/refs/implementation-workflow.md) with the task description and agreed scope, retaining the existing feature branch.
-2. Read and execute [review-workflow](../../dreamers/refs/review-workflow.md) with `--vigil --branch`, the task context, and no plan binding.
+1. Execute the embedded `implementation-workflow` below with the task description and agreed scope, retaining the existing feature branch.
+2. Execute the embedded `review-workflow` below with `--vigil --branch`, the task context, and no plan binding.
 3. Apply findings and repeat implementation + review up to 2 times. Ask before major refactors; record deferred findings in root `defered.md`.
 4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 
@@ -29,10 +29,10 @@ Read each linked workflow ref when its phase begins and execute it inline with t
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the initial close-out below.
 
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. read and execute [documentation-workflow](../../dreamers/refs/documentation-workflow.md) with `--staged`
+2. Execute the embedded `documentation-workflow` below with `--staged`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
-5. upon approval read and execute [pr-workflow](../../dreamers/refs/pr-workflow.md); pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
+5. upon approval execute the embedded `pr-workflow` below; pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -192,3 +192,242 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - Write *why*, never *what*
 - If a comment requires more than two lines to be useful, the code needs refactoring, not more words
 </comment-rules>
+
+<implementation-workflow>
+# Implementation workflow
+
+Apply the embedded `dreamers-kernel`, `git-workflow`, `testing-mandate`, `comment-rules`, `logging-discipline` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
+
+## Todo
+- When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
+
+## 1: Implement
+- Implement the task or approved plan in the supplied input per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage as you go.
+
+## 2: Type-check + run tests
+- Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
+- Update `./test-benchmarks.md` row after passing (if the project uses one).
+
+## Exit
+- Return requirement/AC coverage and validation results at green tests.
+</implementation-workflow>
+
+<review-workflow>
+# Review workflow
+
+Apply the embedded `dreamers-kernel`, `reviewer-findings-format`, `logging-discipline`, `agent-recovery` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
+
+## Modes
+- `--full` Full triad: Sentinel + Probe + Hone in parallel.
+- `--vigil` Single-agent combined review through Vigil.
+- `--lens <name>` Single-lens audit (`sentinel` / `probe` / `hone`).
+- `--lenses <csv>` Selected-lens audit (`sentinel`, `probe`, `hone` in any non-empty combination).
+- With a plan and no lane flag: select from the plan as described below.
+- Without a plan or lane flag: infer a review basis, then default to the full triad.
+
+Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff vs default), default = staged + unstaged.
+
+## Todo - Before you begin.
+- When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
+
+## Step 1 — Establish the review basis
+- If a readable plan is supplied, use it as the review basis. A user-supplied path that cannot be read remains a blocking error; do not silently replace it with an inferred basis.
+- For a supplied plan, resolve `**Grilling transcript:**` relative to the plan. If the metadata is absent, check for sibling `grilling-transcript.md` for compatibility. When a readable transcript exists, read it in full and bind its absolute path + verbatim contents alongside the plan as authoritative user-intent context. If the plan references a transcript that is missing or unreadable, block instead of silently dropping it. If no transcript exists or is referenced, continue with the plan alone.
+- If no plan is supplied or no plan is available, infer the intended behavior from, in order: explicit user direction; PR title/body and branch name; commits and diff in the selected scope; changed tests; changed code and its callers; then nearby conventions and public interfaces.
+- Write a concise inferred-intent summary with the observable behavior, invariants, likely regression risks, evidence paths, and confidence. Treat that summary as the review basis, not as a replacement plan.
+- If the evidence does not support one reliable interpretation of the change, ask the user one concise question before spawning reviewers. Do not guess or use the full triad to decide the requirement.
+
+## Step 2 — Spawn reviewers
+- Determine the selected reviewers in this order:
+  1. Honor an explicit lane flag or explicit user direction.
+  2. Honor an explicit reviewer requirement written in the plan.
+  3. Otherwise read `**Plan-type:**`: `lite` = Vigil; `standard` = Sentinel + Probe; `complex` = Sentinel + Probe + Hone.
+  4. If no plan or Plan-type is available, use Sentinel + Probe + Hone.
+- Before spawning, record existing matching artifacts under `.dreamers/reviews/{vigil,sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
+- For multiple selected reviewers, launch every reviewer in parallel through the runtime's batched-spawn mechanism, each with `mode: "sync"`. Never spawn or await reviewers sequentially.
+- Vigil and single-lens modes spawn only the chosen reviewer.
+- Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
+- Every reviewer prompt MUST include the review basis: either the absolute plan path or the inferred-intent summary with its evidence and confidence. For a plan-bound review with a resolved Grill transcript, include its absolute path and full verbatim contents; require the reviewer to use it when checking intent alignment and to report any plan/transcript conflict rather than silently choosing one. Explicitly say `no plan binding` for inferred-intent reviews.
+- Every reviewer prompt MUST require exactly one artifact under `.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md` and short chat output containing only status, counts, artifact path, blocked reason, and open questions.
+- Per-lens prompt context:
+  - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review with the required architecture audit. Artifact contains findings, intent alignment, requirement coverage, and architecture audit sections.
+  - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Artifact contains findings + intent-alignment summary.
+  - **Probe** — test coverage (requirement matrix, layer audit, edge cases, gaps). Artifact contains findings + requirement coverage table.
+  - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
+- Wait for all spawned reviewers to return.
+
+## Step 3 — Report
+- For each selected reviewer, read the artifact path returned in chat. If the path is missing or unreadable, inspect only new matching artifacts created for this review; if exactly one exists for that reviewer, read it. Otherwise surface `Blocked — review artifact missing for <reviewer>` and stop.
+- Return per-reviewer artifact contents verbatim to the caller, including artifact paths.
+- Aggregate counts by severity + lens from the artifacts for a one-line summary.
+- Surface any `Blocked` status from any artifact (caller handles).
+- Surface any open questions raised by any artifact (caller handles).
+
+## Exit
+- Artifact-backed structured findings per `reviewer-findings-format` (Kernel). The caller applies (or defers) findings on its own terms.
+
+## Lane policy
+
+This workflow owns reviewer selection and execution. The caller owns all finding disposition, gates, fixes, revalidation, and user testing. This workflow does not modify project code, tests, docs, config, dependencies, or git state. Each spawned reviewer is read-only for those same project files; its sole write is exactly one `.dreamers/reviews/` artifact.
+
+Lane choices:
+
+| Lane | Reviewers | Use when |
+| --- | --- | --- |
+| vigil | Vigil | Lite plan or explicit request. |
+| sentinel | Sentinel | Correctness, security, or maintainability audit. |
+| probe | Probe | Test coverage, AC layer, edge-case, or regression-risk audit. |
+| hone | Hone | Simplicity, architecture, or over-engineering audit. |
+| standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
+| full | Sentinel + Probe + Hone | Complex plan, explicit full review, or the standalone default. |
+</review-workflow>
+
+<documentation-workflow>
+# Documentation workflow
+
+Apply the embedded `dreamers-kernel` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
+
+## Todo - Before you begin.
+- When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
+
+## Step 1 — Resolve diff scope
+- `--branch` (default): scope = `git diff --name-only origin/$DEFAULT...HEAD`.
+- `--staged`: scope = union of `git diff --cached --name-only` and `git diff --name-only`.
+- If the changed-files list is empty → output `No changes detected` and exit.
+
+## Step 2 — Spawn Echo
+- `task(agent_type: "echo", mode: "sync")`. Prompt MUST include `Do NOT call manage_todo_list.`
+- Pass: context (ad-hoc or milestone close-out — caller-supplied), changed-files list, diff base, plan paths (if applicable), prior review summary (if applicable).
+- Constraint to Echo: edits docs only — no production code, no tests. Stage with `git add`; do NOT commit.
+- Wait for Echo to return its structured chat output.
+
+## Step 3 — Handle output
+- `Docs updated — N files changed` → surface doc-changes log to user.
+- `No doc updates needed` → exit.
+- Open questions → present each via `request_information`; capture answers; re-spawn Echo with clarification if needed.
+
+## Exit
+- Files Echo touched. The caller commits (this workflow does NOT commit, push, or open a PR).
+</documentation-workflow>
+
+<pr-workflow>
+# PR workflow
+
+Apply the embedded `dreamers-kernel`, `git-workflow`, `pr-description` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
+
+## Todo - Before you begin.
+- When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
+
+## Step 1 — Pre-push verification
+- `git status` — confirm clean (no unstaged/untracked production files).
+- `git log --oneline -10` — confirm commit history matches expectation.
+- Detect default branch (canonical two-step per `git-workflow`, Kernel).
+
+## Step 2 — Push
+- `git push -u origin <branch>` — never force; never skip hooks.
+- If push is rejected (non-fast-forward): `git fetch origin` + rebase + re-push. Never force.
+
+## Step 3 — Open the PR
+- Draft the PR body using the embedded `pr-description` template below.
+- `gh pr create --base <DEFAULT> --head <branch> --title "<short title>" --body <body>`. Capture PR URL.
+- If `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
+
+## Step 4 — Archive shipped plan artifacts
+- If this PR ships a Dreamers plan from `.dreamers/plans/feature-<slug>/`, archive after the PR is created.
+- Single-plan feature directory: move `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/`.
+- Multi-plan feature directory or manifest sequence: create `.dreamers/plans/archive/feature-<slug>/` if needed, move only the shipped `plan-NN-*.md` file(s) into it, and leave unfinished plans in the live feature directory.
+- If `manifest.md` exists, keep it live while any unfinished plan file remains. After the last unfinished plan ships, move `manifest.md` into the same archive directory and remove the now-empty live feature directory.
+- If no feature directory applies, skip this step.
+
+## Exit
+- PR URL. Include moved archive path(s) when Step 4 archived anything.
+</pr-workflow>
+
+<logging-discipline>
+1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
+2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
+   - Logger library / import path (do not introduce a new logger where one already exists).
+   - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
+   - Message format (structured fields vs interpolated strings, key names, casing).
+</logging-discipline>
+
+<reviewer-findings-format>
+# Reviewer Findings Format
+
+## Artifact contract
+
+Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
+
+`.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md`
+
+Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
+
+The artifact is the durable handoff. Chat output is only a short status pointer with the artifact path. The caller must read the artifact before reporting, applying, or deferring findings.
+
+**Status line** (one of):
+- `Approved — no findings`
+- `Findings reported — N items`
+- `Blocked — <reason>`
+
+**Findings** (if any) — one bullet per finding, exact format:
+
+```
+[severity] [lens-tag] file:line — what was wrong → suggested fix
+```
+
+- `severity` ∈ `critical` / `high` / `medium` / `low`
+- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
+- `file:line` — absolute or repo-relative path + line number
+- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
+
+**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
+
+**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
+
+Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
+</reviewer-findings-format>
+
+<agent-recovery>
+# Agent Failure Recovery (mandatory)
+
+When a spawned agent hits a rate limit, crashes, or times out mid-run:
+1. Read whatever workspace files the agent managed to write before failing.
+2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
+3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
+4. Do not re-run steps that already completed — build on partial progress.
+</agent-recovery>
+
+<pr-description>
+# PR Description Template
+
+Use this structure for `gh pr create --body`.
+
+---
+
+## Summary
+plan/task summary here
+
+- [bullet: what was delivered]
+- [bullet: why / what problem it solves]
+
+## Test counts
+
+- Desktop Vitest: N pass
+- Mobile Jest: N pass
+
+*(Omit platforms not touched by this PR.)*
+
+## Fixes applied
+
+- [SEVERITY] file:line — what was fixed (from reviewer artifacts / commit messages)
+
+*(Omit if no fixes applied.)*
+</pr-description>

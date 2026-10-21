@@ -1,6 +1,6 @@
 # /dreamers-lite
 
-Deliver a task without creating a plan. Delivery order: `SKILL.md`. Shared phase mechanics: the linked workflow refs, read directly without invoking other skills.
+Deliver a task without creating a plan. Delivery order: `SKILL.md`. Shared phase mechanics: XML-synced workflow blocks embedded in this skill, with all required standards. No skill calls or runtime ref-file reads.
 
 ```mermaid
 flowchart TD
@@ -8,13 +8,13 @@ flowchart TD
     Task -->|No| Halt(["Halt + report"])
     Task -->|Yes| Branch["Create fresh fix/slug branch"]
     Branch --> Scope["Inspect scope<br/>raise ambiguities or critiques"]
-    Scope --> Implement["Read implementation-workflow.md<br/>task + agreed scope"]
+    Scope --> Implement["Embedded implementation workflow<br/>task + agreed scope"]
     Implement --> Tests{"Validation green<br/>within 3 fix attempts?"}
     Tests -->|No| Halt
-    Tests -->|Yes| Review["Read review-workflow.md --vigil --branch"]
+    Tests -->|Yes| Review["Embedded review workflow --vigil --branch"]
     Review --> Result{"Review result?"}
     Result -->|Blocked| Halt
-    Result -->|Approved| Docs["Read documentation-workflow.md --staged<br/>include uncommitted changes"]
+    Result -->|Approved| Docs["Embedded documentation workflow --staged<br/>include uncommitted changes"]
     Result -->|Findings| Major{"Major refactor?"}
     Major -->|No| Cap{"Fewer than 2<br/>review fix cycles?"}
     Major -->|Yes| Choice{"User direction"}
@@ -37,7 +37,7 @@ flowchart TD
     Commit --> Approval{"PR approved?"}
     Approval -->|Halt| Halt
     Approval -->|Other| Direction
-    Approval -->|Approved| PR["Read pr-workflow.md"]
+    Approval -->|Approved| PR["Embedded pr workflow"]
     PR --> Done(["Return PR URL"])
     Done -.->|Related bug or correction| Implement
 
@@ -54,7 +54,7 @@ flowchart TD
 1. Create a fresh `fix/<slug>` branch. Inspect the task and raise ambiguities or critiques.
 2. Pass the task and agreed scope to `implementation-workflow.md`; execute it inline to implement, type-check, and test.
 3. Run `review-workflow.md` with `--vigil --branch` and the task context (no plan binding). Apply findings through at most 2 implementation/review fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
-4. Update docs with `documentation-workflow.md --staged`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then read `pr-workflow.md` and return its URL.
+4. Update docs with `documentation-workflow.md --staged`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then execute the embedded PR block and return its URL.
 
 Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports authorize fixes. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, and docs; ask approval before committing and pushing the update.
 

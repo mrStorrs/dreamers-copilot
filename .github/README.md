@@ -26,11 +26,11 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dream
 | **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
 
-Vigil, Sentinel, Probe, and Hone spawn through the shared `review-workflow.md` and each write a durable review artifact. The workflow selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone through `documentation-workflow.md`. Standalone `/dreamers-review` and `/dreamers-docs` read those same refs.
+Vigil, Sentinel, Probe, and Hone spawn through the shared `review-workflow.md` and each write a durable review artifact. The workflow selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone through `documentation-workflow.md`. Standalone `/dreamers-review` and `/dreamers-docs` embed those same refs through XML sync.
 
 ## Skills
 
-Every skill is an independent entry point. Shared behavior lives in workflow refs, which skills read and execute directly; skills never invoke other skills or load another skill's `SKILL.md`. Explicit user instructions can skip or alter phases/actions.
+Every skill is an independent entry point. Shared behavior lives in workflow refs, synchronized into each consuming skill as XML blocks; skills never invoke other skills or load another skill's `SKILL.md`. Explicit user instructions can skip or alter phases/actions.
 
 Across Dreamers skills, an explicit user choice to defer a suggested change appends a structured entry to project-root `defered.md` without overwriting prior entries.
 
@@ -38,10 +38,10 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode reads `planning-workflow.md`, then the implementation-start gate; plan path and manifest modes skip both using human-approved input. Per plan it executes the implementation and review refs; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
-| `/dreamers-help` | Read-only orientation, examples, reviewer lanes, gates, specialized choices, and migration guidance. Empty or help-like `/dreamers` input reads the same help ref before repository or external inspection. |
+| `/dreamers <task | plan paths | manifest>` | End-to-end pipeline: task mode executes the embedded `planning-workflow`, then the implementation-start gate; plan path and manifest modes skip both using human-approved input. Per plan it executes the implementation and review refs; the orchestrator applies findings, records deferred findings in project-root `defered.md`, and preserves the original testing, close-out, approval, and PR gates. |
+| `/dreamers-help` | Read-only orientation, examples, reviewer lanes, gates, specialized choices, and migration guidance. Empty or help-like `/dreamers` input uses the embedded help block before repository or external inspection. |
 | `/dreamers-plan <task>` | 3-phase planning (Hash-out → Write → Review). Stores every Grill question and response word for word in a transcript linked from each plan, produces plans with Goal, Scope and context, and Acceptance Criteria, plus an optional manifest, verifies coverage, then hard-stops at approval. |
-| `/dreamers-implement <task or plan>` | One cycle against a task or approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` reads the review ref next. |
+| `/dreamers-implement <task or plan>` | One cycle against a task or approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` executes its embedded review workflow next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
@@ -82,9 +82,9 @@ Both delivery skills resume after conversational detours and keep one todo align
 ```mermaid
 flowchart TD
     Start(["/dreamers $ARGUMENTS"]) --> ModeCheck{"Input type?"}
-    ModeCheck -->|Empty or help| Help["Read help-workflow.md"]
+    ModeCheck -->|Empty or help| Help["Embedded help workflow"]
     Help --> HelpEnd(["Return guidance"])
-    ModeCheck -->|Task description| Planning["Read planning-workflow.md"]
+    ModeCheck -->|Task description| Planning["Embedded planning workflow"]
     ModeCheck -->|Plan paths| Plans["Read human-approved plans"]
     ModeCheck -->|Manifest| Manifest["Read human-approved plans<br/>and shared context"]
 
@@ -98,10 +98,10 @@ flowchart TD
     Plans --> Branch
     Manifest --> Branch
 
-    Branch --> Implement["Read implementation-workflow.md<br/>implement + tests"]
+    Branch --> Implement["Embedded implementation workflow<br/>implement + tests"]
     Implement --> Tests{"Validation green<br/>within fix limit?"}
     Tests -->|No| Halt
-    Tests -->|Yes| Review["Read review-workflow.md<br/>lane selected from plan or user direction"]
+    Tests -->|Yes| Review["Embedded review workflow<br/>lane selected from plan or user direction"]
     Review --> Result{"Review result?"}
     Result -->|Blocked| Halt
     Result -->|Approved| UserTesting{"User testing triggered?"}
@@ -118,7 +118,7 @@ flowchart TD
     Cap -->|Yes| Fix["Apply findings<br/>implement + validate"]
     Fix --> FixTests{"Validation green?"}
     FixTests -->|No| Halt
-    FixTests -->|Yes| Vigil["Read review-workflow.md --vigil"]
+    FixTests -->|Yes| Vigil["Embedded review workflow --vigil"]
     Vigil --> Result
 
     UserTesting -->|No| MorePlans{"More plans?"}
@@ -138,16 +138,16 @@ flowchart TD
     Incremental --> IncrGate{"PR approved?"}
     IncrGate -->|Halt| Halt
     IncrGate -->|Other| Direction
-    IncrGate -->|Approved| IncrPR["Read pr-workflow.md"]
+    IncrGate -->|Approved| IncrPR["Embedded pr workflow"]
     IncrPR --> Merge["Wait for user to confirm merge"]
     Merge --> Branch
 
-    MorePlans -->|No| Docs["Read documentation-workflow.md --branch<br/>suggest relevant workflow improvements"]
+    MorePlans -->|No| Docs["Embedded documentation workflow --branch<br/>suggest relevant workflow improvements"]
     Docs --> Commit["Stage explicit paths<br/>commit remaining changes"]
     Commit --> PRGate{"Final PR approved?"}
     PRGate -->|Halt| Halt
     PRGate -->|Other| Direction
-    PRGate -->|Approved| PR["Read pr-workflow.md"]
+    PRGate -->|Approved| PR["Embedded pr workflow"]
     PR --> Done(["Return PR URL"])
 
     classDef workflow fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff

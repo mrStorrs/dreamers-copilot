@@ -1,6 +1,6 @@
 # /dreamers-plan — flow
 
-Planning only. Shared workflow: [planning-workflow](../../dreamers/refs/planning-workflow.md). `SKILL.md` reads this ref directly.
+Planning only. Shared workflow: [planning-workflow](../../dreamers/refs/planning-workflow.md). `SKILL.md` embeds this ref and its required standards through XML sync.
 
 ```mermaid
 flowchart TD
@@ -22,5 +22,5 @@ Every plan uses **Goal**, **Scope and context**, and **Acceptance Criteria**. Ke
 - Grill one unresolved decision at a time. Save questions and responses verbatim and link the transcript from each plan when present.
 - Proposal critique and plan approval remain mandatory. Written plans must preserve all accepted requirements and user decisions.
 - Use a manifest for shared multi-plan context; backfill one when adding a second plan. Individual plans must remain usable alone.
-- The workflow reads the Grill, plan-format, and manifest-format refs directly.
-- Standalone planning owns its todo and stops at approval. When `/dreamers` reads the same ref, it keeps its delivery todo and implementation-start gate.
+- The Grill, plan-format, and manifest-format refs are embedded alongside the planning workflow through XML sync.
+- Standalone planning owns its todo and stops at approval. When `/dreamers` executes its embedded copy, it keeps its delivery todo and implementation-start gate.

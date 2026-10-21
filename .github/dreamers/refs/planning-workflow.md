@@ -1,11 +1,13 @@
 # Planning workflow
 
-Execute this workflow inline with the supplied input. Resolve links relative to this ref. Read the linked standards before acting. Keep the active skill's todo, gates, and delivery state.
+Apply the embedded `planning-grill`, `plan-format`, `manifest-format` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
 
 If the task is missing, ask. Work inline and write only `.dreamers/plans/` artifacts; do not change project files or git state. When used standalone, own a planning todo; as a delivery phase, use the active skill's existing todo.
 
 ## 1: Grill
-Read and apply [planning-grill](planning-grill.md).
+Apply `planning-grill` below.
 
 ## 2: Generate plan(s) proposal
 - generate plans following `plan-format`
@@ -32,7 +34,3 @@ Present plan paths through `request_information`: `Approved` / `Minor edit` / `M
 - Other: follow the user's direction.
 
 On approval, return plan paths. When used standalone, stop and suggest `/dreamers-implement <plan-path>` as a next command for the user. As a delivery phase, return to the active skill's implementation-start gate.
-
-Read and apply [plan-format](plan-format.md).
-
-Read and apply [manifest-format](manifest-format.md).

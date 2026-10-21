@@ -117,6 +117,7 @@ expected_refs = [
     "help-workflow.md",
     "implementation-workflow.md",
     "planning-workflow.md",
+    "pr-description.md",
     "pr-workflow.md",
     "review-workflow.md",
     "agent-recovery.md",
@@ -232,27 +233,43 @@ workflow_consumers = {
     "dreamers-cleanup-comments-branch": ["comment-cleanup"],
 }
 
+workflow_standards = {
+    "help": [],
+    "planning": ["planning-grill", "plan-format", "manifest-format"],
+    "implementation": ["dreamers-kernel", "git-workflow", "testing-mandate", "comment-rules", "logging-discipline"],
+    "review": ["dreamers-kernel", "reviewer-findings-format", "logging-discipline", "agent-recovery"],
+    "documentation": ["dreamers-kernel"],
+    "pr": ["dreamers-kernel", "git-workflow", "pr-description"],
+    "comment-cleanup": ["comment-rules", "dreamers-kernel"],
+}
+
 for skill, workflows in workflow_consumers.items():
     path = skill_root / skill / "SKILL.md"
     if not path.exists():
         continue
     content = path.read_text(encoding="utf-8")
-    for workflow in workflows:
-        target = f"../../dreamers/refs/{workflow}-workflow.md"
-        if f"]({target})" not in content:
-            add_error(f"Missing direct workflow ref in {path.relative_to(root)}: {target}")
+    required = {f"{workflow}-workflow" for workflow in workflows}
+    required.update(standard for workflow in workflows for standard in workflow_standards[workflow])
+    for name in sorted(required):
+        if not re.search(rf"(?ms)^<{name}>\n.+?\n</{name}>$", content):
+            add_error(f"Missing embedded ref in {path.relative_to(root)}: {name}")
 
 link_pattern = re.compile(r"\[[^\]\n]+\]\(([^)\s]+\.md)\)")
+ref_names = "|".join(re.escape(Path(name).stem) for name in expected_refs)
+runtime_ref_pattern = re.compile(rf"\b(?:read|load|view|open)\b[^\n]*\b(?:{ref_names})\.md\b", re.IGNORECASE)
 instruction_files = list(skill_root.glob("*/SKILL.md")) + list(instructions_root.glob("*.md"))
-workflow_files = list((dreamers_root / "refs").glob("*-workflow.md"))
-for path in instruction_files + workflow_files:
+ref_files = list((dreamers_root / "refs").glob("*.md"))
+for path in instruction_files + ref_files:
     content = path.read_text(encoding="utf-8")
     for target in link_pattern.findall(content):
         if target.endswith("/SKILL.md"):
             add_error(f"Skill-to-skill file dependency in {path.relative_to(root)}: {target}")
-        elif path in workflow_files or "dreamers/refs/" in target:
-            if not (path.parent / target).is_file():
-                add_error(f"Broken workflow ref link in {path.relative_to(root)}: {target}")
+        elif "dreamers/refs/" in target:
+            add_error(f"Runtime ref-file dependency in {path.relative_to(root)}: {target}")
+    if runtime_ref_pattern.search(content):
+        add_error(f"Runtime ref-file read in {path.relative_to(root)}")
+    if path in ref_files and re.search(rf"(?m)^</?(?:{ref_names})>$", content):
+        add_error(f"Nested source ref in {path.relative_to(root)}; embed shared standards alongside the workflow")
     if re.search(r"(?im)^(?:\d+[.)]\s+|-\s+)?(?:on success,\s*|upon approval\s+)?(?:invoke|call|run|prefer)\s+`?/dreamers(?:-|\b)", content):
         add_error(f"Skill-to-skill invocation in {path.relative_to(root)}")
 
@@ -351,7 +368,7 @@ assert_patterns(
 assert_patterns(
     instructions_root / "dreamers.instructions.md",
     [
-        ("independent skills", r"Do not invoke another skill or load another skill.*SKILL\.md.*Execute shared workflow refs inline"),
+        ("independent skills", r"Do not invoke another skill or load another skill.*SKILL\.md.*Execute embedded workflow blocks inline"),
         ("active skill todo ownership", r"active skill owns the todo and end-to-end state"),
         ("global deferred suggestions ledger", r"Deferred suggestions.*explicitly chooses `Defer`.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
     ],

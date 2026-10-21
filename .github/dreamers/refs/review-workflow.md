@@ -1,6 +1,8 @@
 # Review workflow
 
-Execute this workflow inline with the supplied input. Resolve links relative to this ref. Read the linked standards before acting. Keep the active skill's todo, gates, and delivery state.
+Apply the embedded `dreamers-kernel`, `reviewer-findings-format`, `logging-discipline`, `agent-recovery` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
 
 ## Modes
 - `--full` Full triad: Sentinel + Probe + Hone in parallel.
@@ -65,12 +67,3 @@ Lane choices:
 | hone | Hone | Simplicity, architecture, or over-engineering audit. |
 | standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
 | full | Sentinel + Probe + Hone | Complex plan, explicit full review, or the standalone default. |
-
-## Dreamers Kernel
-Read and apply [dreamers-kernel](dreamers-kernel.md).
-
-Read and apply [reviewer-findings-format](reviewer-findings-format.md).
-
-Read and apply [logging-discipline](logging-discipline.md).
-
-Read and apply [agent-recovery](agent-recovery.md).

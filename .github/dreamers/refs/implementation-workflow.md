@@ -1,6 +1,8 @@
 # Implementation workflow
 
-Execute this workflow inline with the supplied input. Resolve links relative to this ref. Read the linked standards before acting. Keep the active skill's todo, gates, and delivery state.
+Apply the embedded `dreamers-kernel`, `git-workflow`, `testing-mandate`, `comment-rules`, `logging-discipline` standards.
+
+Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
 
 ## Todo
 - When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
@@ -14,13 +16,3 @@ Execute this workflow inline with the supplied input. Resolve links relative to 
 
 ## Exit
 - Return requirement/AC coverage and validation results at green tests.
-
-Read and apply [dreamers-kernel](dreamers-kernel.md).
-
-Read and apply [git-workflow](git-workflow.md).
-
-Read and apply [testing-mandate](testing-mandate.md).
-
-Read and apply [comment-rules](comment-rules.md).
-
-Read and apply [logging-discipline](logging-discipline.md).

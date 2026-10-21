@@ -75,7 +75,9 @@ function Assert-NoPatterns {
 }
 
 function Assert-SynchronizedRefs {
+    param([string]$PackageRoot = (Join-Path $Root ".github"))
     $refsRoot = Join-Path $Root ".github/dreamers/refs"
+    $consumerRefsRoot = Join-Path $PackageRoot "dreamers/refs"
     $refs = @{}
     foreach ($ref in Get-ChildItem $refsRoot -Filter "*.md" -File) {
         $content = Get-Content -Raw $ref.FullName
@@ -83,8 +85,8 @@ function Assert-SynchronizedRefs {
         $content = $content.Replace(([string][char]13 + [char]10), [string][char]10).Replace([string][char]13, [string][char]10)
         $refs[$ref.BaseName] = $content.TrimEnd([char]10)
     }
-    foreach ($consumer in Get-ChildItem (Join-Path $Root ".github") -Filter "*.md" -File -Recurse) {
-        if ($consumer.FullName.StartsWith($refsRoot + [System.IO.Path]::DirectorySeparatorChar)) {
+    foreach ($consumer in Get-ChildItem $PackageRoot -Filter "*.md" -File -Recurse) {
+        if ($consumer.FullName.StartsWith($consumerRefsRoot + [System.IO.Path]::DirectorySeparatorChar)) {
             continue
         }
         $content = Get-Content -Raw $consumer.FullName
@@ -116,6 +118,15 @@ function Assert-WorkflowRefs {
         "dreamers-cleanup-comments" = @("comment-cleanup")
         "dreamers-cleanup-comments-branch" = @("comment-cleanup")
     }
+    $standards = @{
+        "help" = @()
+        "planning" = @("planning-grill", "plan-format", "manifest-format")
+        "implementation" = @("dreamers-kernel", "git-workflow", "testing-mandate", "comment-rules", "logging-discipline")
+        "review" = @("dreamers-kernel", "reviewer-findings-format", "logging-discipline", "agent-recovery")
+        "documentation" = @("dreamers-kernel")
+        "pr" = @("dreamers-kernel", "git-workflow", "pr-description")
+        "comment-cleanup" = @("comment-rules", "dreamers-kernel")
+    }
     foreach ($entry in $consumers.GetEnumerator()) {
         $path = Join-Path $PackageRoot "skills/$($entry.Key)/SKILL.md"
         if (-not (Test-Path $path)) {
@@ -123,30 +134,42 @@ function Assert-WorkflowRefs {
             continue
         }
         $content = Get-Content -Raw $path
-        foreach ($workflow in $entry.Value) {
-            $target = "../../dreamers/refs/$workflow-workflow.md"
-            if (-not $content.Contains("]($target)")) {
-                Add-Error "Missing direct workflow ref in ${path}: $target"
+        if ($null -eq $content) { $content = "" }
+        $content = $content.Replace("`r`n", "`n").Replace("`r", "`n")
+        $required = foreach ($workflow in $entry.Value) {
+            "$workflow-workflow"
+            $standards[$workflow]
+        }
+        foreach ($name in ($required | Select-Object -Unique)) {
+            if ($content -notmatch "(?ms)^<$name>\n.+?\n</$name>$") {
+                Add-Error "Missing embedded ref in ${path}: $name"
             }
         }
     }
-    $workflowFiles = @(Get-ChildItem (Join-Path $PackageRoot "dreamers/refs") -Filter "*-workflow.md" -File)
+    $refFiles = @(Get-ChildItem (Join-Path $PackageRoot "dreamers/refs") -Filter "*.md" -File)
+    $refNames = ($expectedRefs | ForEach-Object { [regex]::Escape([System.IO.Path]::GetFileNameWithoutExtension($_)) }) -join "|"
+    $runtimeRefPattern = "(?i)\b(?:read|load|view|open)\b[^\n]*\b(?:$refNames)\.md\b"
     $instructionFiles = @(
         Get-ChildItem (Join-Path $PackageRoot "skills") -Filter "SKILL.md" -File -Recurse
         Get-ChildItem (Join-Path $PackageRoot "instructions") -Filter "*.md" -File
     )
-    foreach ($file in ($instructionFiles + $workflowFiles)) {
+    foreach ($file in ($instructionFiles + $refFiles)) {
         $content = Get-Content -Raw $file.FullName
         if ($null -eq $content) { $content = "" }
+        $content = $content.Replace("`r`n", "`n").Replace("`r", "`n")
         foreach ($match in [regex]::Matches($content, '\[[^\]\n]+\]\(([^)\s]+\.md)\)')) {
             $target = $match.Groups[1].Value
             if ($target.EndsWith("/SKILL.md")) {
                 Add-Error "Skill-to-skill file dependency in $($file.FullName): $target"
-            } elseif ($file.FullName -in $workflowFiles.FullName -or $target.Contains("dreamers/refs/")) {
-                if (-not (Test-Path (Join-Path $file.DirectoryName $target) -PathType Leaf)) {
-                    Add-Error "Broken workflow ref link in $($file.FullName): $target"
-                }
+            } elseif ($target.Contains("dreamers/refs/")) {
+                Add-Error "Runtime ref-file dependency in $($file.FullName): $target"
             }
+        }
+        if ($content -match $runtimeRefPattern) {
+            Add-Error "Runtime ref-file read in $($file.FullName)"
+        }
+        if ($file.FullName -in $refFiles.FullName -and $content -match "(?m)^</?(?:$refNames)>$") {
+            Add-Error "Nested source ref in $($file.FullName); embed shared standards alongside the workflow"
         }
         if ($content -match '(?im)^(?:\d+[.)]\s+|-\s+)?(?:on success,\s*|upon approval\s+)?(?:invoke|call|run|prefer)\s+`?/dreamers(?:-|\b)') {
             Add-Error "Skill-to-skill invocation in $($file.FullName)"
@@ -184,6 +207,7 @@ $expectedRefs = @(
     "help-workflow.md",
     "implementation-workflow.md",
     "planning-workflow.md",
+    "pr-description.md",
     "pr-workflow.md",
     "review-workflow.md",
     "agent-recovery.md",
@@ -368,7 +392,7 @@ Assert-Patterns (Join-Path $agentRoot "probe.agent.md") @{
     "planless Probe findings" = "report missing or weak coverage as findings"
 }
 Assert-Patterns (Join-Path $instructionsRoot "dreamers.instructions.md") @{
-    "independent skills" = "Do not invoke another skill or load another skill.*SKILL\.md.*Execute shared workflow refs inline"
+    "independent skills" = "Do not invoke another skill or load another skill.*SKILL\.md.*Execute embedded workflow blocks inline"
     "active skill todo ownership" = "active skill owns the todo and end-to-end state"
     "global deferred suggestions ledger" = 'Deferred suggestions.*explicitly chooses `Defer`.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`'
 }
@@ -476,6 +500,7 @@ if (-not $SkipInstallSmoke) {
 
         & (Join-Path $Root "Install-Dreamers.ps1") -CopilotHome $tmpHome -Force | Out-Null
         Assert-WorkflowRefs $tmpHome
+        Assert-SynchronizedRefs $tmpHome
         foreach ($ref in $expectedRefs) {
             Assert-Path (Join-Path $tmpHome "dreamers/refs/$ref") "installed ref"
         }
