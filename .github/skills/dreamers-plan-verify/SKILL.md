@@ -46,7 +46,7 @@ $ARGUMENTS
 
 ## Todo list
 
-When standalone, a todo is optional. When invoked by an outer delivery skill, complete this check under its existing todo.
+A todo is optional for this standalone check.
 
 ---
 
@@ -67,19 +67,19 @@ For each element the plan references, verify against the current codebase:
 
 Return ONE of:
 
-- **`No change — proceed`** — the plan still applies as written. The user / orchestrator can invoke `/dreamers-implement <plan>` confidently.
+- **`No change — proceed`** — the plan still applies as written. Suggest `/dreamers-implement <plan>` as a next command for the user.
 - **`Drift detected — halt`** — list specific drift items in chat. Each item identifies WHERE in the plan (AC #, Scope and context entry, or line range) and WHAT diverged:
   ```
   - AC #3 — expected: filter by date range / actual: filter API removed in last cycle
   - Scope and context — expected: src/auth/session.ts / actual: file renamed to src/auth/sessionStore.ts
   ```
   The user decides whether to:
-  - Revise the plan inline (and re-run `/dreamers-plan-verify`).
+  - Revise the plan inline and repeat this check.
   - Abandon the plan.
   - Accept the drift and proceed (rare; usually means the plan needs updating).
 
 ## Use cases
 
-- **Before invoking `/dreamers-implement`** on an older plan: catch drift early.
-- **Between sequential plans in `/dreamers`** (multi-plan mode): orchestrator can invoke this to check the next plan against the now-current state after the previous plan shipped.
+- **Before implementation** on an older plan: catch drift early.
+- **Between shipped plans:** the user can request this check against the now-current state before starting another delivery.
 - **Standalone** sanity check when you have a plan file and want to know if it's still relevant.

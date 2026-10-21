@@ -8,6 +8,8 @@ $ARGUMENTS
 
 If no task description was provided, halt + ask.
 
+Read each linked workflow ref when its phase begins and execute it inline with that phase's input. Resolve links relative to this file. Keep ownership of the todo, gates, review count, and delivery state; do not invoke other skills or load their `SKILL.md` files.
+
 ## Todo - Before you begin.
 - Keep one todo for setup, implementation/tests, review, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup.
 
@@ -17,8 +19,8 @@ If no task description was provided, halt + ask.
 - Inspect the task's scope. Raise ambiguities or critiques through `request_information`; otherwise continue.
 
 ## Phase 2: Implement loop
-1. Invoke `/dreamers-implement <task description and agreed scope>`.
-2. Review implementation using `/dreamers-review --vigil --branch <task>`
+1. Read and execute [implementation-workflow](../../dreamers/refs/implementation-workflow.md) with the task description and agreed scope, retaining the existing feature branch.
+2. Read and execute [review-workflow](../../dreamers/refs/review-workflow.md) with `--vigil --branch`, the task context, and no plan binding.
 3. Apply findings and repeat implementation + review up to 2 times. Ask before major refactors; record deferred findings in root `defered.md`.
 4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 
@@ -27,10 +29,10 @@ If no task description was provided, halt + ask.
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the initial close-out below.
 
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. invoke `/dreamers-docs --staged`
+2. read and execute [documentation-workflow](../../dreamers/refs/documentation-workflow.md) with `--staged`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
-5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
+5. upon approval read and execute [pr-workflow](../../dreamers/refs/pr-workflow.md); pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
 
 ## Dreamers Kernel
 <dreamers-kernel>
@@ -83,7 +85,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
 2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
-## Branch setup (before invoking `/dreamers-implement`)
+## Branch setup (before implementation)
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.

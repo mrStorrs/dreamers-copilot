@@ -1,6 +1,6 @@
 ---
 name: dreamers
-description: 'Deliver a task, approved plan(s), or manifest through planning, implementation, review, user testing, docs, and PR. Empty/help input opens /dreamers-help. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
+description: 'Deliver a task, approved plan(s), or manifest through shared workflow refs for planning, implementation, review, user testing, docs, and PR. Empty/help input returns read-only guidance. Triggers: /dreamers, plan and implement, new feature, ship a feature.'
 argument-hint: '<help | task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
@@ -8,7 +8,9 @@ $ARGUMENTS
 
 ## Route input
 
-Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and stop before inspecting or changing repository, git, mailbox, or external state.
+Empty input, `help`, `--help`, or `-h`: read [help-workflow](../../dreamers/refs/help-workflow.md), return its guidance, and stop before inspecting or changing repository, git, mailbox, or external state.
+
+Read each linked workflow ref when its phase begins and execute it inline with that phase's input. Resolve links relative to this file. Keep ownership of the todo, gates, review counts, and delivery state; do not invoke other skills or load their `SKILL.md` files.
 
 For delivery, keep one todo covering planning/start approval or artifact resolution, implementation/tests, review, user testing, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
 
@@ -24,7 +26,7 @@ Supplied artifacts are implementation authorization: do not re-plan, replace the
 
 ## Phase 1: Planning and start approval (task input only)
 
-1. Invoke `/dreamers-plan $ARGUMENTS`; capture the returned plan paths.
+1. Read and execute [planning-workflow](../../dreamers/refs/planning-workflow.md) with the task input; capture the returned plan paths.
 2. Validate the plans artifacts were created. Present paths, implementation scope, test intent, and the ship-strategy recommendation when multiple plans will run.
 3. Use `request_information`:
    - Single plan: `Approved — start implementation` / `Revise plan` / `Halt` / `Other`.
@@ -37,16 +39,16 @@ Set up the feature branch once per `git-workflow`.  Process plans in sequence, c
 
 ### Implement and review
 
-1. Invoke `/dreamers-implement <absolute-plan-path>`
-2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once.
-3. Apply findings and repeat implementation + `/dreamers-review --vigil --branch <absolute-plan-path>` up to 3 times. Ask before major refactors; record deferred findings in root `defered.md`.
+1. Read and execute [implementation-workflow](../../dreamers/refs/implementation-workflow.md) with the absolute plan path and manifest context, retaining the existing feature branch.
+2. On success, read and execute [review-workflow](../../dreamers/refs/review-workflow.md) with `--branch` and the absolute plan path once.
+3. Apply findings and repeat implementation + the review workflow with `--vigil --branch` and the absolute plan path up to 3 times. Ask before major refactors; record deferred findings in root `defered.md`.
 4. Halt temporarily on a blocked review or unresolved findings at the cap; report what remains. Ask user if you should proceed with another review, or closeout.
 
 ### User testing
 
 Trigger when the plan requires manual verification, the change is user-facing, build/distribution is needed, reviewers request user validation, or the user asked to test the area. Otherwise record `user testing skipped — no manual verification trigger` in the cycle summary.
 
-When triggered, use `user-testing-gate` below. After bug fixes and automated validation, invoke `/dreamers-review --vigil` on the staged + unstaged changes within the review cap before re-presenting the gate. Commit only at the applicable close-out.
+When triggered, use `user-testing-gate` below. After bug fixes and automated validation, execute the review workflow with `--vigil` on the staged + unstaged changes within the review cap before re-presenting the gate. Commit only at the applicable close-out.
 
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the between-cycle or milestone close-out below.
 
@@ -55,17 +57,17 @@ For revisions to an open PR, use the post-PR close-out in `Delivery continuation
 Before the next plan, check cited paths, signatures, and ACs against the landed diff. Surface drift for the user to revise, skip, or halt.
 
 - **ATOMIC:** commit this plan with a `Plan: feature-<slug>/plan-NN-<name>` body line; do not push. Continue to the next cycle.
-- **INCREMENTAL:** invoke `/dreamers-docs --branch` when this plan has user-facing/documentable changes; stage and commit with the `Plan:` body line. Present plan summary, validation, and PR scope through `request_information`: `Approved` / `Halt` / `Other`. On approval invoke `/dreamers-pr` and capture its URL. Wait for the user to confirm merge, then repeat feature-branch setup from updated default before the next cycle.
+- **INCREMENTAL:** read and execute [documentation-workflow](../../dreamers/refs/documentation-workflow.md) with `--branch` when this plan has user-facing/documentable changes; stage and commit with the `Plan:` body line. Present plan summary, validation, and PR scope through `request_information`: `Approved` / `Halt` / `Other`. On approval read and execute [pr-workflow](../../dreamers/refs/pr-workflow.md) and capture its URL. Wait for the user to confirm merge, then repeat feature-branch setup from updated default before the next cycle.
 
 At either pre-PR gate, Halt means emit a resume command and stop; Other follows user direction.
 
 ## Phase 3 — Milestone close-out
 
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. invoke `/dreamers-docs --branch`
+2. read and execute [documentation-workflow](../../dreamers/refs/documentation-workflow.md) with `--branch`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
-5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the
+5. upon approval read and execute [pr-workflow](../../dreamers/refs/pr-workflow.md); pass `--issue <#|url>` if input referenced an issue. Capture the PR URL.
 6. present PR url to user. 
 
 <dreamers-kernel>
@@ -118,7 +120,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
 2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
-## Branch setup (before invoking `/dreamers-implement`)
+## Branch setup (before implementation)
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.

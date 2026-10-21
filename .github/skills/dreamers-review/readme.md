@@ -1,6 +1,6 @@
 # /dreamers-review — flow
 
-Visual map of the selected-lane review skill. Source of truth is `SKILL.md`. **Read-only** — does NOT apply fixes; the caller does.
+Visual map of the selected-lane review skill. Shared workflow: [review-workflow](../../dreamers/refs/review-workflow.md). `SKILL.md` reads this ref directly. **Read-only** — does NOT apply fixes; the caller does.
 
 ```mermaid
 flowchart TD
@@ -80,11 +80,11 @@ Selection precedence is explicit user direction or lane flag, then an explicit r
 
 ## Key invariants
 
-- **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers` Step 5, or whoever invoked it) decides what to do with the findings. Reviewers may write only their required `.dreamers/reviews/` artifacts.
+- **Read-only.** This skill does NOT apply fixes. The active delivery skill or the user decides what to do with the findings. Reviewers may write only their required `.dreamers/reviews/` artifacts.
 - **Grill context follows the plan.** Resolve the plan's `**Grilling transcript:**` link, falling back to a sibling `grilling-transcript.md`; when readable, pass its full verbatim contents to every reviewer for intent alignment. A referenced but unreadable transcript blocks review.
-- **`/dreamers` reruns.** Routine follow-up review reruns use `/dreamers-review --vigil`. A full or selected-lane rerun runs only when the major-change rerun gate asks the user and the user selects it.
+- **`/dreamers` reruns.** Routine follow-up review reruns read `review-workflow.md` with `--vigil`. A full or selected-lane rerun runs only when the major-change rerun gate asks the user and the user selects it.
 - **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
 - **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
 - **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
 - **`--no-apply` doesn't exist** — this skill is always read-only by design.
-- **Todo ownership is contextual.** Standalone todos are optional; when invoked by a delivery skill, review completes the phase under its existing todo.
+- **Todo ownership is contextual.** Standalone todos are optional; delivery skills read the review ref and complete the phase under their existing todo.

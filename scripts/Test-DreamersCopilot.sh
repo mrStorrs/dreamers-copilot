@@ -112,6 +112,13 @@ expected_skills = [
     "dreamers-update",
 ]
 expected_refs = [
+    "comment-cleanup-workflow.md",
+    "documentation-workflow.md",
+    "help-workflow.md",
+    "implementation-workflow.md",
+    "planning-workflow.md",
+    "pr-workflow.md",
+    "review-workflow.md",
     "agent-recovery.md",
     "comment-rules.md",
     "dreamers-kernel.md",
@@ -211,12 +218,53 @@ for label, directory, expected in [
         continue
     assert_exact(label, expected, [path.name for path in directory.iterdir() if path.is_file()])
 
+workflow_consumers = {
+    "dreamers": ["help", "planning", "implementation", "review", "documentation", "pr"],
+    "dreamers-lite": ["implementation", "review", "documentation", "pr"],
+    "dreamers-help": ["help"],
+    "dreamers-plan": ["planning"],
+    "dreamers-implement": ["implementation"],
+    "dreamers-review": ["review"],
+    "dreamers-docs": ["documentation"],
+    "dreamers-pr": ["pr"],
+    "dreamers-update": ["pr"],
+    "dreamers-cleanup-comments": ["comment-cleanup"],
+    "dreamers-cleanup-comments-branch": ["comment-cleanup"],
+}
+
+for skill, workflows in workflow_consumers.items():
+    path = skill_root / skill / "SKILL.md"
+    if not path.exists():
+        continue
+    content = path.read_text(encoding="utf-8")
+    for workflow in workflows:
+        target = f"../../dreamers/refs/{workflow}-workflow.md"
+        if f"]({target})" not in content:
+            add_error(f"Missing direct workflow ref in {path.relative_to(root)}: {target}")
+
+link_pattern = re.compile(r"\[[^\]\n]+\]\(([^)\s]+\.md)\)")
+instruction_files = list(skill_root.glob("*/SKILL.md")) + list(instructions_root.glob("*.md"))
+workflow_files = list((dreamers_root / "refs").glob("*-workflow.md"))
+for path in instruction_files + workflow_files:
+    content = path.read_text(encoding="utf-8")
+    for target in link_pattern.findall(content):
+        if target.endswith("/SKILL.md"):
+            add_error(f"Skill-to-skill file dependency in {path.relative_to(root)}: {target}")
+        elif path in workflow_files or "dreamers/refs/" in target:
+            if not (path.parent / target).is_file():
+                add_error(f"Broken workflow ref link in {path.relative_to(root)}: {target}")
+    if re.search(r"(?im)^(?:\d+[.)]\s+|-\s+)?(?:on success,\s*|upon approval\s+)?(?:invoke|call|run|prefer)\s+`?/dreamers(?:-|\b)", content):
+        add_error(f"Skill-to-skill invocation in {path.relative_to(root)}")
+
 catalog_path = root / ".github/catalog.json"
 assert_path(catalog_path, "catalog")
 if catalog_path.exists():
     try:
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         items = catalog.get("items", [])
+        refs_target = next((item for item in catalog.get("folderTargets", []) if item.get("slug") == "dreamers-refs"), {})
+        if refs_target.get("sourcePath") != ".github/dreamers/refs" or refs_target.get("destSubpath") != "dreamers/refs":
+            add_error("Catalog must install shared workflow refs at dreamers/refs")
         item_keys = {(item.get("type"), item.get("slug")) for item in items}
         for key in [("skill", "dreamers")]:
             if key not in item_keys:
@@ -236,6 +284,8 @@ if catalog_path.exists():
             for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
+            if ("folder", "dreamers-refs") not in member_keys:
+                add_error("Collection missing member: dreamers-refs")
             for key in [("skill", "dreamers-full"), ("skill", "dreamers-research"), ("agent", "sage")]:
                 if key in member_keys:
                     add_error(f"Collection retains retired member: {key[1]}")
@@ -246,7 +296,7 @@ if catalog_path.exists():
         add_error(f"Invalid catalog JSON: {exc}")
 
 assert_patterns(
-    skill_root / "dreamers-help/SKILL.md",
+    dreamers_root / "refs/help-workflow.md",
     [
         ("read-only boundary", r"## Boundary.*read-only guidance.*Do not inspect or change"),
         ("primary examples", r"/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md"),
@@ -265,7 +315,7 @@ assert_patterns(
     ],
 )
 assert_patterns(
-    skill_root / "dreamers-review/SKILL.md",
+    dreamers_root / "refs/review-workflow.md",
     [
         ("Vigil execution mode", r"--vigil.*Vigil|Vigil.*--vigil"),
         ("full execution mode", r"--full.*Sentinel \+ Probe \+ Hone"),
@@ -278,7 +328,7 @@ assert_patterns(
         ("planless reviewer basis", r"review basis.*absolute plan path.*inferred-intent summary"),
         ("Grill transcript resolution", r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full"),
         ("Grill transcript reviewer context", r"absolute path and full verbatim contents.*plan/transcript conflict"),
-        ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
+        ("conditional todo ownership", r"when used standalone.*todo.*when used as a delivery phase.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
         ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
         ("caller owns fix loop", r"caller owns all finding disposition, gates, fixes, revalidation, and user testing"),
@@ -301,8 +351,8 @@ assert_patterns(
 assert_patterns(
     instructions_root / "dreamers.instructions.md",
     [
-        ("same-context skill invocation", r"skill.*same orchestrator context|same orchestrator context.*skill"),
-        ("outermost todo ownership", r"outermost skill.*owns.*todo|todo.*owned by.*outermost skill"),
+        ("independent skills", r"Do not invoke another skill or load another skill.*SKILL\.md.*Execute shared workflow refs inline"),
+        ("active skill todo ownership", r"active skill owns the todo and end-to-end state"),
         ("global deferred suggestions ledger", r"Deferred suggestions.*explicitly chooses `Defer`.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
     ],
 )
@@ -335,6 +385,7 @@ for path in [
     skill_root / "dreamers-plan/SKILL.md",
     skill_root / "dreamers-plan/readme.md",
     dreamers_root / "refs/planning-grill.md",
+    dreamers_root / "refs/planning-workflow.md",
     root / "README.md",
     root / ".github/README.md",
 ]:

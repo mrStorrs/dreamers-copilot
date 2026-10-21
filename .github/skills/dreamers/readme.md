@@ -1,27 +1,27 @@
 # /dreamers
 
-Deliver tasks, approved plan paths, or a manifest. Source of truth: `SKILL.md`.
+Deliver tasks, approved plan paths, or a manifest. Delivery order: `SKILL.md`. Shared phase mechanics: the linked workflow refs, read directly without invoking other skills.
 
 ```mermaid
 flowchart TD
     I["/dreamers input"] --> R{"Input kind?"}
-    R -->|Empty or help| H["/dreamers-help"]
+    R -->|Empty or help| H["Read help-workflow.md"]
     H --> E(["Return guidance"])
-    R -->|Task| P["/dreamers-plan"]
+    R -->|Task| P["Read planning-workflow.md"]
     P --> G{"Human plan review<br/>and start approval"}
     G -->|Revise| P
     G -->|Halt| Stop(["Halt + report"])
     G -->|Approved| A["Create feature branch"]
     R -->|Approved plans or manifest| A
-    A --> T["/dreamers-implement<br/>implement + tests"]
-    T --> V["/dreamers-review<br/>initial lane from plan or user direction"]
+    A --> T["Read implementation-workflow.md<br/>implement + tests"]
+    T --> V["Read review-workflow.md<br/>initial lane from plan or user direction"]
     T -->|Validation blocked| Stop
     V --> Result{"Review result?"}
     Result -->|Blocked| Stop
     Result -->|Actionable findings| Cap{"Fewer than 3<br/>review fix cycles?"}
     Cap -->|No| Stop
     Cap -->|Yes| X["Resolve major refactors with user<br/>apply fixes + validate"]
-    X --> F["/dreamers-review --vigil"]
+    X --> F["Read review-workflow.md --vigil"]
     X -->|Validation blocked| Stop
     F --> Result
     Result -->|Approved or findings deferred| U{"User testing triggered?"}
@@ -30,23 +30,23 @@ flowchart TD
     UT -->|Approved| Existing
     UT -->|Blocked or review cap reached| Stop
     Existing -->|No| More{"More plans?"}
-    Existing -->|Yes| RevisionDocs["/dreamers-docs --staged"]
+    Existing -->|Yes| RevisionDocs["Read documentation-workflow.md --staged"]
     RevisionDocs --> RevisionApproval{"Commit + push approved?"}
     RevisionApproval -->|Halt| Stop
     RevisionApproval -->|Approved| Update["Commit + push existing PR"]
     Update --> Done
     More -->|Yes| Next["Check drift; commit plan<br/>INCREMENTAL: approved PR + merge<br/>ATOMIC: continue without pushing"]
     Next --> T
-    More -->|No| D["/dreamers-docs<br/>commit remaining changes"]
+    More -->|No| D["Read documentation-workflow.md<br/>commit remaining changes"]
     D --> Approval{"Final PR approved?"}
     Approval -->|Halt| Stop
-    Approval -->|Approved| PR["/dreamers-pr"]
+    Approval -->|Approved| PR["Read pr-workflow.md"]
     PR --> Done(["Return PR URL"])
     Done -.->|Related bug or correction| X
 ```
 
-1. Empty/help input opens `/dreamers-help`. Task input invokes `/dreamers-plan`, then human plan review and start approval. Supplied plans/manifests are already implementation authorization.
-2. Implement each plan with `/dreamers-implement`, then invoke `/dreamers-review`. Plan complexity selects the initial lane unless the plan or user specifies one.
+1. Empty/help input reads `help-workflow.md`. Task input reads `planning-workflow.md`, then human plan review and start approval. Supplied plans/manifests are already implementation authorization.
+2. Implement each plan with `implementation-workflow.md`, then read `review-workflow.md`. Plan complexity selects the initial lane unless the plan or user specifies one.
 3. Apply findings through at most 3 implementation/Vigil fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
 4. Complete triggered user testing. Between plans, check drift; ATOMIC commits and continues, while INCREMENTAL requests PR approval and waits for merge before continuing.
 5. Update docs, commit remaining changes, request PR approval, and return the PR URL.

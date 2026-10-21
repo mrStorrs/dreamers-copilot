@@ -1,0 +1,42 @@
+# Help workflow
+
+## Boundary
+
+This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Suggest next commands for the user; do not execute them.
+
+## Response
+
+Orient the user briefly: the Dreamers system combines planning, implementation and tests, artifact-backed review, targeted user gates, documentation, and PR delivery.
+
+Explain the primary entry point with concrete examples:
+
+- /dreamers add offline export
+- /dreamers feature-search/plan-01-indexing.md
+- /dreamers feature-search/manifest.md
+
+Explain that task descriptions use the planning workflow with Grill by default, shared with the standalone /dreamers-plan command. Existing plan and manifest inputs skip planning and the implementation-start gate using the human-reviewed artifacts.
+
+Explain adaptive review:
+
+- lite plans use Vigil.
+- standard plans use Sentinel + Probe.
+- complex plans use Sentinel + Probe + Hone.
+
+Explicit plan or user direction overrides the default reviewer lane. Reviewers are read-only for project files and write their required `.dreamers/reviews/` artifacts; the caller applies accepted findings and owns revalidation.
+
+Offer specialized choices when they fit better:
+
+- /dreamers-plan for planning only.
+- /dreamers-implement for a task or approved plan without end-to-end close-out.
+- /dreamers-review, /dreamers-test, or /dreamers-simplify for read-only audits.
+- /dreamers-lite for task delivery without planning, with up to 2 Vigil fix cycles, docs, commit, and PR approval.
+- /dreamers-issue, /dreamers-new-project, /dreamers-find-refactors, and /dreamers-explain for focused discovery or explanation.
+- /dreamers-docs, /dreamers-pr, and /dreamers-pr-resolve for documentation, PR creation, or PR feedback.
+- /dreamers-add-logging, /dreamers-cleanup-comments, /dreamers-cleanup-comments-branch, /dreamers-clean-work, and /dreamers-plan-verify for maintenance and verification.
+- /dreamers-update for Dreamers system-file maintenance and the approved Copilot-to-Codex transfer.
+
+State the `/dreamers` gates: plan approval for task input, major scope expansion, triggered user testing, and final pre-PR approval.
+
+Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
+
+End with one invitation: "Describe your goal and I can suggest the next command."

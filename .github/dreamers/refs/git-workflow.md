@@ -11,7 +11,7 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
 2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
-## Branch setup (before invoking `/dreamers-implement`)
+## Branch setup (before implementation)
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
