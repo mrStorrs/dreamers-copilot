@@ -6,11 +6,7 @@ argument-hint: '<task description>'
 
 $ARGUMENTS
 
-## Route input
-
-`/dreamers-lite` owns delivery and invokes only its specialized skills for phase work. Never invoke `/dreamers-lite` from itself or switch to `/dreamers` to continue delivery. Wrapped skills return control to this orchestrator without invoking either delivery skill.
-
-Resolve related follow-ups against the existing delivery state before starting a fresh task. Questions and gate responses resume the pending phase. Related bug reports or corrections resume `Fix loop` at `Implementation`, including during user testing or after PR creation. For fresh delivery without a task description, halt + ask.
+Related changes resume `Implement and review loop` at step 1 with the current context; do not invoke either delivery skill again. For a new task without a description, halt + ask.
 
 ## Todo - Before you begin.
 - Keep one todo for setup, implementation/tests, review, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup.
@@ -20,31 +16,11 @@ Resolve related follow-ups against the existing delivery state before starting a
 
 - Inspect the task's scope. Raise ambiguities or critiques through `request_information`; otherwise continue.
 
-## Phase 2: Implementation and review
-
-### Initial implementation and review
-
+## Phase 2: Implement and review loop
 1. Invoke `/dreamers-implement <task description and agreed scope>`.
-2. Review implementation using `/dreamers-review --vigil --branch <task>`
-3. For actionable findings, resume `Fix loop` at `Implementation`. Halt on a blocked review; otherwise continue to `User testing`.
-
-### Fix loop
-
-Retain the owning workflow, todo, task/agreed scope, and branch/PR; reopen affected later stages. Follow `Delivery continuation` for branch reuse and post-PR handling. Do not create a plan or repeat branch setup for active delivery or an open PR.
-
-Allow at most 2 fix cycles. Keep the active count across detours; corrections after completed close-out start a new capped cycle. Before each iteration, check the cap, ask before major refactors, and record deferred findings in root `defered.md`.
-
-Set review scope on entry: `--branch` for findings from the initial branch review; staged + unstaged for other corrections, including user-testing and post-PR bugs. Retain that scope on subsequent iterations.
-
-1. **Implementation.** Invoke `/dreamers-implement <accepted findings or reported problem and agreed correction>` with the current task context.
-2. **Review.** After green validation, invoke `/dreamers-review --vigil` with the selected scope and current task context. Actionable findings return to `Implementation` under this loop's gates and cap.
-3. **Continue delivery.** Once review passes or all remaining findings are deferred, resume `User testing`, then `Phase 3 - Close out`. For an open PR, use the post-PR close-out in `Delivery continuation`.
-
-Halt on blocked validation/review or unresolved findings at the cap; report what remains.
-
-### User testing
-
-Complete any required user testing before close-out. Bug reports resume `Fix loop` at `Implementation`; after the loop succeeds, request testing sign-off again.
+2. Review implementation using `/dreamers-review --vigil --branch <task>`. For testing or post-PR fixes, review staged + unstaged changes instead.
+3. Apply findings and repeat implementation + review up to 2 times. Ask before major refactors; record deferred findings in root `defered.md`.
+4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 
 ## Phase 3 - Close out
 

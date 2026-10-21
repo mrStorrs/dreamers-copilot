@@ -75,7 +75,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 `/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
 
-Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. `/dreamers` and `/dreamers-lite` invoke specialized phase skills only; neither invokes itself or the other to continue delivery, and wrapped skills return control without invoking their caller. Related bug reports during user testing or after PR creation resume the active skill's named `Fix loop` at `Implementation`, unless the user requests discussion or says otherwise. Each loop defines its skill calls once, preserves context, enforces its review cap, and returns to required testing and close-out. Corrections to an open PR reuse its branch, complete the docs check, and request approval to commit and push the update. Short standalone helper skills have optional todos.
+Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports resume the existing `Implement and review loop` at step 1 without re-invoking the delivery skill, unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
 
 ## `/dreamers` first delivery example
 
@@ -115,7 +115,7 @@ flowchart TD
     Remaining -->|Yes| Cap
     Remaining -->|No| UserTesting
     Cap -->|No| Halt
-    Cap -->|Yes| Fix["Fix loop: Implementation<br/>invoke /dreamers-implement"]
+    Cap -->|Yes| Fix["Apply findings<br/>implement + validate"]
     Fix --> FixTests{"Validation green?"}
     FixTests -->|No| Halt
     FixTests -->|Yes| Vigil["Invoke /dreamers-review --vigil"]
@@ -124,8 +124,11 @@ flowchart TD
     UserTesting -->|No| MorePlans{"More plans?"}
     UserTesting -->|Yes| TestGate{"User-testing gate"}
     TestGate -->|Approved| MorePlans
-    TestGate -->|Bug found| Cap
+    TestGate -->|Bug found| BugFix["Fix bug + automated validation"]
     TestGate -->|Other| Direction
+    BugFix --> BugTests{"Validation green?"}
+    BugTests -->|No| Halt
+    BugTests -->|Yes| Vigil
 
     MorePlans -->|Yes| Drift["Check next-plan drift<br/>resolve with user when needed"]
     Drift --> Strategy{"Ship strategy?"}
@@ -152,7 +155,7 @@ flowchart TD
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
     class Help,InvokePlan,Implement,Review,Vigil,IncrPR,Docs,PR skill
-    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,FixTests,UserTesting,TestGate,MorePlans,Strategy,IncrGate,PRGate gate
+    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,FixTests,UserTesting,TestGate,BugTests,MorePlans,Strategy,IncrGate,PRGate gate
     class Halt halt
-    class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,Drift,Atomic,Incremental,Merge,Commit phase
+    class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,BugFix,Drift,Atomic,Incremental,Merge,Commit phase
 ```

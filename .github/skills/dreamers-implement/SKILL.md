@@ -5,7 +5,7 @@ argument-hint: '<task description | approved plan path>'
 ---
 
 ## Todo
-- When standalone, a todo is optional. When invoked by an outer delivery skill, use its existing todo, branch, and plan/task context; do not repeat delivery setup. For a fix cycle, implement the supplied correction against that context.
+- When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.
 
 ## 1: Implement
 - Implement the task or approved plan in `$ARGUMENTS` per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage as you go.
@@ -15,7 +15,7 @@ argument-hint: '<task description | approved plan path>'
 - Update `./test-benchmarks.md` row after passing (if the project uses one).
 
 ## Exit
-- Return requirement/AC coverage and validation results at green tests. When wrapped, return control to the existing caller; never invoke `/dreamers` or another delivery skill to continue the pipeline.
+- Return requirement/AC coverage and validation results at green tests.
 
 <dreamers-kernel>
 ## User overrides

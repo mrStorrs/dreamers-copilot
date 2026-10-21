@@ -10,11 +10,9 @@ $ARGUMENTS
 
 Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and stop before inspecting or changing repository, git, mailbox, or external state.
 
-`/dreamers` owns delivery and invokes only its specialized skills for phase work. Never invoke `/dreamers` from itself. Wrapped skills return control to this orchestrator; they must not invoke `/dreamers` to continue delivery.
-
 For delivery, keep one todo covering planning/start approval or artifact resolution, implementation/tests, review, user testing, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
 
-Resolve related follow-ups against the existing delivery state before routing fresh input below. Questions and gate responses resume the pending phase. Related bug reports or corrections resume `Fix loop` at `Implementation`, including during user testing or after PR creation.
+Related changes resume `Implement and review loop` at step 1 with the current context; do not invoke `/dreamers` again.
 
 | Input | Route |
 |---|---|
@@ -39,31 +37,18 @@ Supplied artifacts are implementation authorization: do not re-plan, replace the
 
 Set up the feature branch once per `git-workflow`.  Process plans in sequence, carrying manifest shared context into implementation.
 
-### Initial implementation and review
+### Implement and review loop
 
 1. Invoke `/dreamers-implement <absolute-plan-path>`
-2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once.
-3. For actionable findings, resume `Fix loop` at `Implementation`. Halt on a blocked review; otherwise continue to `User testing`.
-
-### Fix loop
-
-Retain the owning workflow, todo, plan/task context, and branch/PR; reopen affected later stages. Resolve shipped plans from `.dreamers/plans/archive/` when needed. Follow `Delivery continuation` for branch reuse and post-PR handling. Do not repeat planning/start approval or branch setup for active delivery or an open PR.
-
-Allow at most 3 fix cycles. Keep the active count across detours; corrections after completed close-out start a new capped cycle. Before each iteration, check the cap, ask before major refactors, and record deferred findings in root `defered.md`.
-
-Set review scope on entry: `--branch` for findings from the initial branch review; staged + unstaged for other corrections, including user-testing and post-PR bugs. Retain that scope on subsequent iterations.
-
-1. **Implementation.** Invoke `/dreamers-implement <accepted findings or reported problem and agreed correction>` with the current plan/task context.
-2. **Review.** After green validation, invoke `/dreamers-review --vigil` with the selected scope and current plan/task context. Actionable findings return to `Implementation` under this loop's gates and cap.
-3. **Continue delivery.** Once review passes or all remaining findings are deferred, resume `User testing`, then the applicable between-cycle or milestone close-out. For an open PR, use the post-PR close-out in `Delivery continuation`.
-
-Halt temporarily on blocked validation/review or unresolved findings at the cap; report what remains. Ask the user before another review or close-out at the cap.
+2. On initial success, invoke `/dreamers-review --branch <absolute-plan-path>` once. For testing or post-PR fixes, use `/dreamers-review --vigil` over staged + unstaged changes.
+3. Apply findings and repeat implementation + `/dreamers-review --vigil` up to 3 times, retaining the review scope. Ask before major refactors; record deferred findings in root `defered.md`.
+4. Halt temporarily on a blocked review or unresolved findings at the cap; report what remains. Ask user if you should proceed with another review, or closeout.
 
 ### User testing
 
 Trigger when the plan requires manual verification, the change is user-facing, build/distribution is needed, reviewers request user validation, or the user asked to test the area. Otherwise record `user testing skipped — no manual verification trigger` in the cycle summary.
 
-When triggered, use `user-testing-gate` below. Bug reports resume `Fix loop` at `Implementation`; after the loop succeeds, re-present this gate. Commit only at the applicable close-out.
+When triggered, use `user-testing-gate` below. Bug reports resume `Implement and review loop` at step 1 before re-presenting the gate. Commit only at the applicable close-out.
 
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the between-cycle or milestone close-out below.
 
@@ -215,6 +200,6 @@ Provide exactly these three options:
 ## Response handling
 
 - `Approved` -> continue the pipeline.
-- `Bug found (enter text)` -> capture the bug text and resume the active delivery skill's `Fix loop` at `Implementation` with the current plan/task context. Follow that loop's review-count rules; after it succeeds, present this same gate again. Do not re-invoke the delivery skill.
+- `Bug found (enter text)` -> capture the bug text and resume `Implement and review loop` at step 1; after it succeeds, present this same user-testing gate again.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
 </user-testing-gate>
