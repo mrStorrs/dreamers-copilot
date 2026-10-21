@@ -112,6 +112,14 @@ expected_skills = [
     "dreamers-update",
 ]
 expected_refs = [
+    "comment-cleanup-workflow.md",
+    "documentation-workflow.md",
+    "help-workflow.md",
+    "implementation-workflow.md",
+    "planning-workflow.md",
+    "pr-description.md",
+    "pr-workflow.md",
+    "review-workflow.md",
     "agent-recovery.md",
     "comment-rules.md",
     "dreamers-kernel.md",
@@ -211,12 +219,83 @@ for label, directory, expected in [
         continue
     assert_exact(label, expected, [path.name for path in directory.iterdir() if path.is_file()])
 
+workflow_consumers = {
+    "dreamers": ["help", "planning", "implementation", "review", "documentation", "pr"],
+    "dreamers-lite": ["implementation", "review", "documentation", "pr"],
+    "dreamers-help": ["help"],
+    "dreamers-plan": ["planning"],
+    "dreamers-implement": ["implementation"],
+    "dreamers-review": ["review"],
+    "dreamers-docs": ["documentation"],
+    "dreamers-pr": ["pr"],
+    "dreamers-update": ["pr"],
+    "dreamers-cleanup-comments": ["comment-cleanup"],
+    "dreamers-cleanup-comments-branch": ["comment-cleanup"],
+}
+
+workflow_standards = {
+    "help": [],
+    "planning": ["planning-grill", "plan-format", "manifest-format"],
+    "implementation": ["dreamers-kernel", "git-workflow", "testing-mandate", "comment-rules", "logging-discipline"],
+    "review": ["dreamers-kernel", "reviewer-findings-format", "logging-discipline", "agent-recovery"],
+    "documentation": ["dreamers-kernel"],
+    "pr": ["dreamers-kernel", "git-workflow", "pr-description"],
+    "comment-cleanup": ["comment-rules", "dreamers-kernel"],
+}
+
+for skill, workflows in workflow_consumers.items():
+    path = skill_root / skill / "SKILL.md"
+    if not path.exists():
+        continue
+    content = path.read_text(encoding="utf-8")
+    required = {f"{workflow}-workflow" for workflow in workflows}
+    required.update(standard for workflow in workflows for standard in workflow_standards[workflow])
+    for name in sorted(required):
+        if not re.search(rf"(?ms)^<{name}>\n.+?\n</{name}>$", content):
+            add_error(f"Missing embedded ref in {path.relative_to(root)}: {name}")
+
+link_pattern = re.compile(r"\[[^\]\n]+\]\(([^)\s]+\.md)\)")
+ref_names = "|".join(re.escape(Path(name).stem) for name in expected_refs)
+runtime_ref_pattern = re.compile(rf"\b(?:read|load|view|open)\b[^\n]*\b(?:{ref_names})\.md\b", re.IGNORECASE)
+instruction_files = list(skill_root.glob("*/SKILL.md")) + list(instructions_root.glob("*.md"))
+ref_files = list((dreamers_root / "refs").glob("*.md"))
+for path in instruction_files + ref_files:
+    content = path.read_text(encoding="utf-8")
+    for target in link_pattern.findall(content):
+        if target.endswith("/SKILL.md"):
+            add_error(f"Skill-to-skill file dependency in {path.relative_to(root)}: {target}")
+        elif "dreamers/refs/" in target:
+            add_error(f"Runtime ref-file dependency in {path.relative_to(root)}: {target}")
+    if runtime_ref_pattern.search(content):
+        add_error(f"Runtime ref-file read in {path.relative_to(root)}")
+    if path in ref_files and re.search(rf"(?m)^</?(?:{ref_names})>$", content):
+        add_error(f"Nested source ref in {path.relative_to(root)}; embed shared standards alongside the workflow")
+    if path in ref_files:
+        fence = None
+        for line in content.splitlines():
+            marker = re.match(r"^\s*(`{3,}|~{3,})", line)
+            if marker:
+                token = marker.group(1)
+                if fence is None:
+                    fence = token
+                elif token[0] == fence[0] and len(token) >= len(fence):
+                    fence = None
+            elif fence is None and re.match(r"^#{1,6}\s", line):
+                add_error(f"Ref fragment owns a document heading in {path.relative_to(root)}; put headings in the consumer")
+        if path.stem.endswith("-workflow") and re.search(r"\b(?:declare|create|reset)\b[^\n]*\b(?:manage_todo_list|todo)\b|when used standalone|when used as a delivery phase", content, re.IGNORECASE):
+            add_error(f"Workflow ref owns skill lifecycle in {path.relative_to(root)}")
+    if re.search(r"(?im)^(?:\d+[.)]\s+|-\s+)?(?:on success,\s*|upon approval\s+)?(?:invoke|call|run|prefer)\s+`?/dreamers(?:-|\b)", content):
+        add_error(f"Skill-to-skill invocation in {path.relative_to(root)}")
+
 catalog_path = root / ".github/catalog.json"
 assert_path(catalog_path, "catalog")
 if catalog_path.exists():
     try:
         catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
         items = catalog.get("items", [])
+        refs_target = next((item for item in catalog.get("folderTargets", []) if item.get("slug") == "dreamers-refs"), {})
+        if refs_target.get("sourcePath") != ".github/dreamers/refs" or refs_target.get("destSubpath") != "dreamers/refs":
+            add_error("Catalog must install shared workflow refs at dreamers/refs")
         item_keys = {(item.get("type"), item.get("slug")) for item in items}
         for key in [("skill", "dreamers")]:
             if key not in item_keys:
@@ -236,6 +315,8 @@ if catalog_path.exists():
             for key in [("skill", "dreamers"), ("skill", "dreamers-help")]:
                 if key not in member_keys:
                     add_error(f"Collection missing member: {key[1]}")
+            if ("folder", "dreamers-refs") not in member_keys:
+                add_error("Collection missing member: dreamers-refs")
             for key in [("skill", "dreamers-full"), ("skill", "dreamers-research"), ("agent", "sage")]:
                 if key in member_keys:
                     add_error(f"Collection retains retired member: {key[1]}")
@@ -246,9 +327,9 @@ if catalog_path.exists():
         add_error(f"Invalid catalog JSON: {exc}")
 
 assert_patterns(
-    skill_root / "dreamers-help/SKILL.md",
+    dreamers_root / "refs/help-workflow.md",
     [
-        ("read-only boundary", r"## Boundary.*read-only guidance.*Do not inspect or change"),
+        ("read-only boundary", r"Boundary.*read-only guidance.*Do not inspect or change"),
         ("primary examples", r"/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md"),
         ("review lanes", r"lite plans use Vigil.*standard plans use Sentinel \+ Probe.*complex plans use Sentinel \+ Probe \+ Hone"),
         ("specialized choices", r"/dreamers-plan.* /dreamers-implement.* /dreamers-review.* /dreamers-lite"),
@@ -265,7 +346,7 @@ assert_patterns(
     ],
 )
 assert_patterns(
-    skill_root / "dreamers-review/SKILL.md",
+    dreamers_root / "refs/review-workflow.md",
     [
         ("Vigil execution mode", r"--vigil.*Vigil|Vigil.*--vigil"),
         ("full execution mode", r"--full.*Sentinel \+ Probe \+ Hone"),
@@ -278,7 +359,6 @@ assert_patterns(
         ("planless reviewer basis", r"review basis.*absolute plan path.*inferred-intent summary"),
         ("Grill transcript resolution", r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full"),
         ("Grill transcript reviewer context", r"absolute path and full verbatim contents.*plan/transcript conflict"),
-        ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
         ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
         ("caller owns fix loop", r"caller owns all finding disposition, gates, fixes, revalidation, and user testing"),
@@ -301,8 +381,8 @@ assert_patterns(
 assert_patterns(
     instructions_root / "dreamers.instructions.md",
     [
-        ("same-context skill invocation", r"skill.*same orchestrator context|same orchestrator context.*skill"),
-        ("outermost todo ownership", r"outermost skill.*owns.*todo|todo.*owned by.*outermost skill"),
+        ("independent skills", r"Do not invoke another skill or load another skill.*SKILL\.md.*Execute embedded workflow blocks inline"),
+        ("active skill todo ownership", r"active skill owns the todo and end-to-end state"),
         ("global deferred suggestions ledger", r"Deferred suggestions.*explicitly chooses `Defer`.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`"),
     ],
 )
@@ -335,6 +415,7 @@ for path in [
     skill_root / "dreamers-plan/SKILL.md",
     skill_root / "dreamers-plan/readme.md",
     dreamers_root / "refs/planning-grill.md",
+    dreamers_root / "refs/planning-workflow.md",
     root / "README.md",
     root / ".github/README.md",
 ]:

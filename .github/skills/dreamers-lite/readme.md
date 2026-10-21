@@ -1,6 +1,8 @@
 # /dreamers-lite
 
-Deliver a task without creating a plan. Source of truth: `SKILL.md`.
+Deliver a task without creating a plan. Delivery order: `SKILL.md`. Shared phase mechanics: XML-synced workflow blocks embedded in this skill, with all required standards. No skill calls or runtime ref-file reads.
+
+Implementation, review, documentation, and publishing bodies sit directly in their corresponding sections. This skill supplies their inputs and owns the todo, review loop, approval, and final exit. Shared rules and formats are grouped once at the end.
 
 ```mermaid
 flowchart TD
@@ -8,13 +10,13 @@ flowchart TD
     Task -->|No| Halt(["Halt + report"])
     Task -->|Yes| Branch["Create fresh fix/slug branch"]
     Branch --> Scope["Inspect scope<br/>raise ambiguities or critiques"]
-    Scope --> Implement["/dreamers-implement<br/>task + agreed scope"]
+    Scope --> Implement["Embedded implementation workflow<br/>task + agreed scope"]
     Implement --> Tests{"Validation green<br/>within 3 fix attempts?"}
     Tests -->|No| Halt
-    Tests -->|Yes| Review["/dreamers-review --vigil --branch"]
+    Tests -->|Yes| Review["Embedded review workflow --vigil --branch"]
     Review --> Result{"Review result?"}
     Result -->|Blocked| Halt
-    Result -->|Approved| Docs["/dreamers-docs --staged<br/>include uncommitted changes"]
+    Result -->|Approved| Docs["Embedded documentation workflow --staged<br/>include uncommitted changes"]
     Result -->|Findings| Major{"Major refactor?"}
     Major -->|No| Cap{"Fewer than 2<br/>review fix cycles?"}
     Major -->|Yes| Choice{"User direction"}
@@ -25,7 +27,7 @@ flowchart TD
     Remaining -->|Yes| Cap
     Remaining -->|No| Docs
     Cap -->|No| Halt
-    Cap -->|Yes| Fix["Pass findings to /dreamers-implement<br/>apply fixes + validate"]
+    Cap -->|Yes| Fix["Apply findings with implementation-workflow.md<br/>apply fixes + validate"]
     Fix --> Tests
     Docs --> Existing{"Updating an open PR?"}
     Existing -->|No| Commit["Stage explicit paths<br/>commit changes"]
@@ -37,24 +39,24 @@ flowchart TD
     Commit --> Approval{"PR approved?"}
     Approval -->|Halt| Halt
     Approval -->|Other| Direction
-    Approval -->|Approved| PR["/dreamers-pr"]
+    Approval -->|Approved| PR["Embedded pr workflow"]
     PR --> Done(["Return PR URL"])
     Done -.->|Related bug or correction| Implement
 
-    classDef skill fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
+    classDef workflow fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-    class Implement,Review,Fix,Docs,PR skill
+    class Implement,Review,Fix,Docs,PR workflow
     class Task,Tests,Result,Major,Choice,Remaining,Cap,Existing,UpdateApproval,Approval gate
     class Halt halt
     class Branch,Scope,Deferred,Direction,Commit,Update phase
 ```
 
 1. Create a fresh `fix/<slug>` branch. Inspect the task and raise ambiguities or critiques.
-2. Pass the task and agreed scope to `/dreamers-implement`; it implements, type-checks, and tests.
-3. Run `/dreamers-review --vigil --branch <task>`. Apply findings through at most 2 implementation/review fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
-4. Update docs with `/dreamers-docs --staged`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then invoke `/dreamers-pr` and return its URL.
+2. Pass the task and agreed scope to `implementation-workflow.md`; execute it inline to implement, type-check, and test.
+3. Run `review-workflow.md` with `--vigil --branch` and the task context (no plan binding). Apply findings through at most 2 implementation/review fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
+4. Update docs with `documentation-workflow.md --staged`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then execute the embedded PR block and return its URL.
 
 Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports authorize fixes. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, and docs; ask approval before committing and pushing the update.
 

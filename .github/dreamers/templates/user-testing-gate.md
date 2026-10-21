@@ -1,15 +1,16 @@
+# User testing gate
+
 <user-testing-gate>
-# User Testing Gate Template
 
 Use this template whenever the Dreamers pipeline pauses for user testing.
 
 Call `request_information`. Do not replace this gate with an unstructured chat prompt unless the tool is unavailable.
 
-## Prompt body
+**Prompt body**
 
 The prompt body must contain exactly these two sections, in this order:
 
-### Testing steps
+**Testing steps**
 
 Number every required user action and verification step with `1.`, `2.`, `3.`.
 
@@ -24,7 +25,7 @@ Include:
 
 Do not collapse tests into a paragraph. Do not use bullets for the testing steps.
 
-### Notes
+**Notes**
 
 Include:
 - Known limitations and out-of-scope items.
@@ -33,7 +34,7 @@ Include:
 
 Use `None` only when there are no notes.
 
-## Options
+**Options**
 
 Provide exactly these three options:
 
@@ -43,9 +44,10 @@ Provide exactly these three options:
 
 `Bug found (enter text)` and `Other (enter text)` must accept freeform text.
 
-## Response handling
+**Response handling**
 
 - `Approved` -> continue the pipeline.
 - `Bug found (enter text)` -> capture the bug text, fix inline, rerun required automated validation, then present this same user-testing gate again.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
+
 </user-testing-gate>

@@ -3,11 +3,15 @@ name: dreamers-help
 description: 'Read-only guide to the Dreamers system, delivery workflow, specialized skills, examples, reviewer lanes, gates, and migration choices. Use for /dreamers-help, /dreamers with no input, help, --help, -h, choosing a Dreamers command, or understanding how planning, review, gates, and PR delivery work.'
 ---
 
-## Boundary
+$ARGUMENTS
 
-This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Do not start another skill unless the user explicitly chooses a next command.
+## Help
 
-## Response
+<help-workflow>
+
+**Boundary:** This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Suggest next commands for the user; do not execute them.
+
+**Response**
 
 Orient the user briefly: the Dreamers system combines planning, implementation and tests, artifact-backed review, targeted user gates, documentation, and PR delivery.
 
@@ -17,7 +21,7 @@ Explain the primary entry point with concrete examples:
 - /dreamers feature-search/plan-01-indexing.md
 - /dreamers feature-search/manifest.md
 
-Explain that task descriptions use /dreamers-plan with Grill by default. Existing plan and manifest inputs skip planning and the implementation-start gate using the human-reviewed artifacts.
+Explain that task descriptions use the planning workflow with Grill by default, shared with the standalone /dreamers-plan command. Existing plan and manifest inputs skip planning and the implementation-start gate using the human-reviewed artifacts.
 
 Explain adaptive review:
 
@@ -43,3 +47,5 @@ State the `/dreamers` gates: plan approval for task input, major scope expansion
 Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
 
 End with one invitation: "Describe your goal and I can suggest the next command."
+
+</help-workflow>

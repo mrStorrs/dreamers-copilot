@@ -4,89 +4,17 @@ description: 'Project-wide comment cleanup pass per comment-rules.md. Audit → 
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
-<comment-rules>
-## Core principle
-Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
-
-## When to comment
-- Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
-- Public API documentation callers need to use the interface correctly
-- TODO/FIXME with specific, actionable notes
-
-## When NOT to comment
-- Code that reads naturally from well-named functions and variables
-- Anything that restates what the code obviously does (`const isRunning` does not need `// tracks whether running`)
-
-## Strict prohibitions
-- **No plan/ticket references** — never mention plan files, milestone names (D25, plan-3), ticket numbers, or agent names in source code
-- **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
-- **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
-- **No redundant JSDoc/KDoc** that only repeats the function signature
-- **No em dashes. no exceptions**
-- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
-
-## Style
-- One line when possible; never exceed two lines for inline comments
-- Write *why*, never *what*
-- If a comment requires more than two lines to be useful, the code needs refactoring, not more words
-</comment-rules>
-
-<dreamers-kernel>
-## User overrides
-
-Explicit user instructions can skip or alter phases/actions.
-
-## Subagent allowlist
-
-Do not use any non-Dreamers agent unless explicitly authorized by user.
-
-## Subagent prompt — required content
-
-Every `task()` invocation MUST include in the prompt:
-- **Context** — what this agent is being asked to do and why
-- **Prior work** — what was done previously, with absolute paths to any output files
-- **What is needed** — specific deliverable
-- **Constraints** — hard rules the agent must not violate
-- **Definition of Done** — how to know the work is complete
-- **Plan file path** — absolute path to the relevant plan file (if applicable)
-
-All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
-
-## Implementation discipline
-
-- **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
-- **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
-- **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
-
-## Commit trailer
-
-Every commit body includes:
-
-```
-Co-authored-by: The Dreamers System
-```
-</dreamers-kernel>
-
 $ARGUMENTS
 
----
+Keep one `manage_todo_list` for audit, approval, cleanup, optional review, and commit. Mark each stage `in_progress` when starting and `completed` when finished; never batch completions.
 
-## Todo list
+## Cleanup
 
-At skill entry, declare via `manage_todo_list`:
-- [ ] Phase 1 — audit comment-rules violations
-- [ ] Phase 2 — proposal + user approval
-- [ ] Phase 3 — apply cleanup inline
-- [ ] Phase 4 — optional Vigil review (if requested)
-- [ ] Phase 5 — commit
+<comment-cleanup-workflow>
 
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
+**Input:** explicit file list, or project source root restricted by optional `--scope <path>`, plus an optional commit message. Apply the embedded `comment-rules` and `dreamers-kernel` rules. An empty explicit file list means no work; never broaden it to the project root.
 
----
-
-## Phase 1 — Audit
-
-Scope: project source root by default; `--scope <path>` to restrict.
+**1. Audit**
 
 Walk the scope and identify each comment-rules violation. Categorize:
 - **Redundant** — restates what code already says.
@@ -98,23 +26,23 @@ Walk the scope and identify each comment-rules violation. Categorize:
 
 Produce a count per category in chat + paths of the worst offenders.
 
-## Phase 2 — Proposal + user approval
+**2. Approve the proposal**
 
 Present in chat: total comment removals, summary by category, list of files most-affected.
 
 Call `request_information` with `["Approved — apply cleanup", "Halt for now", "Other"]`. Freeform corrections (e.g., "preserve license headers in src/vendor/") go through Other.
 
-- Approved → proceed to Phase 3.
-- Halt for now → output "Audit complete. No changes applied. Resume by re-invoking `/dreamers-cleanup-comments`." and stop.
+- Approved → proceed to Apply.
+- Halt for now → output "Audit complete. No changes applied. Resume with the same user-selected cleanup command and scope." and stop.
 - Corrections → revise proposal; re-present.
 
-## Phase 3 — Apply
+**3. Apply**
 
-Edit files inline; stage with `git add`. Follow `dreamers-kernel.md` implementation discipline: only edit files in scope; no while-I'm-here changes to actual logic.
+Edit files inline; stage with `git add`. Follow the embedded `dreamers-kernel` implementation discipline: only edit files in scope; no while-I'm-here changes to actual logic.
 
 Run the project's type-check command after edits (comments don't usually affect type-check but verify).
 
-## Phase 4 — Optional Vigil review
+**4. Review if requested**
 
 Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`. Vigil's maintainability lens catches anything the cleanup missed or newly-introduced ambiguity.
 
@@ -122,6 +50,88 @@ Call `request_information` with `["Yes — review before commit", "No — skip r
 - Require Vigil to write one `.dreamers/reviews/vigil-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
 - No → proceed to commit.
 
-## Phase 5 — Commit
+**5. Commit**
 
-`git status` to confirm staged content. Commit message: `chore: comment cleanup per comment-rules.md`. Do NOT push.
+`git status` to confirm staged content. Commit message: use the supplied message, defaulting to `chore: comment cleanup per comment-rules.md`. Do NOT push.
+
+**Result:** audit counts and scoped changes, with validation, review status, and commit ID when cleanup was approved.
+
+</comment-cleanup-workflow>
+
+## Rules and formats
+
+### Comments
+
+<comment-rules>
+
+**Core principle**
+
+Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
+
+**When to comment**
+
+- Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
+- Public API documentation callers need to use the interface correctly
+- TODO/FIXME with specific, actionable notes
+
+**When NOT to comment**
+
+- Code that reads naturally from well-named functions and variables
+- Anything that restates what the code obviously does (`const isRunning` does not need `// tracks whether running`)
+
+**Strict prohibitions**
+
+- **No plan/ticket references** — never mention plan files, milestone names (D25, plan-3), ticket numbers, or agent names in source code
+- **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
+- **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
+- **No redundant JSDoc/KDoc** that only repeats the function signature
+- **No em dashes. no exceptions**
+- **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
+
+**Style**
+
+- One line when possible; never exceed two lines for inline comments
+- Write *why*, never *what*
+- If a comment requires more than two lines to be useful, the code needs refactoring, not more words
+
+</comment-rules>
+
+### Core rules
+
+<dreamers-kernel>
+
+**User overrides**
+
+Explicit user instructions can skip or alter phases/actions.
+
+**Subagent allowlist**
+
+Do not use any non-Dreamers agent unless explicitly authorized by user.
+
+**Subagent prompt — required content**
+
+Every `task()` invocation MUST include in the prompt:
+- **Context** — what this agent is being asked to do and why
+- **Prior work** — what was done previously, with absolute paths to any output files
+- **What is needed** — specific deliverable
+- **Constraints** — hard rules the agent must not violate
+- **Definition of Done** — how to know the work is complete
+- **Plan file path** — absolute path to the relevant plan file (if applicable)
+
+All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
+
+**Implementation discipline**
+
+- **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
+- **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
+- **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
+
+**Commit trailer**
+
+Every commit body includes:
+
+```
+Co-authored-by: The Dreamers System
+```
+
+</dreamers-kernel>

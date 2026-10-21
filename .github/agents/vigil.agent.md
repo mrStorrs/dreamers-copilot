@@ -117,20 +117,27 @@ Simplicity:
 - If a full refactor is the cleanest fix, say so directly with breadth: files, modules, call sites, and deletions where known.
 
 
+## Comments
+
 <comment-rules>
-## Core principle
+
+**Core principle**
+
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
-## When to comment
+**When to comment**
+
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
 
-## When NOT to comment
+**When NOT to comment**
+
 - Code that reads naturally from well-named functions and variables
 - Anything that restates what the code obviously does (`const isRunning` does not need `// tracks whether running`)
 
-## Strict prohibitions
+**Strict prohibitions**
+
 - **No plan/ticket references** — never mention plan files, milestone names (D25, plan-3), ticket numbers, or agent names in source code
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
@@ -138,14 +145,20 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No em dashes. no exceptions**
 - **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 
-## Style
+**Style**
+
 - One line when possible; never exceed two lines for inline comments
 - Write *why*, never *what*
 - If a comment requires more than two lines to be useful, the code needs refactoring, not more words
+
 </comment-rules>
 
+## Test coverage
+
 <testing-mandate>
-## Plan template
+
+**Plan template**
+
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
@@ -160,22 +173,25 @@ Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labe
 
 **Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
 
-## Coverage requirement (every plan)
+**Coverage requirement (every plan)**
 
 Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
 
 **Unit layer**
+
 - Each significant function, method, or class in isolation.
 - All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
 - Any pure logic that does not require a real device, network, or database.
 
 **Integration layer**
+
 - Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
 - Database reads/writes (real or in-memory, not mocked).
 - Auth flows end-to-end within the backend.
 - Cloud function triggers and side-effects.
 
 **UI / E2E layer**
+
 - Full user journeys through the UI: screen load → interaction → outcome visible on screen.
 - Navigation flows between screens.
 - Error and empty states rendered correctly in the UI.
@@ -184,7 +200,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 
 If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
 
-## Test benchmarks
+**Test benchmarks**
 
 Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
 
@@ -192,14 +208,19 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
 - **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
+
 </testing-mandate>
 
+## Logging
+
 <logging-discipline>
+
 1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
 2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
    - Logger library / import path (do not introduce a new logger where one already exists).
    - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
    - Message format (structured fields vs interpolated strings, key names, casing).
+
 </logging-discipline>
 
 ## Self-check (before signaling done)

@@ -173,7 +173,7 @@
       "type": "skill",
       "slug": "dreamers",
       "name": "dreamers",
-      "description": "Deliver a task, approved plan(s), or manifest through planning, implementation, review, user testing, docs, and PR. Empty/help input opens /dreamers-help. Triggers: /dreamers, plan and implement, new feature, ship a feature.",
+      "description": "Deliver a task, approved plan(s), or manifest using XML-synced workflow blocks for planning, implementation, review, user testing, docs, and PR. Skills remain independent; empty/help input uses the embedded help block.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -462,7 +462,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, planning Grill phase, testing mandate, comment rules, architecture rubric, git workflow, close-out procedure, orchestrator discipline, etc.).",
+      "description": "Shared workflow refs synchronized into independent skills as XML blocks (help, planning, implementation, review, documentation, PR, comment cleanup), plus shared standards. Includes every file in the refs directory.",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },
