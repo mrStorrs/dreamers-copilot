@@ -16,5 +16,5 @@ flowchart TD
 ```
 
 - Tasks use their stated requirements as acceptance criteria, without a plan file. Plans use their annotated AC layers; tests-first ordering is not required.
-- Standalone todos are optional. Calls from a delivery skill use its existing todo.
-- The skill exits at green validation. `/dreamers` invokes `/dreamers-review` next.
+- Standalone todos are optional. Calls from a delivery skill use its existing todo, branch, and plan/task context, including the supplied correction in fix cycles.
+- The skill exits at green validation and returns control to its caller without invoking a delivery skill. The existing `/dreamers` orchestrator invokes `/dreamers-review` next.

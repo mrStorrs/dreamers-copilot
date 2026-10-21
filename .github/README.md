@@ -75,7 +75,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 `/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
 
-Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports authorize fixes unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
+Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. `/dreamers` invokes specialized phase skills only; it never invokes itself, and wrapped skills return control without invoking their caller. Related bug reports during user testing or after PR creation route to `/dreamers-implement` with the existing plan/task context, then capped review and required user testing, unless the user requests discussion or says otherwise. Corrections to an open PR reuse its branch, complete the docs check, and request approval to commit and push the update. Short standalone helper skills have optional todos.
 
 ## `/dreamers` first delivery example
 
@@ -115,7 +115,7 @@ flowchart TD
     Remaining -->|Yes| Cap
     Remaining -->|No| UserTesting
     Cap -->|No| Halt
-    Cap -->|Yes| Fix["Apply findings<br/>implement + validate"]
+    Cap -->|Yes| Fix["Invoke /dreamers-implement<br/>accepted findings + plan context"]
     Fix --> FixTests{"Validation green?"}
     FixTests -->|No| Halt
     FixTests -->|Yes| Vigil["Invoke /dreamers-review --vigil"]
@@ -124,7 +124,7 @@ flowchart TD
     UserTesting -->|No| MorePlans{"More plans?"}
     UserTesting -->|Yes| TestGate{"User-testing gate"}
     TestGate -->|Approved| MorePlans
-    TestGate -->|Bug found| BugFix["Fix bug + automated validation"]
+    TestGate -->|Bug found| BugFix["Invoke /dreamers-implement<br/>bug text + plan context"]
     TestGate -->|Other| Direction
     BugFix --> BugTests{"Validation green?"}
     BugTests -->|No| Halt

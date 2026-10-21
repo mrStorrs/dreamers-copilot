@@ -46,6 +46,6 @@ Provide exactly these three options:
 ## Response handling
 
 - `Approved` -> continue the pipeline.
-- `Bug found (enter text)` -> capture the bug text, fix inline, rerun required automated validation, then present this same user-testing gate again.
+- `Bug found (enter text)` -> capture the bug text. The active delivery orchestrator invokes `/dreamers-implement` with the bug text and current plan/task context, completes its required review within the existing cap, then presents this same gate again. Do not re-invoke the delivery skill.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
 </user-testing-gate>
