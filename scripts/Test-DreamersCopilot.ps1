@@ -96,7 +96,7 @@ function Assert-SynchronizedRefs {
             $escapedName = [regex]::Escape($name)
             $pattern = "(?ms)^<$escapedName>\n(.*?)\n</$escapedName>"
             $match = [regex]::Match($content, $pattern)
-            if ($match.Success -and $match.Groups[1].Value -ne $refs[$name]) {
+            if ($match.Success -and $match.Groups[1].Value -ne ("`n" + $refs[$name] + "`n")) {
                 Add-Error "Synchronized ref drift in $($consumer.FullName): $name"
             }
         }
@@ -170,6 +170,25 @@ function Assert-WorkflowRefs {
         }
         if ($file.FullName -in $refFiles.FullName -and $content -match "(?m)^</?(?:$refNames)>$") {
             Add-Error "Nested source ref in $($file.FullName); embed shared standards alongside the workflow"
+        }
+        if ($file.FullName -in $refFiles.FullName) {
+            $fence = $null
+            foreach ($line in $content.Split("`n")) {
+                $marker = [regex]::Match($line, '^\s*(`{3,}|~{3,})')
+                if ($marker.Success) {
+                    $token = $marker.Groups[1].Value
+                    if ($null -eq $fence) {
+                        $fence = $token
+                    } elseif ($token[0] -eq $fence[0] -and $token.Length -ge $fence.Length) {
+                        $fence = $null
+                    }
+                } elseif ($null -eq $fence -and $line -match '^#{1,6}\s') {
+                    Add-Error "Ref fragment owns a document heading in $($file.FullName); put headings in the consumer"
+                }
+            }
+            if ($file.BaseName.EndsWith("-workflow") -and $content -match '\b(?:declare|create|reset)\b[^\n]*\b(?:manage_todo_list|todo)\b|when used standalone|when used as a delivery phase') {
+                Add-Error "Workflow ref owns skill lifecycle in $($file.FullName)"
+            }
         }
         if ($content -match '(?im)^(?:\d+[.)]\s+|-\s+)?(?:on success,\s*|upon approval\s+)?(?:invoke|call|run|prefer)\s+`?/dreamers(?:-|\b)') {
             Add-Error "Skill-to-skill invocation in $($file.FullName)"
@@ -354,7 +373,7 @@ if (Test-Path $catalogPath) {
 }
 
 Assert-Patterns (Join-Path $dreamersRoot "refs/help-workflow.md") @{
-    "read-only boundary" = '## Boundary.*read-only guidance.*Do not inspect or change'
+    "read-only boundary" = 'Boundary.*read-only guidance.*Do not inspect or change'
     "primary examples" = '/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md'
     "review lanes" = 'lite plans use Vigil.*standard plans use Sentinel \+ Probe.*complex plans use Sentinel \+ Probe \+ Hone'
     "specialized choices" = '/dreamers-plan.* /dreamers-implement.* /dreamers-review.* /dreamers-lite'
@@ -378,7 +397,6 @@ Assert-Patterns (Join-Path $dreamersRoot "refs/review-workflow.md") @{
     "planless reviewer basis" = "review basis.*absolute plan path.*inferred-intent summary"
     "Grill transcript resolution" = 'Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full'
     "Grill transcript reviewer context" = "absolute path and full verbatim contents.*plan/transcript conflict"
-    "conditional todo ownership" = "when used standalone.*todo.*when used as a delivery phase.*existing todo"
     "project-file read-only boundary" = "read.only.*project (code|files)|project (code|files).*read.only"
     "reviewer artifact-only writes" = "reviewer.*(only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"
     "caller owns fix loop" = "caller owns all finding disposition, gates, fixes, revalidation, and user testing"

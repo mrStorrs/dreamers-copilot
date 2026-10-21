@@ -70,6 +70,7 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 2. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Copilot repo.
 3. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Codex repo.
 4. **Independent skills.** Preserve the full delivery gate/order wording in the `/dreamers` orchestrator. Keep shared planning, implementation, reviewer execution, documentation, and PR mechanics in workflow refs. Sync those refs into standalone and delivery skills with XML marker blocks; never introduce skill-to-skill calls or load another skill's `SKILL.md`. Shared workflows and standards must be embedded in every consumer; never replace synced blocks with runtime file reads.
+   Workflow refs are operation bodies with inputs, boundaries, and results. Skills own headings, todos, phase transitions, and final exits. Place each workflow at its execution point and group shared rules once. Keep ref fragments free of document headings outside fenced examples and standalone-skill lifecycle instructions. Sync supplies blank lines inside the XML markers; do not hand-format generated bodies.
 5. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
 6. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
 7. **Validation.** After transfer, run Copilot ref verify and Codex ref verify + `scripts/Test-DreamersCodex.ps1` or `scripts/Test-DreamersCodex.sh` for the active shell.
@@ -95,51 +96,58 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 
 Report in chat: Copilot files changed, Codex files changed, sync checks performed in each repo (refs / READMEs / catalog), validations run, halts or questions raised.
 
+## Publish the prepared repository
+
+Use at the authorized Copilot or Codex PR close-out. Supply that repository's committed branch and validation summary; return its URL to the active repository phase.
+
 <pr-workflow>
-# PR workflow
 
-Apply the embedded `dreamers-kernel`, `git-workflow`, `pr-description` standards.
+**Input:** committed feature branch, delivery and validation summary, optional shipped plan paths, and optional `--issue <#|url>`. Enter only when publishing is authorized. Apply the embedded `dreamers-kernel`, `git-workflow`, and `pr-description` rules.
 
-Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
+**1. Verify**
 
-## Todo - Before you begin.
-- When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
-
-## Step 1 — Pre-push verification
 - `git status` — confirm clean (no unstaged/untracked production files).
 - `git log --oneline -10` — confirm commit history matches expectation.
 - Detect default branch (canonical two-step per `git-workflow`, Kernel).
 
-## Step 2 — Push
+**2. Push**
+
 - `git push -u origin <branch>` — never force; never skip hooks.
 - If push is rejected (non-fast-forward): `git fetch origin` + rebase + re-push. Never force.
 
-## Step 3 — Open the PR
-- Draft the PR body using the embedded `pr-description` template below.
-- `gh pr create --base <DEFAULT> --head <branch> --title "<short title>" --body <body>`. Capture PR URL.
+**3. Open the PR**
+
+- Draft the PR body using the embedded `pr-description` format.
+- `gh pr create --base "$DEFAULT_BRANCH" --head <branch> --title "<short title>" --body <body>`. Capture PR URL.
 - If `--issue <#|url>`: `gh issue comment <#> --body "Resolved in <PR URL>"` (do NOT close until merge).
 
-## Step 4 — Archive shipped plan artifacts
+**4. Archive shipped plans**
+
 - If this PR ships a Dreamers plan from `.dreamers/plans/feature-<slug>/`, archive after the PR is created.
 - Single-plan feature directory: move `.dreamers/plans/feature-<slug>/` to `.dreamers/plans/archive/feature-<slug>/`.
 - Multi-plan feature directory or manifest sequence: create `.dreamers/plans/archive/feature-<slug>/` if needed, move only the shipped `plan-NN-*.md` file(s) into it, and leave unfinished plans in the live feature directory.
 - If `manifest.md` exists, keep it live while any unfinished plan file remains. After the last unfinished plan ships, move `manifest.md` into the same archive directory and remove the now-empty live feature directory.
 - If no feature directory applies, skip this step.
 
-## Exit
-- PR URL. Include moved archive path(s) when Step 4 archived anything.
+**Result:** PR URL and any moved archive paths.
+
 </pr-workflow>
 
+## Rules and formats
+
+### Core rules
+
 <dreamers-kernel>
-## User overrides
+
+**User overrides**
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist
+**Subagent allowlist**
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
-## Subagent prompt — required content
+**Subagent prompt — required content**
 
 Every `task()` invocation MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
@@ -151,27 +159,30 @@ Every `task()` invocation MUST include in the prompt:
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
-## Implementation discipline
+**Implementation discipline**
 
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
-## Commit trailer
+**Commit trailer**
 
 Every commit body includes:
 
 ```
 Co-authored-by: The Dreamers System
 ```
+
 </dreamers-kernel>
 
+### Git workflow
+
 <git-workflow>
-# Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
 
-## Startup verification (do this FIRST)
+**Startup verification (do this FIRST)**
+
 1. Detect the repo's default branch:
    ```bash
    DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
@@ -180,44 +191,52 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
 2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
-## Branch setup (before implementation)
+**Branch setup (before implementation)**
+
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
 4. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
-## Commit discipline (non-negotiable)
+**Commit discipline (non-negotiable)**
+
 1. **Commit at end of each cycle** — one commit per plan in the sequence (single-plan: one commit total; multi-plan: N commits, one per plan).
 2. **Commit before PR creation** — a final commit capturing any last changes before opening the PR.
 3. **No auto-commit after PR is created** — if changes are made after `gh pr create`, do NOT commit automatically. Ask the user first.
 
-## Push discipline (non-negotiable)
+**Push discipline (non-negotiable)**
+
 `git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between cycles, or at any other point in the pipeline.
 
-## Post-PR push discipline
+**Post-PR push discipline**
+
 If the user approves a post-PR commit, push with `git push` (no force). The PR will update automatically.
 
-## Commit structure (one commit per cycle)
+**Commit structure (one commit per cycle)**
+
 - Exactly **one** commit per plan/cycle, immediately after the reviewer findings have been applied and tests are green (and user testing, if required, is signed off).
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes).
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
-## What gets committed
+**What gets committed**
+
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
-## No worktrees
+**No worktrees**
+
 The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
+
 </git-workflow>
 
+### PR body format
+
 <pr-description>
-# PR Description Template
 
-Use this structure for `gh pr create --body`.
+Use this structure for the PR body. Omit untouched platforms and the fixes section when no fixes apply.
 
----
-
+```markdown
 ## Summary
 plan/task summary here
 
@@ -236,4 +255,6 @@ plan/task summary here
 - [SEVERITY] file:line — what was fixed (from reviewer artifacts / commit messages)
 
 *(Omit if no fixes applied.)*
+```
+
 </pr-description>

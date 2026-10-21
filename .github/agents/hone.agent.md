@@ -50,10 +50,11 @@ The `reviewer-findings-format` ref is inlined below. The caller (typically `/dre
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 
-<reviewer-findings-format>
-# Reviewer Findings Format
+## Review artifacts
 
-## Artifact contract
+<reviewer-findings-format>
+
+**Artifact contract**
 
 Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
 
@@ -84,6 +85,7 @@ The artifact is the durable handoff. Chat output is only a short status pointer 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
 Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
+
 </reviewer-findings-format>
 
 ---

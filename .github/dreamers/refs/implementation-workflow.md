@@ -1,18 +1,6 @@
-# Implementation workflow
+**Input:** task requirements or an approved plan, agreed scope, and any shared context or accepted findings. Apply the embedded `dreamers-kernel`, `git-workflow`, `testing-mandate`, `comment-rules`, and `logging-discipline` rules.
 
-Apply the embedded `dreamers-kernel`, `git-workflow`, `testing-mandate`, `comment-rules`, `logging-discipline` standards.
+1. **Implement.** Make the scoped code and test changes inline on the prepared feature branch. For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage explicit paths as work progresses.
+2. **Validate.** Run the project's type-check and test commands from `.github/copilot-instructions.md`. Fix failures inline, allowing at most 3 fix attempts; halt if validation still fails. After passing, update the corresponding `./test-benchmarks.md` row if the project uses one.
 
-Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
-
-## Todo
-- When used standalone, a todo is optional. When used as a delivery phase, complete these steps under the active skill's existing todo.
-
-## 1: Implement
-- Implement the task or approved plan in the supplied input per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage as you go.
-
-## 2: Type-check + run tests
-- Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
-- Update `./test-benchmarks.md` row after passing (if the project uses one).
-
-## Exit
-- Return requirement/AC coverage and validation results at green tests.
+**Result:** requirement/AC coverage and validation results at green tests. Leave changes staged; review, commit, push, and PR creation are outside this operation.

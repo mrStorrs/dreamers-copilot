@@ -5,14 +5,13 @@ description: 'Read-only guide to the Dreamers system, delivery workflow, special
 
 $ARGUMENTS
 
+## Help
+
 <help-workflow>
-# Help workflow
 
-## Boundary
+**Boundary:** This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Suggest next commands for the user; do not execute them.
 
-This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Suggest next commands for the user; do not execute them.
-
-## Response
+**Response**
 
 Orient the user briefly: the Dreamers system combines planning, implementation and tests, artifact-backed review, targeted user gates, documentation, and PR delivery.
 
@@ -48,4 +47,5 @@ State the `/dreamers` gates: plan approval for task input, major scope expansion
 Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
 
 End with one invitation: "Describe your goal and I can suggest the next command."
+
 </help-workflow>

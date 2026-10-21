@@ -41,8 +41,12 @@ The two refs Probe binds to (`testing-mandate` + `reviewer-findings-format`) are
 
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 
+## Test coverage
+
 <testing-mandate>
-## Plan template
+
+**Plan template**
+
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
@@ -57,22 +61,25 @@ Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labe
 
 **Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
 
-## Coverage requirement (every plan)
+**Coverage requirement (every plan)**
 
 Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
 
 **Unit layer**
+
 - Each significant function, method, or class in isolation.
 - All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
 - Any pure logic that does not require a real device, network, or database.
 
 **Integration layer**
+
 - Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
 - Database reads/writes (real or in-memory, not mocked).
 - Auth flows end-to-end within the backend.
 - Cloud function triggers and side-effects.
 
 **UI / E2E layer**
+
 - Full user journeys through the UI: screen load → interaction → outcome visible on screen.
 - Navigation flows between screens.
 - Error and empty states rendered correctly in the UI.
@@ -81,7 +88,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 
 If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
 
-## Test benchmarks
+**Test benchmarks**
 
 Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
 
@@ -89,12 +96,14 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
 - **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
+
 </testing-mandate>
 
-<reviewer-findings-format>
-# Reviewer Findings Format
+## Review artifacts
 
-## Artifact contract
+<reviewer-findings-format>
+
+**Artifact contract**
 
 Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
 
@@ -125,6 +134,7 @@ The artifact is the durable handoff. Chat output is only a short status pointer 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
 Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
+
 </reviewer-findings-format>
 
 ## Review process (read-only)

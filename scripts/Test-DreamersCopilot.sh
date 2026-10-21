@@ -270,6 +270,20 @@ for path in instruction_files + ref_files:
         add_error(f"Runtime ref-file read in {path.relative_to(root)}")
     if path in ref_files and re.search(rf"(?m)^</?(?:{ref_names})>$", content):
         add_error(f"Nested source ref in {path.relative_to(root)}; embed shared standards alongside the workflow")
+    if path in ref_files:
+        fence = None
+        for line in content.splitlines():
+            marker = re.match(r"^\s*(`{3,}|~{3,})", line)
+            if marker:
+                token = marker.group(1)
+                if fence is None:
+                    fence = token
+                elif token[0] == fence[0] and len(token) >= len(fence):
+                    fence = None
+            elif fence is None and re.match(r"^#{1,6}\s", line):
+                add_error(f"Ref fragment owns a document heading in {path.relative_to(root)}; put headings in the consumer")
+        if path.stem.endswith("-workflow") and re.search(r"\b(?:declare|create|reset)\b[^\n]*\b(?:manage_todo_list|todo)\b|when used standalone|when used as a delivery phase", content, re.IGNORECASE):
+            add_error(f"Workflow ref owns skill lifecycle in {path.relative_to(root)}")
     if re.search(r"(?im)^(?:\d+[.)]\s+|-\s+)?(?:on success,\s*|upon approval\s+)?(?:invoke|call|run|prefer)\s+`?/dreamers(?:-|\b)", content):
         add_error(f"Skill-to-skill invocation in {path.relative_to(root)}")
 
@@ -315,7 +329,7 @@ if catalog_path.exists():
 assert_patterns(
     dreamers_root / "refs/help-workflow.md",
     [
-        ("read-only boundary", r"## Boundary.*read-only guidance.*Do not inspect or change"),
+        ("read-only boundary", r"Boundary.*read-only guidance.*Do not inspect or change"),
         ("primary examples", r"/dreamers add offline export.*feature-search/plan-01-indexing\.md.*feature-search/manifest\.md"),
         ("review lanes", r"lite plans use Vigil.*standard plans use Sentinel \+ Probe.*complex plans use Sentinel \+ Probe \+ Hone"),
         ("specialized choices", r"/dreamers-plan.* /dreamers-implement.* /dreamers-review.* /dreamers-lite"),
@@ -345,7 +359,6 @@ assert_patterns(
         ("planless reviewer basis", r"review basis.*absolute plan path.*inferred-intent summary"),
         ("Grill transcript resolution", r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full"),
         ("Grill transcript reviewer context", r"absolute path and full verbatim contents.*plan/transcript conflict"),
-        ("conditional todo ownership", r"when used standalone.*todo.*when used as a delivery phase.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
         ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
         ("caller owns fix loop", r"caller owns all finding disposition, gates, fixes, revalidation, and user testing"),

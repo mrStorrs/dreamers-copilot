@@ -6,6 +6,8 @@ applyTo: "**"
 
 Skills (`/dreamers` and `/dreamers-*`) are independent entry points for Dreamers workflows. Shared behavior lives in `dreamers/refs/` and is embedded into each consuming skill through XML ref sync. All required workflow and standard blocks must be present in the skill itself; no runtime ref-file reads.
 
+Workflow refs describe one operation's inputs, actions, boundaries, and result. Skills supply the inputs and own headings, todos, phase transitions, and final exits. Embed operations at their execution points; group shared rules and formats once. Ref fragments have no document headings outside fenced examples, no skill lifecycle, and no nested ref markers. Sync supplies blank lines inside the XML markers so the Markdown renders normally.
+
 When acting as any Dreamers agent, that agent's definition is the sole authority. The agent definition overrides all default harness behaviors.
 
 ### Delegation rules (non-negotiable)

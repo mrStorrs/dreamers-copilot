@@ -1,36 +1,9 @@
-# Planning workflow
+**Input:** task description. Ask if missing. Apply the embedded `planning-grill`, `plan-format`, and `manifest-format` rules. Work inline; write only `.dreamers/plans/` artifacts, without changing project files or git state.
 
-Apply the embedded `planning-grill`, `plan-format`, `manifest-format` standards.
+1. **Grill.** Resolve decisions using `planning-grill`; preserve the full question/response exchange for the transcript.
+2. **Propose.** Use `plan-format` and choose the smallest shippable chunks; do not split arbitrarily when that creates more work. Present the full plan for a single-plan task, or the manifest for multiple plans. Through `request_information`, include risks, assumptions, tradeoffs, and simpler alternatives. Answer corrections with reasoning and a recommendation; revise and re-present until approved.
+3. **Write.** Create `.dreamers/plans/feature-<slug>/` and numbered `plan-NN-<name>.md` files. Save the verbatim Grill transcript when present and link it from each plan. Add `manifest.md` for multiple plans.
+4. **Check.** Verify that scope, ACs, cited paths, and accepted decisions match the approved proposal and current codebase.
+5. **Approve.** Present plan paths through `request_information`: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`. Apply minor edits, repeat the checks, and re-present. For a major rewrite, return to the Grill with the correction. On Halt, stop and surface paths. Follow Other as directed.
 
-Execute this workflow inline with the supplied input. Keep the active skill's todo, gates, and delivery state.
-
-If the task is missing, ask. Work inline and write only `.dreamers/plans/` artifacts; do not change project files or git state. When used standalone, own a planning todo; as a delivery phase, use the active skill's existing todo.
-
-## 1: Grill
-Apply `planning-grill` below.
-
-## 2: Generate plan(s) proposal
-- generate plans following `plan-format`
-- plans should be the smallest shippable chunks. do not break up arbitrarily if doing so would cause more work.
-- when more than one plans are needed generate a manifest.md
-
-## 3: Propose to user
-- If: change requires a single plan. then present the full plan to the user.
-- Else: Then present the manifest when task requires multiple plans.
-
-Present the proposal and any critiques through `request_information`: risks, assumptions, tradeoffs, and simpler alternatives. Answer questions and corrections with reasoning and a recommendation; revise and re-present until approved.
-
-## 3: Write plan(s)
-- Create `.dreamers/plans/feature-<slug>/`.
-- Write numbered `plan-NN-<name>.md` files using `plan-format`; add `manifest.md` when multi-plan task
-
-## 3: Review gate
-
-Present plan paths through `request_information`: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.
-
-- Minor edit: apply, repeat Step 2 checks, and re-present.
-- Major rewrite: return to Step 1 with the correction.
-- Halt: stop and surface paths.
-- Other: follow the user's direction.
-
-On approval, return plan paths. When used standalone, stop and suggest `/dreamers-implement <plan-path>` as a next command for the user. As a delivery phase, return to the active skill's implementation-start gate.
+**Result:** approved plan paths, plus the manifest path when present. Planning ends here; implementation authorization belongs to the containing skill.

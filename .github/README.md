@@ -32,6 +32,8 @@ Vigil, Sentinel, Probe, and Hone spawn through the shared `review-workflow.md` a
 
 Every skill is an independent entry point. Shared behavior lives in workflow refs, synchronized into each consuming skill as XML blocks; skills never invoke other skills or load another skill's `SKILL.md`. Explicit user instructions can skip or alter phases/actions.
 
+Skills own headings, todos, and transitions. Workflow refs supply reusable operation bodies with inputs, boundaries, and results, embedded at the phase that uses them. Shared rules and formats are grouped once. Ref fragments have no document headings outside fenced examples or standalone-skill lifecycle instructions; sync adds blank lines around each XML body for Markdown rendering.
+
 Across Dreamers skills, an explicit user choice to defer a suggested change appends a structured entry to project-root `defered.md` without overwriting prior entries.
 
 ### Pipeline

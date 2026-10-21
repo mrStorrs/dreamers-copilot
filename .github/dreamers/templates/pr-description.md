@@ -1,10 +1,10 @@
+# PR description
+
 <pr-description>
-# PR Description Template
 
-Use this structure for `gh pr create --body`.
+Use this structure for the PR body. Omit untouched platforms and the fixes section when no fixes apply.
 
----
-
+```markdown
 ## Summary
 plan/task summary here
 
@@ -23,4 +23,6 @@ plan/task summary here
 - [SEVERITY] file:line — what was fixed (from reviewer artifacts / commit messages)
 
 *(Omit if no fixes applied.)*
+```
+
 </pr-description>

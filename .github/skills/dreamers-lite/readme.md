@@ -2,6 +2,8 @@
 
 Deliver a task without creating a plan. Delivery order: `SKILL.md`. Shared phase mechanics: XML-synced workflow blocks embedded in this skill, with all required standards. No skill calls or runtime ref-file reads.
 
+Implementation, review, documentation, and publishing bodies sit directly in their corresponding sections. This skill supplies their inputs and owns the todo, review loop, approval, and final exit. Shared rules and formats are grouped once at the end.
+
 ```mermaid
 flowchart TD
     Start(["/dreamers-lite $ARGUMENTS"]) --> Task{"Task provided?"}

@@ -1,4 +1,5 @@
 <shell-plan>
+
 Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use this outline for each milestone; leave unresolved decisions visible for planning.
 
 ```markdown
@@ -19,4 +20,5 @@ Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use
 ## Acceptance Criteria
 <Rough measurable outcomes for refinement during planning.>
 ```
+
 </shell-plan>

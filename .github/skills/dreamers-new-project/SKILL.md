@@ -12,10 +12,12 @@ Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instru
 
 - Explicit user instructions can skip or alter phases/actions.
 
-<project-bootstrap>
-# Project Bootstrap
+## Project bootstrap
 
-## Bootstrap checklist for new repos
+<project-bootstrap>
+
+**Bootstrap checklist for new repos**
+
 1. Ensure `.dreamers/` is in the project's `.gitignore`
 2. Create the project-level `.github/copilot-instructions.md` (see ownership below)
 3. Create `.dreamers/plans/` directory
@@ -27,6 +29,7 @@ Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instru
    - Where the build artifact lives (link, path, store listing) and how to fetch it
    - How to recover from a failed build/distribution
    If this file is absent, the orchestrator will pause user-testing rounds and ask the user to build/distribute manually.
+
 </project-bootstrap>
 
 
@@ -136,7 +139,10 @@ Call `request_information` with `["Shell plans look good — I'll take it from h
 
 This skill ends when the user is happy with the shell plans. From there the user invokes `/dreamers-plan` on a specific milestone (or `/dreamers` to plan + implement in one session).
 
+## Shell plan format
+
 <shell-plan>
+
 Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use this outline for each milestone; leave unresolved decisions visible for planning.
 
 ```markdown
@@ -157,9 +163,13 @@ Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use
 ## Acceptance Criteria
 <Rough measurable outcomes for refinement during planning.>
 ```
+
 </shell-plan>
 
+## Manifest format
+
 <manifest-format>
+
 ```markdown
 # Feature: <short name>
 
@@ -185,4 +195,5 @@ Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use
 ```
 
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
+
 </manifest-format>

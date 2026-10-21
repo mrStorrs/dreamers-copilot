@@ -102,6 +102,8 @@ All plans use Goal, Scope and context, and Acceptance Criteria. Checks belong wi
 
 Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports authorize fixes unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
 
+Workflow refs are reusable operation bodies with explicit inputs, boundaries, and results. Each skill owns its headings, todo, and transitions, placing the synced operation directly in the phase that uses it. Shared rules and formats appear once in a named section. Refs do not carry standalone-skill titles, todo setup, or delivery routing; template headings stay inside fenced examples. XML sync adds blank lines around each body for Markdown rendering. The same source body serves standalone and delivery skills without runtime file loading.
+
 The retired `/dreamers-full` command has no forwarding alias. The install and removal scripts prune its known managed files while preserving unrelated user files.
 
 ## Maintaining Dreamers

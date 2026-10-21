@@ -2,6 +2,8 @@
 
 Deliver tasks, approved plan paths, or a manifest. Delivery order: `SKILL.md`. Shared phase mechanics: XML-synced workflow blocks embedded in this skill, with all required standards. No skill calls or runtime ref-file reads.
 
+Each workflow body sits inside its delivery phase: planning, implementation, review, documentation, or publishing. The skill supplies inputs and handles the returned result; shared rules and formats are grouped at the end. Refs contain no competing document headings or todo setup. Help and user testing are embedded at their own decision points.
+
 ```mermaid
 flowchart TD
     I["/dreamers input"] --> R{"Input kind?"}

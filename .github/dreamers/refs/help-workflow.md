@@ -1,10 +1,6 @@
-# Help workflow
+**Boundary:** This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Suggest next commands for the user; do not execute them.
 
-## Boundary
-
-This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Suggest next commands for the user; do not execute them.
-
-## Response
+**Response**
 
 Orient the user briefly: the Dreamers system combines planning, implementation and tests, artifact-backed review, targeted user gates, documentation, and PR delivery.
 
