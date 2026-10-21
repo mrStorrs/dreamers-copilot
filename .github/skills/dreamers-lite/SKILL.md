@@ -6,10 +6,21 @@ argument-hint: '<task description>'
 
 $ARGUMENTS
 
-If no task description was provided, halt + ask.
+## Route input
+
+`/dreamers-lite` owns delivery and invokes only its specialized skills for phase work. Never invoke `/dreamers-lite` from itself or switch to `/dreamers` to continue delivery. Wrapped skills return control to this orchestrator without invoking either delivery skill.
+
+Resolve related follow-ups against the existing delivery state before starting a fresh task. Questions and gate responses resume the pending phase. Related bug reports or corrections use `Follow-up fixes` below, including during user testing or after PR creation. For fresh delivery without a task description, halt + ask.
 
 ## Todo - Before you begin.
 - Keep one todo for setup, implementation/tests, review, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup.
+
+## Follow-up fixes
+
+1. Keep the owning workflow, task/agreed scope, branch/PR, pending phases, and review count. Reopen implementation/tests and affected later stages. Reuse the active delivery or open PR branch; for a merged or closed PR, use fresh-branch setup per `Delivery continuation`.
+2. Invoke `/dreamers-implement <reported problem and agreed correction>` with the existing task context. Do not restart either delivery skill, create a plan, or repeat branch setup for active delivery or an open PR.
+3. After green validation, invoke `/dreamers-review --vigil` over staged + unstaged changes within the 2-fix-cycle cap. Route accepted findings through `/dreamers-implement` again. Detours keep the active count; corrections after completed close-out start a new capped cycle. Halt on a blocked review or unresolved findings at the cap.
+4. Complete any required user testing, then docs and the applicable close-out. Testing bugs return to this fix loop. For an open PR, follow `Delivery continuation` to obtain any required commit/push approval and update the same PR.
 
 ## Phase 1: Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
@@ -19,7 +30,7 @@ If no task description was provided, halt + ask.
 ## Phase 2: Implement loop
 1. Invoke `/dreamers-implement <task description and agreed scope>`.
 2. Review implementation using `/dreamers-review --vigil --branch <task>`
-3. Apply findings and repeat implementation + review up to 2 times. Ask before major refactors; record deferred findings in root `defered.md`.
+3. Ask before major refactors; record deferred findings in root `defered.md`. Invoke `/dreamers-implement <accepted findings and task context>`, then `/dreamers-review --vigil --branch <task>` up to 2 times.
 4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 
 ## Phase 3 - Close out

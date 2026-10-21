@@ -75,7 +75,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 `/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
 
-Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. `/dreamers` invokes specialized phase skills only; it never invokes itself, and wrapped skills return control without invoking their caller. Related bug reports during user testing or after PR creation route to `/dreamers-implement` with the existing plan/task context, then capped review and required user testing, unless the user requests discussion or says otherwise. Corrections to an open PR reuse its branch, complete the docs check, and request approval to commit and push the update. Short standalone helper skills have optional todos.
+Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. `/dreamers` and `/dreamers-lite` invoke specialized phase skills only; neither invokes itself or the other to continue delivery, and wrapped skills return control without invoking their caller. Related bug reports during user testing or after PR creation route to `/dreamers-implement` with the existing plan/task context, then capped review and required user testing, unless the user requests discussion or says otherwise. Corrections to an open PR reuse its branch, complete the docs check, and request approval to commit and push the update. Short standalone helper skills have optional todos.
 
 ## `/dreamers` first delivery example
 
