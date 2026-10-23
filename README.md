@@ -100,7 +100,7 @@ All plans use Goal, Scope and context, and Acceptance Criteria. Checks belong wi
 
 `/dreamers` delivers plans; `/dreamers-lite` delivers tasks without planning. Both halt on blocked reviews or unresolved findings at their review caps (3 and 2 fix cycles, respectively). Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`.
 
-Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports authorize fixes unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
+Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports resume the existing `Implement and review loop` at step 1 without re-invoking the delivery skill, unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
 
 The retired `/dreamers-full` command has no forwarding alias. The install and removal scripts prune its known managed files while preserving unrelated user files.
 

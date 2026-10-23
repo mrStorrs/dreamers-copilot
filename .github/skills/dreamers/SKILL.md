@@ -12,6 +12,8 @@ Empty input, `help`, `--help`, or `-h`: invoke `/dreamers-help` read-only and st
 
 For delivery, keep one todo covering planning/start approval or artifact resolution, implementation/tests, review, user testing, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup. Apply `dreamers-kernel` and complete `git-workflow` startup verification before reading any `.dreamers/` files.
 
+Related changes resume `Implement and review loop` at step 1 with the current context; do not invoke `/dreamers` again.
+
 | Input | Route |
 |---|---|
 | Task description | Phase 1, then the implementation-start gate. |
@@ -35,18 +37,18 @@ Supplied artifacts are implementation authorization: do not re-plan, replace the
 
 Set up the feature branch once per `git-workflow`.  Process plans in sequence, carrying manifest shared context into implementation.
 
-### Implement and review
+### Implement and review loop
 
 1. Invoke `/dreamers-implement <absolute-plan-path>`
-2. On success, invoke `/dreamers-review --branch <absolute-plan-path>` once.
-3. Apply findings and repeat implementation + `/dreamers-review --vigil --branch <absolute-plan-path>` up to 3 times. Ask before major refactors; record deferred findings in root `defered.md`.
+2. On initial success, invoke `/dreamers-review --branch <absolute-plan-path>` once. For testing or post-PR fixes, use `/dreamers-review --vigil` over staged + unstaged changes.
+3. Apply findings and repeat implementation + `/dreamers-review --vigil` up to 3 times, retaining the review scope. Ask before major refactors; record deferred findings in root `defered.md`.
 4. Halt temporarily on a blocked review or unresolved findings at the cap; report what remains. Ask user if you should proceed with another review, or closeout.
 
 ### User testing
 
 Trigger when the plan requires manual verification, the change is user-facing, build/distribution is needed, reviewers request user validation, or the user asked to test the area. Otherwise record `user testing skipped — no manual verification trigger` in the cycle summary.
 
-When triggered, use `user-testing-gate` below. After bug fixes and automated validation, invoke `/dreamers-review --vigil` on the staged + unstaged changes within the review cap before re-presenting the gate. Commit only at the applicable close-out.
+When triggered, use `user-testing-gate` below. Bug reports resume `Implement and review loop` at step 1 before re-presenting the gate. Commit only at the applicable close-out.
 
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the between-cycle or milestone close-out below.
 
@@ -198,6 +200,6 @@ Provide exactly these three options:
 ## Response handling
 
 - `Approved` -> continue the pipeline.
-- `Bug found (enter text)` -> capture the bug text, fix inline, rerun required automated validation, then present this same user-testing gate again.
+- `Bug found (enter text)` -> capture the bug text and resume `Implement and review loop` at step 1; after it succeeds, present this same user-testing gate again.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
 </user-testing-gate>

@@ -6,7 +6,7 @@ argument-hint: '<task description>'
 
 $ARGUMENTS
 
-If no task description was provided, halt + ask.
+Related changes resume `Implement and review loop` at step 1 with the current context; do not invoke either delivery skill again. For a new task without a description, halt + ask.
 
 ## Todo - Before you begin.
 - Keep one todo for setup, implementation/tests, review, docs, and close-out. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume the pending phase instead of repeating setup.
@@ -16,9 +16,9 @@ If no task description was provided, halt + ask.
 
 - Inspect the task's scope. Raise ambiguities or critiques through `request_information`; otherwise continue.
 
-## Phase 2: Implement loop
+## Phase 2: Implement and review loop
 1. Invoke `/dreamers-implement <task description and agreed scope>`.
-2. Review implementation using `/dreamers-review --vigil --branch <task>`
+2. Review implementation using `/dreamers-review --vigil --branch <task>`. For testing or post-PR fixes, review staged + unstaged changes instead.
 3. Apply findings and repeat implementation + review up to 2 times. Ask before major refactors; record deferred findings in root `defered.md`.
 4. Halt on a blocked review or unresolved findings at the cap; report what remains.
 

@@ -45,5 +45,5 @@ Provide exactly these three options:
 ## Response handling
 
 - `Approved` -> continue the pipeline.
-- `Bug found (enter text)` -> capture the bug text, fix inline, rerun required automated validation, then present this same user-testing gate again.
+- `Bug found (enter text)` -> capture the bug text and resume `Implement and review loop` at step 1; after it succeeds, present this same user-testing gate again.
 - `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
