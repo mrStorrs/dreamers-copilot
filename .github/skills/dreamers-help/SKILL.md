@@ -5,6 +5,14 @@ description: 'Read-only guide to the Dreamers system, delivery workflow, special
 
 $ARGUMENTS
 
+## Required workflow
+
+Response checklist only; do not create a todo or inspect external state.
+
+1. **Orient** — explain the system and primary entry point.
+2. **Guide** — show relevant commands, examples, reviewer lanes, and gates.
+3. **Return guidance** — invite the user to describe a goal; stop without inspecting state or starting delivery.
+
 ## Help
 
 <help-workflow>

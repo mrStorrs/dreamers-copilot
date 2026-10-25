@@ -4,6 +4,24 @@ description: "Standalone focused Vigil review (test coverage audit). Read-only �
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Resolve scope** — select the changed paths, branch diff, or whole project.
+2. **Audit** — run Vigil with the test-coverage focus.
+3. **Report** — read the artifact and return gaps without writing tests.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 ## Core rules
 
 <dreamers-kernel>
@@ -89,7 +107,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
+If a layer needs manual checks, put the steps, expected result, and reason under the relevant AC. Perform those checks with available authorized tools when possible. Set `User-testing-required: yes` only when verification needs user access, hardware, judgment, or explicit personal testing; request user testing during delivery if such a gap emerges even without the flag.
 
 **Test benchmarks**
 
@@ -101,8 +119,6 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
 
 </testing-mandate>
-
-$ARGUMENTS
 
 ---
 

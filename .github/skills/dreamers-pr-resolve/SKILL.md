@@ -4,6 +4,26 @@ description: 'Resolve unresolved PR review comments inline. Orchestrator decides
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Discover** — select the PR and fetch unresolved threads.
+2. **Decide and fix** — accept or reject each comment and apply accepted fixes inline.
+3. **Validate and review** — run tests, obtain Vigil findings, and handle fixes or deferrals.
+4. **Commit and approve push** — commit changes and obtain the required push approval.
+5. **Resolve and report** — resolve accepted threads and report results; leave rejected threads open.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 Resolve unresolved PR review comments. All work inline except required artifact-backed Vigil review over accepted changes.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
@@ -47,21 +67,6 @@ Co-authored-by: The Dreamers System
 ```
 
 </dreamers-kernel>
-
-$ARGUMENTS
-
----
-
-## Todo list
-
-At skill entry, declare via `manage_todo_list`:
-- [ ] Read review comments (discover PR + pull unresolved threads via GraphQL)
-- [ ] Categorize threads (accept/reject decision per thread)
-- [ ] Apply accepted fixes inline + run tests
-- [ ] Spawn Vigil review of accepted changes
-- [ ] Resolve accepted threads + commit + report
-
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
 ---
 

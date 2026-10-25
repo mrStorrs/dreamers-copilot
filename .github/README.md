@@ -75,9 +75,11 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 `/dreamers`: plan and approve task input, or use supplied human-approved plans; implement and test, review, then complete triggered user testing, docs, commit, and PR approval. Review fixes use Vigil, with at most 3 fix cycles. A blocked review or unresolved findings at the cap stops delivery.
 
-`/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
+`/dreamers-lite`: supply a task directly; implement and test, review with Vigil, obtain user testing only when needed, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
 
-Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports authorize fixes unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
+Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports resume the existing `Implement and review loop` at step 1 without re-invoking the delivery skill, unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Every skill has a Required workflow checklist. Its stages drive one todo through the synced `workflow-progress` standard; conditional stages are added only when needed. Help uses a response checklist without creating a todo.
+
+Both delivery skills perform available automated and agent-operated checks first. User testing is requested only for required verification the agent cannot complete, or when the user explicitly wants to test personally. No plan flag is required. Missing build instructions or user-facing changes alone do not trigger a pause. User-reported bugs return to step 1 of the existing implementation, test, and review loop; active review counts and the branch are retained.
 
 ## `/dreamers` first delivery example
 
@@ -101,12 +103,12 @@ flowchart TD
     Manifest --> Branch
 
     Branch --> Implement["Embedded implementation workflow<br/>implement + tests"]
-    Implement --> Tests{"Validation green<br/>within fix limit?"}
+    Implement --> Tests{"Available checks pass<br/>within fix limit?"}
     Tests -->|No| Halt
-    Tests -->|Yes| Review["Embedded review workflow<br/>lane selected from plan or user direction"]
+    Tests -->|Yes| Review["Embedded review workflow<br/>plan lane initially; Vigil for fixes"]
     Review --> Result{"Review result?"}
     Result -->|Blocked| Halt
-    Result -->|Approved| UserTesting{"User testing triggered?"}
+    Result -->|Approved| UserTesting{"User verification still needed?"}
     Result -->|Findings| Major{"Major refactor?"}
     Major -->|Yes| Choice{"User direction"}
     Choice -->|Apply| Cap
@@ -117,20 +119,13 @@ flowchart TD
     Remaining -->|Yes| Cap
     Remaining -->|No| UserTesting
     Cap -->|No| Halt
-    Cap -->|Yes| Fix["Apply findings<br/>implement + validate"]
-    Fix --> FixTests{"Validation green?"}
-    FixTests -->|No| Halt
-    FixTests -->|Yes| Vigil["Embedded review workflow --vigil"]
-    Vigil --> Result
+    Cap -->|Yes| Implement
 
     UserTesting -->|No| MorePlans{"More plans?"}
     UserTesting -->|Yes| TestGate{"User-testing gate"}
     TestGate -->|Approved| MorePlans
-    TestGate -->|Bug found| BugFix["Fix bug + automated validation"]
+    TestGate -->|Bug found| Implement
     TestGate -->|Other| Direction
-    BugFix --> BugTests{"Validation green?"}
-    BugTests -->|No| Halt
-    BugTests -->|Yes| Vigil
 
     MorePlans -->|Yes| Drift["Check next-plan drift<br/>resolve with user when needed"]
     Drift --> Strategy{"Ship strategy?"}
@@ -151,13 +146,14 @@ flowchart TD
     PRGate -->|Other| Direction
     PRGate -->|Approved| PR["Embedded pr workflow"]
     PR --> Done(["Return PR URL"])
+    Done -.->|Related bug or correction| Implement
 
     classDef workflow fill:#1e40af,stroke:#1e3a8a,stroke-width:2px,color:#fff
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-    class Help,Planning,Implement,Review,Vigil,IncrPR,Docs,PR workflow
-    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,FixTests,UserTesting,TestGate,BugTests,MorePlans,Strategy,IncrGate,PRGate gate
+    class Help,Planning,Implement,Review,IncrPR,Docs,PR workflow
+    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,UserTesting,TestGate,MorePlans,Strategy,IncrGate,PRGate gate
     class Halt halt
-    class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,BugFix,Drift,Atomic,Incremental,Merge,Commit phase
+    class Plans,Manifest,Revise,Branch,Deferred,Direction,Drift,Atomic,Incremental,Merge,Commit phase
 ```

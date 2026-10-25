@@ -133,6 +133,7 @@ expected_refs = [
     "shell-plan.md",
     "testing-mandate.md",
     "user-testing-gate.md",
+    "workflow-progress.md",
 ]
 expected_templates = [
     "discovery-questions.md",
@@ -243,13 +244,18 @@ workflow_standards = {
     "comment-cleanup": ["comment-rules", "dreamers-kernel"],
 }
 
-for skill, workflows in workflow_consumers.items():
+for skill in expected_skills:
+    workflows = workflow_consumers.get(skill, [])
     path = skill_root / skill / "SKILL.md"
     if not path.exists():
         continue
     content = path.read_text(encoding="utf-8")
     required = {f"{workflow}-workflow" for workflow in workflows}
     required.update(standard for workflow in workflows for standard in workflow_standards[workflow])
+    if skill != "dreamers-help":
+        required.add("workflow-progress")
+    if skill in {"dreamers", "dreamers-lite"}:
+        required.add("user-testing-gate")
     for name in sorted(required):
         if not re.search(rf"(?ms)^<{name}>\n.+?\n</{name}>$", content):
             add_error(f"Missing embedded ref in {path.relative_to(root)}: {name}")

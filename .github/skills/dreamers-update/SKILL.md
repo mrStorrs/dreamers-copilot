@@ -6,6 +6,25 @@ argument-hint: '<what to change>'
 
 $ARGUMENTS
 
+## Required workflow
+
+1. **Prepare Copilot** — start or resume the source feature branch.
+2. **Update and validate** — change canonical sources, sync refs, and check docs and package integrity.
+3. **Publish Copilot** — commit and create or update the source PR.
+4. **Transfer gate** — obtain explicit Codex-transfer approval; Copilot revisions return to the source pass.
+5. **Transfer, when approved** — prepare the Codex branch, adapt the change, and validate.
+6. **Publish Codex** — commit, publish, and report both repository results.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
 If no task description was provided, halt + ask via `request_information`.
@@ -70,7 +89,7 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 2. **Copilot refs.** Source-of-truth = `C:\projects\dreamers-copilot\.github\dreamers\refs\*.md`. Inlined copies in Copilot skills must match byte-for-byte. If you edited inlined content, edit the source ref too and run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Copilot repo.
 3. **Codex refs.** Source-of-truth = `C:\projects\dreamers-codex\dreamers\refs\*.md`. Inlined copies in Codex skills and agent TOMLs must match byte-for-byte. Run `scripts/sync-refs.ps1 -Sync` or `scripts/sync-refs.sh -Sync`, then verify with the matching script in the Codex repo.
 4. **Independent skills.** Preserve the full delivery gate/order wording in the `/dreamers` orchestrator. Keep shared planning, implementation, reviewer execution, documentation, and PR mechanics in workflow refs. Sync those refs into standalone and delivery skills with XML marker blocks; never introduce skill-to-skill calls or load another skill's `SKILL.md`. Shared workflows and standards must be embedded in every consumer; never replace synced blocks with runtime file reads.
-   Workflow refs are operation bodies with inputs, boundaries, and results. Skills own headings, todos, phase transitions, and final exits. Place each workflow at its execution point and group shared rules once. Keep ref fragments free of document headings outside fenced examples and standalone-skill lifecycle instructions. Sync supplies blank lines inside the XML markers; do not hand-format generated bodies.
+   Workflow refs are operation bodies with inputs, boundaries, and results. Skills own headings, Required workflow checklists, phase transitions, and final exits. Embed the `workflow-progress` standard for checklist tracking; help stays response-only. Place each workflow at its execution point and group shared rules once. Keep ref fragments free of document headings outside fenced examples and standalone-skill lifecycle instructions. Sync supplies blank lines inside the XML markers; do not hand-format generated bodies.
 5. **READMEs.** Update each repo's root `README.md` and skill README when a skill's flow, args, or triggers change. Copilot path: `.github/skills/<skill>/readme.md`; Codex path: `skills/<skill>/readme.md`.
 6. **Catalog.** Update each repo's `.github/catalog.json` `items[]` (description / path / tags) + `collections[].members[]` for new or renamed installed skills, agents, refs, or templates. Project-only skills skip catalog entries unless they become installable.
 7. **Validation.** After transfer, run Copilot ref verify and Codex ref verify + `scripts/Test-DreamersCodex.ps1` or `scripts/Test-DreamersCodex.sh` for the active shell.

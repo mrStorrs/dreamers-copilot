@@ -6,6 +6,24 @@ argument-hint: '(no args; scope is automatic from the current branch diff)'
 
 $ARGUMENTS
 
+## Required workflow
+
+1. **Scope and audit** — use only the feature-branch diff; an empty file list means no cleanup.
+2. **Propose and approve** — agree on the cleanup.
+3. **Apply** — edit comments and type-check.
+4. **Review, if requested** — obtain Vigil findings and apply accepted fixes.
+5. **Commit** — commit the branch cleanup and report.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 ## Scope detection
 
 Detect default branch (canonical two-step):
@@ -24,8 +42,6 @@ If `git rev-parse origin/$DEFAULT` fails after the fetch, halt with: "Could not 
 Scope = files in `git diff origin/$DEFAULT...HEAD --name-only`.
 
 If the working tree is on the default branch (no feature-branch diff), halt with an error: "This skill operates on a feature branch's diff. Use `/dreamers-cleanup-comments` for project-wide cleanup."
-
-Keep one `manage_todo_list` for audit, approval, cleanup, optional review, and commit. Mark each stage `in_progress` when starting and `completed` when finished; never batch completions.
 
 ## Cleanup
 

@@ -6,7 +6,23 @@ argument-hint: '<task description | approved plan path>'
 
 $ARGUMENTS
 
-Apply the Core rules and Git workflow startup verification before reading plan artifacts. Prepare the feature branch before implementation, retaining an existing branch when the supplied context authorizes it. A todo is optional. Stop at green tests with coverage and validation results.
+## Required workflow
+
+1. **Setup** — resolve the task or approved plan and prepare the feature branch.
+2. **Implement and validate** — make scoped changes and run the required checks within the attempt limit.
+3. **Report** — return coverage and validation results; stop before review or publishing.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
+Apply the Core rules and Git workflow startup verification before reading plan artifacts. Prepare the feature branch before implementation, retaining an existing branch when the supplied context authorizes it. Stop at green tests with coverage and validation results. If a required check remains unavailable after feasible alternatives, ask the user for the specific verification and expected result, then incorporate their results; report unresolved gaps as blocked rather than green.
 
 ## Implement and validate
 
@@ -17,7 +33,9 @@ Apply the Core rules and Git workflow startup verification before reading plan a
 1. **Implement.** Make the scoped code and test changes inline on the prepared feature branch. For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage explicit paths as work progresses.
 2. **Validate.** Run the project's type-check and test commands from `.github/copilot-instructions.md`. Fix failures inline, allowing at most 3 fix attempts; halt if validation still fails. After passing, update the corresponding `./test-benchmarks.md` row if the project uses one.
 
-**Result:** requirement/AC coverage and validation results at green tests. Leave changes staged; review, commit, push, and PR creation are outside this operation.
+Perform feasible agent-operated checks as well. If required verification cannot run, try available authorized alternatives and return the remaining gap and reason; do not label an unrun check as passing. The containing skill handles any user-testing handoff. Actual test failures remain blocking under the attempt limit.
+
+**Result:** requirement/AC coverage, validation results, and any checks that still need user verification. Distinguish passing, failed, and unrun checks. Leave changes staged; review, commit, push, and PR creation are outside this operation.
 
 </implementation-workflow>
 
@@ -163,7 +181,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
+If a layer needs manual checks, put the steps, expected result, and reason under the relevant AC. Perform those checks with available authorized tools when possible. Set `User-testing-required: yes` only when verification needs user access, hardware, judgment, or explicit personal testing; request user testing during delivery if such a gap emerges even without the flag.
 
 **Test benchmarks**
 

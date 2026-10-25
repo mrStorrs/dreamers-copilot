@@ -4,6 +4,27 @@ description: 'Find refactoring opportunities across a codebase. Sections the pro
 argument-hint: '[scope or directive]'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Select lenses** — confirm the requested refactor types and scope.
+2. **Section the project** — write the audit section manifest.
+3. **Audit** — run section-scoped Hone reviews and read their artifacts.
+4. **Synthesize** — deduplicate findings and write the summary.
+5. **Generate plans** — turn selected opportunities into scoped plan files.
+6. **Review gate** — incorporate user revisions and return the artifacts.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 ## Core rules
 
 <dreamers-kernel>
@@ -44,8 +65,6 @@ Co-authored-by: The Dreamers System
 
 </dreamers-kernel>
 
-$ARGUMENTS
-
 Read-only discovery skill. It may write only:
 - `.dreamers/refactor-audits/<slug>/sections.md`
 - `.dreamers/refactor-audits/<slug>/summary.md`
@@ -54,16 +73,6 @@ Read-only discovery skill. It may write only:
 - `.dreamers/plans/feature-refactor-<slug>/manifest.md` when needed
 
 It must not edit project source, tests, docs, config, dependency files, git state, branches, commits, pushes, or PRs.
-
-## Todo - Before you begin
-
-Declare a todo list marking all phases at entry:
-- Phase 1 - Refactor type selection
-- Phase 2 - Project sectioning
-- Phase 3 - Section Hone audits
-- Phase 4 - Synthesis
-- Phase 5 - Plan generation
-- Phase 6 - Review gate
 
 ## Phase 1 - Refactor type selection
 
@@ -256,7 +265,7 @@ Use this structure for every plan type. Keep decisions, contracts, UI details, a
 </acceptance_criteria>
 ```
 
-Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them. Set `User-testing-required: yes` only when the agent cannot complete the verification with available authorized tools or the user explicitly wants to test personally. Delivery can discover a need for user testing even when the flag is `no`.
 
 </plan-format>
 

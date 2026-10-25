@@ -1,20 +1,42 @@
 ---
 name: dreamers-lite
-description: 'Deliver a task without planning: implement, test, review with Vigil, update docs, and request PR approval.'
+description: 'Deliver a task without planning: implement, test, review with Vigil, request user testing only when needed, update docs, and request PR approval.'
 argument-hint: '<task description>'
 ---
 
 $ARGUMENTS
 
+## Required workflow
+
+1. **Setup** — confirm scope and prepare or resume the feature branch.
+2. **Implement and review loop** — implement, test, review with Vigil, and resolve findings within the cap.
+3. **User testing, only when needed** — add this stage for verification the agent cannot complete or the user explicitly wants to perform; bugs return to the loop.
+4. **Update docs** — reconcile documentation with the delivered changes.
+5. **Close out** — complete commit and publishing approval, then create or update the PR.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 ## Setup
 
-If the task is missing, halt and ask. Keep one todo for setup, implementation/tests, review, docs, and close-out. The skill owns the branch, scope, gates, review count, and next phase throughout. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume pending work instead of repeating setup.
+Related changes resume `Implement and review loop` at step 1 with the current context. For a new task without a description, halt and ask. The skill owns the branch, scope, gates, review count, and next phase throughout. Follow `Delivery continuation` in `dreamers.instructions.md` across follow-ups; resume pending work instead of repeating setup.
 
 Workflow blocks are local operations: supply the inputs stated at each phase, apply their write boundaries only during that operation, and use their results to continue here. Do not invoke other skills or load their `SKILL.md` files. The rules and formats at the end are shared across phases.
 
 Apply the Core rules and Git workflow: fetch, update the default branch, and cut `fix/<slug>` before editing. Inspect scope and raise ambiguities or critiques through `request_information`; otherwise continue.
 
-## Implement and validate
+## Implement and review loop
+
+Enter at step 1 for initial implementation, accepted findings, user-testing bugs, or related corrections from any later stage. Retain context and the active review count. After the loop succeeds, revisit affected testing, docs, and close-out.
+
+### 1. Implement and validate
 
 Supply the task, agreed scope, and any accepted fixes. Retain the existing feature branch.
 
@@ -25,13 +47,15 @@ Supply the task, agreed scope, and any accepted fixes. Retain the existing featu
 1. **Implement.** Make the scoped code and test changes inline on the prepared feature branch. For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage explicit paths as work progresses.
 2. **Validate.** Run the project's type-check and test commands from `.github/copilot-instructions.md`. Fix failures inline, allowing at most 3 fix attempts; halt if validation still fails. After passing, update the corresponding `./test-benchmarks.md` row if the project uses one.
 
-**Result:** requirement/AC coverage and validation results at green tests. Leave changes staged; review, commit, push, and PR creation are outside this operation.
+Perform feasible agent-operated checks as well. If required verification cannot run, try available authorized alternatives and return the remaining gap and reason; do not label an unrun check as passing. The containing skill handles any user-testing handoff. Actual test failures remain blocking under the attempt limit.
+
+**Result:** requirement/AC coverage, validation results, and any checks that still need user verification. Distinguish passing, failed, and unrun checks. Leave changes staged; review, commit, push, and PR creation are outside this operation.
 
 </implementation-workflow>
 
-## Review
+### 2. Review
 
-After green tests, supply `--vigil --branch` and the task context, with no plan binding.
+After available checks pass, supply `--vigil --branch` and the task context, with no plan binding; include any unrun checks and reasons so review can assess the gap. For user-testing or post-PR fixes, use staged + unstaged scope. Retain that scope for follow-up reviews.
 
 <review-workflow>
 
@@ -90,9 +114,70 @@ This workflow owns reviewer selection and execution. The caller owns all finding
 
 </review-workflow>
 
-## Apply findings
+### 3. Apply findings
 
-Apply accepted findings through Implement and validate, then Review, for at most 2 fix cycles. Ask before major refactors; record deferred findings in root `defered.md`. Halt on a blocked review or unresolved findings at the cap and report what remains. Never silently reset the count.
+Apply accepted findings by returning to step 1, then Review with the same scope, for at most 2 fix cycles. Ask before major refactors; record deferred findings in root `defered.md`. Halt on a blocked review or unresolved findings at the cap and report what remains. Never silently reset the count.
+
+## User testing, when needed
+
+Apply the gate below to any remaining verification from the task or review. Bugs return to step 1 of Implement and review loop. If no user testing is needed, continue to Update docs without a testing todo or approval pause. Commit only at the applicable close-out.
+
+<user-testing-gate>
+
+**When needed**
+
+Do the testing yourself wherever possible: use available automated tests, builds, browser/device tools, and other authorized checks. A check being manual or user-facing does not by itself require the user. Try feasible alternatives when a tool or environment blocks verification; report the limit honestly.
+
+Request user testing only for required verification you cannot complete, or when the user explicitly wants to test personally. A plan flag is not required: uncovered task requirements, review findings, or unavailable access/devices can trigger the gate. Otherwise continue without a testing todo or approval pause.
+
+When needed, add or reopen the user-testing todo and use this prompt. Keep it to the remaining checks and required human judgment; explain what you already verified and why the user is needed.
+
+Call `request_information`. Do not replace this gate with an unstructured chat prompt unless the tool is unavailable.
+
+**Prompt body**
+
+The prompt body must contain exactly these two sections, in this order:
+
+**Testing steps**
+
+Number every required user action and verification step with `1.`, `2.`, `3.`.
+
+Include:
+- Task context, or plan ID + path when a plan exists.
+- A one-sentence summary of what changed in this cycle.
+- Only the setup actions the user still needs to perform: build/distribution, install, account state, device/browser, or other prerequisites. Complete authorized setup yourself when possible, using `.github/instructions/build.instructions.md` or other project instructions and scripts. Missing build instructions alone are not a reason to hand off testing.
+- The remaining tests the user must perform, derived from task requirements, plan ACs, or reviewer-requested validation.
+- The expected result for each test step.
+
+Do not collapse tests into a paragraph. Do not use bullets for the testing steps.
+
+**Notes**
+
+Include:
+- Known limitations and out-of-scope items.
+- Relevant automated validation already run.
+- Other agent-operated checks already completed and the specific limitation requiring user testing.
+- Any environment assumptions or risks the user should know before approving.
+
+Use `None` only when there are no notes.
+
+**Options**
+
+Provide exactly these three options:
+
+1. `Approved`
+2. `Bug found (enter text)`
+3. `Other (enter text)`
+
+`Bug found (enter text)` and `Other (enter text)` must accept freeform text.
+
+**Response handling**
+
+- `Approved` -> continue the pipeline.
+- `Bug found (enter text)` -> capture the bug text and return to the containing skill's implementation, test, and review loop with the current context and active cap. After it succeeds, re-evaluate the remaining user checks and present the gate again if needed.
+- `Other (enter text)` -> follow the user's direction. If the result still needs user testing sign-off, present this same gate again.
+
+</user-testing-gate>
 
 ## Update docs
 
@@ -313,7 +398,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
+If a layer needs manual checks, put the steps, expected result, and reason under the relevant AC. Perform those checks with available authorized tools when possible. Set `User-testing-required: yes` only when verification needs user access, hardware, judgment, or explicit personal testing; request user testing during delivery if such a gap emerges even without the flag.
 
 **Test benchmarks**
 

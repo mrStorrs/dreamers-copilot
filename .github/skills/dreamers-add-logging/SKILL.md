@@ -4,6 +4,26 @@ description: 'Phased pass to add or improve project logging per logging-standard
 argument-hint: '[--scope <path>] (defaults to project source root)'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Audit** — inspect logging within the selected scope.
+2. **Propose and approve** — agree on the logging changes.
+3. **Implement** — apply approved edits and type-check.
+4. **Review, if requested** — obtain Vigil findings and apply accepted fixes.
+5. **Commit** — commit the validated changes and report.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 Also load at runtime (not inlined — these are templates / project files):
 - `~/.copilot/dreamers/templates/logging-standards.md` — the binding spec
 - `.github/copilot-instructions.md` (project, if present) — project-specific logging conventions (logger library, format)
@@ -47,21 +67,6 @@ Co-authored-by: The Dreamers System
 ```
 
 </dreamers-kernel>
-
-$ARGUMENTS
-
----
-
-## Todo list
-
-At skill entry, declare via `manage_todo_list`:
-- [ ] Phase 1 — audit current logging state
-- [ ] Phase 2 — proposal + user approval
-- [ ] Phase 3 — implement approved changes
-- [ ] Phase 4 — optional Vigil review
-- [ ] Phase 5 — commit
-
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
 ---
 

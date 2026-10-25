@@ -127,8 +127,8 @@ function Assert-WorkflowRefs {
         "pr" = @("dreamers-kernel", "git-workflow", "pr-description")
         "comment-cleanup" = @("comment-rules", "dreamers-kernel")
     }
-    foreach ($entry in $consumers.GetEnumerator()) {
-        $path = Join-Path $PackageRoot "skills/$($entry.Key)/SKILL.md"
+    foreach ($skillName in $expectedSkills) {
+        $path = Join-Path $PackageRoot "skills/$skillName/SKILL.md"
         if (-not (Test-Path $path)) {
             Add-Error "Missing workflow consumer: $path"
             continue
@@ -136,10 +136,16 @@ function Assert-WorkflowRefs {
         $content = Get-Content -Raw $path
         if ($null -eq $content) { $content = "" }
         $content = $content.Replace("`r`n", "`n").Replace("`r", "`n")
-        $required = foreach ($workflow in $entry.Value) {
-            "$workflow-workflow"
-            $standards[$workflow]
-        }
+        $required = @(
+            if ($skillName -ne "dreamers-help") { "workflow-progress" }
+            if ($skillName -in @("dreamers", "dreamers-lite")) { "user-testing-gate" }
+            if ($consumers.ContainsKey($skillName)) {
+                foreach ($workflow in $consumers[$skillName]) {
+                    "$workflow-workflow"
+                    $standards[$workflow]
+                }
+            }
+        )
         foreach ($name in ($required | Select-Object -Unique)) {
             if ($content -notmatch "(?ms)^<$name>\n.+?\n</$name>$") {
                 Add-Error "Missing embedded ref in ${path}: $name"
@@ -241,7 +247,8 @@ $expectedRefs = @(
     "reviewer-findings-format.md",
     "shell-plan.md",
     "testing-mandate.md",
-    "user-testing-gate.md"
+    "user-testing-gate.md",
+    "workflow-progress.md"
 )
 $expectedTemplates = @(
     "discovery-questions.md",
