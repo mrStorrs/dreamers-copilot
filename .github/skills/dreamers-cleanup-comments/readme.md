@@ -1,6 +1,6 @@
 # /dreamers-cleanup-comments — flow
 
-Visual map of the project-wide comment cleanup. Source of truth is `SKILL.md`.
+Visual map of the project-wide comment cleanup. Shared workflow: [comment-cleanup-workflow](../../dreamers/refs/comment-cleanup-workflow.md). `SKILL.md` embeds this ref and its required standards through XML sync.
 
 ```mermaid
 flowchart TD

@@ -1,4 +1,5 @@
-## Plan template
+**Plan template**
+
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
@@ -13,31 +14,34 @@ Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labe
 
 **Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
 
-## Coverage requirement (every plan)
+**Coverage requirement (every plan)**
 
 Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
 
 **Unit layer**
+
 - Each significant function, method, or class in isolation.
 - All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
 - Any pure logic that does not require a real device, network, or database.
 
 **Integration layer**
+
 - Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
 - Database reads/writes (real or in-memory, not mocked).
 - Auth flows end-to-end within the backend.
 - Cloud function triggers and side-effects.
 
 **UI / E2E layer**
+
 - Full user journeys through the UI: screen load → interaction → outcome visible on screen.
 - Navigation flows between screens.
 - Error and empty states rendered correctly in the UI.
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
+If a layer needs manual checks, put the steps, expected result, and reason under the relevant AC. Perform those checks with available authorized tools when possible. Set `User-testing-required: yes` only when verification needs user access, hardware, judgment, or explicit personal testing; request user testing during delivery if such a gap emerges even without the flag.
 
-## Test benchmarks
+**Test benchmarks**
 
 Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
 

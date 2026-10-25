@@ -4,20 +4,43 @@ description: 'Resolve unresolved PR review comments inline. Orchestrator decides
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Discover** — select the PR and fetch unresolved threads.
+2. **Decide and fix** — accept or reject each comment and apply accepted fixes inline.
+3. **Validate and review** — run tests, obtain Vigil findings, and handle fixes or deferrals.
+4. **Commit and approve push** — commit changes and obtain the required push approval.
+5. **Resolve and report** — resolve accepted threads and report results; leave rejected threads open.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 Resolve unresolved PR review comments. All work inline except required artifact-backed Vigil review over accepted changes.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
+## Core rules
+
 <dreamers-kernel>
-## User overrides
+
+**User overrides**
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist
+**Subagent allowlist**
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
-## Subagent prompt — required content
+**Subagent prompt — required content**
 
 Every `task()` invocation MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
@@ -29,35 +52,21 @@ Every `task()` invocation MUST include in the prompt:
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
-## Implementation discipline
+**Implementation discipline**
 
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
-## Commit trailer
+**Commit trailer**
 
 Every commit body includes:
 
 ```
 Co-authored-by: The Dreamers System
 ```
+
 </dreamers-kernel>
-
-$ARGUMENTS
-
----
-
-## Todo list
-
-At skill entry, declare via `manage_todo_list`:
-- [ ] Read review comments (discover PR + pull unresolved threads via GraphQL)
-- [ ] Categorize threads (accept/reject decision per thread)
-- [ ] Apply accepted fixes inline + run tests
-- [ ] Spawn Vigil review of accepted changes
-- [ ] Resolve accepted threads + commit + report
-
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
 ---
 

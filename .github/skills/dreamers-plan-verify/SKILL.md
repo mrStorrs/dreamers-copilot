@@ -4,16 +4,37 @@ description: 'Inline drift check on a plan against current codebase reality. Re-
 argument-hint: 'path/to/plan.md'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Resolve the plan** — read the supplied artifact.
+2. **Check drift** — compare its references, assumptions, and acceptance criteria with current code.
+3. **Report** — return no-change or specific drift; repeat the check after authorized revisions.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
+## Core rules
+
 <dreamers-kernel>
-## User overrides
+
+**User overrides**
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist
+**Subagent allowlist**
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
-## Subagent prompt — required content
+**Subagent prompt — required content**
 
 Every `task()` invocation MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
@@ -25,28 +46,21 @@ Every `task()` invocation MUST include in the prompt:
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
-## Implementation discipline
+**Implementation discipline**
 
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
-## Commit trailer
+**Commit trailer**
 
 Every commit body includes:
 
 ```
 Co-authored-by: The Dreamers System
 ```
+
 </dreamers-kernel>
-
-$ARGUMENTS
-
----
-
-## Todo list
-
-When standalone, a todo is optional. When invoked by an outer delivery skill, complete this check under its existing todo.
 
 ---
 
@@ -67,19 +81,19 @@ For each element the plan references, verify against the current codebase:
 
 Return ONE of:
 
-- **`No change — proceed`** — the plan still applies as written. The user / orchestrator can invoke `/dreamers-implement <plan>` confidently.
+- **`No change — proceed`** — the plan still applies as written. Suggest `/dreamers-implement <plan>` as a next command for the user.
 - **`Drift detected — halt`** — list specific drift items in chat. Each item identifies WHERE in the plan (AC #, Scope and context entry, or line range) and WHAT diverged:
   ```
   - AC #3 — expected: filter by date range / actual: filter API removed in last cycle
   - Scope and context — expected: src/auth/session.ts / actual: file renamed to src/auth/sessionStore.ts
   ```
   The user decides whether to:
-  - Revise the plan inline (and re-run `/dreamers-plan-verify`).
+  - Revise the plan inline and repeat this check.
   - Abandon the plan.
   - Accept the drift and proceed (rare; usually means the plan needs updating).
 
 ## Use cases
 
-- **Before invoking `/dreamers-implement`** on an older plan: catch drift early.
-- **Between sequential plans in `/dreamers`** (multi-plan mode): orchestrator can invoke this to check the next plan against the now-current state after the previous plan shipped.
+- **Before implementation** on an older plan: catch drift early.
+- **Between shipped plans:** the user can request this check against the now-current state before starting another delivery.
 - **Standalone** sanity check when you have a plan file and want to know if it's still relevant.

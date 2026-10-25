@@ -4,29 +4,34 @@ description: 'Between-milestone maintenance pass: prune stale files, audit impro
 argument-hint: '(no args; full maintenance pass)'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Improvements audit** — action, defer, or close existing items.
+2. **Legacy cleanup, when applicable** — recommend removal of stale workspace directories.
+3. **State check** — find contradictions and apply authorized updates.
+4. **Report** — summarize changes, deferrals, and recommendations.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
 Run a between-milestone maintenance pass. No implementation, no planning, no subagents — do all of this directly.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
-
-$ARGUMENTS
 
 ---
 
 ## User overrides
 
 - Explicit user instructions can skip or alter phases/actions.
-
-## Todo list
-
-At skill entry, declare via `manage_todo_list`:
-- [ ] Step 1 — improvements audit
-- [ ] Step 2 — legacy workspace cleanup (recommend only)
-- [ ] Step 3 — project state contradiction scan
-- [ ] Step 4 — report
-
-Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
-
----
 
 ## Step 1 — Improvements audit
 

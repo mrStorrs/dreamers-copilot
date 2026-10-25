@@ -4,16 +4,40 @@ description: 'Find refactoring opportunities across a codebase. Sections the pro
 argument-hint: '[scope or directive]'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Select lenses** — confirm the requested refactor types and scope.
+2. **Section the project** — write the audit section manifest.
+3. **Audit** — run section-scoped Hone reviews and read their artifacts.
+4. **Synthesize** — deduplicate findings and write the summary.
+5. **Generate plans** — turn selected opportunities into scoped plan files.
+6. **Review gate** — incorporate user revisions and return the artifacts.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
+## Core rules
+
 <dreamers-kernel>
-## User overrides
+
+**User overrides**
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist
+**Subagent allowlist**
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
-## Subagent prompt — required content
+**Subagent prompt — required content**
 
 Every `task()` invocation MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
@@ -25,22 +49,21 @@ Every `task()` invocation MUST include in the prompt:
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
-## Implementation discipline
+**Implementation discipline**
 
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
-## Commit trailer
+**Commit trailer**
 
 Every commit body includes:
 
 ```
 Co-authored-by: The Dreamers System
 ```
-</dreamers-kernel>
 
-$ARGUMENTS
+</dreamers-kernel>
 
 Read-only discovery skill. It may write only:
 - `.dreamers/refactor-audits/<slug>/sections.md`
@@ -50,16 +73,6 @@ Read-only discovery skill. It may write only:
 - `.dreamers/plans/feature-refactor-<slug>/manifest.md` when needed
 
 It must not edit project source, tests, docs, config, dependency files, git state, branches, commits, pushes, or PRs.
-
-## Todo - Before you begin
-
-Declare a todo list marking all phases at entry:
-- Phase 1 - Refactor type selection
-- Phase 2 - Project sectioning
-- Phase 3 - Section Hone audits
-- Phase 4 - Synthesis
-- Phase 5 - Plan generation
-- Phase 6 - Review gate
 
 ## Phase 1 - Refactor type selection
 
@@ -223,7 +236,10 @@ Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using
 
 Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
 
+## Plan format
+
 <plan-format>
+
 Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
 
 ```markdown
@@ -249,10 +265,14 @@ Use this structure for every plan type. Keep decisions, contracts, UI details, a
 </acceptance_criteria>
 ```
 
-Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them. Set `User-testing-required: yes` only when the agent cannot complete the verification with available authorized tools or the user explicitly wants to test personally. Delivery can discover a need for user testing even when the flag is `no`.
+
 </plan-format>
 
+## Manifest format
+
 <manifest-format>
+
 ```markdown
 # Feature: <short name>
 
@@ -278,6 +298,7 @@ Include the transcript link only when the sibling artifact exists. Compound laye
 ```
 
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
+
 </manifest-format>
 
 ## Phase 6 - Review gate

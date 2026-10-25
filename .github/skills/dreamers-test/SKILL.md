@@ -4,16 +4,37 @@ description: "Standalone focused Vigil review (test coverage audit). Read-only �
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
+$ARGUMENTS
+
+## Required workflow
+
+1. **Resolve scope** — select the changed paths, branch diff, or whole project.
+2. **Audit** — run Vigil with the test-coverage focus.
+3. **Report** — read the artifact and return gaps without writing tests.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
+## Core rules
+
 <dreamers-kernel>
-## User overrides
+
+**User overrides**
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist
+**Subagent allowlist**
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
-## Subagent prompt — required content
+**Subagent prompt — required content**
 
 Every `task()` invocation MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
@@ -25,23 +46,28 @@ Every `task()` invocation MUST include in the prompt:
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
-## Implementation discipline
+**Implementation discipline**
 
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
-## Commit trailer
+**Commit trailer**
 
 Every commit body includes:
 
 ```
 Co-authored-by: The Dreamers System
 ```
+
 </dreamers-kernel>
 
+## Test coverage
+
 <testing-mandate>
-## Plan template
+
+**Plan template**
+
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
@@ -56,31 +82,34 @@ Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labe
 
 **Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
 
-## Coverage requirement (every plan)
+**Coverage requirement (every plan)**
 
 Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
 
 **Unit layer**
+
 - Each significant function, method, or class in isolation.
 - All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
 - Any pure logic that does not require a real device, network, or database.
 
 **Integration layer**
+
 - Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
 - Database reads/writes (real or in-memory, not mocked).
 - Auth flows end-to-end within the backend.
 - Cloud function triggers and side-effects.
 
 **UI / E2E layer**
+
 - Full user journeys through the UI: screen load → interaction → outcome visible on screen.
 - Navigation flows between screens.
 - Error and empty states rendered correctly in the UI.
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
+If a layer needs manual checks, put the steps, expected result, and reason under the relevant AC. Perform those checks with available authorized tools when possible. Set `User-testing-required: yes` only when verification needs user access, hardware, judgment, or explicit personal testing; request user testing during delivery if such a gap emerges even without the flag.
 
-## Test benchmarks
+**Test benchmarks**
 
 Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
 
@@ -88,9 +117,8 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
 - **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
-</testing-mandate>
 
-$ARGUMENTS
+</testing-mandate>
 
 ---
 

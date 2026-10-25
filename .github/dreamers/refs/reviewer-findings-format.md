@@ -1,6 +1,4 @@
-# Reviewer Findings Format
-
-## Artifact contract
+**Artifact contract**
 
 Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
 

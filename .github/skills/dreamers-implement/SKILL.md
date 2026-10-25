@@ -4,29 +4,56 @@ description: 'Implement a task or approved plan with tests; return requirement c
 argument-hint: '<task description | approved plan path>'
 ---
 
-## Todo
-- When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.
+$ARGUMENTS
 
-## 1: Implement
-- Implement the task or approved plan in `$ARGUMENTS` per `comment-rules` + `logging-discipline` + `testing-mandate` (Kernel). For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage as you go.
+## Required workflow
 
-## 2: Type-check + run tests
-- Run the project's type-check + test command (from `.github/copilot-instructions.md`). Fix inline (max 3 attempts) then halt.
-- Update `./test-benchmarks.md` row after passing (if the project uses one).
+1. **Setup** — resolve the task or approved plan and prepare the feature branch.
+2. **Implement and validate** — make scoped changes and run the required checks within the attempt limit.
+3. **Report** — return coverage and validation results; stop before review or publishing.
 
-## Exit
-- Return requirement/AC coverage and validation results at green tests.
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
+Apply the Core rules and Git workflow startup verification before reading plan artifacts. Prepare the feature branch before implementation, retaining an existing branch when the supplied context authorizes it. Stop at green tests with coverage and validation results. If a required check remains unavailable after feasible alternatives, ask the user for the specific verification and expected result, then incorporate their results; report unresolved gaps as blocked rather than green.
+
+## Implement and validate
+
+<implementation-workflow>
+
+**Input:** task requirements or an approved plan, agreed scope, and any shared context or accepted findings. Apply the embedded `dreamers-kernel`, `git-workflow`, `testing-mandate`, `comment-rules`, and `logging-discipline` rules.
+
+1. **Implement.** Make the scoped code and test changes inline on the prepared feature branch. For tasks, use the stated requirements as acceptance criteria; no plan file is needed. Stage explicit paths as work progresses.
+2. **Validate.** Run the project's type-check and test commands from `.github/copilot-instructions.md`. Fix failures inline, allowing at most 3 fix attempts; halt if validation still fails. After passing, update the corresponding `./test-benchmarks.md` row if the project uses one.
+
+Perform feasible agent-operated checks as well. If required verification cannot run, try available authorized alternatives and return the remaining gap and reason; do not label an unrun check as passing. The containing skill handles any user-testing handoff. Actual test failures remain blocking under the attempt limit.
+
+**Result:** requirement/AC coverage, validation results, and any checks that still need user verification. Distinguish passing, failed, and unrun checks. Leave changes staged; review, commit, push, and PR creation are outside this operation.
+
+</implementation-workflow>
+
+## Rules and formats
+
+### Core rules
 
 <dreamers-kernel>
-## User overrides
+
+**User overrides**
 
 Explicit user instructions can skip or alter phases/actions.
 
-## Subagent allowlist
+**Subagent allowlist**
 
 Do not use any non-Dreamers agent unless explicitly authorized by user.
 
-## Subagent prompt — required content
+**Subagent prompt — required content**
 
 Every `task()` invocation MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
@@ -38,27 +65,30 @@ Every `task()` invocation MUST include in the prompt:
 
 All `task()` calls use `mode: "sync"` — the call blocks until the agent returns.
 
-## Implementation discipline
+**Implementation discipline**
 
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
 
-## Commit trailer
+**Commit trailer**
 
 Every commit body includes:
 
 ```
 Co-authored-by: The Dreamers System
 ```
+
 </dreamers-kernel>
 
+### Git workflow
+
 <git-workflow>
-# Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
 
-## Startup verification (do this FIRST)
+**Startup verification (do this FIRST)**
+
 1. Detect the repo's default branch:
    ```bash
    DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
@@ -67,39 +97,51 @@ Every milestone uses a feature branch + PR — never work directly on the defaul
    Store `$DEFAULT_BRANCH` — use it everywhere `main` would have been used.
 2. `git fetch origin && git log origin/$DEFAULT_BRANCH --oneline -5` — anchor to remote truth before reading any `.dreamers/` files. Workspace files are local-only and may be stale. `origin/$DEFAULT_BRANCH` is the authoritative record of what is actually shipped.
 
-## Branch setup (before invoking `/dreamers-implement`)
+**Branch setup (before implementation)**
+
 1. `git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH` — never build off a stale local default branch.
 2. Cut `feat/<slug>` from `$DEFAULT_BRANCH`.
 3. Confirm `.dreamers/` is in the project's `.gitignore`. If not, add it before any further edits.
 4. No init commit — the first commit for the milestone is the first thing in the PR diff.
 
-## Commit discipline (non-negotiable)
+**Commit discipline (non-negotiable)**
+
 1. **Commit at end of each cycle** — one commit per plan in the sequence (single-plan: one commit total; multi-plan: N commits, one per plan).
 2. **Commit before PR creation** — a final commit capturing any last changes before opening the PR.
 3. **No auto-commit after PR is created** — if changes are made after `gh pr create`, do NOT commit automatically. Ask the user first.
 
-## Push discipline (non-negotiable)
+**Push discipline (non-negotiable)**
+
 `git push` happens EXACTLY ONCE — immediately before `gh pr create` at final close-out. Never push after intermediate commits, between cycles, or at any other point in the pipeline.
 
-## Post-PR push discipline
+**Post-PR push discipline**
+
 If the user approves a post-PR commit, push with `git push` (no force). The PR will update automatically.
 
-## Commit structure (one commit per cycle)
+**Commit structure (one commit per cycle)**
+
 - Exactly **one** commit per plan/cycle, immediately after the reviewer findings have been applied and tests are green (and user testing, if required, is signed off).
 - The orchestrator stages changes with `git add` throughout the cycle but does **not** run `git commit` until the cycle ends.
 - Commit message subject: `feat: <plan-name>` (or `feat!: <plan-name>` for breaking changes).
 
 One commit per plan keeps each plan's contribution atomic. Reviewer-fix application is part of the same cycle (not separate commits).
 
-## What gets committed
+**What gets committed**
+
 Nothing in `.dreamers/` is committed — all workspace files (plans, retros, improvements.md) are gitignored and stay local. Ensure `.dreamers/` is in the project's `.gitignore`.
 
-## No worktrees
+**No worktrees**
+
 The orchestrator works directly on the feature branch. Unless explicitly requested by the user.
+
 </git-workflow>
 
+### Test coverage
+
 <testing-mandate>
-## Plan template
+
+**Plan template**
+
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
 ```
@@ -114,31 +156,34 @@ Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labe
 
 **Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
 
-## Coverage requirement (every plan)
+**Coverage requirement (every plan)**
 
 Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
 
 **Unit layer**
+
 - Each significant function, method, or class in isolation.
 - All branches: happy path, edge cases (boundary values, empty/null/max), negative cases (invalid input, error states).
 - Any pure logic that does not require a real device, network, or database.
 
 **Integration layer**
+
 - Interactions between layers: repository ↔ data source, ViewModel ↔ repository, service ↔ external API.
 - Database reads/writes (real or in-memory, not mocked).
 - Auth flows end-to-end within the backend.
 - Cloud function triggers and side-effects.
 
 **UI / E2E layer**
+
 - Full user journeys through the UI: screen load → interaction → outcome visible on screen.
 - Navigation flows between screens.
 - Error and empty states rendered correctly in the UI.
 - Any flow that requires a real device or emulator.
 - **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
 
-If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
+If a layer needs manual checks, put the steps, expected result, and reason under the relevant AC. Perform those checks with available authorized tools when possible. Set `User-testing-required: yes` only when verification needs user access, hardware, judgment, or explicit personal testing; request user testing during delivery if such a gap emerges even without the flag.
 
-## Test benchmarks
+**Test benchmarks**
 
 Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
 
@@ -146,22 +191,30 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 - **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
 - **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
+
 </testing-mandate>
 
+### Comments
+
 <comment-rules>
-## Core principle
+
+**Core principle**
+
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
-## When to comment
+**When to comment**
+
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
 
-## When NOT to comment
+**When NOT to comment**
+
 - Code that reads naturally from well-named functions and variables
 - Anything that restates what the code obviously does (`const isRunning` does not need `// tracks whether running`)
 
-## Strict prohibitions
+**Strict prohibitions**
+
 - **No plan/ticket references** — never mention plan files, milestone names (D25, plan-3), ticket numbers, or agent names in source code
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
@@ -169,16 +222,22 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No em dashes. no exceptions**
 - **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 
-## Style
+**Style**
+
 - One line when possible; never exceed two lines for inline comments
 - Write *why*, never *what*
 - If a comment requires more than two lines to be useful, the code needs refactoring, not more words
+
 </comment-rules>
 
+### Logging
+
 <logging-discipline>
+
 1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
 2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
    - Logger library / import path (do not introduce a new logger where one already exists).
    - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
    - Message format (structured fields vs interpolated strings, key names, casing).
+
 </logging-discipline>
