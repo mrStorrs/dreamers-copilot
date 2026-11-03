@@ -1,6 +1,5 @@
-# Project Bootstrap
+**Bootstrap checklist for new repos**
 
-## Bootstrap checklist for new repos
 1. Ensure `.dreamers/` is in the project's `.gitignore`
 2. Create the project-level `.github/copilot-instructions.md` (see ownership below)
 3. Create `.dreamers/plans/` directory

@@ -1,4 +1,4 @@
-### Grill
+**Grill**
 
 Resolve decisions and their dependencies until the goal, scope, and constraints are understood. Explore the codebase for answers before asking the user. For unresolved decisions, use `request_information`, one blocking question at a time, with exactly:
 

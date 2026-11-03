@@ -4,9 +4,26 @@ description: 'Create a structured GitHub issue with acceptance criteria from a t
 argument-hint: '[#]<task description>  (# prefix triggers discussion mode with clarifying questions)'
 ---
 
-Create a GitHub issue for the following request:
-
 $ARGUMENTS
+
+## Required workflow
+
+1. **Route input** — use discussion mode for the `#` prefix; otherwise draft directly.
+2. **Resolve repository and labels** — confirm the destination and existing labels.
+3. **Draft** — write the issue with testable acceptance criteria.
+4. **Create** — open the issue and return its URL.
+
+<workflow-progress>
+
+Use this skill's Required workflow as the single `manage_todo_list`. Reuse existing progress on follow-ups. Mark each stage `in_progress` when starting and `completed` only from confirmed results; update as work proceeds, not in a batch at the end.
+
+Add conditional stages only when they apply. Follow the detailed sections for scope, gates, loop limits, and exits; the checklist does not expand them. Record explicit user skips.
+
+Corrections can reopen earlier stages. Resume the appropriate step with the current context, then repeat affected validation and downstream work. Preserve the branch, applicable approvals, and active review count; do not restart the skill or silently reset a cap.
+
+</workflow-progress>
+
+Create a GitHub issue from the supplied request.
 
 ---
 

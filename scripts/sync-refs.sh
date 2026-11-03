@@ -131,7 +131,7 @@ for path, rel, text, lines, pairs in plan:
 
     for name, open_line, close_line in pairs:
         new_lines.extend(lines[cursor : open_line + 1])
-        expected_lines = refs[name].split("\n")
+        expected_lines = ["", *refs[name].split("\n"), ""]
         current = "\n".join(lines[open_line + 1 : close_line])
         expected = "\n".join(expected_lines)
         if current != expected:

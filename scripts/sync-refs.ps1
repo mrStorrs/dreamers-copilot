@@ -9,13 +9,16 @@
   inlined by placing XML-style markers on their own line at column 0:
 
       <NAME>
+
       ... (sync script replaces this region) ...
+
       </NAME>
 
   Where NAME is the filename stem of a ref. A line counts as a marker only if
   (a) NAME exactly matches a real ref file, AND (b) the tag appears on its own
   line at column 0 (no leading whitespace, no trailing content). Other XML-ish
   tags inside the body are content, not structure.
+  Sync adds one blank line inside each marker so Markdown renders normally.
 
   Two modes:
     -Sync    : Regenerate inlined regions from refs/. Writes files.
@@ -111,9 +114,11 @@ $closeRegex = [regex]'^</([a-zA-Z][a-zA-Z0-9_-]*)>$'
 function Get-ExpectedInner {
     param([hashtable]$Ref)
     $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("")
     foreach ($line in Split-Lines $Ref.Content) {
         $lines.Add($line)
     }
+    $lines.Add("")
     return $lines
 }
 

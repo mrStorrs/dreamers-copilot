@@ -147,7 +147,7 @@
       "type": "skill",
       "slug": "dreamers-lite",
       "name": "dreamers-lite",
-      "description": "Deliver a task without planning: implementation, tests, Vigil review, docs, and PR approval.",
+      "description": "Deliver a task without planning: implement, test, review with Vigil, request user testing only when needed, update docs, and request PR approval. A required checklist tracks the capped delivery loop.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -173,7 +173,7 @@
       "type": "skill",
       "slug": "dreamers",
       "name": "dreamers",
-      "description": "Deliver a task, approved plan(s), or manifest through planning, implementation, review, user testing, docs, and PR. Empty/help input opens /dreamers-help. Triggers: /dreamers, plan and implement, new feature, ship a feature.",
+      "description": "Deliver a task, approved plan(s), or manifest using XML-synced workflow blocks for planning, implementation, review, user testing, docs, and PR. Skills remain independent; empty/help input uses the embedded help block.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -462,7 +462,7 @@
       "type": "folder",
       "slug": "dreamers-refs",
       "name": "Dreamers Refs",
-      "description": "Shared reference files used across Dreamers agents and skills (planning protocol, planning Grill phase, testing mandate, comment rules, architecture rubric, git workflow, close-out procedure, orchestrator discipline, etc.).",
+      "description": "Shared operation refs synchronized into independent skills as XML blocks, plus standards for workflow progress, testing, review, and delivery. Includes every file in the refs directory.",
       "sourcePath": ".github/dreamers/refs",
       "destSubpath": "dreamers/refs"
     },

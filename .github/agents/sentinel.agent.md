@@ -38,20 +38,27 @@ Read these files before doing anything else:
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions, constraints
 
 
+## Comments
+
 <comment-rules>
-## Core principle
+
+**Core principle**
+
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
-## When to comment
+**When to comment**
+
 - Non-obvious logic: why a non-obvious approach was chosen, constraints, gotchas
 - Public API documentation callers need to use the interface correctly
 - TODO/FIXME with specific, actionable notes
 
-## When NOT to comment
+**When NOT to comment**
+
 - Code that reads naturally from well-named functions and variables
 - Anything that restates what the code obviously does (`const isRunning` does not need `// tracks whether running`)
 
-## Strict prohibitions
+**Strict prohibitions**
+
 - **No plan/ticket references** — never mention plan files, milestone names (D25, plan-3), ticket numbers, or agent names in source code
 - **No separator comments** — never use `// ---`, `// ===`, `// ###`, blank-comment lines, or visual dividers
 - **No spec rationalization** — never write comments arguing a spec permits a pattern; implement cleanly and let review judge
@@ -59,16 +66,19 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 - **No em dashes. no exceptions**
 - **No spec-arguing comments:** never add a code comment that argues the spec permits a pattern.
 
-## Style
+**Style**
+
 - One line when possible; never exceed two lines for inline comments
 - Write *why*, never *what*
 - If a comment requires more than two lines to be useful, the code needs refactoring, not more words
+
 </comment-rules>
 
-<reviewer-findings-format>
-# Reviewer Findings Format
+## Review artifacts
 
-## Artifact contract
+<reviewer-findings-format>
+
+**Artifact contract**
 
 Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
 
@@ -99,6 +109,7 @@ The artifact is the durable handoff. Chat output is only a short status pointer 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
 Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
+
 </reviewer-findings-format>
 
 If the prompt declares no plan binding, use its inferred-intent summary and evidence as the review basis. If neither a readable plan nor an inferred-intent summary is provided, write the artifact with `Blocked — review intent unavailable` and stop. If a plan path is expected but the file is missing or empty, write the artifact with `Blocked — <reason>` and stop.
