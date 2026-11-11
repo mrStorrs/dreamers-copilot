@@ -1,0 +1,267 @@
+{
+  "items": [
+    {
+      "type": "agent",
+      "slug": "echo",
+      "path": ".github/agents/echo.agent.md"
+    },
+    {
+      "type": "agent",
+      "slug": "hone",
+      "path": ".github/agents/hone.agent.md"
+    },
+    {
+      "type": "agent",
+      "slug": "probe",
+      "path": ".github/agents/probe.agent.md"
+    },
+    {
+      "type": "agent",
+      "slug": "sentinel",
+      "path": ".github/agents/sentinel.agent.md"
+    },
+    {
+      "type": "agent",
+      "slug": "vigil",
+      "path": ".github/agents/vigil.agent.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-add-logging",
+      "path": ".github/skills/dreamers-add-logging/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-clean-work",
+      "path": ".github/skills/dreamers-clean-work/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-cleanup-comments",
+      "path": ".github/skills/dreamers-cleanup-comments/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-cleanup-comments-branch",
+      "path": ".github/skills/dreamers-cleanup-comments-branch/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-docs",
+      "path": ".github/skills/dreamers-docs/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-explain",
+      "path": ".github/skills/dreamers-explain/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-lite",
+      "path": ".github/skills/dreamers-lite/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-find-refactors",
+      "path": ".github/skills/dreamers-find-refactors/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers",
+      "path": ".github/skills/dreamers/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-help",
+      "path": ".github/skills/dreamers-help/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-implement",
+      "path": ".github/skills/dreamers-implement/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-issue",
+      "path": ".github/skills/dreamers-issue/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-new-project",
+      "path": ".github/skills/dreamers-new-project/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-plan",
+      "path": ".github/skills/dreamers-plan/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-plan-verify",
+      "path": ".github/skills/dreamers-plan-verify/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-pr",
+      "path": ".github/skills/dreamers-pr/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-pr-resolve",
+      "path": ".github/skills/dreamers-pr-resolve/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-review",
+      "path": ".github/skills/dreamers-review/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-simplify",
+      "path": ".github/skills/dreamers-simplify/SKILL.md"
+    },
+    {
+      "type": "skill",
+      "slug": "dreamers-test",
+      "path": ".github/skills/dreamers-test/SKILL.md"
+    }
+  ],
+  "collections": [
+    {
+      "type": "collection",
+      "slug": "dreamers-system",
+      "readmePath": ".github/README.md",
+      "members": [
+        {
+          "type": "agent",
+          "slug": "echo"
+        },
+        {
+          "type": "agent",
+          "slug": "hone"
+        },
+        {
+          "type": "agent",
+          "slug": "probe"
+        },
+        {
+          "type": "agent",
+          "slug": "sentinel"
+        },
+        {
+          "type": "agent",
+          "slug": "vigil"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-add-logging"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-clean-work"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-cleanup-comments"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-cleanup-comments-branch"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-docs"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-explain"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-lite"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-find-refactors"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-help"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-implement"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-issue"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-new-project"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-plan"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-plan-verify"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-pr"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-pr-resolve"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-review"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-simplify"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-test"
+        },
+        {
+          "type": "folder",
+          "slug": "dreamers-refs"
+        },
+        {
+          "type": "folder",
+          "slug": "dreamers-templates"
+        },
+        {
+          "type": "folder",
+          "slug": "instructions"
+        }
+      ]
+    }
+  ],
+  "folderTargets": [
+    {
+      "slug": "dreamers-refs",
+      "sourcePath": ".github/dreamers/refs",
+      "destSubpath": "dreamers/refs"
+    },
+    {
+      "slug": "dreamers-templates",
+      "sourcePath": ".github/dreamers/templates",
+      "destSubpath": "dreamers/templates"
+    },
+    {
+      "slug": "instructions",
+      "sourcePath": ".github/instructions",
+      "destSubpath": "instructions"
+    }
+  ]
+}

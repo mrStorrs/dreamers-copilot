@@ -1,10 +1,12 @@
 # Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Dreamers runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI and Codex. Dreamers runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
+
+The examples below use Copilot slash commands. In Codex, ask for the same skill by name, such as `dreamers-plan` or `dreamers-review`.
 
 ## Structure
 
-Everything lives under `.github/`:
+The shared source keeps the Copilot layout under `.github/`:
 
 ```
 .github/
@@ -13,8 +15,11 @@ Everything lives under `.github/`:
 ├── dreamers/
 │   ├── refs/         # Shared reference docs (inlined into consumers at build time)
 │   └── templates/    # Plan, manifest, PR description, and logging templates
-└── instructions/     # Auto-loaded instruction files
+├── instructions/     # Auto-loaded instruction files for Copilot
+└── catalog.json      # Existing catalog paths and collections
 ```
+
+Copilot catalog loading uses this source tree directly. Codex runtime differences live in `adapters/codex/`; `scripts/build-codex.py` generates the Codex skills, TOML agents, shared resources, and package metadata. Generated output belongs in an ignored directory such as `.dreamers/build/` and is never edited by hand.
 
 ## Agents
 
@@ -106,9 +111,35 @@ The retired `/dreamers-full` command has no forwarding alias. The install and re
 
 ## Maintaining Dreamers
 
-Use `/dreamers-update` for changes to Dreamers system files. The Copilot repo (`C:\projects\dreamers-copilot`) is the upstream source of truth; the skill branches, applies, validates, commits, pushes, and opens the Copilot PR first. It then stops for user approval, supports repeated Copilot PR revisions, and transfers to Codex only after approval. After validating and committing the Codex change, it refreshes the local Codex installation with the force flag, backs up existing managed files, and verifies installed bytes against the source. Start a new Codex session to load the refreshed package.
+Use `/dreamers-update` for changes to Dreamers system files. Maintain shared behavior in `.github/` and Codex runtime adaptations in `adapters/codex/`. One branch and PR cover both targets; validate both before close-out. The existing `.github/catalog.json` paths, collections, and folder targets remain the Copilot catalog interface.
+
+Codex installers generate and validate a temporary package before copying files, then clean up that package. To inspect a generated package separately, use Python 3.11 or newer (standard library only) and an empty destination:
+
+```bash
+python3 scripts/build-codex.py --output .dreamers/build/codex
+```
+
+PowerShell equivalent: `./scripts/Build-DreamersCodex.ps1 -OutputDirectory .dreamers/build/codex`. Choose a fresh or empty directory for each build; the generator refuses populated destinations. Builds translate runtime wiring and regenerate inlined refs from the shared sources, rejecting adapter drift and unsupported runtime tokens.
+
+Validate with the scripts for your shell:
+
+```bash
+bash scripts/Test-DreamersCopilot.sh
+bash scripts/Test-DreamersCodex.sh
+```
+
+```powershell
+./scripts/Test-DreamersCopilot.ps1
+./scripts/Test-DreamersCodex.ps1
+```
+
+CI validates the Copilot source and generated Codex package, with Codex PowerShell installation/removal checks on Ubuntu and Windows. The former Codex repository is no longer needed for future maintenance after adopting this workflow; this migration does not archive or delete it.
+
+The update skill also refreshes an existing local Codex installation with the force flag after backing up its managed files, and verifies installed bytes against a fresh generated package. Start a new Codex session to load refreshed skills and agents.
 
 ## Install
+
+### Copilot
 
 Install agents, skills, refs, and templates into your global `~/.copilot/` directory:
 
@@ -122,7 +153,25 @@ Options:
 
 Instruction files in `.github/instructions/` (including `dreamers.instructions.md`) are auto-loaded by Copilot CLI. The installer copies them to `~/.copilot/instructions/` for global use. Your personal `~/.copilot/copilot-instructions.md` is never touched.
 
+### Codex
+
+Requires Python 3.11 or newer. Install from this repository using Bash or PowerShell:
+
+```bash
+bash ./Install-DreamersCodex.sh
+```
+
+```powershell
+./Install-DreamersCodex.ps1
+```
+
+The destination is `CODEX_HOME` when set, otherwise `~/.codex`. Use `--force` / `-Force` to refresh existing files, and `--codex-home <path>` / `-CodexHome <path>` for a custom destination. Without force, existing files are skipped. The migrated installers retain their managed-file cleanup and preserve unrelated skills, agents, and configuration.
+
+The generated package places skills in `skills/`, agent TOMLs in `agents/`, and refs, templates, and compatibility instructions in `dreamers/`. Codex skills explicitly read those instructions; Codex does not auto-load the Copilot instruction files. Restart Codex after installation.
+
 ## Uninstall
+
+Copilot:
 
 ```powershell
 .\Remove-Dreamers.ps1
@@ -132,11 +181,22 @@ Options:
 - `-DryRun` — preview what would be removed without deleting
 - `-CopilotHome "D:\custom\.copilot"` — target a custom location
 
+Codex (PowerShell, with Python 3.11 or newer available):
+
+```powershell
+./Remove-DreamersCodex.ps1 -DryRun
+./Remove-DreamersCodex.ps1
+```
+
+Use `-CodexHome <path>` for a custom destination. The remover generates the managed-file inventory before removal and preserves unrelated files.
+
 ## Project setup
 
-For a new project that wants to use Dreamers, see [project-bootstrap.md](.github/dreamers/refs/project-bootstrap.md):
+For a new Copilot project, see [project-bootstrap.md](.github/dreamers/refs/project-bootstrap.md):
 
 1. Ensure `.dreamers/` is in the project's `.gitignore`.
 2. Create the project-level `.github/copilot-instructions.md` (auto-loaded by Copilot CLI).
 3. Create `.dreamers/plans/` directory.
 4. Copy `.github/instructions/dreamers.comment-rules.instructions.md` into the project's `.github/instructions/`.
+
+For Codex projects, create or extend `AGENTS.md` and follow the generated `dreamers/refs/project-bootstrap.md` in the installed Codex home. Reference compatibility instruction files from the project instructions when needed.

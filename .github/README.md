@@ -1,8 +1,10 @@
-# Dreamers — GitHub Copilot CLI
+# Dreamers — Copilot catalog source
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
+An agent orchestration system for GitHub Copilot CLI and Codex. This `.github/` tree is the shared source and retains the Copilot catalog layout. Runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
 
 Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <task>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
+
+Codex packages are generated from this source plus `adapters/codex/` at the repository root. Use the [root README](../README.md#install) for the Copilot installer or Codex Bash/PowerShell installers. Codex generation requires Python 3.11 or newer; it produces native skill metadata and TOML agents without relocating this source tree or changing its catalog paths and collections.
 
 ## Layout
 
@@ -13,7 +15,8 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dream
 ├── dreamers/
 │   ├── refs/     # Shared reference docs inlined into consumers at build time
 │   └── templates/# Plan, manifest, PR description, logging standards, etc.
-└── instructions/ # Auto-loaded instruction files (Copilot CLI picks these up)
+├── instructions/ # Auto-loaded instruction files (Copilot CLI picks these up)
+└── catalog.json  # Catalog items, collections, and folder targets
 ```
 
 ## Agents
@@ -159,3 +162,9 @@ flowchart TD
     class Halt halt
     class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,BugFix,Drift,Atomic,Incremental,Merge,Commit phase
 ```
+
+## Maintaining both targets
+
+Use `/dreamers-update` to change shared sources here and runtime differences in `adapters/codex/`. One branch and PR cover both packages. Run `scripts/Test-DreamersCopilot.sh` and `scripts/Test-DreamersCodex.sh` from the repository root, or their `.ps1` equivalents in PowerShell. CI also exercises Codex installation and removal on Windows.
+
+To inspect Codex output, run `python3 scripts/build-codex.py --output .dreamers/build/codex` with a fresh or empty destination. Generated files are build output; edit the shared sources and adapters instead. The former separate Codex repository is no longer needed for future maintenance after adoption. See [Maintaining Dreamers](../README.md#maintaining-dreamers) for build, validation, and local refresh details.
