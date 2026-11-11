@@ -30,10 +30,19 @@ If no task description was provided, halt + ask via `request_information`.
 6. **Codex branch.** After explicit approval, create the Codex branch in `C:\projects\dreamers-codex` from fresh `origin/<default>` using the same branch naming rules.
 7. **Codex transfer pass.** Transfer the same behavior into Codex with only Codex runtime/layout adaptations, then run Codex ref sync/verify and `scripts/Test-DreamersCodex.ps1` or `scripts/Test-DreamersCodex.sh` for the active shell.
 8. **Codex PR close-out.** Stage explicit paths, commit with the trailer below, push the Codex branch, and open the Codex PR. Prefer `/dreamers-pr` when available; otherwise run the same push + `gh pr create` flow directly. Capture the PR URL.
+9. **Install and verify Codex.** After Codex validation and commit, refresh the active local Codex installation from that validated checkout. Repository changes and PR creation alone do not complete an update. Follow the installation requirements below; report any blocked installation as incomplete.
+
+## Local Codex installation
+
+- Resolve the target from `CODEX_HOME`, falling back to `~/.codex`. State the resolved destination before writing. This workflow includes refreshing the existing Dreamers installation; obtain any permission required by the user's environment before creating a new installation.
+- Run `bash ./Install-DreamersCodex.sh --force --codex-home "$target"` from the Codex repo on Linux/bash, or `./Install-DreamersCodex.ps1 -Force -CodexHome $target` in PowerShell. Use the validated checkout, including the updated `dreamers-update` skill. The force flag is required because existing files otherwise remain stale.
+- Before overwriting, back up existing Dreamers-managed destination files to a timestamped location outside the install target, preferably the repo's ignored `.dreamers/` directory. Preserve unrelated skills, configuration, credentials, and user files; do not replace the whole Codex home.
+- Verify installed package files byte-for-byte against the checkout: Dreamers skills, agent TOMLs, refs, templates, and instructions. Confirm the installed `dreamers-update/SKILL.md` includes this installation step. An installer exit code alone is insufficient.
+- Report source commit, resolved target, backup location, and verification result. If installation or verification fails, report the update as incomplete and the concrete blocker. Tell the user to start a new Codex session to load refreshed skills and agent definitions.
 
 ## Scope (hard rules)
 
-1. **Only the two Dreamers package repos.** Stay inside `C:\projects\dreamers-copilot` and `C:\projects\dreamers-codex` unless the user names another path. Do not touch consuming project repos while running this skill.
+1. **Package repos and local Codex installation only.** Stay inside `C:\projects\dreamers-copilot` and `C:\projects\dreamers-codex` unless the user names another path. The local Codex installation described above is also in scope. Do not touch consuming project repos while running this skill.
 2. **Copilot CLI, not Claude.** Do not import Claude tool names, agent names, or CLAUDE.md conventions. Runtime is Copilot CLI: `task()`, `request_information`, `view`, `manage_todo_list`.
 3. **Codex transfer is semantic, not blind copy.** Preserve Copilot behavior, but adapt paths, frontmatter, runtime names, agent formats, installer names, and validation commands to Codex conventions.
 4. **Halt on ambiguity.** One `request_information` round, not a chain of guesses.
@@ -93,4 +102,4 @@ Codex adaptations are limited to runtime/tool/layout differences: `~/.copilot` -
 
 ## Exit
 
-Report in chat: Copilot files changed, Codex files changed, sync checks performed in each repo (refs / READMEs / catalog), validations run, halts or questions raised.
+Report in chat: Copilot files changed, Codex files changed, sync checks performed in each repo (refs / READMEs / catalog), validations run, local installation source/target/backup and byte-verification result, halts or questions raised.
