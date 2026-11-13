@@ -1,20 +1,8 @@
-# Dreamers — GitHub Copilot CLI
+# Dreamers
 
-An agent orchestration system for GitHub Copilot CLI. Runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
+Dreamers coordinates planning → implementation + tests → selected review → follow-up review → docs → PR.
 
-Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <task>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
-
-## Layout
-
-```
-.github/
-├── agents/       # Agent definitions
-├── skills/       # Skill entry points (/dreamers and /dreamers-*)
-├── dreamers/
-│   ├── refs/     # Shared reference docs inlined into consumers at build time
-│   └── templates/# Plan, manifest, PR description, logging standards, etc.
-└── instructions/ # Auto-loaded instruction files (Copilot CLI picks these up)
-```
+Start with `/dreamers <task>`, `/dreamers-plan <task>`, or `/dreamers-lite <task>`. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
 
 ## Agents
 
@@ -24,7 +12,7 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dream
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
 | **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
-| **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
+| **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of project instructions. Stages edits; never commits. |
 
 Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone via `/dreamers-docs`.
 
@@ -44,7 +32,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-implement <task or plan>` | One cycle against a task or approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
-| `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
+| `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR. |
 | `/dreamers-lite <task>` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from the uncommitted diff, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
 | `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
 
@@ -81,7 +69,7 @@ Both delivery skills resume after conversational detours and keep one todo align
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers $ARGUMENTS"]) --> ModeCheck{"Input type?"}
+    Start(["/dreamers task, plans, or manifest"]) --> ModeCheck{"Input type?"}
     ModeCheck -->|Empty or help| Help["/dreamers-help"]
     Help --> HelpEnd(["Return guidance"])
     ModeCheck -->|Task description| InvokePlan["Invoke /dreamers-plan"]

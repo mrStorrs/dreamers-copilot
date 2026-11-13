@@ -1,0 +1,94 @@
+{
+  "dreamers/refs/dreamers-kernel.md": [
+    {
+      "from": "Every `task()` invocation MUST include in the prompt:",
+      "to": "Every delegated Dreamers role invocation with `spawn_agent` MUST include in the prompt:"
+    },
+    {
+      "from": "All `task()` calls use `mode: \"sync\"` — the call blocks until the agent returns.",
+      "to": "- **Mandatory line:** `Do NOT call update_plan. The parent Dreamers skill owns the plan.`\n\nAfter spawning a required Dreamers role, wait for its result before continuing. Launch all selected reviewers before waiting in a parallel review lane."
+    }
+  ],
+  "dreamers/refs/user-testing-gate.md": [
+    {
+      "from": "Call `request_information`. Do not replace this gate with an unstructured chat prompt unless the tool is unavailable.",
+      "to": "Ask the user directly and wait. Preserve the prompt sections and choices below."
+    }
+  ],
+  "dreamers/refs/project-bootstrap.md": [
+    {
+      "from": "2. Create the project-level `.github/copilot-instructions.md` (see ownership below)",
+      "to": "2. Create project-level `AGENTS.md`, or extend the project's existing instruction file."
+    },
+    {
+      "from": "4. Install instruction files to `.github/instructions/`:\n   - Copy `comment-rules.instructions.md` from the Dreamers repo's `.github/instructions/` directory into `.github/instructions/` at the project root. This auto-injects comment rules whenever Copilot touches source files.",
+      "to": "4. Copy `dreamers/instructions/dreamers.comment-rules.instructions.md` into the project's `.github/instructions/` and reference it from `AGENTS.md`. Codex must be directed to read compatibility instruction files."
+    }
+  ],
+  "skills/dreamers-new-project/SKILL.md": [
+    {
+      "from": "Then create the project-level `.github/copilot-instructions.md` per",
+      "to": "Then create project-level `AGENTS.md`, or extend the project's existing instruction file, per"
+    }
+  ],
+  "skills/dreamers-docs/SKILL.md": [
+    {
+      "from": "`task(agent_type: \"echo\", mode: \"sync\")`",
+      "to": "`spawn_agent` with `agent_type: echo`, then wait for its result"
+    }
+  ],
+  "skills/dreamers-pr-resolve/SKILL.md": [
+    {
+      "from": "Use `agent_type: \"vigil\"`, `mode: \"sync\"` for the required review.",
+      "to": "Use `spawn_agent` with `agent_type: vigil` and wait for the required review."
+    },
+    {
+      "from": "- ❌ `agent_type: \"forge\"` / `\"nova\"` / `\"bolt\"` → FORBIDDEN (these are not subagents in this system — see `dreamers-kernel.md` § \"Subagent allowlist\").",
+      "to": "- ❌ Retired `agent_type` roles (`forge`, `nova`, `bolt`) → FORBIDDEN."
+    }
+  ],
+  "skills/dreamers-review/SKILL.md": [
+    {
+      "from": "launch every reviewer in parallel through the runtime's batched-spawn mechanism, each with `mode: \"sync\"`.",
+      "to": "launch every selected reviewer concurrently through `spawn_agent`, then wait for all of them."
+    }
+  ],
+  "skills/dreamers-test/SKILL.md": [
+    {
+      "from": "Invoke via the runtime's subagent-spawn mechanism:",
+      "to": "Invoke `spawn_agent` with the following context and wait for the result:"
+    },
+    {
+      "from": "mode: \"sync\"\nprompt:",
+      "to": "message:"
+    }
+  ],
+  "skills/dreamers-simplify/SKILL.md": [
+    {
+      "from": "Invoke via the runtime's subagent-spawn mechanism:",
+      "to": "Invoke `spawn_agent` with the following context and wait for the result:"
+    },
+    {
+      "from": "mode: \"sync\"\nprompt:",
+      "to": "message:"
+    }
+  ],
+  "agents/echo.agent.md": [
+    {
+      "from": "test commands Forge established",
+      "to": "test commands the orchestrator established"
+    }
+  ],
+  "skills/dreamers-clean-work/SKILL.md": [
+    {
+      "from": "rm -rf .dreamers/{forge,probe,hone,sentinel,echo}",
+      "to": "rm -rf .dreamers/{forge,probe,hone,sentinel,echo} # legacy cleanup"
+    }
+  ],
+  "dreamers/refs/testing-mandate.md": [
+    {
+      "from": "- Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).",
+      "to": "- Template: `dreamers/templates/test-benchmarks.md` (package-relative; resolves under `$CODEX_HOME` or `~/.codex` for direct installs)."
+    }
+  ]
+}

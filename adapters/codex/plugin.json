@@ -1,0 +1,37 @@
+{
+  "name": "dreamers-codex",
+  "version": "0.1.0",
+  "description": "Dreamers orchestration system generated for Codex skills and local plugin use.",
+  "author": {
+    "name": "CJ Storrs"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "codex",
+    "skills",
+    "orchestration",
+    "review",
+    "planning",
+    "dreamers"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Dreamers Codex",
+    "shortDescription": "Planning, implementation, review, docs, and PR workflows for Codex.",
+    "longDescription": "Dreamers Codex builds the shared Dreamers orchestration package into Codex-native skills with shared role prompts, references, templates, and direct-install scripts.",
+    "developerName": "CJ Storrs",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Review"
+    ],
+    "defaultPrompt": [
+      "Use dreamers-plan to plan this feature.",
+      "Use dreamers-explain to thoroughly explain this code.",
+      "Use dreamers-review on my current diff.",
+      "Use dreamers to plan and ship this change.",
+      "Use dreamers with this existing plan or manifest."
+    ]
+  }
+}
