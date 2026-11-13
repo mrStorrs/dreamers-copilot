@@ -1,25 +1,8 @@
-# Dreamers — Copilot catalog source
+# Dreamers
 
-An agent orchestration system for GitHub Copilot CLI and Codex. This `.github/` tree is the shared source and retains the Copilot catalog layout. Runs the planning → implementation + tests → selected review → Vigil follow-up review → docs → PR flow.
+Dreamers coordinates planning → implementation + tests → selected review → follow-up review → docs → PR.
 
-Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dreamers-plan <task>`, `/dreamers-lite <task>`, etc. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
-
-Codex packages are generated from this source plus `adapters/codex/` at the repository root. Use the [root README](../README.md#install) for the Copilot installer or Codex Bash/PowerShell installers. Codex generation requires Python 3.11 or newer; it produces native skill metadata and TOML agents without relocating this source tree or changing its catalog paths and collections.
-
-Codex direct installers also merge every translated global instruction source into a managed block in the Codex home's `AGENTS.md`. System rules, laws, and comment rules apply to all Codex sessions, including those that do not invoke Dreamers. Personal bytes outside the block are preserved, and existing-file changes receive verified timestamped backups. An existing block needs force to refresh; package-only installations retain skill-local instruction reads as a fallback. See [Codex installation](../README.md#codex) for marker, override, backup, and removal behavior.
-
-## Layout
-
-```
-.github/
-├── agents/       # Agent definitions
-├── skills/       # Skill entry points (/dreamers and /dreamers-*)
-├── dreamers/
-│   ├── refs/     # Shared reference docs inlined into consumers at build time
-│   └── templates/# Plan, manifest, PR description, logging standards, etc.
-├── instructions/ # Auto-loaded instruction files (Copilot CLI picks these up)
-└── catalog.json  # Catalog items, collections, and folder targets
-```
+Start with `/dreamers <task>`, `/dreamers-plan <task>`, or `/dreamers-lite <task>`. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
 
 ## Agents
 
@@ -29,7 +12,7 @@ Codex direct installers also merge every translated global instruction source in
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Read-only except one `.dreamers/reviews/` artifact. |
 | **Hone** | Subagent | Reviewer — over-engineering, redundancy, bad architecture. Read-only except one `.dreamers/reviews/` artifact; surfaces full-refactor recommendations without softening. |
 | **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
-| **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of `copilot-instructions.md`. Stages edits; never commits. |
+| **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of project instructions. Stages edits; never commits. |
 
 Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone via `/dreamers-docs`.
 
@@ -49,7 +32,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-implement <task or plan>` | One cycle against a task or approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
 | `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
-| `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR via `gh`. |
+| `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR. |
 | `/dreamers-lite <task>` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from the uncommitted diff, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
 | `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
 
@@ -86,7 +69,7 @@ Both delivery skills resume after conversational detours and keep one todo align
 
 ```mermaid
 flowchart TD
-    Start(["/dreamers $ARGUMENTS"]) --> ModeCheck{"Input type?"}
+    Start(["/dreamers task, plans, or manifest"]) --> ModeCheck{"Input type?"}
     ModeCheck -->|Empty or help| Help["/dreamers-help"]
     Help --> HelpEnd(["Return guidance"])
     ModeCheck -->|Task description| InvokePlan["Invoke /dreamers-plan"]
@@ -164,9 +147,3 @@ flowchart TD
     class Halt halt
     class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,BugFix,Drift,Atomic,Incremental,Merge,Commit phase
 ```
-
-## Maintaining both targets
-
-Use `/dreamers-update` to change shared sources here and runtime differences in `adapters/codex/`. One branch and PR cover both packages. Run `scripts/Test-DreamersCopilot.sh` and `scripts/Test-DreamersCodex.sh` from the repository root, or their `.ps1` equivalents in PowerShell. CI also exercises Codex installation and removal on Windows.
-
-To inspect Codex output, run `python3 scripts/build-codex.py --output .dreamers/build/codex` with a fresh or empty destination. Generated files are build output; edit the shared sources and adapters instead. The former separate Codex repository is no longer needed for future maintenance after adoption. See [Maintaining Dreamers](../README.md#maintaining-dreamers) for build, validation, and local refresh details.
