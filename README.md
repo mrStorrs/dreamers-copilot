@@ -19,7 +19,7 @@ The shared source keeps the Copilot layout under `.github/`:
 └── catalog.json      # Existing catalog paths and collections
 ```
 
-Copilot catalog loading uses this source tree directly. Codex runtime differences live in `adapters/codex/`; `scripts/build-codex.py` generates the Codex skills, TOML agents, shared resources, and package metadata. Generated output belongs in an ignored directory such as `.dreamers/build/` and is never edited by hand.
+Copilot catalog loading uses this source tree directly. Codex runtime differences live in `adapters/codex/`; `scripts/build-codex.py` generates the Codex skills, TOML agents, shared resources, a global instruction fragment, and package metadata. Generated output belongs in an ignored directory such as `.dreamers/build/` and is never edited by hand.
 
 ## Agents
 
@@ -135,7 +135,7 @@ bash scripts/Test-DreamersCodex.sh
 
 CI validates the Copilot source and generated Codex package, with Codex PowerShell installation/removal checks on Ubuntu and Windows. The former Codex repository is no longer needed for future maintenance after adopting this workflow; this migration does not archive or delete it.
 
-The update skill also refreshes an existing local Codex installation with the force flag after backing up its managed files, and verifies installed bytes against a fresh generated package. Start a new Codex session to load refreshed skills and agents.
+The update skill also refreshes an existing local Codex installation with the force flag after backing up its managed files, and verifies installed bytes against a fresh generated package. Global instruction updates preserve personal `AGENTS.md` content outside the managed block. Start a new Codex session to load refreshed skills, agents, and global instructions.
 
 ## Install
 
@@ -165,9 +165,13 @@ bash ./Install-DreamersCodex.sh
 ./Install-DreamersCodex.ps1
 ```
 
-The destination is `CODEX_HOME` when set, otherwise `~/.codex`. Use `--force` / `-Force` to refresh existing files, and `--codex-home <path>` / `-CodexHome <path>` for a custom destination. Without force, existing files are skipped. The migrated installers retain their managed-file cleanup and preserve unrelated skills, agents, and configuration.
+The destination is `CODEX_HOME` when set, otherwise `~/.codex`. Use `--force` / `-Force` to refresh existing files, and `--codex-home <path>` / `-CodexHome <path>` for a custom destination. Without force, existing package files and an existing Dreamers global block are skipped. The migrated installers retain their managed-file cleanup and preserve unrelated skills, agents, and configuration.
 
-The generated package places skills in `skills/`, agent TOMLs in `agents/`, and refs, templates, and compatibility instructions in `dreamers/`. Codex skills explicitly read those instructions; Codex does not auto-load the Copilot instruction files. Restart Codex after installation.
+The generated package places skills in `skills/`, agent TOMLs in `agents/`, and refs, templates, and compatibility instructions in `dreamers/`. Its root `AGENTS.md` fragment contains every translated global instruction source: system rules, laws, and comment rules, with Copilot `applyTo` frontmatter removed. Direct installers merge it into the Codex home's `AGENTS.md` between `<!-- BEGIN DREAMERS GLOBAL INSTRUCTIONS -->` and `<!-- END DREAMERS GLOBAL INSTRUCTIONS -->`. Codex loads this guidance globally, including sessions that do not invoke Dreamers. Skills retain explicit local instruction reads as a fallback for package-only installations without the global block.
+
+A first install adds the block even when personal `AGENTS.md` instructions already exist; later refreshes require force. All personal bytes outside the block are preserved. Before changing an existing `AGENTS.md`, the installer creates and verifies a timestamped backup under this repository's `.dreamers/backups/codex-instructions/` and prints its location. An identical force refresh does not rewrite the file or create another backup.
+
+Malformed or duplicate markers and a symlink `AGENTS.md` stop installation. A nonempty `AGENTS.override.md` also stops installation because it would mask the global file; reconcile that override before installing. Restart Codex after installation.
 
 ## Uninstall
 
@@ -188,7 +192,7 @@ Codex (PowerShell, with Python 3.11 or newer available):
 ./Remove-DreamersCodex.ps1
 ```
 
-Use `-CodexHome <path>` for a custom destination. The remover generates the managed-file inventory before removal and preserves unrelated files.
+Use `-CodexHome <path>` for a custom destination. The remover generates the managed-file inventory before removal and preserves unrelated files. It removes only the Dreamers block from global `AGENTS.md`, preserving personal text and backing up the existing file before a change. `-DryRun` leaves the file unchanged; an empty `AGENTS.md` created by installation may remain after removal.
 
 ## Project setup
 

@@ -20,6 +20,7 @@ $SourceRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $RepoRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("dreamers-codex-" + [guid]::NewGuid())
 try {
     & (Join-Path $SourceRoot "scripts/Build-DreamersCodex.ps1") -OutputDirectory $RepoRoot
+    & (Join-Path $SourceRoot "scripts/Update-CodexInstructions.ps1") -Action check -CodexHome $CodexHome
 
 
 $legacyAgentNames = @("echo", "forge", "hone", "nova", "probe", "sage", "sentinel")
@@ -166,6 +167,9 @@ Write-Host "[dreamers]" -ForegroundColor Cyan
 foreach ($name in @("refs", "templates", "instructions")) {
     $total += Copy-DreamersFiles -From (Join-Path (Join-Path $RepoRoot "dreamers") $name) -To (Join-Path (Join-Path $CodexHome "dreamers") $name) -Label "dreamers/$name"
 }
+
+Write-Host "[global instructions]" -ForegroundColor Cyan
+& (Join-Path $SourceRoot "scripts/Update-CodexInstructions.ps1") -Action install -CodexHome $CodexHome -PackageRoot $RepoRoot -Force:$Force
 
 Write-Host "[legacy]" -ForegroundColor Cyan
 $legacyRemoved += Remove-LegacySkillFiles -SkillsRoot (Join-Path $CodexHome "skills")

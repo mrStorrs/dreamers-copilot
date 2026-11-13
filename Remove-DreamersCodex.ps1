@@ -17,6 +17,7 @@ $SourceRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $RepoRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("dreamers-codex-" + [guid]::NewGuid())
 try {
     & (Join-Path $SourceRoot "scripts/Build-DreamersCodex.ps1") -OutputDirectory $RepoRoot
+    & (Join-Path $SourceRoot "scripts/Update-CodexInstructions.ps1") -Action check-remove -CodexHome $CodexHome
 
 
 $legacyAgentNames = @("echo", "forge", "hone", "nova", "probe", "sage", "sentinel")
@@ -165,6 +166,9 @@ Write-Host "`n$verb" -ForegroundColor Cyan
 Write-Host "Target: $CodexHome`n"
 
 $total = 0
+
+Write-Host "[global instructions]" -ForegroundColor Cyan
+& (Join-Path $SourceRoot "scripts/Update-CodexInstructions.ps1") -Action remove -CodexHome $CodexHome -DryRun:$DryRun
 
 Write-Host "[agents]" -ForegroundColor Cyan
 $total += Remove-DreamersFiles -SourceDir (Join-Path $RepoRoot "agents") -TargetDir (Join-Path $CodexHome "agents") -Label "agents"

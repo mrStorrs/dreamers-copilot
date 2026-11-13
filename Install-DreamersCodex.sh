@@ -45,6 +45,7 @@ source_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(mktemp -d "${TMPDIR:-/tmp}/dreamers-codex.XXXXXXXX")"
 trap 'rm -rf -- "$repo_root"' EXIT
 python3 "$source_root/scripts/build-codex.py" --output "$repo_root"
+python3 "$source_root/scripts/codex_global_instructions.py" check --codex-home "$codex_home"
 legacy_agent_names=(echo forge hone nova probe sage sentinel)
 legacy_agent_toml_names=(bolt forge nova sage)
 obsolete_managed_files=(
@@ -203,6 +204,11 @@ for name in refs templates instructions; do
   count="$(copy_dreamers_files "$repo_root/dreamers/$name" "$codex_home/dreamers/$name" "dreamers/$name")"
   total=$((total + count))
 done
+
+printf '[global instructions]\n'
+instruction_args=()
+if ((force)); then instruction_args+=(--force); fi
+python3 "$source_root/scripts/codex_global_instructions.py" install --codex-home "$codex_home" --package-root "$repo_root" "${instruction_args[@]}"
 
 printf '[legacy]\n'
 count="$(remove_legacy_skill_files "$codex_home/skills")"

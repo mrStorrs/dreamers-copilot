@@ -2,7 +2,9 @@
 
 Use this reference when executing Dreamers skills generated from the shared repository.
 
-Before running a skill, read package-local `../../dreamers/instructions/dreamers.instructions.md` and `../../dreamers/instructions/dreamers.laws.md` relative to its directory. Codex does not auto-load compatibility instruction files.
+The direct installers embed every translated global instruction file in a managed block in `$CODEX_HOME/AGENTS.md` (default `~/.codex/AGENTS.md`). These apply to all Codex sessions, including work outside Dreamers skills. Personal content outside the block is preserved.
+
+When the global managed block is unavailable, read package-local `../../dreamers/instructions/dreamers.instructions.md` and `../../dreamers/instructions/dreamers.laws.md` relative to its directory. Codex does not auto-load compatibility instruction files.
 
 ## Inputs
 - Treat the user's prompt as the skill input. Former slash commands such as `dreamers-plan` are now Codex skill names such as `dreamers-plan`.

@@ -11,10 +11,12 @@ try:
 except ModuleNotFoundError:
     sys.exit('Python 3.11 or newer is required to build Dreamers Codex.')
 
+from codex_global_instructions import global_block
+
 ROOT = Path(__file__).resolve().parent.parent
 PREAMBLE = """## Codex runtime
 Read `../../dreamers/refs/codex-runtime.md` relative to this skill directory for resource resolution, progress tracking, user gates, and delegation. Use the user's message as skill input, including paths and flags.
-Before executing this skill, read `../../dreamers/instructions/dreamers.instructions.md` and `../../dreamers/instructions/dreamers.laws.md`. Codex does not auto-load these compatibility instruction files.
+If the global Dreamers block is unavailable (for example, a package-only installation), read `../../dreamers/instructions/dreamers.instructions.md` and `../../dreamers/instructions/dreamers.laws.md`. Codex does not auto-load these compatibility instruction files.
 """
 INLINE = re.compile(r"^<([\w-]+)>\n.*?^</\1>", re.MULTILINE | re.DOTALL)
 
@@ -151,6 +153,7 @@ def package(root=ROOT):
     files['.github/catalog.json'] = json.dumps(catalog, indent=2, ensure_ascii=False) + '\n'
     files['.codex-plugin/plugin.json'] = (adapter / 'plugin.json').read_text(encoding='utf-8')
     files['README.md'] = '# Dreamers Codex\n\nGenerated from the shared Dreamers repository. Edit `.github/` sources and `adapters/codex/`, then rebuild; do not edit this output.\n'
+    files['AGENTS.md'] = global_block(files)
     validate(files)
     return files
 

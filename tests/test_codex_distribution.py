@@ -12,6 +12,9 @@ import tomllib
 import unittest
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'scripts'))
+import codex_global_instructions as global_instructions
+
 spec = importlib.util.spec_from_file_location('build_codex', ROOT / 'scripts/build-codex.py')
 builder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(builder)
@@ -25,7 +28,7 @@ LEGACY = [
     'dreamers/templates/plan-writing-guide.md',
     'dreamers/instructions/comment-rules.instructions.md', 'dreamers/instructions/git.instructions.md',
 ]
-USER_FILES = ['config.toml', 'AGENTS.md', 'skills/personal/SKILL.md', 'agents/personal.toml',
+USER_FILES = ['config.toml', 'skills/personal/SKILL.md', 'agents/personal.toml',
               'skills/dreamers-lite/user.md', 'skills/dreamers-research/.user.md',
               'dreamers/refs/user.md', 'dreamers/agents/user.md', 'dreamers/instructions/user.md']
 
@@ -120,7 +123,7 @@ class DistributionTests(unittest.TestCase):
                 skill = checkout / '.github/skills/dreamers-review/SKILL.md'
                 skill.write_text(skill.read_text(encoding='utf-8') + '\nUse task(unknown).\n', encoding='utf-8')
                 home = sandbox / 'home'
-                for relative in LEGACY + USER_FILES + ['skills/dreamers-lite/SKILL.md']:
+                for relative in LEGACY + USER_FILES + ['AGENTS.md', 'skills/dreamers-lite/SKILL.md']:
                     path = home / relative
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_bytes(b'preserve before generation\n')
@@ -135,6 +138,116 @@ class DistributionTests(unittest.TestCase):
                 self.assertEqual(before, {p.relative_to(home): p.read_bytes() for p in home.rglob('*') if p.is_file()})
                 self.assertEqual([], list(temporary.iterdir()))
 
+    def test_global_block_contains_every_instruction_without_frontmatter(self):
+        block = self.files['AGENTS.md']
+        self.assertEqual((0, len(block.encode())), global_instructions.block_span(block.encode()))
+        self.assertNotIn('applyTo:', block)
+        for path, text in self.files.items():
+            if path.startswith('dreamers/instructions/'):
+                self.assertIn(Path(path).name, block)
+                body = text.split('---', 2)[2].strip()
+                self.assertIn(body, block)
+        with self.assertRaisesRegex(ValueError, 'global applyTo'):
+            global_instructions.global_block({'dreamers/instructions/scoped.md': '---\napplyTo: "*.py"\n---\nOnly Python\n'})
+
+    def test_managed_block_preserves_user_bytes_and_verified_backups(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / 'home'
+            home.mkdir()
+            agents = home / 'AGENTS.md'
+            personal = b'\xef\xbb\xbf# Personal rules\r\nUnicode: \xc3\xa9; no final newline'
+            agents.write_bytes(personal)
+            backups = Path(tmp) / 'backups'
+            block = self.files['AGENTS.md'].encode()
+            backup = global_instructions.update(home, 'install', block, backup_root=backups)
+            self.assertEqual(personal, backup.read_bytes())
+            self.assertEqual(personal + block, agents.read_bytes())
+            self.assertIsNone(global_instructions.update(home, 'install', block, force=True, backup_root=backups))
+            self.assertEqual(1, len(list(backups.glob('*/AGENTS.md'))))
+            suffix = b'\n# Personal instructions appended later\n'
+            agents.write_bytes(agents.read_bytes() + suffix)
+            new_block = block.replace(b'# Dreamers global instructions', b'# Updated Dreamers global instructions')
+            global_instructions.update(home, 'install', new_block, backup_root=backups)
+            self.assertEqual(personal + block + suffix, agents.read_bytes())
+            global_instructions.update(home, 'install', new_block, force=True, backup_root=backups)
+            self.assertEqual(personal + new_block + suffix, agents.read_bytes())
+            count = len(list(backups.glob('*/AGENTS.md')))
+            global_instructions.update(home, 'remove', dry_run=True, backup_root=backups)
+            self.assertEqual(count, len(list(backups.glob('*/AGENTS.md'))))
+            self.assertEqual(personal + new_block + suffix, agents.read_bytes())
+            backup = global_instructions.update(home, 'remove', backup_root=backups)
+            self.assertEqual(personal + new_block + suffix, backup.read_bytes())
+            self.assertEqual(personal + suffix, agents.read_bytes())
+
+    def test_global_block_roundtrips_every_personal_line_ending(self):
+        block = self.files['AGENTS.md'].encode()
+        changed = block.replace(b'# Dreamers global instructions', b'# Refreshed Dreamers global instructions')
+        for personal in (b'', b'personal', b'personal\n', b'personal\r\n', b'personal\r'):
+            with self.subTest(ending=personal), tempfile.TemporaryDirectory() as tmp:
+                home = Path(tmp) / 'home'
+                home.mkdir()
+                agents = home / 'AGENTS.md'
+                agents.write_bytes(personal)
+                backups = Path(tmp) / 'backups'
+                global_instructions.update(home, 'install', block, backup_root=backups)
+                global_instructions.update(home, 'install', changed, force=True, backup_root=backups)
+                self.assertEqual(personal + changed, agents.read_bytes())
+                global_instructions.update(home, 'remove', backup_root=backups)
+                self.assertEqual(personal, agents.read_bytes())
+
+    def test_global_block_in_new_home_and_removal_without_block(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp) / 'new home'
+            block = self.files['AGENTS.md'].encode()
+            self.assertIsNone(global_instructions.update(home, 'remove'))
+            self.assertFalse(home.exists())
+            self.assertIsNone(global_instructions.update(home, 'install', block))
+            self.assertEqual(block, (home / 'AGENTS.md').read_bytes())
+            global_instructions.update(home, 'remove', backup_root=Path(tmp) / 'backups')
+            self.assertEqual(b'', (home / 'AGENTS.md').read_bytes())
+
+    def test_bad_global_markers_and_override_stop_installers_before_mutation(self):
+        block = self.files['AGENTS.md'].encode()
+        bad_documents = [block + block, b'personal\n' + global_instructions.BEGIN + b'\nunfinished',
+                         b'personal\n' + global_instructions.END + b'\n',
+                         b'\n' + global_instructions.END + b'\n' + global_instructions.BEGIN + b'\n']
+        for original in bad_documents:
+            with self.subTest(document=original[:60]), tempfile.TemporaryDirectory() as tmp:
+                home = Path(tmp)
+                (home / 'AGENTS.md').write_bytes(original)
+                with self.assertRaises(ValueError):
+                    global_instructions.update(home, 'install', block, force=True)
+                with self.assertRaises(ValueError):
+                    global_instructions.update(home, 'remove')
+                self.assertEqual(original, (home / 'AGENTS.md').read_bytes())
+        for extension, launcher, flag in [('sh', ['bash'], '--codex-home'), ('ps1', ['pwsh', '-NoProfile', '-File'], '-CodexHome')]:
+            if not shutil.which(launcher[0]) or (extension == 'sh' and os.name == 'nt'):
+                continue
+            for blocker in ('markers', 'override'):
+                with self.subTest(shell=extension, blocker=blocker), tempfile.TemporaryDirectory() as tmp:
+                    home = Path(tmp)
+                    (home / 'AGENTS.md').write_bytes(b'personal\n' if blocker == 'override' else bad_documents[1])
+                    if blocker == 'override':
+                        (home / 'AGENTS.override.md').write_bytes(b'temporary override\n')
+                    before = {p.name: p.read_bytes() for p in home.iterdir()}
+                    result = subprocess.run([*launcher, str(ROOT / f'Install-DreamersCodex.{extension}'), flag, str(home)], capture_output=True)
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertEqual(before, {p.name: p.read_bytes() for p in home.iterdir()})
+
+    @unittest.skipIf(os.name == 'nt', 'Symlink creation on Windows requires additional permissions')
+    def test_global_agents_symlink_is_preserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            home = root / 'home'
+            home.mkdir()
+            target = root / 'user-guidance.md'
+            target.write_bytes(b'personal instructions')
+            (home / 'AGENTS.md').symlink_to(target)
+            with self.assertRaisesRegex(ValueError, 'symlink'):
+                global_instructions.update(home, 'install', self.files['AGENTS.md'].encode(), force=True)
+            self.assertTrue((home / 'AGENTS.md').is_symlink())
+            self.assertEqual(b'personal instructions', target.read_bytes())
+
     def test_toml_delimiters_do_not_change_prompt(self):
         prompt = "literal ''' delimiter and \\n text\nUnicode → and quotes \"\n"
         self.assertEqual(prompt, tomllib.loads(builder.agent_toml({'developer_instructions': prompt}))['developer_instructions'])
@@ -146,6 +259,8 @@ class DistributionTests(unittest.TestCase):
                 path = home / rel
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(b'fixture\n')
+            personal = b'# Personal instructions\r\nKeep my custom guidance.\r\n'
+            (home / 'AGENTS.md').write_bytes(personal)
             existing = home / 'skills/dreamers-lite/SKILL.md'
             existing.parent.mkdir(parents=True, exist_ok=True)
             existing.write_bytes(b'old skill\n')
@@ -162,6 +277,7 @@ class DistributionTests(unittest.TestCase):
                         continue
                     expected = b'old skill\n' if rel == 'skills/dreamers-lite/SKILL.md' and not overwrite else text.encode()
                     self.assertEqual(expected, (home / rel).read_bytes(), rel)
+                self.assertEqual(personal + self.files['AGENTS.md'].encode(), (home / 'AGENTS.md').read_bytes())
                 for rel in LEGACY:
                     self.assertFalse((home / rel).exists(), rel)
                 for rel in USER_FILES:
@@ -170,7 +286,9 @@ class DistributionTests(unittest.TestCase):
                 command = ['pwsh', '-NoProfile', '-File', str(ROOT / 'Remove-DreamersCodex.ps1'), '-CodexHome', str(home)]
                 run(*command, '-DryRun')
                 self.assertTrue(existing.exists())
+                self.assertEqual(personal + self.files['AGENTS.md'].encode(), (home / 'AGENTS.md').read_bytes())
                 run(*command)
+                self.assertEqual(personal, (home / 'AGENTS.md').read_bytes())
                 for rel in self.files:
                     if rel.startswith(('agents/', 'skills/', 'dreamers/')):
                         self.assertFalse((home / rel).exists(), rel)

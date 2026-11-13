@@ -6,6 +6,8 @@ Invoke any skill from Copilot CLI: `/dreamers <task>`, `/dreamers-help`, `/dream
 
 Codex packages are generated from this source plus `adapters/codex/` at the repository root. Use the [root README](../README.md#install) for the Copilot installer or Codex Bash/PowerShell installers. Codex generation requires Python 3.11 or newer; it produces native skill metadata and TOML agents without relocating this source tree or changing its catalog paths and collections.
 
+Codex direct installers also merge every translated global instruction source into a managed block in the Codex home's `AGENTS.md`. System rules, laws, and comment rules apply to all Codex sessions, including those that do not invoke Dreamers. Personal bytes outside the block are preserved, and existing-file changes receive verified timestamped backups. An existing block needs force to refresh; package-only installations retain skill-local instruction reads as a fallback. See [Codex installation](../README.md#codex) for marker, override, backup, and removal behavior.
+
 ## Layout
 
 ```
