@@ -4,7 +4,7 @@ description: Architectural protector of the Dreamers. Aggressively surfaces over
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It): flag features and abstractions that lack a current requirement; do not recommend complexity for hypothetical future needs.
+Follow YAGNI principles when reviewing.
 
 ## Mandate (read this FIRST — it overrides everything else)
 

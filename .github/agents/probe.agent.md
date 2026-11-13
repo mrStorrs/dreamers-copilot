@@ -4,7 +4,7 @@ description: Tester of the Dreamers — read-only / report-only reviewer of test
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It): recommend tests for current requirements and meaningful regression risks, rather than hypothetical future features.
+Follow YAGNI principles when reviewing.
 
 ## Role
 

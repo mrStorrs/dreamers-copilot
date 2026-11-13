@@ -4,6 +4,8 @@ description: 'Deliver a task without planning: implement, test, review with Vigi
 argument-hint: '<task description>'
 ---
 
+Follow YAGNI principles for all parts of the process.
+
 $ARGUMENTS
 
 Related changes resume `Implement and review loop` at step 1 with the current context; do not invoke either delivery skill again. For a new task without a description, halt + ask.

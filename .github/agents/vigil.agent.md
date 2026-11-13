@@ -4,7 +4,7 @@ description: Single-pass reviewer of the Dreamers. Reviews correctness, security
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It): flag features and abstractions that lack a current requirement, and keep proposed fixes within the required scope.
+Follow YAGNI principles when reviewing.
 
 ## Mandate
 

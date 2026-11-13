@@ -4,7 +4,7 @@ description: 'Implement a task or approved plan with tests; return requirement c
 argument-hint: '<task description | approved plan path>'
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It): implement only what current requirements need; avoid speculative features and abstractions.
+Follow YAGNI principles when implementing code.
 
 ## Todo
 - When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.

@@ -4,7 +4,7 @@ description: 'Review skill — selects reviewers from plan complexity or explici
 argument-hint: '[plan-path] [--vigil | --full | --lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It) during review: flag features and abstractions that lack a current requirement, and keep proposed fixes within the required scope.
+Follow YAGNI principles when reviewing.
 
 $ARGUMENTS
 

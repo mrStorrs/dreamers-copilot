@@ -4,7 +4,7 @@ description: Reviewer of the Dreamers — read-only / report-only reviewer of co
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It): keep proposed fixes focused on current correctness, security, and maintainability requirements; avoid speculative features and abstractions.
+Follow YAGNI principles when reviewing.
 
 ## Role
 

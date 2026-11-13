@@ -4,7 +4,7 @@ description: 'Grill, critique a proposal, and write concise plans with Goal, Sco
 argument-hint: '<task description>'
 ---
 
-Apply YAGNI (You Aren’t Gonna Need It): plan only what current requirements need; defer speculative features and abstractions.
+Follow YAGNI principles when planning.
 
 $ARGUMENTS
 
