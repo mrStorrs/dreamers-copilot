@@ -4,6 +4,8 @@ description: 'Bootstrap a brand new project from scratch: discovery questions, o
 argument-hint: '(no args; discovery is conversational)'
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 Bootstrap a brand new project from scratch. Work through the phases in order. Do not skip ahead or write anything permanent until the user explicitly approves the brief.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
@@ -13,6 +15,8 @@ Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instru
 - Explicit user instructions can skip or alter phases/actions.
 
 <project-bootstrap>
+Follow YAGNI principles when writing or planning code.
+
 # Project Bootstrap
 
 ## Bootstrap checklist for new repos
@@ -137,6 +141,8 @@ Call `request_information` with `["Shell plans look good — I'll take it from h
 This skill ends when the user is happy with the shell plans. From there the user invokes `/dreamers-plan` on a specific milestone (or `/dreamers` to plan + implement in one session).
 
 <shell-plan>
+Follow YAGNI principles when writing or planning code.
+
 Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use this outline for each milestone; leave unresolved decisions visible for planning.
 
 ```markdown
@@ -160,6 +166,8 @@ Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use
 </shell-plan>
 
 <manifest-format>
+Follow YAGNI principles when writing or planning code.
+
 ```markdown
 # Feature: <short name>
 

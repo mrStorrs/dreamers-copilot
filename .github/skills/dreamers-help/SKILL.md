@@ -3,6 +3,8 @@ name: dreamers-help
 description: 'Read-only guide to the Dreamers system, delivery workflow, specialized skills, examples, reviewer lanes, gates, and migration choices. Use for /dreamers-help, /dreamers with no input, help, --help, -h, choosing a Dreamers command, or understanding how planning, review, gates, and PR delivery work.'
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 ## Boundary
 
 This is read-only guidance. Do not inspect or change repository, git, mailbox, filesystem, or external state. Do not start another skill unless the user explicitly chooses a next command.

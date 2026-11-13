@@ -1,3 +1,5 @@
+Follow YAGNI principles when writing or planning code.
+
 Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use this outline for each milestone; leave unresolved decisions visible for planning.
 
 ```markdown

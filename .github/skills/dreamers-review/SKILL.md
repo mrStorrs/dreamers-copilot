@@ -94,6 +94,7 @@ All `task()` calls use `mode: "sync"` — the call blocks until the agent return
 
 ## Implementation discipline
 
+- Follow YAGNI principles when writing or planning code. Build only what current requirements need; defer speculative features, abstractions, and configuration.
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
@@ -108,6 +109,8 @@ Co-authored-by: The Dreamers System
 </dreamers-kernel>
 
 <reviewer-findings-format>
+Follow YAGNI principles when writing or planning code.
+
 # Reviewer Findings Format
 
 ## Artifact contract
@@ -144,6 +147,8 @@ Reviewers are read-only / report-only for code, tests, docs, config, scripts, an
 </reviewer-findings-format>
 
 <logging-discipline>
+Follow YAGNI principles when writing or planning code.
+
 1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
 2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
    - Logger library / import path (do not introduce a new logger where one already exists).
@@ -152,6 +157,8 @@ Reviewers are read-only / report-only for code, tests, docs, config, scripts, an
 </logging-discipline>
 
 <agent-recovery>
+Follow YAGNI principles when writing or planning code.
+
 # Agent Failure Recovery (mandatory)
 
 When a spawned agent hits a rate limit, crashes, or times out mid-run:

@@ -4,6 +4,8 @@ description: 'Create a structured GitHub issue with acceptance criteria from a t
 argument-hint: '[#]<task description>  (# prefix triggers discussion mode with clarifying questions)'
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 Create a GitHub issue for the following request:
 
 $ARGUMENTS

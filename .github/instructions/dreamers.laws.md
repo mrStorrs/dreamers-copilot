@@ -2,6 +2,8 @@
 applyTo: "**"
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 # Dreamers Code Laws (Cannot be broken unless explicty requested by user)
 
 1. If you must do something that violates one of these laws, please surface it to the user. 

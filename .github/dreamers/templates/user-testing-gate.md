@@ -1,4 +1,6 @@
 <user-testing-gate>
+Follow YAGNI principles when writing or planning code.
+
 # User Testing Gate Template
 
 Use this template whenever the Dreamers pipeline pauses for user testing.

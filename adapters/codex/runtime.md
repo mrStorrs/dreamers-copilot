@@ -1,5 +1,7 @@
 # Codex Runtime Mapping
 
+Follow YAGNI principles when writing or planning code.
+
 Use this reference when executing Dreamers skills generated from the shared repository.
 
 The direct installers embed every translated global instruction file in a managed block in `$CODEX_HOME/AGENTS.md` (default `~/.codex/AGENTS.md`). These apply to all Codex sessions, including work outside Dreamers skills. Personal content outside the block is preserved.

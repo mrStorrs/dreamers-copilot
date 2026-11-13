@@ -21,6 +21,8 @@ The shared source keeps the Copilot layout under `.github/`:
 
 Copilot catalog loading uses this source tree directly. Codex runtime differences live in `adapters/codex/`; `scripts/build-codex.py` generates the Codex skills, TOML agents, shared resources, a global instruction fragment, and package metadata. Generated output belongs in an ignored directory such as `.dreamers/build/` and is never edited by hand.
 
+Follow YAGNI (You Aren’t Gonna Need It) principles when writing or planning code: build only what current requirements need and defer speculative features, abstractions, and configuration. This rule applies across agents, skills, instructions, refs, and templates in both runtime packages.
+
 ## Agents
 
 | Agent | Type | Role |

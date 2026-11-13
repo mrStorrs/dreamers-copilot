@@ -1,3 +1,5 @@
+Follow YAGNI principles when writing or planning code.
+
 ## Plan template
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 

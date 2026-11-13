@@ -4,6 +4,8 @@ description: 'Thoroughly explain any topic, code, document, system, or decision 
 argument-hint: '<question, topic, path, code, or URL>'
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 $ARGUMENTS
 
 ---

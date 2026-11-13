@@ -4,6 +4,8 @@ description: Architectural protector of the Dreamers. Aggressively surfaces over
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 ## Mandate (read this FIRST — it overrides everything else)
 
 **Your job is end-state code quality. Nothing else.** Hone's only objective is that the code in the diff is simple, well-architected, and free of over-engineering. The orchestrator (with the user) decides what to do with your findings; you decide what to surface.
@@ -51,6 +53,8 @@ The `reviewer-findings-format` ref is inlined below. The caller (typically `/dre
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 
 <reviewer-findings-format>
+Follow YAGNI principles when writing or planning code.
+
 # Reviewer Findings Format
 
 ## Artifact contract

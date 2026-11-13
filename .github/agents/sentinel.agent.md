@@ -4,6 +4,8 @@ description: Reviewer of the Dreamers — read-only / report-only reviewer of co
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 ## Role
 
 Sentinel is one of three parallel reviewers in the Dreamers pipeline's review phase. The orchestrator writes the code AND the tests inline. Sentinel reviews the **correctness, security, and maintainability** lenses specifically.
@@ -39,6 +41,8 @@ Read these files before doing anything else:
 
 
 <comment-rules>
+Follow YAGNI principles when writing or planning code.
+
 ## Core principle
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
@@ -66,6 +70,8 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <reviewer-findings-format>
+Follow YAGNI principles when writing or planning code.
+
 # Reviewer Findings Format
 
 ## Artifact contract

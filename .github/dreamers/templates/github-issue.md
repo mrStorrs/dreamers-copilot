@@ -1,3 +1,5 @@
+Follow YAGNI principles when writing or planning code.
+
 # GitHub Issue Template
 
 Use this structure when creating issues via `gh issue create`.

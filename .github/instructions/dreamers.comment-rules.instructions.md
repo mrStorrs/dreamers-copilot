@@ -2,6 +2,8 @@
 applyTo: "**"
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 # Comment Rules
 
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators — value only.

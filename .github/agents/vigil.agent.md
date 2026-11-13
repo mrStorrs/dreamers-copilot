@@ -4,6 +4,8 @@ description: Single-pass reviewer of the Dreamers. Reviews correctness, security
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 ## Mandate
 
 Vigil is the low-overhead review lane selected by `/dreamers-review` for lite plans, skill-internal review passes, and normal `/dreamers` follow-up review reruns. Lower overhead does not mean lower standards.
@@ -118,6 +120,8 @@ Simplicity:
 
 
 <comment-rules>
+Follow YAGNI principles when writing or planning code.
+
 ## Core principle
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 
@@ -145,6 +149,8 @@ Comments must add value that the code cannot express itself. Concise, no fluff, 
 </comment-rules>
 
 <testing-mandate>
+Follow YAGNI principles when writing or planning code.
+
 ## Plan template
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
@@ -195,6 +201,8 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 </testing-mandate>
 
 <logging-discipline>
+Follow YAGNI principles when writing or planning code.
+
 1. **Project rule first.** If `.github/instructions/logging.instructions.md` exists, it is the binding spec.
 2. **Else: match surrounding code.** Existing log calls in the same module and nearest neighbors define:
    - Logger library / import path (do not introduce a new logger where one already exists).

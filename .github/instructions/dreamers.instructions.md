@@ -2,6 +2,8 @@
 applyTo: "**"
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 ## Dreamers System
 
 Skills (`/dreamers` and `/dreamers-*`) are the entry point for all Dreamers pipelines. Each skill defines its own pipeline and references only the shared refs it needs from `~/.copilot/dreamers/refs/`.

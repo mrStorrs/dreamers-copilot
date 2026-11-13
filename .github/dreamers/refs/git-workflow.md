@@ -1,3 +1,5 @@
+Follow YAGNI principles when writing or planning code.
+
 # Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.

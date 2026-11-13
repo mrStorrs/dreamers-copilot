@@ -1,3 +1,5 @@
+Follow YAGNI principles when writing or planning code.
+
 # Project Brief: {{PROJECT_NAME}}
 
 > **Status:** Draft — pending user approval

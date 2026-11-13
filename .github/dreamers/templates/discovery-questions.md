@@ -1,3 +1,5 @@
+Follow YAGNI principles when writing or planning code.
+
 # Discovery Questions — New Project
 
 Use these to grill the user before writing anything. Have a real conversation — do not dump all questions at once. Push back on vague answers. "It depends" and "we'll figure it out" are not acceptable; press for specifics. If an answer opens a new question, ask it.

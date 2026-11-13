@@ -4,12 +4,16 @@ description: 'Grill, critique a proposal, and write concise plans with Goal, Sco
 argument-hint: '<task description>'
 ---
 
+Follow YAGNI principles when writing or planning code.
+
 $ARGUMENTS
 
 If the task is missing, ask. Work inline and write only `.dreamers/plans/` artifacts; do not change project files or git state. When standalone, own a todo for the three steps below; otherwise use the caller's todo.
 
 ## 1: Grill
 <planning-grill>
+Follow YAGNI principles when writing or planning code.
+
 ### Grill
 
 Resolve decisions and their dependencies until the goal, scope, and constraints are understood. Explore the codebase for answers before asking the user. For unresolved decisions, use `request_information`, one blocking question at a time, with exactly:
@@ -50,6 +54,8 @@ Present plan paths through `request_information`: `Approved` / `Minor edit` / `M
 On approval, return plan paths. If standalone use and not invoked from an outerskill, ask user if they would like to proceed with `/dreamers-implement`
 
 <plan-format>
+Follow YAGNI principles when writing or planning code.
+
 Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
 
 ```markdown
@@ -79,6 +85,8 @@ Include the transcript link only when the sibling artifact exists. Compound laye
 </plan-format>
 
 <manifest-format>
+Follow YAGNI principles when writing or planning code.
+
 ```markdown
 # Feature: <short name>
 
