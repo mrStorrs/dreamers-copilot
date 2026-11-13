@@ -1,5 +1,3 @@
-Follow YAGNI principles when writing or planning code.
-
 # Project Bootstrap
 
 ## Bootstrap checklist for new repos

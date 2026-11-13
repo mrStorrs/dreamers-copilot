@@ -1,5 +1,3 @@
-Follow YAGNI principles when writing or planning code.
-
 # PR Description Template
 
 Use this structure for `gh pr create --body`.

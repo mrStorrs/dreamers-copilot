@@ -4,7 +4,7 @@ description: Architectural protector of the Dreamers. Aggressively surfaces over
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Follow YAGNI principles when writing or planning code.
+Apply YAGNI (You Aren’t Gonna Need It): flag features and abstractions that lack a current requirement; do not recommend complexity for hypothetical future needs.
 
 ## Mandate (read this FIRST — it overrides everything else)
 
@@ -53,8 +53,6 @@ The `reviewer-findings-format` ref is inlined below. The caller (typically `/dre
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 
 <reviewer-findings-format>
-Follow YAGNI principles when writing or planning code.
-
 # Reviewer Findings Format
 
 ## Artifact contract

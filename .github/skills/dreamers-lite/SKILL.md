@@ -56,7 +56,6 @@ All `task()` calls use `mode: "sync"` — the call blocks until the agent return
 
 ## Implementation discipline
 
-- Follow YAGNI principles when writing or planning code. Build only what current requirements need; defer speculative features, abstractions, and configuration.
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
@@ -71,8 +70,6 @@ Co-authored-by: The Dreamers System
 </dreamers-kernel>
 
 <git-workflow>
-Follow YAGNI principles when writing or planning code.
-
 # Git Workflow (mandatory)
 
 Every milestone uses a feature branch + PR — never work directly on the default branch.
@@ -118,8 +115,6 @@ The orchestrator works directly on the feature branch. Unless explicitly request
 </git-workflow>
 
 <testing-mandate>
-Follow YAGNI principles when writing or planning code.
-
 ## Plan template
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
@@ -170,8 +165,6 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 </testing-mandate>
 
 <comment-rules>
-Follow YAGNI principles when writing or planning code.
-
 ## Core principle
 Comments must add value that the code cannot express itself. Concise, no fluff, no separators.
 

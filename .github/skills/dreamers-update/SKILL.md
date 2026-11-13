@@ -4,8 +4,6 @@ description: 'Maintain Dreamers shared sources and validate both Copilot and Cod
 argument-hint: '<what to change>'
 ---
 
-Follow YAGNI principles when writing or planning code.
-
 $ARGUMENTS
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.

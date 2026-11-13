@@ -1,5 +1,3 @@
-Follow YAGNI principles when writing or planning code.
-
 # Agent Failure Recovery (mandatory)
 
 When a spawned agent hits a rate limit, crashes, or times out mid-run:

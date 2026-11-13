@@ -27,7 +27,6 @@ All `task()` calls use `mode: "sync"` — the call blocks until the agent return
 
 ## Implementation discipline
 
-- Follow YAGNI principles when writing or planning code. Build only what current requirements need; defer speculative features, abstractions, and configuration.
 - **Scope adherence:** edit only files in the task or plan's scope. No while-I'm-here cleanup, no unrelated refactors mixed with feature work.
 - **Branch identity check:** before the first edit, `git log --oneline -3`. Confirm the branch and recent commits match the expected feature. If not, halt and surface.
 - **No dependency installs without permission.** Don't run `npm install`, `pip install`, etc. without explicit user approval.
@@ -225,8 +224,6 @@ Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using
 Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
 
 <plan-format>
-Follow YAGNI principles when writing or planning code.
-
 Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
 
 ```markdown
@@ -256,8 +253,6 @@ Include the transcript link only when the sibling artifact exists. Compound laye
 </plan-format>
 
 <manifest-format>
-Follow YAGNI principles when writing or planning code.
-
 ```markdown
 # Feature: <short name>
 

@@ -1,5 +1,3 @@
-Follow YAGNI principles when writing or planning code.
-
 # Reviewer Findings Format
 
 ## Artifact contract

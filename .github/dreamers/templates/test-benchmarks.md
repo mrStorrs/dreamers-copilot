@@ -1,5 +1,3 @@
-Follow YAGNI principles when writing or planning code.
-
 # Test Benchmarks
 
 This file records measured run times for each test command in the project. It lives at the project root so it is visible to the team and committed to version control for cross-machine reference.

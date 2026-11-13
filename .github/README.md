@@ -4,8 +4,6 @@ Dreamers coordinates planning → implementation + tests → selected review →
 
 Start with `/dreamers <task>`, `/dreamers-plan <task>`, or `/dreamers-lite <task>`. Use `/dreamers help` or `/dreamers-help` for read-only orientation.
 
-Follow YAGNI (You Aren’t Gonna Need It) principles when writing or planning code: build only what current requirements need and defer speculative features, abstractions, and configuration. This rule applies across agents, skills, instructions, refs, and templates in both runtime packages.
-
 ## Agents
 
 | Agent | Type | Role |

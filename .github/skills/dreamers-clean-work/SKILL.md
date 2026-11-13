@@ -4,8 +4,6 @@ description: 'Between-milestone maintenance pass: prune stale files, audit impro
 argument-hint: '(no args; full maintenance pass)'
 ---
 
-Follow YAGNI principles when writing or planning code.
-
 Run a between-milestone maintenance pass. No implementation, no planning, no subagents — do all of this directly.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.

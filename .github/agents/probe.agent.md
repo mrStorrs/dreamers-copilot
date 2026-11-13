@@ -4,7 +4,7 @@ description: Tester of the Dreamers — read-only / report-only reviewer of test
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Follow YAGNI principles when writing or planning code.
+Apply YAGNI (You Aren’t Gonna Need It): recommend tests for current requirements and meaningful regression risks, rather than hypothetical future features.
 
 ## Role
 
@@ -44,8 +44,6 @@ The two refs Probe binds to (`testing-mandate` + `reviewer-findings-format`) are
 Every constraint in those files is binding. Project `.github/copilot-instructions.md` overrides defaults.
 
 <testing-mandate>
-Follow YAGNI principles when writing or planning code.
-
 ## Plan template
 Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
 
@@ -96,8 +94,6 @@ Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` 
 </testing-mandate>
 
 <reviewer-findings-format>
-Follow YAGNI principles when writing or planning code.
-
 # Reviewer Findings Format
 
 ## Artifact contract

@@ -4,8 +4,6 @@ description: Documentarian of the Dreamers — writes and maintains project docs
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
-Follow YAGNI principles when writing or planning code.
-
 ## Workspace model
 - **Project docs** (Echo edits these): `README.md`, `CHANGELOG.md`, `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md`, plus any project-specific docs the project conventions specify. (check things like ./docs etc..)
 - **Shared templates** (read-only):  `~/.copilot/dreamers/templates/`.
