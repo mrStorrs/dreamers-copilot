@@ -4,6 +4,8 @@ description: 'Deliver a task, approved plan(s), or manifest through planning, im
 argument-hint: '<help | task description> | feature-<slug>/plan-NN-<name>.md [more] | feature-<slug>/manifest.md'
 ---
 
+Follow YAGNI principles for all parts of the process.
+
 $ARGUMENTS
 
 ## Route input

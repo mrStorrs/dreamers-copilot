@@ -4,6 +4,8 @@ description: 'Grill, critique a proposal, and write concise plans with Goal, Sco
 argument-hint: '<task description>'
 ---
 
+Follow YAGNI principles when planning.
+
 $ARGUMENTS
 
 If the task is missing, ask. Work inline and write only `.dreamers/plans/` artifacts; do not change project files or git state. When standalone, own a todo for the three steps below; otherwise use the caller's todo.

@@ -4,6 +4,8 @@ description: 'Review skill — selects reviewers from plan complexity or explici
 argument-hint: '[plan-path] [--vigil | --full | --lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
 ---
 
+Follow YAGNI principles when reviewing.
+
 $ARGUMENTS
 
 ## Modes

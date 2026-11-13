@@ -4,6 +4,8 @@ description: Single-pass reviewer of the Dreamers. Reviews correctness, security
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
+Follow YAGNI principles when reviewing.
+
 ## Mandate
 
 Vigil is the low-overhead review lane selected by `/dreamers-review` for lite plans, skill-internal review passes, and normal `/dreamers` follow-up review reruns. Lower overhead does not mean lower standards.
