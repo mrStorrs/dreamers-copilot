@@ -7,21 +7,19 @@ Title: short, imperative, under 70 chars.
 
 ## Summary
 
-[2-3 sentences: what is needed and why. Derive primarily from user input — minimal codebase exploration only.]
+[2-3 sentences: the demonstrated need and why it matters, grounded in the request and verified code.]
 
 ## Current behaviour
 
-[What happens today. Omit entirely for pure feature requests.]
+[Verified current behaviour, with relevant code paths or symbols. Distinguish any unverified assumptions.]
 
 ## Desired behaviour
 
-[What should happen instead.]
+[The smallest useful outcome agreed during discussion. Exclude speculative additions.]
 
 ## Acceptance criteria
 
-[Write from a product owner perspective — user-facing outcomes, not technical implementation.
-In direct mode, prefix each AC with `[potential]` — best guesses from limited input.
-In discussion mode (# prefix), write concrete ACs — the conversation has validated them.]
+[Concrete, testable outcomes from a product owner perspective, grounded in verified findings and resolved questions. Do not use speculative criteria.]
 
 - [ ] ...
 - [ ] ...

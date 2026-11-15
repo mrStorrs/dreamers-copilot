@@ -212,7 +212,7 @@
       "type": "skill",
       "slug": "dreamers-issue",
       "name": "dreamers-issue",
-      "description": "Create a structured GitHub issue with acceptance criteria from a task description.",
+      "description": "Verify a task against the code and propose a minimal GitHub issue for approval before creating it.",
       "author": "CJ Storrs",
       "tags": [
         "code",

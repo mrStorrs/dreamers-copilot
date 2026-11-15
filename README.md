@@ -79,7 +79,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
 | `/dreamers-explain` | Thorough, read-only explanations of topics, code, documents, systems, and decisions, with authoritative sources when needed. |
-| `/dreamers-issue` | Create structured GitHub issues with acceptance criteria. |
+| `/dreamers-issue` | Verify the task against the code, resolve concerns and questions, propose the smallest useful issue, then create it after approval. |
 | `/dreamers-new-project` | Bootstrap a brand new project (discovery → optional existing-solutions research → stack → brief → shell plans). |
 | `/dreamers-plan-verify` | Inline drift check on a plan vs current code. |
 | `/dreamers-clean-work` | Between-milestone maintenance (improvements audit, archive, drift scan). |

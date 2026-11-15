@@ -1,53 +1,48 @@
 ---
 name: dreamers-issue
-description: 'Create a structured GitHub issue with acceptance criteria from a task description. Triggers: /dreamers-issue, create an issue, open a GitHub issue, file an issue.'
-argument-hint: '[#]<task description>  (# prefix triggers discussion mode with clarifying questions)'
+description: 'Verify a task against the code, resolve concerns, and propose a minimal GitHub issue for approval before creating it. Triggers: /dreamers-issue, create an issue, open a GitHub issue, file an issue.'
+argument-hint: '<task description>'
 ---
 
-Create a GitHub issue for the following request:
+Evaluate the following request and propose a GitHub issue:
 
 $ARGUMENTS
-
----
 
 ## User overrides
 
 - Explicit user instructions can skip or alter phases/actions.
 
-**Routing — check for `#` prefix**
+Follow YAGNI principles throughout: solve the demonstrated need with the smallest useful scope. Prefer existing capabilities and conventions; do not add speculative features, abstractions, or unrelated cleanup.
 
-If the arguments start with `#`, enter **discussion mode**:
-- Strip the `#` and treat the rest as the topic.
-- Ask focused questions to clarify scope, intent, and acceptance criteria.
-- Continue the conversation until you have enough to write concrete, testable ACs.
-- Then proceed to Step 1 below. ACs produced this way are **real** — no "potential" qualifier.
+## Step 1: Take in the task
 
-If the arguments do NOT start with `#`, enter **direct mode**:
-- Do NOT ask questions.
-- Proceed immediately to Step 1. ACs produced this way are **potential** — prefix each with `[potential]`.
+- Identify the intended outcome, reported problem, and constraints. If no task is provided, ask for it and wait.
+- Run `gh repo view --json nameWithOwner` to confirm the target repository. If the repository cannot be determined, ask the user for the target (`OWNER/REPO`) and access to its code before continuing.
+- Read the project's instructions. A leading `#` is accepted for compatibility; strip it and use this same workflow for every request.
 
----
+## Step 2: Verify against the code
 
-**Step 1 — Repo detection**
-Run `gh repo view --json nameWithOwner` to confirm the current repo. If not in a git repo or no remote is set, call `request_information` asking the user which repo to target (`OWNER/REPO` format) before proceeding.
+- Inspect the relevant implementation, callers, configuration, and tests as needed to establish current behaviour and check the request's assumptions. Follow the affected path far enough to support the findings; do not impose an arbitrary lookup limit or perform a repo-wide audit.
+- Cite relevant file paths and symbols when summarizing what exists, what is missing, and whether existing behaviour already meets the need. Distinguish code evidence from unverified assumptions; do not claim runtime verification unless performed.
+- If the relevant code is unavailable or evidence is insufficient, explain the gap, ask for what is needed, and wait before proposing a solution.
+- This is investigation only: do not implement changes or create an issue during verification.
 
-**Step 2 — Label check**
-Run `gh label list` to see available labels. Pick the most appropriate existing label(s) — do not invent labels. Common mappings:
-- New capability → `feature`
-- Something broken → `bug`
-- Docs gap → `documentation`
-- Unclear ownership → `question`
+## Step 3: Resolve questions and concerns
 
-**Step 3 — Minimal exploration (optional)**
-Light exploration is allowed — e.g. confirm a feature exists, glance at a config, check a directory structure. Keep it to 1-3 lookups max. Deep codebase analysis belongs in `/dreamers-plan`, not here.
+- Present the verified findings before proposing a solution. Challenge incorrect assumptions, unnecessary scope, and conflicts with existing behaviour; explain the concern and recommend a simpler alternative where appropriate.
+- Ask focused questions only for unresolved decisions affecting the outcome, scope, or acceptance criteria. Help the user reach a concrete solution and wait for answers before drafting the proposal.
+- If the task is already clear, state that no questions remain and proceed. If the need is already met, explain how to use the existing capability and confirm whether any issue is still needed rather than inventing work.
+- Recheck affected code when answers change the scope or invalidate earlier findings.
 
-**Step 4 — Draft the issue**
-Write a focused, minimal issue from the user's input (and any brief exploration from Step 3).
+## Step 4: Present the proposal
 
-Use the template at `~/.copilot/dreamers/templates/github-issue.md` as the structure. Keep the body concise — no padding, no restatement of the title.
+- Run `gh label list` for the target repository and select appropriate existing labels only; omit labels if none fit.
+- Use `~/.copilot/dreamers/templates/github-issue.md` to draft a concise title and complete issue body, grounded in the verified findings and resolved discussion. Show the title, body, and labels to the user.
+- Keep scope minimal and explicit. Write concrete, testable acceptance criteria from a product owner perspective: observable outcomes rather than implementation instructions. Do not use speculative `[potential]` criteria.
+- Ask for approval of this proposal and wait. Discussion or approval to investigate is not approval to create the issue. If revisions are requested, revisit verification and questions as needed, then present the revised proposal for approval.
 
-ACs must be written from a **product owner perspective** — user-facing outcomes, not technical implementation. "User can filter by date" not "Add dateFilter param to query handler".
+## Step 5: Create the approved issue
 
-**Step 5 — Create**
-Run `gh issue create` with the drafted title, body, and label(s). Report the issue URL when done.
-
+- Only after approval of the current proposal, run `gh issue create` for the confirmed repository with the approved title, body, and existing label(s). Use a body file for multiline content.
+- If creation fails, report the failure without claiming an issue exists. If the result is uncertain, check for an existing issue before retrying to avoid duplicates.
+- Report the issue URL when creation succeeds.
