@@ -2,24 +2,33 @@
 
 Use this structure when creating issues via `gh issue create`.
 Title: short, imperative, under 70 chars.
+Write for an engineer with no prior conversation context, from a product owner perspective backed by verified facts. Explain the need and success conditions; leave implementation choices open. Omit optional sections when irrelevant.
 
 ---
 
 ## Summary
 
-[2-3 sentences: the demonstrated need and why it matters, grounded in the request and verified code.]
+[Who is affected, what problem they face, and why solving it matters.]
 
 ## Current behaviour
 
-[Verified current behaviour, with relevant code paths or symbols. Distinguish any unverified assumptions.]
+[The user scenario or steps and what happens today, grounded in investigation. Include a concrete example when helpful; distinguish unverified assumptions.]
 
 ## Desired behaviour
 
-[The smallest useful outcome agreed during discussion. Exclude speculative additions.]
+[The smallest useful product outcome and how it improves the scenario. Describe what users should experience.]
+
+## Scope and constraints
+
+[Relevant boundaries, exclusions, and genuine requirements with their reasons. Include only what matters to this task; do not prescribe architecture or implementation steps.]
 
 ## Acceptance criteria
 
-[Concrete, testable outcomes from a product owner perspective, grounded in verified findings and resolved questions. Do not use speculative criteria.]
+[Concrete, testable product outcomes, including relevant edge cases. An engineer should be able to judge success without the original conversation. Avoid speculative criteria and implementation prescriptions.]
 
 - [ ] ...
 - [ ] ...
+
+## Supporting context (optional)
+
+[Examples or references needed to understand the problem. Technical references may orient the engineer but must not imply a required implementation or edit location.]

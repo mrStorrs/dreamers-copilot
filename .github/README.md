@@ -49,7 +49,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 |---|---|
 | `/dreamers-pr-resolve [#PR]` | Apply accepted PR fixes inline with Vigil review; append deferred findings to project-root `defered.md`. Reply to each comment with `fixed: in commit <SHA>`, `blocked: <reason>` (needed but unable to fix), or `no-action: <reason>` (decided not to act). Only fully fixed threads are resolved. |
 | `/dreamers-explain <question, topic, path, code, or URL>` | Thorough, read-only explanation with layered mental models, concrete examples, local evidence, and authoritative sources when needed. |
-| `/dreamers-issue <task>` | Verify the task against the code, resolve concerns and questions, propose the smallest useful issue, then create it after approval. A leading `#` follows the same workflow. |
+| `/dreamers-issue <task>` | Verify the task against the code, resolve questions, then propose a minimal issue from a product owner perspective for approval. Give an engineer enough context to act while leaving implementation choices open. A leading `#` follows the same workflow. |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to the current feature-branch diff. |
