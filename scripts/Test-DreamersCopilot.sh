@@ -128,7 +128,6 @@ expected_refs = [
 ]
 expected_templates = [
     "discovery-questions.md",
-    "github-issue.md",
     "logging-standards.md",
     "manifest.md",
     "plan.md",

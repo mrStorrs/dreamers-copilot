@@ -212,7 +212,7 @@
       "type": "skill",
       "slug": "dreamers-issue",
       "name": "dreamers-issue",
-      "description": "Verify a task against the code and propose a minimal GitHub issue for approval before creating it.",
+      "description": "Investigate code and propose a short issue with acceptance criteria for approval.",
       "author": "CJ Storrs",
       "tags": [
         "code",
