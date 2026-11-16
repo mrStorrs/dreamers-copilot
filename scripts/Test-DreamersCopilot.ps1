@@ -142,7 +142,6 @@ $expectedRefs = @(
 )
 $expectedTemplates = @(
     "discovery-questions.md",
-    "github-issue.md",
     "logging-standards.md",
     "manifest.md",
     "plan.md",
