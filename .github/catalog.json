@@ -238,7 +238,7 @@
       "type": "skill",
       "slug": "dreamers-plan",
       "name": "dreamers-plan",
-      "description": "Grill, critique a proposal, and write concise plans with Goal, Scope and context, and Acceptance Criteria. Preserve the verbatim transcript and stop at plan approval; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.",
+      "description": "Investigate code and propose concise plans with clear acceptance criteria for approval. Save approved plans; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.",
       "author": "CJ Storrs",
       "tags": [
         "code",

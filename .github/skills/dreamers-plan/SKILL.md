@@ -1,84 +1,42 @@
 ---
 name: dreamers-plan
-description: 'Grill, critique a proposal, and write concise plans with Goal, Scope and context, and Acceptance Criteria. Preserve the verbatim transcript and stop at plan approval; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.'
-argument-hint: '<task description>'
+description: 'Investigate code and propose concise plans with clear acceptance criteria for approval. Save approved plans; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.'
+argument-hint: '<goal>'
 ---
-
-Follow YAGNI principles when planning.
 
 $ARGUMENTS
 
-If the task is missing, ask. Work inline and write only `.dreamers/plans/` artifacts; do not change project files or git state. When standalone, own a todo for the three steps below; otherwise use the caller's todo.
+<proposal>
+Follow YAGNI principles.
 
-## 1: Grill
-<planning-grill>
-### Grill
+Look into how code works today. Propose the requested change for [goal], built around clear acceptance criteria. Resolve questions from the codebase where possible. Ask the user about unclear goals, scope, constraints, or tradeoffs that would materially change the proposal. Clarify these before presenting the proposal. Before presenting the proposal, review the code for potential concerns or unintended behaviours. Report them to the user with suggested acceptance criteria to address them. Present the proposal for approval before creating the requested artifact.
 
-Resolve decisions and their dependencies until the goal, scope, and constraints are understood. Explore the codebase for answers before asking the user. For unresolved decisions, use `request_information`, one blocking question at a time, with exactly:
+```markdown
+## Goal
+What should improve, for whom, and why?
 
-1. Recommended answer, labeled recommended.
-2. Strongest viable alternative.
-3. `Other` for freeform direction.
+## Acceptance criteria
+- [ ] Observable outcome.
+```
+</proposal>
 
-Incorporate each answer before continuing. Do not propose while required decisions remain open.
+Split work into multiple plans only when they are independently shippable. Present the full plan for a single-plan task, or the manifest and proposed plan contents for a multi-plan task. Incorporate corrections and obtain approval for the revised proposal.
 
-Capture every question and response verbatim, in order, including complete tool questions, choice labels, and descriptions. Keep responses separate; never summarize, paraphrase, normalize, or omit text. When writing plans, save the exchange to `.dreamers/plans/feature-<slug>/grilling-transcript.md`, adding only speaker/sequence headings. Do not create an empty transcript.
-</planning-grill>
+After approval, write only `.dreamers/plans/` artifacts; do not change project files or git state.
 
-## 2: Generate plan(s) proposal
-- generate plans following `plan-format`
-- plans should be the smallest shippable chunks. do not break up arbitrarily if doing so would cause more work. 
-- when more than one plans are needed generate a manifest.md
-
-## 3: Propose to user
-- If: change requires a single plan. then present the full plan to the user. 
-- Else: Then present the manifest when task requires multiple plans.
-
-Present the proposal and any critiques through `request_information`: risks, assumptions, tradeoffs, and simpler alternatives. Answer questions and corrections with reasoning and a recommendation; revise and re-present until approved.
-
-## 3: Write plan(s)
-- Create `.dreamers/plans/feature-<slug>/`.
-- Write numbered `plan-NN-<name>.md` files using `plan-format`; add `manifest.md` when multi-plan task
-
-## 3: Review gate
-
-Present plan paths through `request_information`: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.
-
-- Minor edit: apply, repeat Step 2 checks, and re-present.
-- Major rewrite: return to Step 1 with the correction.
-- Halt: stop and surface paths.
-- Other: follow the user's direction.
-
-On approval, return plan paths. If standalone use and not invoked from an outerskill, ask user if they would like to proceed with `/dreamers-implement`
-
-<plan-format>
-Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+Save numbered `plan-NN-<name>.md` files in `.dreamers/plans/feature-<slug>/`. Each plan starts with:
 
 ```markdown
 # Plan-NN: <short title>
 
-**Date:** YYYY-MM-DD
-**Status:** Draft
-**Plan-type:** <lite|standard|complex>
-**Branch:** <feat/slug|fix/slug>
 **User-testing-required:** <yes|no>
-**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
-
-## Goal
-<The outcome this plan delivers.>
-
-## Scope and context
-<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
-
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: <unit|integration|E2E|perf>.*
-</acceptance_criteria>
 ```
 
-Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
-</plan-format>
+Follow that heading with the approved Goal and Acceptance criteria.
+
+For multiple plans, add `manifest.md` using `manifest-format`.
+
+Check the saved artifacts against the approved proposal and return their paths. Stop when standalone; otherwise return control to the caller. Never implement.
 
 <manifest-format>
 ```markdown
@@ -98,11 +56,8 @@ Include the transcript link only when the sibling artifact exists. Compound laye
 ## Shared context
 <Only constraints, decisions and their rationale, or contracts needed by multiple plans. Include cross-plan rollback conditions and order when needed.>
 
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <feature-level state>, when <whole-feature trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
+## Acceptance criteria
+- [ ] Observable outcome.
 ```
 
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.

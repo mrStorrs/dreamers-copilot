@@ -121,6 +121,7 @@ expected_refs = [
     "plan-format.md",
     "planning-grill.md",
     "project-bootstrap.md",
+    "proposal.md",
     "reviewer-findings-format.md",
     "shell-plan.md",
     "testing-mandate.md",

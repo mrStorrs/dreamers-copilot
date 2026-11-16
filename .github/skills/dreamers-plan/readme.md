@@ -4,23 +4,20 @@ Planning only. Source of truth is `SKILL.md`.
 
 ```mermaid
 flowchart TD
-    G[Understand the goal and Grill] --> P[Proposal and critique]
+    I[Investigate current code] --> Q[Clarify as needed]
+    Q --> P[Propose plans, concerns, and acceptance criteria]
     P --> A{Approved?}
-    A -->|revise| G
-    A -->|yes| W[Save verbatim transcript and write plans]
-    W --> C[Check scope, ACs, citations, and accepted decisions]
-    C --> R{Plan review}
-    R -->|minor edit| W
-    R -->|major rewrite| G
-    R -->|approved| E[Return plan paths; stop when standalone]
-    R -->|halt| H[Stop and surface paths]
+    A -->|revise| P
+    A -->|yes| W[Save approved plans]
+    W --> C[Check artifacts against the approved proposal]
+    C --> E[Return plan paths]
 ```
 
-Every plan uses **Goal**, **Scope and context**, and **Acceptance Criteria**. Keep relevant decisions, constraints, contracts, UI details, and risks within scope; include Mermaid flow diagrams or example UI layouts/wireframes when they clarify the change. Attach validation details to ACs when needed. There are no separate Approach or Verification sections.
+Every plan uses **Goal** and **Acceptance criteria**, matching GitHub issue proposals. Each plan retains its title and `User-testing-required` flag.
 
-- `Plan-type` still labels lite / standard / complex for reviewer selection; it does not select a document format.
-- Grill one unresolved decision at a time. Save questions and responses verbatim and link the transcript from each plan when present.
-- Proposal critique and plan approval remain mandatory. Written plans must preserve all accepted requirements and user decisions.
-- Use a manifest for shared multi-plan context; backfill one when adding a second plan. Individual plans must remain usable alone.
-- Planning rules and templates are embedded through XML sync; no Dreamers rule-file reads are required.
-- The caller owns its todo. This skill never invokes implementation.
+- Investigate code before proposing; report concerns with suggested acceptance criteria.
+- Ask questions when needed.
+- Obtain proposal approval before writing; revisions require approval of the revised proposal.
+- Split work only into independently shippable plans; use a manifest for their order and shared context.
+- The shared proposal ref and manifest format are embedded through XML sync; no Dreamers rule-file reads are required.
+- This skill returns paths to its caller or stops when standalone. It never implements or changes project files or git state.

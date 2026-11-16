@@ -89,6 +89,7 @@ expected_refs = [
     "plan-format.md",
     "planning-grill.md",
     "project-bootstrap.md",
+    "proposal.md",
     "reviewer-findings-format.md",
     "shell-plan.md",
     "testing-mandate.md",
@@ -326,8 +327,8 @@ assert_patterns(
     skill_root / "dreamers-plan/SKILL.md",
     {
         "planning write boundary": r"write only `\.dreamers/plans/` artifacts; do not change project files or git state",
-        "proposal before writing": r"Propose to user.*until approved.*Write plan",
-        "review gate": r"Review gate.*Approved.*Minor edit.*Major rewrite.*Halt",
+        "approval before writing": r"Present the proposal for approval before creating the requested artifact.*After approval, write",
+        "approved artifact handoff": r"Check the saved artifacts against the approved proposal and return their paths.*Never implement",
     },
 )
 assert_patterns(
@@ -405,11 +406,8 @@ assert_patterns(
 assert_patterns(
     dreamers_root / "refs/plan-format.md",
     {
-        "unified plan body": r"## Goal.*## Scope and context.*## Acceptance Criteria",
-        "complexity metadata": r"Plan-type:.*lite\|standard\|complex",
-        "optional transcript link": r"Grilling transcript:.*grilling-transcript\.md.*Include the transcript link only when the sibling artifact exists",
-        "checks with ACs": r"Under the relevant AC, add a test command or check.*manual checks.*steps, expected result.*User-testing-required: yes",
-        "useful visuals": r"Mermaid diagrams.*UI layouts/wireframes",
+        "issue-style plan body": r"## Goal.*## Acceptance criteria\n- \[ \]",
+        "manual testing flag": r"User-testing-required:.*yes\|no",
     },
 )
 
