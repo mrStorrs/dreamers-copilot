@@ -221,20 +221,15 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`. For multiple plans, add `manifest.md` using `manifest-format`. Fill the outlines without their outer sync tags.
 
-Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Link the source Hone artifacts and synthesis summary from the Goal; include verified affected paths in acceptance criteria when needed to define the outcome. Include code only when a minimal interface/type signature is an agreed contract.
+Group findings into the smallest coherent shippable plans. Link the source Hone artifacts and synthesis summary from the Goal; include verified affected paths in acceptance criteria when needed to define the outcome. Include code only when a minimal interface/type signature is an agreed contract.
 
 <plan-format>
-Use the same Goal and Acceptance criteria body as GitHub issue proposals. Keep the metadata needed by the delivery workflow.
+Use the Goal and Acceptance criteria body from the approved proposal.
 
 ```markdown
 # Plan-NN: <short title>
 
-**Date:** YYYY-MM-DD
-**Status:** Draft
-**Plan-type:** <lite|standard|complex>
-**Branch:** <feat/slug|fix/slug>
 **User-testing-required:** <yes|no>
-**Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
 
 ## Goal
 What should improve, for whom, and why?
@@ -242,8 +237,6 @@ What should improve, for whom, and why?
 ## Acceptance criteria
 - [ ] Observable outcome.
 ```
-
-Include the transcript link only when the sibling artifact exists. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
 </plan-format>
 
 <manifest-format>
@@ -264,11 +257,8 @@ Include the transcript link only when the sibling artifact exists. For manual ch
 ## Shared context
 <Only constraints, decisions and their rationale, or contracts needed by multiple plans. Include cross-plan rollback conditions and order when needed.>
 
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <feature-level state>, when <whole-feature trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
+## Acceptance criteria
+- [ ] Observable outcome.
 ```
 
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.

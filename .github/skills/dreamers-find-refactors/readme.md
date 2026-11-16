@@ -24,5 +24,5 @@ flowchart TD
 - Read-only for project code.
 - Hone writes section-named `.dreamers/reviews/hone-refactor-*.md` artifacts.
 - The orchestrator groups findings into the smallest coherent shippable plans, with a manifest when there are multiple plans.
-- Generated plans use the shared Goal and Acceptance criteria format. Plan-type controls review routing.
+- Generated plans use the shared Goal and Acceptance criteria format.
 - No branch, implementation, commit, push, or PR.

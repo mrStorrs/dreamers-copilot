@@ -177,11 +177,8 @@ Shell plans are drafts for `/dreamers-plan`, not implementation-ready plans. Use
 ## Shared context
 <Only constraints, decisions and their rationale, or contracts needed by multiple plans. Include cross-plan rollback conditions and order when needed.>
 
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <feature-level state>, when <whole-feature trigger>, then <observable outcome>.
-   *Layer: E2E.*
-</acceptance_criteria>
+## Acceptance criteria
+- [ ] Observable outcome.
 ```
 
 Keep plans in execution order. Manifest ACs cover outcomes requiring the whole sequence; plan ACs cover each plan. Omit shared context or feature-level ACs when none apply; do not duplicate plan content.
