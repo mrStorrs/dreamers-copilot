@@ -1,55 +1,16 @@
 ---
 name: dreamers-plan
-description: 'Grill, critique a proposal, and write concise plans with Goal, Scope and context, and Acceptance Criteria. Preserve the verbatim transcript and stop at plan approval; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.'
-argument-hint: '<task description>'
+description: 'Investigate code and propose concise plans with clear acceptance criteria for approval. Save approved plans; never implement. Triggers: /dreamers-plan, plan a feature, write a plan.'
+argument-hint: '<goal>'
 ---
-
-Follow YAGNI principles when planning.
 
 $ARGUMENTS
 
-If the task is missing, ask. Work inline and write only `.dreamers/plans/` artifacts; do not change project files or git state. When standalone, own a todo for the three steps below; otherwise use the caller's todo.
+Look into how code works today. Propose a short plan for [goal], built around clear acceptance criteria. Follow YAGNI principles. Ask questions if needed; if the goal is missing, ask for it. Before presenting the proposal, review the code for potential concerns or unintended behaviours. Report them to the user with suggested acceptance criteria to address them. Present the proposal for approval before writing the plan.
 
-## 1: Grill
-<planning-grill>
-### Grill
+Use `plan-format` below. Split work into multiple plans only when they are independently shippable; use `manifest-format` for their execution order and shared context. Present the full plan for a single-plan task, or the manifest and proposed plan contents for a multi-plan task. Incorporate corrections and obtain approval for the revised proposal.
 
-Resolve decisions and their dependencies until the goal, scope, and constraints are understood. Explore the codebase for answers before asking the user. For unresolved decisions, use `request_information`, one blocking question at a time, with exactly:
-
-1. Recommended answer, labeled recommended.
-2. Strongest viable alternative.
-3. `Other` for freeform direction.
-
-Incorporate each answer before continuing. Do not propose while required decisions remain open.
-
-Capture every question and response verbatim, in order, including complete tool questions, choice labels, and descriptions. Keep responses separate; never summarize, paraphrase, normalize, or omit text. When writing plans, save the exchange to `.dreamers/plans/feature-<slug>/grilling-transcript.md`, adding only speaker/sequence headings. Do not create an empty transcript.
-</planning-grill>
-
-## 2: Generate plan(s) proposal
-- generate plans following `plan-format`
-- plans should be the smallest shippable chunks. do not break up arbitrarily if doing so would cause more work. 
-- when more than one plans are needed generate a manifest.md
-
-## 3: Propose to user
-- If: change requires a single plan. then present the full plan to the user. 
-- Else: Then present the manifest when task requires multiple plans.
-
-Present the proposal and any critiques through `request_information`: risks, assumptions, tradeoffs, and simpler alternatives. Answer questions and corrections with reasoning and a recommendation; revise and re-present until approved.
-
-## 3: Write plan(s)
-- Create `.dreamers/plans/feature-<slug>/`.
-- Write numbered `plan-NN-<name>.md` files using `plan-format`; add `manifest.md` when multi-plan task
-
-## 3: Review gate
-
-Present plan paths through `request_information`: `Approved` / `Minor edit` / `Major rewrite` / `Halt` / `Other`.
-
-- Minor edit: apply, repeat Step 2 checks, and re-present.
-- Major rewrite: return to Step 1 with the correction.
-- Halt: stop and surface paths.
-- Other: follow the user's direction.
-
-On approval, return plan paths. If standalone use and not invoked from an outerskill, ask user if they would like to proceed with `/dreamers-implement`
+After approval, write only `.dreamers/plans/` artifacts; do not change project files or git state. Save numbered `plan-NN-<name>.md` files in `.dreamers/plans/feature-<slug>/`, with `manifest.md` when needed. If questions were asked, save the questions and responses verbatim, including tool choices and descriptions, in sibling `grilling-transcript.md` and link it from each plan. Do not create an empty transcript. Check the saved artifacts against the approved proposal and return their paths. Stop when standalone; otherwise return control to the caller. Never implement.
 
 <plan-format>
 Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.

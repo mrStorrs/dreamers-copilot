@@ -326,8 +326,8 @@ assert_patterns(
     skill_root / "dreamers-plan/SKILL.md",
     {
         "planning write boundary": r"write only `\.dreamers/plans/` artifacts; do not change project files or git state",
-        "proposal before writing": r"Propose to user.*until approved.*Write plan",
-        "review gate": r"Review gate.*Approved.*Minor edit.*Major rewrite.*Halt",
+        "approval before writing": r"Present the proposal for approval before writing the plan.*After approval, write",
+        "approved artifact handoff": r"Check the saved artifacts against the approved proposal and return their paths.*Never implement",
     },
 )
 assert_patterns(

@@ -17,7 +17,7 @@ Explain the primary entry point with concrete examples:
 - /dreamers feature-search/plan-01-indexing.md
 - /dreamers feature-search/manifest.md
 
-Explain that task descriptions use /dreamers-plan with Grill by default. Existing plan and manifest inputs skip planning and the implementation-start gate using the human-reviewed artifacts.
+Explain that task descriptions use /dreamers-plan to investigate code, clarify as needed, and save an approved proposal. Existing plan and manifest inputs skip planning and the implementation-start gate using the human-reviewed artifacts.
 
 Explain adaptive review:
 
