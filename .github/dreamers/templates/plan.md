@@ -1,5 +1,5 @@
 <plan-format>
-Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+Use the same Goal and Acceptance criteria body as GitHub issue proposals. Keep the metadata needed by the delivery workflow.
 
 ```markdown
 # Plan-NN: <short title>
@@ -12,17 +12,11 @@ Use this structure for every plan type. Keep decisions, contracts, UI details, a
 **Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
 
 ## Goal
-<The outcome this plan delivers.>
+What should improve, for whom, and why?
 
-## Scope and context
-<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
-
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: <unit|integration|E2E|perf>.*
-</acceptance_criteria>
+## Acceptance criteria
+- [ ] Observable outcome.
 ```
 
-Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+Include the transcript link only when the sibling artifact exists. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
 </plan-format>

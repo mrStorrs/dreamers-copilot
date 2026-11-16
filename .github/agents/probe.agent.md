@@ -45,23 +45,11 @@ Every constraint in those files is binding. Project `.github/copilot-instruction
 
 <testing-mandate>
 ## Plan template
-Every plan must express its test coverage intent through the Acceptance Criteria's Layer annotations.
-
-```
-## Acceptance Criteria
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: unit.*
-2. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: integration.*
-```
-
-Layer label set (closed): `unit` / `integration` / `E2E` / `perf`. Compound labels allowed when one assertion serves two purposes (e.g., `*Layer: integration / perf.*`).
-
-**Test coverage intent is expressed via the `*Layer: ...*` annotation on each Acceptance Criterion — not via a standalone Test Cases section.** Do not write a separate Test Cases section in a plan; embed the test layer directly in the AC. This keeps ACs and test specification in one place so they never drift.
+Plans use Goal and Acceptance criteria, matching GitHub issue proposals. Choose appropriate test layers from the observable outcomes; layer annotations are not required in plans.
 
 ## Coverage requirement (every plan)
 
-Across all of a plan's ACs, the layer mix must cover the following whenever applicable to the work — think through each layer explicitly:
+Implementation tests must cover the following whenever applicable to the work:
 
 **Unit layer**
 - Each significant function, method, or class in isolation.
@@ -79,7 +67,7 @@ Across all of a plan's ACs, the layer mix must cover the following whenever appl
 - Navigation flows between screens.
 - Error and empty states rendered correctly in the UI.
 - Any flow that requires a real device or emulator.
-- **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), the plan must include at least one AC with `*Layer: E2E.*` — not just unit/integration. Probe enforces this in the layer audit and blocks if missing.
+- **Navigation change rule (mandatory):** When a plan changes how a nav element behaves (tab tap, modal open, screen transition), verify the changed navigation through E2E coverage. Probe checks this in the layer audit.
 
 If a layer cannot be covered automatically (e.g., camera permission flows), put the manual steps, expected result, and reason under the relevant AC; set `User-testing-required: yes`.
 

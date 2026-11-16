@@ -221,10 +221,10 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`. For multiple plans, add `manifest.md` using `manifest-format`. Fill the outlines without their outer sync tags.
 
-Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Cite the source Hone artifacts, synthesis summary, and verified affected paths in Scope and context. Include code only when a minimal interface/type signature is an agreed contract.
+Group findings into the smallest coherent shippable plans. Set `Plan-type` to `lite` for localized work, `standard` for normal feature work, or `complex` for cross-module or high-risk work; honor an explicit user choice. Link the source Hone artifacts and synthesis summary from the Goal; include verified affected paths in acceptance criteria when needed to define the outcome. Include code only when a minimal interface/type signature is an agreed contract.
 
 <plan-format>
-Use this structure for every plan type. Keep decisions, contracts, UI details, and risks in Scope and context only when relevant. When they clarify the change, include Mermaid diagrams of flows or example UI layouts/wireframes in Scope and context. Acceptance Criteria carry validation intent; do not add separate Approach, Verification, or Test Cases sections.
+Use the same Goal and Acceptance criteria body as GitHub issue proposals. Keep the metadata needed by the delivery workflow.
 
 ```markdown
 # Plan-NN: <short title>
@@ -237,19 +237,13 @@ Use this structure for every plan type. Keep decisions, contracts, UI details, a
 **Grilling transcript:** [grilling-transcript.md](./grilling-transcript.md)
 
 ## Goal
-<The outcome this plan delivers.>
+What should improve, for whom, and why?
 
-## Scope and context
-<Exact affected paths, relevant current behavior, agreed decisions, constraints, and exclusions.>
-
-## Acceptance Criteria
-<acceptance_criteria>
-1. Given <state>, when <trigger>, then <observable outcome>.
-   *Layer: <unit|integration|E2E|perf>.*
-</acceptance_criteria>
+## Acceptance criteria
+- [ ] Observable outcome.
 ```
 
-Include the transcript link only when the sibling artifact exists. Compound layers are allowed when one assertion serves both purposes. Under the relevant AC, add a test command or check when project instructions and the outcome are insufficient. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
+Include the transcript link only when the sibling artifact exists. For manual checks, include the steps, expected result, and why automation cannot cover them; set `User-testing-required: yes`.
 </plan-format>
 
 <manifest-format>

@@ -405,11 +405,9 @@ assert_patterns(
 assert_patterns(
     dreamers_root / "refs/plan-format.md",
     {
-        "unified plan body": r"## Goal.*## Scope and context.*## Acceptance Criteria",
+        "issue-style plan body": r"## Goal.*## Acceptance criteria\n- \[ \]",
         "complexity metadata": r"Plan-type:.*lite\|standard\|complex",
         "optional transcript link": r"Grilling transcript:.*grilling-transcript\.md.*Include the transcript link only when the sibling artifact exists",
-        "checks with ACs": r"Under the relevant AC, add a test command or check.*manual checks.*steps, expected result.*User-testing-required: yes",
-        "useful visuals": r"Mermaid diagrams.*UI layouts/wireframes",
     },
 )
 

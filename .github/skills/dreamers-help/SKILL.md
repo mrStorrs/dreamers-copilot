@@ -40,6 +40,6 @@ Offer specialized choices when they fit better:
 
 State the `/dreamers` gates: plan approval for task input, major scope expansion, triggered user testing, and final pre-PR approval.
 
-Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal, Scope and context, and Acceptance Criteria; lite, standard, and complex label complexity for review routing. Checks belong with ACs, without separate Approach or Verification sections. The retired `/dreamers-full` command has no forwarding alias.
+Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal and Acceptance criteria, matching GitHub issue proposals; lite, standard, and complex label complexity for review routing. The retired `/dreamers-full` command has no forwarding alias.
 
 End with one invitation: "Describe your goal and I can suggest the next command."

@@ -101,7 +101,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
                    → user approval gate → /dreamers-pr)
 ```
 
-All plans use Goal, Scope and context, and Acceptance Criteria. Checks belong with their ACs; there are no separate Approach or Verification sections. Lite, standard, and complex label complexity for review routing. They select the initial review lane through `/dreamers-review`: Vigil; Sentinel + Probe; or Sentinel + Probe + Hone. Explicit plan or user direction overrides that mapping. The review skill and its reviewers are read-only for project files; reviewers write the required `.dreamers/reviews/` artifacts. `/dreamers` applies findings and owns revalidation, review-rerun gates, user testing, and fix loops.
+All plans use Goal and Acceptance criteria, matching GitHub issue proposals. Lite, standard, and complex label complexity for review routing. They select the initial review lane through `/dreamers-review`: Vigil; Sentinel + Probe; or Sentinel + Probe + Hone. Explicit plan or user direction overrides that mapping. The review skill and its reviewers are read-only for project files; reviewers write the required `.dreamers/reviews/` artifacts. `/dreamers` applies findings and owns revalidation, review-rerun gates, user testing, and fix loops.
 
 `/dreamers` delivers plans; `/dreamers-lite` delivers tasks without planning. Both halt on blocked reviews or unresolved findings at their review caps (3 and 2 fix cycles, respectively). Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`.
 

@@ -13,7 +13,7 @@ flowchart TD
     C --> E[Return plan paths]
 ```
 
-Every plan uses **Goal**, **Scope and context**, and **Acceptance Criteria**. Keep relevant decisions, constraints, contracts, UI details, and risks within scope. Attach validation details to acceptance criteria when needed.
+Every plan uses **Goal** and **Acceptance criteria**, matching GitHub issue proposals. Delivery metadata remains for downstream routing.
 
 - Investigate code before proposing; report concerns with suggested acceptance criteria.
 - Ask questions when needed and preserve any questions and answers verbatim in a linked transcript.
