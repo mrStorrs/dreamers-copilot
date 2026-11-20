@@ -1,8 +1,8 @@
 {
   "dreamers/refs/dreamers-kernel.md": [
     {
-      "from": "Every `task()` invocation MUST include in the prompt:",
-      "to": "Every delegated Dreamers role invocation with `spawn_agent` MUST include in the prompt:"
+      "from": "All other `task()` invocations MUST include in the prompt:",
+      "to": "All other Dreamers role invocations with `spawn_agent` MUST include in the prompt:"
     },
     {
       "from": "All `task()` calls use `mode: \"sync\"` — the call blocks until the agent returns.",
@@ -34,7 +34,7 @@
   "skills/dreamers-docs/SKILL.md": [
     {
       "from": "`task(agent_type: \"echo\", mode: \"sync\")`",
-      "to": "`spawn_agent` with `agent_type: echo`, then wait for its result"
+      "to": "`spawn_agent` with `agent_type: echo`, `fork_turns: \"none\"`, and the prompt below as its `message`"
     }
   ],
   "skills/dreamers-pr-resolve/SKILL.md": [
@@ -71,12 +71,6 @@
     {
       "from": "mode: \"sync\"\nprompt:",
       "to": "message:"
-    }
-  ],
-  "agents/echo.agent.md": [
-    {
-      "from": "test commands Forge established",
-      "to": "test commands the orchestrator established"
     }
   ],
   "skills/dreamers-clean-work/SKILL.md": [

@@ -87,10 +87,28 @@ class DistributionTests(unittest.TestCase):
                 self.assertIn('AGENTS.md', agent['developer_instructions'])
                 self.assertNotIn('model', agent)
         self.assertIn('concurrently through `spawn_agent`', self.files['skills/dreamers-review/SKILL.md'])
-        self.assertIn('`agent_type: echo`, then wait', self.files['skills/dreamers-docs/SKILL.md'])
         self.assertIn('reference it from `AGENTS.md`', self.files['dreamers/refs/project-bootstrap.md'])
         self.assertIn('Implement and review loop', self.files['skills/dreamers/SKILL.md'])
         self.assertIn('Do NOT call update_plan.', self.files['dreamers/refs/dreamers-kernel.md'])
+
+    def test_echo_handoff_uses_the_same_single_prompt_in_both_packages(self):
+        skill = 'skills/dreamers-docs/SKILL.md'
+        copilot = (ROOT / '.github' / skill).read_text(encoding='utf-8')
+        codex = self.files[skill]
+        prompt = 'Update the documentation for all changes in this worktree and branch since it diverged from main.'
+        self.assertIn('task(agent_type: "echo", mode: "sync")', copilot)
+        self.assertIn('`fork_turns: "none"`', codex)
+        for runtime, handoff in (('Copilot', copilot), ('Codex', codex)):
+            with self.subTest(runtime=runtime):
+                self.assertEqual([f'> {prompt}'], [
+                    line.strip() for line in handoff.splitlines() if line.lstrip().startswith('>')
+                ])
+                self.assertNotIn('--staged', handoff)
+                self.assertNotIn('--branch', handoff)
+        echo = tomllib.loads(self.files['agents/echo.toml'])['developer_instructions']
+        for evidence in ('origin/HEAD', 'merge base', '`git diff --cached`', '`git diff`',
+                         '`git ls-files --others --exclude-standard`'):
+            self.assertIn(evidence, echo)
 
     def test_unknown_runtime_and_adapter_drift_fail_before_install(self):
         with tempfile.TemporaryDirectory() as tmp:

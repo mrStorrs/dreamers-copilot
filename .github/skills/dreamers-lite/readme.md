@@ -14,7 +14,7 @@ flowchart TD
     Tests -->|Yes| Review["/dreamers-review --vigil --branch"]
     Review --> Result{"Review result?"}
     Result -->|Blocked| Halt
-    Result -->|Approved| Docs["/dreamers-docs --staged<br/>include uncommitted changes"]
+    Result -->|Approved| Docs["/dreamers-docs"]
     Result -->|Findings| Major{"Major refactor?"}
     Major -->|No| Cap{"Fewer than 2<br/>review fix cycles?"}
     Major -->|Yes| Choice{"User direction"}
@@ -54,7 +54,7 @@ flowchart TD
 1. Create a fresh `fix/<slug>` branch. Inspect the task and raise ambiguities or critiques.
 2. Pass the task and agreed scope to `/dreamers-implement`; it implements, type-checks, and tests.
 3. Run `/dreamers-review --vigil --branch <task>`. Apply findings through at most 2 implementation/review fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
-4. Update docs with `/dreamers-docs --staged`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then invoke `/dreamers-pr` and return its URL.
+4. Update docs with `/dreamers-docs`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then invoke `/dreamers-pr` and return its URL.
 
 Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports resume the existing `Implement and review loop` at step 1; do not invoke the delivery skill again. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, and docs; ask approval before committing and pushing the update.
 

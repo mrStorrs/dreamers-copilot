@@ -37,9 +37,10 @@ flowchart TD
     ReviewResult -->|Approved no findings| S6
     ApplyReviewer --> S6
 
-    S6["Step 6 — Commit accepted fixes, if any"] --> NewCommit{"New commit<br/>to push?"}
+    S6["Step 6 — Update docs and commit fixes"] --> NewCommit{"Changes<br/>to commit?"}
     NewCommit -->|No| S7
-    NewCommit -->|Yes| CommitFixes["git commit -m fix: address PR feedback"]
+    NewCommit -->|Yes| Docs["/dreamers-docs"]
+    Docs --> CommitFixes["git commit -m fix: address PR feedback"]
     CommitFixes --> PushGate{"Push gate"}
     PushGate -->|Hold| BlockedReplies
     PushGate -->|Push to PR| Push["git push"]
@@ -62,7 +63,7 @@ flowchart TD
     class PRCheck,HasThreads,AcceptedAny,TestResult,ReviewResult,NewCommit,PushGate,PushResult gate
     class HaltA halt
     class SpawnVigil agent
-    class S1,S2,S3,S4,S5,S6,S7,S8,UseSpecified,PickPR,UseOne,Query,PerThread,ApplyFixes,ReadArtifacts,ApplyReviewer,CommitFixes,Push,ResolveGQL,BlockedReplies phase
+    class S1,S2,S3,S4,S5,S6,S7,S8,UseSpecified,PickPR,UseOne,Query,PerThread,ApplyFixes,ReadArtifacts,ApplyReviewer,Docs,CommitFixes,Push,ResolveGQL,BlockedReplies phase
 ```
 
 ## Key invariants

@@ -31,7 +31,7 @@ Copilot catalog loading uses this source tree directly. Codex runtime difference
 | **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 
-Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone via `/dreamers-docs`.
+Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Run `/dreamers-docs` from the target worktree. It starts a fresh Echo session. Echo reviews branch commits since divergence from the default branch, staged and unstaged changes, and new untracked files.
 
 ## Skills
 
@@ -50,9 +50,9 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-plan` | Investigates current code, asks questions as needed, and proposes concise plans with clear acceptance criteria. Surfaces concerns with suggested criteria before approval, then saves approved plans and an optional manifest. Uses the shared proposal ref; never implements. |
 | `/dreamers-implement` | One-shot implementation: implement a task or approved plan with tests, then type-check and run tests. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction. For plan-bound reviews, it reads the linked or sibling verbatim Grill transcript when present and supplies it as intent context. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
-| `/dreamers-docs` | Spawns Echo to update project docs based on the diff. Stages edits; user commits. |
+| `/dreamers-docs` | Spawns Echo to update project docs from branch and worktree changes. Stages edits; user commits. |
 | `/dreamers-pr` | Pushes the branch, opens the PR using the `pr-description.md` template, and archives shipped Dreamers plan artifacts. |
-| `/dreamers-lite` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from the uncommitted diff, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
+| `/dreamers-lite` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from branch and worktree changes, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
 | `/dreamers-find-refactors` | Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes Dreamers plan files, and stops. No implementation, branch, commit, push, or PR. |
 
 ### Focused Vigil audit wrappers
@@ -74,7 +74,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve` | Resolve PR review comments inline; Vigil reviews accepted fixes, deferred findings go to project-root `defered.md`, and each comment gets a `fixed: in commit <SHA>`, `blocked: <reason>`, or `no-action: <reason>` reply. Only fully fixed threads are resolved. |
+| `/dreamers-pr-resolve` | Resolve PR review comments inline. Vigil reviews accepted fixes, deferred findings go to project-root `defered.md`, and `/dreamers-docs` updates affected docs before the fixing commit. Each comment gets a `fixed: in commit <SHA>`, `blocked: <reason>`, or `no-action: <reason>` reply. Only fully fixed threads are resolved. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |

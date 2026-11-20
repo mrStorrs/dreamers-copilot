@@ -121,7 +121,7 @@
       "type": "skill",
       "slug": "dreamers-docs",
       "name": "dreamers-docs",
-      "description": "Standalone docs-update entry point. Spawns Echo to update Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, project-specific docs). Resolves diff scope via `--branch` (vs origin/<default>) or `--staged`. Echo stages edits; user commits after review. Does not push or open a PR.",
+      "description": "Standalone docs-update entry point. Spawns Echo to update Echo-owned sections of `.github/copilot-instructions.md` plus other project docs (README, CHANGELOG, project-specific docs). Echo inspects changes in the branch and worktree. Echo stages edits; user commits after review. Does not push or open a PR.",
       "author": "CJ Storrs",
       "tags": [
         "code",

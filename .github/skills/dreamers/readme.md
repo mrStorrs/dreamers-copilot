@@ -30,7 +30,7 @@ flowchart TD
     UT -->|Approved| Existing
     UT -->|Blocked or review cap reached| Stop
     Existing -->|No| More{"More plans?"}
-    Existing -->|Yes| RevisionDocs["/dreamers-docs --staged"]
+    Existing -->|Yes| RevisionDocs["/dreamers-docs"]
     RevisionDocs --> RevisionApproval{"Commit + push approved?"}
     RevisionApproval -->|Halt| Stop
     RevisionApproval -->|Approved| Update["Commit + push existing PR"]
@@ -51,7 +51,7 @@ flowchart TD
 4. Complete triggered user testing. Between plans, check drift; ATOMIC commits and continues, while INCREMENTAL requests PR approval and waits for merge before continuing.
 5. Update docs, commit remaining changes, request PR approval, and return the PR URL.
 
-Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports resume the existing `Implement and review loop` at step 1; do not invoke the delivery skill again. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, required user testing, and docs from the uncommitted diff; ask approval before committing and pushing the update. Review caps still stop the loop.
+Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports resume the existing `Implement and review loop` at step 1; do not invoke the delivery skill again. For an open PR, reuse its branch and repeat implementation and validation, capped Vigil review, and required user testing. Run `/dreamers-docs`, then ask for approval to commit and push the update. Review caps still stop the loop.
 
 Keep one delivery todo aligned with confirmed results, reopening affected stages after changes and reconciling stale entries after detours. New corrections after completed close-out start a new capped cycle; detours within a cycle keep its review count.
 
