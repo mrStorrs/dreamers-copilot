@@ -176,11 +176,11 @@ If a layer cannot be covered automatically (e.g., camera permission flows), put 
 
 ## Test benchmarks
 
-Each project that uses `/dreamers-implement` maintains a `./test-benchmarks.md` file at the project root. The file records measured run times per test command so the orchestrator can set realistic timeouts.
+Keep `./test-benchmarks.md` at the project root and commit it to version control.
 
-- **File path:** `./test-benchmarks.md` at the project root (committed to version control).
-- **Recommended-timeout formula:** `max(last_run_time × 2, 30s)` — the 2× multiplier accounts for machine variance; 30s is a non-negotiable floor.
-- **Orchestrator updates** the row for each test command after every successful test run. **Humans may edit** the `Notes` column to capture CI environment factors or known flakiness.
+- If the file is absent, create it after the first successful test run. Include only a Markdown table with `Command`, `Last Run`, and `Recommended Timeout`, in that order. Use the template below.
+- For each successful run, add or update the row for its command. Record the latest successful duration in `Last Run` and set `Recommended Timeout` to `max(2 × last run, 30s)`. Use an existing command's recommended timeout when preparing to run it.
+- If the existing table has extra columns, ask the user before backfilling it. If approved, keep every command row and its recorded duration and timeout, map the duration column to `Last Run`, and remove the extra columns and explanatory prose. If declined, keep the existing layout and continue updating its timing fields after successful runs.
 - Template: `.github/dreamers/templates/test-benchmarks.md` (catalog-relative; resolves to `~/.copilot/dreamers/templates/test-benchmarks.md` at install).
 </testing-mandate>
 
