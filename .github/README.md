@@ -63,7 +63,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 `/dreamers`: plan and approve task input, or use supplied human-approved plans; implement and test, review, then complete triggered user testing, docs, commit, and PR approval. Review fixes use Vigil, with at most 3 fix cycles. A blocked review or unresolved findings at the cap stops delivery.
 
-`/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs with `/dreamers-docs`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
+Use `/dreamers-lite` for a task of any size or complexity. Lite implements and tests, reviews with Vigil, updates docs with `/dreamers-docs`, commits, and requests PR approval. Lite allows up to 2 review fix cycles and applies the same stop conditions. Major refactors require user direction in either workflow.
 
 Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports resume the existing `Implement and review loop` at step 1 without re-invoking the delivery skill, unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
 
