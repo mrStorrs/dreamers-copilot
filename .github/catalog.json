@@ -277,7 +277,7 @@
       "type": "skill",
       "slug": "dreamers-pr-resolve",
       "name": "dreamers-pr-resolve",
-      "description": "Attempt to resolve PR merge conflicts and address unresolved review comments inline. Apply accepted fixes, run artifact-backed Vigil review, record deferred Vigil findings in project-root `defered.md`, reply to each comment with fixed / blocked / no-action, and resolve fixed threads via `gh api`.",
+      "description": "Resolve unresolved PR review comments inline. Apply accepted fixes, run artifact-backed Vigil review, record deferred Vigil findings in project-root `defered.md`, reply to each comment with fixed / blocked / no-action, and resolve fixed threads via `gh api`.",
       "author": "CJ Storrs",
       "tags": [
         "code",

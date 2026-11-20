@@ -1,10 +1,10 @@
 ---
 name: dreamers-pr-resolve
-description: 'Attempt to resolve PR merge conflicts and address unresolved review comments inline. Apply accepted fixes, run artifact-backed Vigil review, record deferred Vigil findings in project-root defered.md, reply to each comment with fixed / blocked / no-action, and resolve fixed threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+description: 'Resolve unresolved PR review comments inline. Apply accepted fixes, run artifact-backed Vigil review, record deferred Vigil findings in project-root defered.md, reply to each comment with fixed / blocked / no-action, and resolve fixed threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
-Resolve PR merge conflicts and review comments inline with artifact-backed Vigil review.
+Resolve unresolved PR review comments. All work inline except required artifact-backed Vigil review over accepted changes.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
@@ -52,9 +52,8 @@ $ARGUMENTS
 
 At skill entry, declare via `manage_todo_list`:
 - [ ] Read review comments (discover PR + pull unresolved threads via GraphQL)
-- [ ] Attempt merge conflict resolution if needed
 - [ ] Categorize comments (accept/reject decision + outcome per comment)
-- [ ] Apply accepted fixes inline + test changes
+- [ ] Apply accepted fixes inline + run tests
 - [ ] Spawn Vigil review of accepted changes
 - [ ] Commit + approved push, reply to each comment, resolve fixed threads + report
 
@@ -64,7 +63,9 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 
 ## Step 1 — Discover open PRs
 
-Run `gh pr list --state open` to find all live PRs. If a specific PR is provided in `$ARGUMENTS`, use that one. If multiple are open and none is specified, call `request_information` with each open PR as a choice (format: `#NUM — <title>`) plus `"Other"` for freeform input. If exactly one is open, use it without prompting. Check the selected PR's mergeability and head and base refs on GitHub. Retry briefly if mergeability is unknown, then report it as unverified if it stays unknown.
+Run `gh pr list --state open` to find all live PRs. If a specific PR is provided in `$ARGUMENTS`, use that one. If multiple are open and none is specified, call `request_information` with each open PR as a choice (format: `#NUM — <title>`) plus `"Other"` for freeform input. If exactly one is open, use it without prompting.
+
+If any merge conflicts exist, attempt to resolve them.
 
 ## Step 2 — Pull unresolved review threads (GraphQL only)
 
@@ -74,13 +75,11 @@ For the target PR, use GraphQL to get only the unresolved threads (the REST API 
 gh api graphql -f query='{ repository(owner: "OWNER", name: "REPO") { pullRequest(number: N) { reviewThreads(first: 100) { pageInfo { hasNextPage endCursor } nodes { isResolved id comments(first: 100) { pageInfo { hasNextPage endCursor } nodes { id url path body author { login } } } } } } } }'
 ```
 
-Paginate both `reviewThreads` and each thread's `comments` using `after: endCursor` until `hasNextPage` is false. Extract only threads where `isResolved: false`. Capture each thread ID and every comment's ID, URL, path, body, and author. If there are no unresolved threads or the lookup fails, skip comment handling. Report lookup failures and continue if the PR has a known merge conflict. If there is neither a known conflict nor comment work, report and stop.
+Paginate both `reviewThreads` and each thread's `comments` using `after: endCursor` until `hasNextPage` is false. Extract only threads where `isResolved: false`. Capture each thread ID and every comment's ID, URL, path, body, and author. If there are no unresolved threads, report that back to the user and stop.
 
 Read the full discussion. Handle every reviewer comment, including follow-ups; prior outcome replies are context, not new requests. Reuse an existing identical outcome reply when resuming; post an updated reply only if the outcome changed.
 
-## Step 3 — Attempt conflict resolution and handle review comments
-
-If the PR has merge conflicts, start from its verified head in a clean checkout. If no such checkout is available, report the blocker and use Step 7 in reply-only mode. Fetch and merge the PR's actual base with `git merge --no-ff --no-commit <base-commit>`. Resolve and stage conflicts inline, then check for unmerged paths and conflict markers. If blocked, abort the merge started by this run and report why. Proceed with independent comment fixes only after verifying the checkout was restored.
+## Step 3 — Decide accept / reject per comment (inline)
 
 **HARD STOP — fix application is inline.** The orchestrator (this skill) edits files directly using Edit / Write / Bash tools to apply accepted PR-feedback fixes. **Do NOT spawn any subagent to write the fix code.** Specifically:
 - ❌ `agent_type: "general-purpose"` → FORBIDDEN. There is no general-purpose fallback for implementation.
@@ -107,24 +106,24 @@ Before stopping because of an unfixable issue, failed validation, blocked Vigil 
 
 ## Step 4 — Run tests after accepted changes
 
-If a resolved merge is pending or accepted fixes changed files:
+If any accepted fixes changed files:
 - Run the project's type-check command (from project `.github/copilot-instructions.md`). Fix any errors before proceeding.
 - Run the project's test command. Fix any regressions inline. Up to 3 attempts.
 
-If neither applies, skip to Step 6. For an already-fixed comment, verify the existing PR commit, relevant validation, and prior required Vigil review before assigning **fixed**; otherwise report **blocked** pending verification.
+If no accepted fixes changed files, skip to Step 6. For an already-fixed comment, verify the existing PR commit, relevant validation, and prior required Vigil review before assigning **fixed**; otherwise report **blocked** pending verification.
 
 ## Step 5 — Vigil review of accepted changes
 
-Run Vigil over the conflict resolutions and any accepted PR-feedback fixes.
+Run Vigil for accepted PR-feedback fixes. Scope is restricted to ONLY the files touched by accepted threads.
 
 Use `agent_type: "vigil"`, `mode: "sync"` for the required review. Do not spawn Sentinel, Probe, or Hone from this skill; selected reviewer lanes belong to `/dreamers-review`.
 
 Common prompt context for Vigil (subagent prompt rule — include verbatim):
 - **Todo discipline:** "Do NOT call `manage_todo_list`. The orchestrator owns the todo." (per `dreamers-kernel.md` § "Single-owner todo")
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
-- Scope: conflict resolutions and files changed by accepted threads
+- Scope: list of files changed by accepted threads from `git status`
 - Branch + default branch names
-- Work completed: summarize conflict resolutions, accepted fixes, and passing checks.
+- What the orchestrator has done: addressed N accepted PR review comments via inline edits; type-checked + tests green.
 - Risk notes: call out whether accepted fixes changed tests/test harnesses/AC-covered behavior/validation/regression-sensitive behavior, or introduced/reshaped abstractions/module boundaries/APIs/schemas/data models/persistence/dependencies/refactors.
 - Review lenses: correctness, security, maintainability, test coverage, and simplicity. Treat the risk notes as focus areas, not as permission to skip the other lenses.
 - Write exactly one `.dreamers/reviews/vigil-*.md` artifact.
@@ -143,26 +142,26 @@ Handle non-finding outputs:
 - Open questions in the artifact → present to user before proceeding.
 - The artifact reports `Approved — no findings` → proceed to Step 6 directly.
 
-## Step 6 — Commit the resolved merge or accepted fixes
+## Step 6 — Commit accepted fixes (if any)
 
-If a resolved merge is pending, commit it with any accepted fixes. Otherwise, if any fixes landed or Step 5 added deferred entries:
+If any fixes landed or Step 5 added deferred entries (Step 3 accepted + Step 5 reviewer findings applied or recorded):
 
 ```bash
 git status                # confirm staged content
 git commit -m "fix: address PR feedback"
 ```
 
-Use a single commit for this run.
+Use a single commit covering all the PR-feedback fixes.
 
 If there is no new commit to push, skip the push gate and proceed to Step 7.
 
 **Do not push yet.** Call `request_information` with `["Push to PR", "Hold — don't push yet", "Other"]` and a summary of the staged commit (hash, files touched, accepted thread count). Post-PR changes always require explicit user approval before pushing.
 
-Only push after explicit `Push to PR` approval. Use `git push` for comment-only fixes. For a merge, first confirm the PR is still open and its base and head (including the head SHA) are unchanged, then push normally to the verified PR head. If the PR changed, use reply-only mode. On `Hold` → use Step 7 in reply-only mode with **blocked** reasons stating that the fix is committed locally but awaiting push approval, then stop; the commit stays on the branch for the user to push manually. A held or failed push never earns a **fixed** reply.
+Only push after explicit `Push to PR` approval: `git push`. On `Hold` → use Step 7 in reply-only mode with **blocked** reasons stating that the fix is committed locally but awaiting push approval, then stop; the commit stays on the branch for the user to push manually. A held or failed push never earns a **fixed** reply.
 
 ## Step 7 — Reply to each comment, then resolve fixed threads
 
-Skip this step if there are no handled comments. Otherwise, post a reply in the original GitHub review thread for every handled reviewer comment, including when all comments are rejected or blocked. Use exactly one of these outcome lines:
+Post a reply in the original GitHub review thread for every handled reviewer comment, including when all comments are rejected or blocked. Use exactly one of these outcome lines:
 
 - `fixed: in commit <SHA>` — the fix passed validation and required Vigil review, and the referenced commit is available on the remote PR branch. Use the actual fixing commit SHA, never a placeholder or an unpushed local commit.
 - `blocked: <reason>` — the issue should be fixed, but we were unable to complete it. State the concrete obstacle and any remaining work.
@@ -187,7 +186,6 @@ Leave threads with **blocked** or **no-action** outcomes open so the reviewer ca
 ## Step 8 — Report
 
 Report to the user:
-- Merge conflict outcome, if applicable. Confirm mergeability on GitHub after pushing before reporting conflicts as cleared.
 - Counts of **fixed**, **blocked**, and **no-action** comments, with path + fixing SHA or reason per comment
 - Posted reply URLs and any reply failures
 - Deferred Vigil findings recorded in `defered.md` (one line each)
