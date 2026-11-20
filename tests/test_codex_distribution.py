@@ -91,6 +91,26 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('Implement and review loop', self.files['skills/dreamers/SKILL.md'])
         self.assertIn('Do NOT call update_plan.', self.files['dreamers/refs/dreamers-kernel.md'])
 
+    def test_instruction_audit_and_shared_guide_ship_in_both_packages(self):
+        guide_path = 'dreamers/refs/instruction-writing-guide.md'
+        skill_path = 'skills/dreamers-instructions/SKILL.md'
+        copilot = ROOT / '.github'
+        packages = (
+            ('Copilot', (copilot / guide_path).read_text(encoding='utf-8'),
+             (copilot / skill_path).read_text(encoding='utf-8'),
+             (copilot / 'agents/echo.agent.md').read_text(encoding='utf-8')),
+            ('Codex', self.files[guide_path], self.files[skill_path],
+             tomllib.loads(self.files['agents/echo.toml'])['developer_instructions']),
+        )
+        for runtime, guide, skill, echo in packages:
+            with self.subTest(runtime=runtime):
+                block = f'<instruction-writing-guide>\n{guide.rstrip()}\n</instruction-writing-guide>'
+                self.assertIn(block, skill)
+                self.assertIn(block, echo)
+                for path in ('AGENTS.md', 'AGENTS.override.md', 'CODEX.md',
+                             '.github/copilot-instructions.md', '.github/instructions/'):
+                    self.assertIn(path, skill)
+
     def test_echo_handoff_uses_the_same_single_prompt_in_both_packages(self):
         skill = 'skills/dreamers-docs/SKILL.md'
         copilot = (ROOT / '.github' / skill).read_text(encoding='utf-8')

@@ -210,6 +210,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-instructions",
+      "name": "dreamers-instructions",
+      "description": "Review project AI instructions and apply approved edits.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-instructions/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-issue",
       "name": "dreamers-issue",
       "description": "Investigate code and propose a short issue with acceptance criteria for approval.",
@@ -405,6 +418,10 @@
         {
           "type": "skill",
           "slug": "dreamers-implement"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-instructions"
         },
         {
           "type": "skill",

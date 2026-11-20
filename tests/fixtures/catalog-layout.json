@@ -82,6 +82,11 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-instructions",
+      "path": ".github/skills/dreamers-instructions/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-issue",
       "path": ".github/skills/dreamers-issue/SKILL.md"
     },
@@ -195,6 +200,10 @@
         {
           "type": "skill",
           "slug": "dreamers-implement"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-instructions"
         },
         {
           "type": "skill",

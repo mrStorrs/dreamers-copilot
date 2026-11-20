@@ -80,6 +80,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
+| `/dreamers-instructions` | Review project AI instructions for stale, duplicate, conflicting, or verbose rules. See exact proposals with reasons and approve the edits to apply. |
 | `/dreamers-explain` | Thorough, read-only explanations of topics, code, documents, systems, and decisions, with authoritative sources when needed. |
 | `/dreamers-issue` | Investigate code and flag concerns with suggested acceptance criteria. Propose a short Goal/Acceptance criteria issue, then create it after approval (or an ADO story if specifically requested). |
 | `/dreamers-new-project` | Bootstrap a brand new project (discovery → optional existing-solutions research → stack → brief → shell plans). |
