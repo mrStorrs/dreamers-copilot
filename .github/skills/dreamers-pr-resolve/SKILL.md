@@ -65,6 +65,8 @@ Mark each item `in_progress` when starting, `completed` when done. Never batch c
 
 Run `gh pr list --state open` to find all live PRs. If a specific PR is provided in `$ARGUMENTS`, use that one. If multiple are open and none is specified, call `request_information` with each open PR as a choice (format: `#NUM — <title>`) plus `"Other"` for freeform input. If exactly one is open, use it without prompting.
 
+If any merge conflicts exist, attempt to resolve them.
+
 ## Step 2 — Pull unresolved review threads (GraphQL only)
 
 For the target PR, use GraphQL to get only the unresolved threads (the REST API `resolved` field is unreliable — always use GraphQL):
