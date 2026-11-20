@@ -109,6 +109,10 @@ class DistributionTests(unittest.TestCase):
         for evidence in ('origin/HEAD', 'merge base', '`git diff --cached`', '`git diff`',
                          '`git ls-files --others --exclude-standard`'):
             self.assertIn(evidence, echo)
+        self.assertIn('Document only net changes from the merge base to the current worktree', echo)
+        self.assertIn('Never document implementation history', echo)
+        self.assertIn('verify that the staged snapshot’s docs match its behavior', echo)
+        self.assertIn('report the discrepancy and leave affected docs for the caller to resolve', echo)
 
     def test_unknown_runtime_and_adapter_drift_fail_before_install(self):
         with tempfile.TemporaryDirectory() as tmp:
