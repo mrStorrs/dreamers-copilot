@@ -29,7 +29,7 @@ Related changes resume `Implement and review loop` at step 1 with the current co
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the initial close-out below.
 
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. invoke `/dreamers-docs --staged`
+2. invoke `/dreamers-docs`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
 5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
@@ -46,7 +46,7 @@ Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
-Every `task()` invocation MUST include in the prompt:
+Echo uses the sole prompt defined in `/dreamers-docs`. All other `task()` invocations MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
 - **Prior work** — what was done previously, with absolute paths to any output files
 - **What is needed** — specific deliverable

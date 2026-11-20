@@ -254,8 +254,8 @@ assert_patterns(
         "capped Vigil fixes": r"dreamers-review --vigil.*up to 3 times.*Ask before major refactors.*defered\.md",
         "blocked or unresolved review stops": r"Halt.*blocked review or unresolved findings at the cap",
         "triggered user testing": r"### User testing.*manual verification.*user-testing-gate.*Bug reports resume.*step 1",
-        "ship strategies": r"ATOMIC.*commit.*do not push.*INCREMENTAL.*dreamers-docs --branch.*confirm merge",
-        "close-out order": r"Phase 3.*dreamers-docs --branch.*commit remaining changes.*Approved.*dreamers-pr",
+        "ship strategies": r"ATOMIC.*commit.*do not push.*INCREMENTAL.*dreamers-docs.*confirm merge",
+        "close-out order": r"Phase 3.*dreamers-docs.*commit remaining changes.*Approved.*dreamers-pr",
     },
 )
 assert_patterns(
@@ -274,7 +274,7 @@ assert_patterns(
     skill_root / "dreamers-pr-resolve/SKILL.md",
     {
         "deferred Vigil findings ledger": r"Defer — save to defered\.md.*do NOT apply.*create a follow-up plan.*defered\.md.*# Deferred Suggestions.*never overwrite.*Stage `defered\.md`",
-        "deferred ledger commit": r"If any fixes landed or Step 5 added deferred entries",
+        "docs before feedback commit": r"If any fixes landed or Step 5 added deferred entries, invoke `dreamers-docs` before committing",
         "deferred ledger report": r"Deferred Vigil findings recorded in `defered\.md`",
     },
 )
@@ -361,7 +361,7 @@ assert_patterns(
         "outermost progress ownership": r"outermost skill.*owns.*todo",
         "durable delivery state": r"Delivery continuation.*goal, owning skill, branch/PR, next phase, and review count.*confirmed outcomes",
         "follow-ups preserve caps": r"resume the pending phase.*detours do not reset an active review count",
-        "open PR corrections": r"open PR, reuse its branch.*dreamers-review --vigil.*staged \+ unstaged.*dreamers-docs --staged.*approval for the current changes before committing and pushing.*Reuse approval already given",
+        "open PR corrections": r"open PR, reuse its branch.*dreamers-review --vigil.*staged \+ unstaged.*dreamers-docs.*approval for the current changes before committing and pushing.*Reuse approval already given",
         "global deferred ledger": r"explicitly chooses `Defer`.*defered\.md.*never overwrite existing entries",
     },
 )
@@ -398,7 +398,7 @@ assert_patterns(
         "direct task implementation": r"dreamers-implement <task description and agreed scope>",
         "capped Vigil fixes": r"dreamers-review --vigil --branch.*up to 2 times.*Ask before major refactors.*defered\.md",
         "blocked or unresolved review stops": r"Halt on a blocked review or unresolved findings at the cap",
-        "uncommitted docs before commit": r"Phase 3.*dreamers-docs --staged.*commit remaining changes.*Approved.*dreamers-pr",
+        "uncommitted docs before commit": r"Phase 3.*dreamers-docs.*commit remaining changes.*Approved.*dreamers-pr",
         "continuation routing": r"Delivery continuation.*resume the pending phase",
     },
 )

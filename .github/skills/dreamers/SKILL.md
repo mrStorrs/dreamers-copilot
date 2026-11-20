@@ -59,14 +59,14 @@ For revisions to an open PR, use the post-PR close-out in `Delivery continuation
 Before the next plan, check cited paths, signatures, and ACs against the landed diff. Surface drift for the user to revise, skip, or halt.
 
 - **ATOMIC:** commit this plan with a `Plan: feature-<slug>/plan-NN-<name>` body line; do not push. Continue to the next cycle.
-- **INCREMENTAL:** invoke `/dreamers-docs --branch` when this plan has user-facing/documentable changes; stage and commit with the `Plan:` body line. Present plan summary, validation, and PR scope through `request_information`: `Approved` / `Halt` / `Other`. On approval invoke `/dreamers-pr` and capture its URL. Wait for the user to confirm merge, then repeat feature-branch setup from updated default before the next cycle.
+- **INCREMENTAL:** invoke `/dreamers-docs` when this plan has user-facing/documentable changes; stage and commit with the `Plan:` body line. Present plan summary, validation, and PR scope through `request_information`: `Approved` / `Halt` / `Other`. On approval invoke `/dreamers-pr` and capture its URL. Wait for the user to confirm merge, then repeat feature-branch setup from updated default before the next cycle.
 
 At either pre-PR gate, Halt means emit a resume command and stop; Other follows user direction.
 
 ## Phase 3 — Milestone close-out
 
 1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. invoke `/dreamers-docs --branch`
+2. invoke `/dreamers-docs`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
 5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Capture the
@@ -83,7 +83,7 @@ Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
-Every `task()` invocation MUST include in the prompt:
+Echo uses the sole prompt defined in `/dreamers-docs`. All other `task()` invocations MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
 - **Prior work** — what was done previously, with absolute paths to any output files
 - **What is needed** — specific deliverable

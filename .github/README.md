@@ -14,7 +14,7 @@ Start with `/dreamers <task>`, `/dreamers-plan <task>`, or `/dreamers-lite <task
 | **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up reruns. Reviews correctness, security, maintainability, test coverage, and simplicity; writes one `.dreamers/reviews/` artifact with a required architecture audit section. |
 | **Echo** | Subagent | Documentarian — README, CHANGELOG, Echo-owned sections of project instructions. Stages edits; never commits. |
 
-Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Echo spawns per milestone via `/dreamers-docs`.
+Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review` and each write a durable review artifact. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Run `/dreamers-docs` from the target worktree. It starts a fresh Echo session. Echo reviews branch commits since divergence from the default branch, staged and unstaged changes, and new untracked files.
 
 ## Skills
 
@@ -31,9 +31,9 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-plan <task>` | Investigates current code, asks questions as needed, and proposes concise plans with clear acceptance criteria. Surfaces concerns with suggested criteria before approval, then saves approved plans and an optional manifest. Uses the shared proposal ref; never implements. |
 | `/dreamers-implement <task or plan>` | One cycle against a task or approved plan: implementation + tests → type-check + test run. Exits at green tests; `/dreamers` invokes `/dreamers-review` next. |
 | `/dreamers-review` | Selects reviewers from plan complexity or explicit plan/user direction and supplies a linked or sibling verbatim Grill transcript to reviewers when present. Without a plan it infers intent from code and context, asking if unclear. Read-only. |
-| `/dreamers-docs` | Spawns Echo to update project docs from the diff. `--branch` or `--staged` scope. |
+| `/dreamers-docs` | Spawns Echo to update project docs from branch and worktree changes. |
 | `/dreamers-pr` | Pushes the branch, drafts the PR body from the template, opens the PR. |
-| `/dreamers-lite <task>` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from the uncommitted diff, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
+| `/dreamers-lite <task>` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from branch and worktree changes, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
 | `/dreamers-find-refactors [scope or directive]` | Refactor discovery: select lenses, section the repo, run section-scoped Hone audits, synthesize findings, write Dreamers plan files, then stop. No implementation or PR. |
 
 ### Standalone reviewer audits
@@ -47,7 +47,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Apply accepted PR fixes inline with Vigil review; append deferred findings to project-root `defered.md`. Reply to each comment with `fixed: in commit <SHA>`, `blocked: <reason>` (needed but unable to fix), or `no-action: <reason>` (decided not to act). Only fully fixed threads are resolved. |
+| `/dreamers-pr-resolve [#PR]` | Apply accepted PR fixes inline with Vigil review. Append deferred findings to project-root `defered.md` and run `/dreamers-docs` before committing fixes. Reply to each comment with `fixed: in commit <SHA>`, `blocked: <reason>` (needed but unable to fix), or `no-action: <reason>` (decided not to act). Only fully fixed threads are resolved. |
 | `/dreamers-explain <question, topic, path, code, or URL>` | Thorough, read-only explanation with layered mental models, concrete examples, local evidence, and authoritative sources when needed. |
 | `/dreamers-issue <goal>` | Investigate code and flag concerns with suggested acceptance criteria. Propose a short Goal/Acceptance criteria issue, then create it after approval (or an ADO story if specifically requested). |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
@@ -61,7 +61,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 `/dreamers`: plan and approve task input, or use supplied human-approved plans; implement and test, review, then complete triggered user testing, docs, commit, and PR approval. Review fixes use Vigil, with at most 3 fix cycles. A blocked review or unresolved findings at the cap stops delivery.
 
-`/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs using `--staged`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
+`/dreamers-lite`: supply a task directly; implement and test, review with Vigil, update docs with `/dreamers-docs`, commit, and request PR approval. At most 2 review fix cycles; the same stop conditions apply. Major refactors require user direction in either workflow.
 
 Both delivery skills resume after conversational detours and keep one todo aligned with confirmed results. Related bug reports resume the existing `Implement and review loop` at step 1 without re-invoking the delivery skill, unless the user requests discussion or says otherwise. Corrections to an open PR repeat implementation, review, and the docs check before requesting approval to commit and push the update. Short standalone helper skills have optional todos.
 
@@ -130,7 +130,7 @@ flowchart TD
     IncrPR --> Merge["Wait for user to confirm merge"]
     Merge --> Branch
 
-    MorePlans -->|No| Docs["Invoke /dreamers-docs --branch<br/>suggest relevant workflow improvements"]
+    MorePlans -->|No| Docs["Invoke /dreamers-docs<br/>suggest relevant workflow improvements"]
     Docs --> Commit["Stage explicit paths<br/>commit remaining changes"]
     Commit --> PRGate{"Final PR approved?"}
     PRGate -->|Halt| Halt

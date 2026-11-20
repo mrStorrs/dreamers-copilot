@@ -84,7 +84,7 @@ Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
-Every `task()` invocation MUST include in the prompt:
+Echo uses the sole prompt defined in `/dreamers-docs`. All other `task()` invocations MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
 - **Prior work** — what was done previously, with absolute paths to any output files
 - **What is needed** — specific deliverable

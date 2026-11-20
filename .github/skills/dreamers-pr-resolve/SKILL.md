@@ -4,7 +4,7 @@ description: 'Resolve unresolved PR review comments inline. Apply accepted fixes
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
-Resolve unresolved PR review comments. All work inline except required artifact-backed Vigil review over accepted changes.
+Resolve unresolved PR review comments. Apply fixes inline. Use Vigil to review accepted changes and `/dreamers-docs` to update affected documentation.
 
 Follow the Dreamers Kernel and output discipline from `~/.copilot/copilot-instructions.md`.
 
@@ -19,7 +19,7 @@ Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
-Every `task()` invocation MUST include in the prompt:
+Echo uses the sole prompt defined in `/dreamers-docs`. All other `task()` invocations MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
 - **Prior work** — what was done previously, with absolute paths to any output files
 - **What is needed** — specific deliverable
@@ -55,7 +55,7 @@ At skill entry, declare via `manage_todo_list`:
 - [ ] Categorize comments (accept/reject decision + outcome per comment)
 - [ ] Apply accepted fixes inline + run tests
 - [ ] Spawn Vigil review of accepted changes
-- [ ] Commit + approved push, reply to each comment, resolve fixed threads + report
+- [ ] Update affected docs, commit + approved push, reply to each comment, resolve fixed threads + report
 
 Mark each item `in_progress` when starting, `completed` when done. Never batch completions at the end.
 
@@ -85,7 +85,7 @@ Read the full discussion. Handle every reviewer comment, including follow-ups; p
 - ❌ `agent_type: "general-purpose"` → FORBIDDEN. There is no general-purpose fallback for implementation.
 - ❌ `agent_type: "claude"` or any other host-runtime agent → FORBIDDEN.
 - ❌ `agent_type: "forge"` / `"nova"` / `"bolt"` → FORBIDDEN (these are not subagents in this system — see `dreamers-kernel.md` § "Subagent allowlist").
-- ✅ The only `agent_type` value you may spawn from this skill is `vigil` in Step 5 (review of the applied fixes). Nothing else.
+- Spawn only Vigil for review in Step 5. Use `/dreamers-docs` for the Echo handoff in Step 6.
 
 For each reviewer comment in an unresolved thread, judge whether to accept or reject it. You are the implementation expert and have full authority. **Do not feel obligated to accept every comment** — if a suggestion conflicts with the plan, the architecture, or is simply wrong, reject it and say why.
 
@@ -144,7 +144,7 @@ Handle non-finding outputs:
 
 ## Step 6 — Commit accepted fixes (if any)
 
-If any fixes landed or Step 5 added deferred entries (Step 3 accepted + Step 5 reviewer findings applied or recorded):
+If any fixes landed or Step 5 added deferred entries, invoke `/dreamers-docs` before committing. Include its staged documentation edits in the commit.
 
 ```bash
 git status                # confirm staged content

@@ -34,7 +34,7 @@ Project instructions may live in `AGENTS.md`, `CODEX.md`, `.github/copilot-instr
 ## Delegation
 - Use the available Codex `spawn_agent` and `wait_agent` tools. References to `multi_agent_v1` also apply to the equivalent `collaboration` namespace when that is the runtime's tool surface.
 - Delegate only when the invoked Dreamers workflow explicitly includes reviewer or documentarian roles, such as `dreamers-review`, `dreamers-docs`, `dreamers-find-refactors`, or `dreamers`.
-- Spawn by Codex `agent_type` using one of the five Dreamers role names: `sentinel`, `probe`, `hone`, `vigil`, or `echo`. Put the workflow-specific context in `message`; do not paste or load Markdown role prompt files. Planning, research, implementation, tests, and git operations stay inline.
+- Spawn by Codex `agent_type` using one of the five Dreamers role names: `sentinel`, `probe`, `hone`, `vigil`, or `echo`. For Echo, pass only the message defined in `dreamers-docs` and set `fork_turns: "none"`. For other roles, put the workflow-specific context in `message`. Use the installed role definitions. Planning, research, implementation, tests, and git operations stay inline.
 - For a multi-reviewer lane, launch every selected reviewer concurrently before waiting for results. Never spawn and await reviewers sequentially.
 - If multi-agent tools are unavailable, run the requested lens inline and label the output with the role name.
 

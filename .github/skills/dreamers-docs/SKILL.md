@@ -1,29 +1,14 @@
 ---
 name: dreamers-docs
 description: 'Docs skill — spawns Echo to update Echo-owned sections of .github/copilot-instructions.md plus other project docs (README, CHANGELOG) affected by recent changes. Echo stages edits; does not commit. Triggers: /dreamers-docs, update docs, echo docs update.'
-argument-hint: '[--branch | --staged]'
 ---
 
-$ARGUMENTS
+- Run from the target worktree. Standalone runs, delivery close-out, and PR follow-up use this same handoff.
+- Start a fresh Echo with `task(agent_type: "echo", mode: "sync")` and no inherited conversation. Its entire prompt is:
 
-## Todo - Before you begin.
-- When standalone, a todo is optional. When invoked by an outer delivery skill, complete these steps under its existing todo.
+  > Update the documentation for all changes in this worktree and branch since it diverged from main.
 
-## Step 1 — Resolve diff scope
-- `--branch` (default): scope = `git diff --name-only origin/$DEFAULT...HEAD`.
-- `--staged`: scope = union of `git diff --cached --name-only` and `git diff --name-only`.
-- If the changed-files list is empty → output `No changes detected` and exit.
-
-## Step 2 — Spawn Echo
-- `task(agent_type: "echo", mode: "sync")`. Prompt MUST include `Do NOT call manage_todo_list.`
-- Pass: context (ad-hoc or milestone close-out — caller-supplied), changed-files list, diff base, plan paths (if applicable), prior review summary (if applicable).
-- Constraint to Echo: edits docs only — no production code, no tests. Stage with `git add`; do NOT commit.
-- Wait for Echo to return its structured chat output.
-
-## Step 3 — Handle output
-- `Docs updated — N files changed` → surface doc-changes log to user.
-- `No doc updates needed` → exit.
-- Open questions → present each via `request_information`; capture answers; re-spawn Echo with clarification if needed.
+- Wait for Echo and report its staged documentation changes, any open questions, or that no updates were needed. Resolve questions that affect accuracy with the user before close-out. Apply approved documentation clarifications in the caller.
 
 ## Exit
 - Files Echo touched. The caller commits (this skill does NOT commit, push, or open a PR).
@@ -40,7 +25,7 @@ Do not use any non-Dreamers agent unless explicitly authorized by user.
 
 ## Subagent prompt — required content
 
-Every `task()` invocation MUST include in the prompt:
+Echo uses the sole prompt defined in `/dreamers-docs`. All other `task()` invocations MUST include in the prompt:
 - **Context** — what this agent is being asked to do and why
 - **Prior work** — what was done previously, with absolute paths to any output files
 - **What is needed** — specific deliverable
