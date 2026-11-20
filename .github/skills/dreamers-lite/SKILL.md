@@ -8,6 +8,8 @@ Follow YAGNI principles for all parts of the process.
 
 $ARGUMENTS
 
+Run the normal Lite workflow for tasks of any size or complexity. Only switch to `/dreamers` at the user's explicit request. Task size, complexity, and scope growth never justify redirecting the user or asking them to switch.
+
 Related changes resume `Implement and review loop` at step 1 with the current context; do not invoke either delivery skill again. For a new task without a description, halt + ask.
 
 ## Todo - Before you begin.
@@ -16,7 +18,7 @@ Related changes resume `Implement and review loop` at step 1 with the current co
 ## Phase 1: Branch setup
 - Per `git-workflow` (Kernel): fetch + checkout default + pull + cut `fix/<slug>`.
 
-- Inspect the task's scope. Raise ambiguities or critiques through `request_information`; otherwise continue.
+- Inspect the task's scope and raise ambiguities or critiques through `request_information`. When clarification or scope growth at any phase requires user input, ask about the specific decision. Once resolved, resume the pending phase in Lite and apply the existing review and approval gates.
 
 ## Phase 2: Implement and review loop
 1. Invoke `/dreamers-implement <task description and agreed scope>`.

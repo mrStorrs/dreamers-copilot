@@ -1,6 +1,6 @@
 # /dreamers-lite
 
-Deliver a task without creating a plan. Source of truth: `SKILL.md`.
+Use `/dreamers-lite` to deliver a task of any size or complexity without creating a plan. You can switch to `/dreamers` by explicitly requesting it. See [SKILL.md](SKILL.md) for the workflow.
 
 ```mermaid
 flowchart TD
@@ -56,7 +56,9 @@ flowchart TD
 3. Run `/dreamers-review --vigil --branch <task>`. Apply findings through at most 2 implementation/review fix cycles. Ask before major refactors and record deferred findings in `defered.md`. Halt on blocked review or unresolved findings at the cap.
 4. Update docs with `/dreamers-docs`, which includes uncommitted changes. Commit explicit paths, present the summary for approval, then invoke `/dreamers-pr` and return its URL.
 
-Questions leave the next phase pending; resume after answering unless the user requests discussion, pauses, or changes direction. Related bug reports resume the existing `Implement and review loop` at step 1; do not invoke the delivery skill again. For an open PR, reuse its branch and repeat implementation/tests, capped Vigil review, and docs; ask approval before committing and pushing the update.
+When scope needs clarification or grows, Lite asks about the specific decision that needs your input. After you answer, Lite resumes the pending phase and applies the review and approval gates. You can request discussion, pause, or change direction before Lite resumes.
+
+Related bug reports resume at step 1 of the existing `Implement and review loop`. For an open PR, Lite reuses its branch and repeats implementation, tests, capped Vigil review, and docs before requesting approval to commit and push the update.
 
 Keep one delivery todo aligned with confirmed results, reopening affected stages after changes and reconciling stale entries after detours. New corrections after completed close-out start a new capped cycle; detours within a cycle keep its review count.
 
