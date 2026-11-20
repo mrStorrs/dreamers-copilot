@@ -47,7 +47,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve [#PR]` | Attempt to resolve PR merge conflicts even without review threads and apply accepted review fixes inline. Vigil reviews the changes. Append deferred findings to project-root `defered.md`. Reply to each handled comment with `fixed: in commit <SHA>`, `blocked: <reason>` (needed but unable to fix), or `no-action: <reason>` (decided not to act). Only fully fixed threads are resolved. |
+| `/dreamers-pr-resolve [#PR]` | Attempt to resolve merge conflicts and apply accepted PR fixes inline with Vigil review; append deferred findings to project-root `defered.md`. Reply to each comment with `fixed: in commit <SHA>`, `blocked: <reason>` (needed but unable to fix), or `no-action: <reason>` (decided not to act). Only fully fixed threads are resolved. |
 | `/dreamers-explain <question, topic, path, code, or URL>` | Thorough, read-only explanation with layered mental models, concrete examples, local evidence, and authoritative sources when needed. |
 | `/dreamers-issue <goal>` | Investigate code and flag concerns with suggested acceptance criteria. Propose a short Goal/Acceptance criteria issue, then create it after approval (or an ADO story if specifically requested). |
 | `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
