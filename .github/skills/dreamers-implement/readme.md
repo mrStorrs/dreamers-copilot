@@ -5,7 +5,8 @@ One task or approved plan, implemented inline. Source of truth is `SKILL.md`.
 ```mermaid
 flowchart TD
     P[Task or approved plan] --> I[Implement code and tests; stage changes]
-    I --> V[Run project type-check and tests]
+    I --> T[Check benchmark timeouts and ask before backfilling]
+    T --> V[Run project type-check and tests]
     V --> R{Validation passes?}
     R -->|yes| B[Update test benchmarks]
     R -->|no| A{Fewer than 3 fix attempts?}
