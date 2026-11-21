@@ -341,8 +341,8 @@ assert_patterns(
         "two-line Vigil approval": r"For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines",
         "single Vigil finding and blocker reporting": r"include the applicable status, each finding once, and any blocker or open question",
         "simplest implementation under correctness": r"Correctness:\s*- Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible while preserving required behavior, security, and existing caller contracts",
-        "line-by-line simplicity checkbox": (
-            r"Simplicity:\s*- \[ \] Inspect every line of code and every function in the review scope\."
+        "line-by-line simplicity review": (
+            r"Simplicity:\s*- Inspect every line of code and every function in the review scope\."
             r"\s*Flag anything that could be simpler"
         ),
         "coverage mapping and test efficiency": (
