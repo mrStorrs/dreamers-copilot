@@ -117,7 +117,7 @@ The reviewer prepares one complete report in its assigned format, ending with `E
 
 For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
 
-**Status line** (one of):
+**Status line** (one of the following, allowing the reviewer format's `Status:` prefix and hyphen separator):
 - `Approved — no findings`
 - `Findings reported — N items`
 - `Blocked — <reason>`
@@ -137,7 +137,7 @@ For each expected reviewer invocation, check the assigned file and the final rep
 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
-Reviewers deliver findings. The caller owns fix application and validation.
+Reviewers are report-only for code, tests, docs, config, scripts, and git state. The caller applies fixes per its own orchestrator-as-fixer behavior.
 </reviewer-findings-format>
 
 <logging-discipline>
@@ -152,8 +152,8 @@ Reviewers deliver findings. The caller owns fix application and validation.
 # Agent Failure Recovery (mandatory)
 
 When a spawned agent hits a rate limit, crashes, or times out mid-run:
-1. For a reviewer, check both copies using the review handoff contract before retrying. A complete report can survive a runtime failure. Inspect any partial workspace output to identify completed work, without treating an incomplete handoff as final.
+1. Check for a complete reviewer handoff using the review handoff contract. Read whatever workspace files the agent managed to write before failing.
 2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
-3. Complete remaining steps directly or re-spawn the agent scoped to only the remaining work.
+3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
 4. Do not re-run steps that already completed — build on partial progress.
 </agent-recovery>

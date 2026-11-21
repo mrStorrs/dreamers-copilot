@@ -17,7 +17,7 @@
       "type": "agent",
       "slug": "hone",
       "name": "hone",
-      "description": "Architectural protector of the Dreamers — reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Delivers the full report by file and final reply. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Part of the complex per-plan `/dreamers` review gate. The orchestrator gates major-refactor findings through user approval.",
+      "description": "Architectural protector of the Dreamers — read-only / report-only reviewer of simplicity, over-engineering, bad architecture, redundancy, and simpler alternatives. Delivers findings in a review artifact and final reply. Aggressively surfaces findings even when the fix requires a full refactor; refactor cost is not a moderating factor. Part of the complex per-plan `/dreamers` review gate. The orchestrator gates major-refactor findings through user approval.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -30,7 +30,7 @@
       "type": "agent",
       "slug": "probe",
       "name": "probe",
-      "description": "Tester of the Dreamers — reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Delivers the full report by file and final reply. Part of the standard and complex per-plan `/dreamers` review gate.",
+      "description": "Tester of the Dreamers — read-only / report-only reviewer of test coverage (AC matrix, layer audit, edge + negative cases, regression risk). Delivers findings in a review artifact and final reply. Part of the standard and complex per-plan `/dreamers` review gate.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -43,7 +43,7 @@
       "type": "agent",
       "slug": "sentinel",
       "name": "sentinel",
-      "description": "Dreamers reviewer for correctness, security, and maintainability. Delivers the full report by file and final reply. Part of the standard and complex per-plan `/dreamers` review gate and explicit `/dreamers-review` selected lanes. Orchestrator applies fixes.",
+      "description": "Reviewer of the Dreamers — read-only / report-only reviewer of correctness, security, and maintainability. Delivers findings in a review artifact and final reply. Part of the standard and complex per-plan `/dreamers` review gate and explicit `/dreamers-review` selected lanes. Orchestrator applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -56,7 +56,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used for lite `/dreamers` plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and normal `/dreamers` follow-up review reruns. Delivers findings and an architecture audit by file and final reply.",
+      "description": "Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used for lite `/dreamers` plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and normal `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers findings with a required architecture audit section in a review artifact and final reply; never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -329,7 +329,7 @@
       "type": "skill",
       "slug": "dreamers-simplify",
       "name": "dreamers-simplify",
-      "description": "Standalone focused Vigil review for architectural quality / over-engineering / redundancy. Read-only audit — may recommend full refactors. Args: --branch, --paths, --all.",
+      "description": "Standalone focused Vigil review for architectural quality / over-engineering / redundancy. Read-only — may recommend full refactors. Args: --branch, --paths, --all.",
       "author": "CJ Storrs",
       "tags": [
         "code",
@@ -342,7 +342,7 @@
       "type": "skill",
       "slug": "dreamers-test",
       "name": "dreamers-test",
-      "description": "Standalone focused Vigil review for test coverage. Read-only audit — reports structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
+      "description": "Standalone focused Vigil review for test coverage. Read-only — reports structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
       "author": "CJ Storrs",
       "tags": [
         "code",

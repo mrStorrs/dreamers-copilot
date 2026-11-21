@@ -112,7 +112,7 @@ Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch
 1. **Audit** the branch-diff scope; categorize comment-rules violations.
 2. **Propose** changes; `request_information` for approval.
 3. **Apply** changes inline; stage with `git add`.
-4. **Optional Vigil review** of changed files. Assign Vigil a fresh path and collect its handoff using the contract below. Halt on a missing handoff or blocked status and raise open questions before applying findings.
+4. **Optional Vigil review** of changed files. Assign Vigil a fresh path and collect its handoff using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`. Halt on a missing handoff or blocked status and raise open questions before applying findings.
 5. **Commit** with message `chore: comment cleanup on feature branch`. Do NOT push.
 
 ## When this skill is the right tool
@@ -121,37 +121,3 @@ Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch
 - Targeted clean-up scoped to the changes a single feature branch introduced, without auditing the entire project.
 
 For project-wide cleanup (not branch-scoped), use `/dreamers-cleanup-comments`.
-
-<reviewer-findings-format>
-# Reviewer Findings Format
-
-## Review handoff
-
-The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
-
-The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
-
-For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
-
-**Status line** (one of):
-- `Approved — no findings`
-- `Findings reported — N items`
-- `Blocked — <reason>`
-
-**Findings** (if any) — one bullet per finding, exact format:
-
-```
-[severity] [lens-tag] file:line — what was wrong → suggested fix
-```
-
-- `severity` ∈ `critical` / `high` / `medium` / `low`
-- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
-- `file:line` — absolute or repo-relative path + line number
-- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
-
-**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
-
-**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
-
-Reviewers deliver findings. The caller owns fix application and validation.
-</reviewer-findings-format>

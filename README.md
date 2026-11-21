@@ -25,17 +25,13 @@ Copilot catalog loading uses this source tree directly. Codex runtime difference
 
 | Agent | Type | Role |
 |---|---|---|
-| **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. |
-| **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). |
-| **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Surfaces full-refactor recommendations. |
-| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Reviews correctness, security, maintainability, test coverage, and simplicity. Includes an architecture audit. |
+| **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Report-only. |
+| **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Report-only. |
+| **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Report-only. Surfaces full-refactor recommendations without softening. |
+| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Reviews correctness, security, maintainability, test coverage, and simplicity. Includes a required architecture audit section in its report. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 
-Dreamers subagents inherit the tools their runtime makes available. Vigil, Sentinel, Probe, and Hone attempt to save their full reports under `.dreamers/reviews/` and return the same reports in their final replies. The caller uses one complete copy per invocation and reports missing handoffs.
-
-The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops.
-
-Run `/dreamers-docs` from the target worktree. It starts a fresh Echo session. Echo reviews branch commits since divergence from the default branch, staged and unstaged changes, and new untracked files. It documents only net changes from the branch's merge base with the default branch to the current worktree and reports documentation changes in its final reply.
+Dreamers subagents inherit the tools available in their runtime. Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review`, attempt to save their full reports under `.dreamers/reviews/`, and return the same reports in their final replies. The caller uses one complete copy per invocation and reports missing handoffs. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Run `/dreamers-docs` from the target worktree. It starts a fresh Echo session. Echo reviews branch commits since divergence from the default branch, staged and unstaged changes, and new untracked files. It documents only net changes from the branch's merge base with the default branch to the current worktree.
 
 When there are staged changes, Echo checks that the staged docs match staged behavior and the worktree docs match the behavior in the worktree. If those versions need different documentation, Echo reports the discrepancy and leaves the affected docs for the caller to resolve.
 
@@ -109,7 +105,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
                    → /dreamers-docs + final commit → user approval gate → /dreamers-pr)
 ```
 
-All plans use Goal and Acceptance criteria, matching GitHub issue proposals. Lite, standard, and complex label complexity for review routing. They select the initial review lane through `/dreamers-review`: Vigil; Sentinel + Probe; or Sentinel + Probe + Hone. Explicit plan or user direction overrides that mapping. `/dreamers` applies findings and owns revalidation, review-rerun gates, user testing, and fix loops.
+All plans use Goal and Acceptance criteria, matching GitHub issue proposals. Lite, standard, and complex label complexity for review routing. They select the initial review lane through `/dreamers-review`: Vigil; Sentinel + Probe; or Sentinel + Probe + Hone. Explicit plan or user direction overrides that mapping. The review skill and its reviewers are read-only for project files. `/dreamers` applies findings and owns revalidation, review-rerun gates, user testing, and fix loops.
 
 `/dreamers` delivers plans. `/dreamers-lite` delivers tasks of any size or complexity without planning. Both halt on blocked reviews or unresolved findings at their review caps (3 and 2 fix cycles, respectively). Refs in `.github/dreamers/refs/` are inlined into consumers at build time via `scripts/sync-refs.ps1` or `scripts/sync-refs.sh`.
 

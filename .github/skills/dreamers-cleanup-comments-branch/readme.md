@@ -33,9 +33,9 @@ flowchart TD
     P4["Phase 4 — Optional Vigil review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip| P5
-    ReviewGate -->|Yes — review| SpawnVigil["Spawn Vigil<br/>scope = changed files"]
-    SpawnVigil --> CollectReview["Accept a complete Vigil report<br/>from the file or final reply"]
-    CollectReview --> ApplyFindings["Apply findings inline"]
+    ReviewGate -->|Yes — review| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>returns full report"]
+    SpawnVigil --> ReadArtifact["Use complete Vigil report<br/>from the file or final reply"]
+    ReadArtifact --> ApplyFindings["Apply findings inline"]
     ApplyFindings --> P5
 
     P5["Phase 5 — Commit"] --> Commit["git commit -m<br/>chore: comment cleanup on feature branch"]
@@ -49,7 +49,7 @@ flowchart TD
     class RevParse,BranchCheck,ApprovalGate,ReviewGate gate
     class HaltStale,HaltOnDefault,HaltA halt
     class SpawnVigil agent
-    class Detect,P1,P2,P3,P4,P5,ResolveDefault,Fetch,ComputeDiff,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,CollectReview,ApplyFindings,Commit phase
+    class Detect,P1,P2,P3,P4,P5,ResolveDefault,Fetch,ComputeDiff,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Commit phase
 ```
 
 ## Key invariants
@@ -58,5 +58,5 @@ flowchart TD
 - **Refuses to run on the default branch.** Halt with a redirect to `/dreamers-cleanup-comments` for project-wide sweeps.
 - **Fetch before diff.** Stale `origin/$DEFAULT` produces wrong scope — always fetch first.
 - **Same phases as the project-wide variant** — only the scope source differs.
-- **Review comes before fixes.** If Vigil runs, use one complete report from the current run. Halt on a missing or blocked report and raise open questions before applying findings.
+- **Review reports are read before fixes.** If Vigil runs, Phase 4 uses one complete copy from the current file or final reply and raises any missing handoff, blocker, or open question.
 - **Pre-PR positioning.** Designed to run before opening a PR; commit stays on branch for `/dreamers-pr` to push.

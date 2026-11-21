@@ -55,4 +55,4 @@ Questions leave the next phase pending; resume after answering unless the user r
 
 Keep one delivery todo aligned with confirmed results, reopening affected stages after changes and reconciling stale entries after detours. New corrections after completed close-out start a new capped cycle; detours within a cycle keep its review count.
 
-Reviewers deliver reports. The orchestrator uses one complete copy per reviewer and applies fixes. Kernel, git workflow, and the user-testing gate are embedded through ref sync. User instructions can override workflow steps.
+Reviewers attempt to save their reports and return the same content in their final replies. The orchestrator accepts one complete copy per reviewer and applies fixes. Kernel, git workflow, and the user-testing gate are embedded through ref sync. User instructions can override workflow steps.

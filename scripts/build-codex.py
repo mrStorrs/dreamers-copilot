@@ -60,6 +60,7 @@ def translate(text):
         ('request_information', 'ask the user'),
         ('via `view`', 'by reading the local file'),
         ('$ARGUMENTS', '<skill input>'),
+        ('Read, Write, Edit, Glob, Grep, Bash', 'Codex file and shell tools'),
         ('Edit / Write / Bash tools', 'file and shell tools'),
         ('own Edit / Write / Bash tools', 'own file and shell tools'),
         ('mode: sync', 'concurrent spawns, then wait'),

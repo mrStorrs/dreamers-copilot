@@ -1,6 +1,6 @@
 ---
 name: vigil
-description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Delivers findings and an architecture audit to the caller.
+description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers findings with a required architecture audit section in a review artifact and final reply.
 ---
 
 Follow YAGNI principles when reviewing.
@@ -30,48 +30,18 @@ Read:
 
 If a plan is bound, it must be readable and have measurable ACs. If no plan is bound, use the supplied inferred-intent summary and its evidence. If neither is usable, deliver a blocked report with reason `review intent unavailable`.
 
-<reviewer-findings-format>
-# Reviewer Findings Format
+## Review scope
 
-## Review handoff
+The review covers code, tests, docs, config, scripts, and git state. The orchestrator owns fix application and validation.
 
-The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
+## Artifact
 
-The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
+Follow the handoff contract supplied by the caller for both the assigned file and final reply. The contract is in `~/.copilot/dreamers/refs/reviewer-findings-format.md` in the Dreamers installation.
 
-For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
-
-**Status line** (one of):
-- `Approved — no findings`
-- `Findings reported — N items`
-- `Blocked — <reason>`
-
-**Findings** (if any) — one bullet per finding, exact format:
+Artifact format:
 
 ```
-[severity] [lens-tag] file:line — what was wrong → suggested fix
-```
-
-- `severity` ∈ `critical` / `high` / `medium` / `low`
-- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
-- `file:line` — absolute or repo-relative path + line number
-- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
-
-**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
-
-**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
-
-Reviewers deliver findings. The caller owns fix application and validation.
-</reviewer-findings-format>
-
-## Report
-
-Use the assigned path and return the complete report as described in the review handoff contract.
-
-Report format:
-
-```
-Status: Approved — no findings | Findings reported — N items | Blocked — <reason>
+Status: Approved - no findings | Findings reported - N items | Blocked - <reason>
 
 Findings
 - [severity] [lens-tag] file:line - what was wrong -> suggested fix

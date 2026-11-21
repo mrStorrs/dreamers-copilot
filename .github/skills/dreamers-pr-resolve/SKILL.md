@@ -124,7 +124,7 @@ Run Vigil for accepted PR-feedback fixes. Scope is restricted to ONLY the files 
 
 Use `agent_type: "vigil"`, `mode: "sync"` for the required review. Do not spawn Sentinel, Probe, or Hone from this skill; selected reviewer lanes belong to `/dreamers-review`.
 
-Assign Vigil a fresh path using the review handoff contract below. Include this context in the prompt:
+Assign Vigil a fresh path using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`. Include this context in the prompt:
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
 - Scope: list of files changed by accepted threads from `git status`
 - Branch + default branch names
@@ -133,7 +133,14 @@ Assign Vigil a fresh path using the review handoff contract below. Include this 
 - Review lenses: correctness, security, maintainability, test coverage, and simplicity. Treat the risk notes as focus areas, not as permission to skip the other lenses.
 - Handoff: <assigned path>. Attempt to save the full report there and return the same full report in your final reply.
 
-Collect the review using the handoff contract below. Halt and report a missing handoff or the reason Vigil reported `Blocked`. Raise any open questions before proceeding. For an approval without findings, proceed to Step 6. Otherwise apply findings from the accepted report:
+Collect the review using the same handoff contract. If neither copy is complete, report a missing handoff as a blocked Vigil review and follow the Step 7 reply-only fallback before stopping.
+
+Handle non-finding outputs:
+- The report says `Blocked` → halt; surface the handoff source and reason; resolve; re-spawn Vigil.
+- Open questions in the report → present to user before proceeding.
+- The report says `Approved — no findings` → proceed to Step 6 directly.
+
+Apply findings from the accepted report inline per the shared /dreamers apply-findings rules:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).
@@ -195,37 +202,3 @@ Report to the user:
 - Vigil handoff source and result
 
 This skill does NOT update the PR description, does NOT re-request review, does NOT close the PR. Those are user actions.
-
-<reviewer-findings-format>
-# Reviewer Findings Format
-
-## Review handoff
-
-The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
-
-The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
-
-For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
-
-**Status line** (one of):
-- `Approved — no findings`
-- `Findings reported — N items`
-- `Blocked — <reason>`
-
-**Findings** (if any) — one bullet per finding, exact format:
-
-```
-[severity] [lens-tag] file:line — what was wrong → suggested fix
-```
-
-- `severity` ∈ `critical` / `high` / `medium` / `low`
-- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
-- `file:line` — absolute or repo-relative path + line number
-- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
-
-**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
-
-**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
-
-Reviewers deliver findings. The caller owns fix application and validation.
-</reviewer-findings-format>

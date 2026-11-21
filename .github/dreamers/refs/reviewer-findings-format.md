@@ -8,7 +8,7 @@ The reviewer prepares one complete report in its assigned format, ending with `E
 
 For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
 
-**Status line** (one of):
+**Status line** (one of the following, allowing the reviewer format's `Status:` prefix and hyphen separator):
 - `Approved — no findings`
 - `Findings reported — N items`
 - `Blocked — <reason>`
@@ -28,4 +28,4 @@ For each expected reviewer invocation, check the assigned file and the final rep
 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
-Reviewers deliver findings. The caller owns fix application and validation.
+Reviewers are report-only for code, tests, docs, config, scripts, and git state. The caller applies fixes per its own orchestrator-as-fixer behavior.

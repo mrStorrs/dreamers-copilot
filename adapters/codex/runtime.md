@@ -41,7 +41,7 @@ Project instructions may live in `AGENTS.md`, `CODEX.md`, `.github/copilot-instr
 - Former `request_information`: ask the user in the conversation and wait.
 - Former `task()`: `multi_agent_v1.spawn_agent` with `agent_type`, followed by `wait_agent` when the result is needed.
 - Former `view`: read the local file with available file tools.
-- Former `manage_todo_list`: `update_plan` in the parent conversation only.
+- Former `manage_todo_list`: `update_plan`.
 - Former Copilot global home `~/.copilot`: `$CODEX_HOME` when set, otherwise `~/.codex`.
 
 ## Git And Shell Safety

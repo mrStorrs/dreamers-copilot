@@ -134,8 +134,10 @@ class DistributionTests(unittest.TestCase):
                         self.assertIn('missing or empty, deliver a blocked report with the reason', prompt)
                 refactors = read('skills/dreamers-find-refactors/SKILL.md')
                 self.assertIn('cite the section and findings in the summary for reply-only reports', refactors)
+                embedded = f'<reviewer-findings-format>\n{contract}\n</reviewer-findings-format>'
+                reference = f'`~/.copilot/{ref}`' if runtime == 'Copilot' else f'`{ref}`'
                 for consumer in consumers:
-                    self.assertIn(f'<reviewer-findings-format>\n{contract}\n</reviewer-findings-format>', consumer)
+                    self.assertTrue(embedded in consumer or reference in consumer)
                     self.assertNotRegex(consumer, r'(?i)do not call.*(?:manage_todo_list|update_plan)')
 
     def test_instruction_audit_and_shared_guide_ship_in_both_packages(self):

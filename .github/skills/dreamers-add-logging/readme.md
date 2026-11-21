@@ -25,9 +25,9 @@ flowchart TD
     P4["Phase 4 — Optional Vigil review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip review| P5
-    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files"]
-    SpawnVigil --> CollectReview["Accept a complete Vigil report<br/>from the file or final reply"]
-    CollectReview --> ApplyFindings["Apply findings inline<br/>comment-rules + logging-standards"]
+    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>returns full report"]
+    SpawnVigil --> ReadArtifact["Use complete Vigil report<br/>from the file or final reply"]
+    ReadArtifact --> ApplyFindings["Apply findings inline<br/>comment-rules + logging-standards"]
     ApplyFindings --> P5
 
     P5["Phase 5 — Commit"] --> Status["git status"]
@@ -42,7 +42,7 @@ flowchart TD
     class ApprovalGate,ReviewGate gate
     class HaltA halt
     class SpawnVigil agent
-    class P1,P2,P3,P4,P5,Walk,Identify,Summary,Propose,Revise,Apply,TypeCheck,CollectReview,ApplyFindings,Status,Commit phase
+    class P1,P2,P3,P4,P5,Walk,Identify,Summary,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Status,Commit phase
 ```
 
 ## Key invariants
@@ -52,4 +52,4 @@ flowchart TD
 - **NEVER-LOG violations are high priority.** Secrets, PII, and full request bodies in INFO logs surface first.
 - **Logger conventions are detected, not invented.** Phase 2 surfaces the existing library/format so additions stay consistent.
 - **No push.** This skill exits at the commit. Push is the user's call or `/dreamers-pr`'s job.
-- **Review comes before fixes.** If Vigil runs, use one complete report from the current run. Halt on a missing or blocked report and raise open questions before applying findings.
+- **Review reports are read before fixes.** If Vigil runs, Phase 4 uses one complete copy from the current file or final reply and raises any missing handoff, blocker, or open question.
