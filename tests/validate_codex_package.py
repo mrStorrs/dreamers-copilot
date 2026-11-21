@@ -337,7 +337,27 @@ assert_patterns(
     agent_root / "vigil.toml",
     {
         "planless Vigil review basis": r"If no plan is bound.*inferred-intent summary.*evidence",
-        "planless Vigil requirements": r"plan AC or inferred requirement",
+        "acceptance criteria and removable complexity": re.escape(
+            "Verify every acceptance criterion against the code and tests. "
+            "Flag added behavior the task doesn’t require and complexity that can be removed. "
+            "For each simplicity finding, name the deletion or simpler replacement and explain why it "
+            "preserves required behavior, security, and existing caller contracts. "
+            "When there are no explicit criteria, use the agreed task requirements."
+        ),
+    },
+)
+assert_no_patterns(
+    agent_root / "vigil.toml",
+    {
+        "retired Vigil report sections": r"Simplicity / Architecture Audit|Full Refactor Findings|Requirement Coverage\n",
+        "retired Vigil self-check": r"Could this be done simpler",
+    },
+)
+assert_patterns(
+    dreamers_root / "refs/reviewer-findings-format.md",
+    {
+        "two-line Vigil approval": r"For Vigil, a clean handoff needs only `Approved — no findings` and `End of handoff` on separate lines",
+        "single Vigil finding and blocker reporting": r"include the applicable status, each finding once, and any blocker or open question",
     },
 )
 assert_patterns(

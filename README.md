@@ -28,7 +28,7 @@ Copilot catalog loading uses this source tree directly. Codex runtime difference
 | **Sentinel** | Subagent | Reviewer — correctness, security, maintainability. Report-only. |
 | **Probe** | Subagent | Reviewer — test coverage (AC matrix, layer audit, edge cases, regression risk). Report-only. |
 | **Hone** | Subagent | Reviewer — simplicity, over-engineering, redundancy, architectural quality. Report-only. Surfaces full-refactor recommendations without softening. |
-| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Reviews correctness, security, maintainability, test coverage, and simplicity. Includes a required architecture audit section in its report. |
+| **Vigil** | Subagent | Single-pass reviewer for lite plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and `/dreamers` follow-up review reruns. Reviews correctness, security, maintainability, test coverage, and simplicity. Checks each acceptance criterion or agreed task requirement and returns a concise handoff. |
 | **Echo** | Subagent | Documentarian — Echo-owned sections of project docs, README, CHANGELOG. |
 
 Dreamers subagents inherit the tools available in their runtime. Vigil, Sentinel, Probe, and Hone spawn through `/dreamers-review`, attempt to save their full reports under `.dreamers/reviews/`, and return the same reports in their final replies. The caller uses one complete copy per invocation and reports missing handoffs. The review skill selects Vigil for lite plans, Sentinel + Probe for standard plans, and Sentinel + Probe + Hone for complex plans unless the plan or user explicitly directs another lane. Without a plan, it infers the intended behavior from the user context, branch/PR metadata, diff, tests, and nearby code; if that evidence is ambiguous, it asks one concise question before reviewing. `/dreamers` applies findings and owns follow-up review, user-testing, and fix loops. Run `/dreamers-docs` from the target worktree. It starts a fresh Echo session. Echo reviews branch commits since divergence from the default branch, staged and unstaged changes, and new untracked files. It documents only net changes from the branch's merge base with the default branch to the current worktree.
@@ -125,7 +125,7 @@ python3 scripts/build-codex.py --output .dreamers/build/codex
 
 PowerShell equivalent: `./scripts/Build-DreamersCodex.ps1 -OutputDirectory .dreamers/build/codex`. Choose a fresh or empty directory for each build; the generator refuses populated destinations. Builds translate runtime wiring and regenerate inlined refs from the shared sources, rejecting adapter drift and unsupported runtime tokens.
 
-Validate with the scripts for your shell:
+Validate with the scripts for your shell. Recorded Bash validation times and recommended timeouts are in [test-benchmarks.md](test-benchmarks.md).
 
 ```bash
 bash scripts/Test-DreamersCopilot.sh
