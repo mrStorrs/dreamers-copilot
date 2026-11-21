@@ -76,7 +76,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-pr-resolve` | Resolve PR review comments inline. Vigil reviews accepted fixes, deferred findings go to project-root `defered.md`, and `/dreamers-docs` updates affected docs before the fixing commit. Each comment gets a `fixed: in commit <SHA>`, `blocked: <reason>`, or `no-action: <reason>` reply. Only fully fixed threads are resolved. |
+| `/dreamers-pr-resolve` | Ask before acting on out-of-scope PR feedback while continuing independent fixes. Declined requests get a `blocked` reply and their threads stay open. Vigil reviews accepted fixes, deferred findings go to `defered.md`, and `/dreamers-docs` updates affected docs before committing. Only fully fixed threads resolve. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
