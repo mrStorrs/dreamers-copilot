@@ -107,6 +107,10 @@ class DistributionTests(unittest.TestCase):
                 block = f'<instruction-writing-guide>\n{guide.rstrip()}\n</instruction-writing-guide>'
                 self.assertIn(block, skill)
                 self.assertIn(block, echo)
+                self.assertIn('## Architecture index', skill)
+                self.assertIn('`.github/instructions/architecture.instructions.md`', skill)
+                self.assertIn('`applyTo: "**"`', skill)
+                self.assertIn('`## Architecture` section in root `AGENTS.md`', skill)
                 for path in ('AGENTS.md', 'AGENTS.override.md', 'CODEX.md',
                              '.github/copilot-instructions.md', '.github/instructions/'):
                     self.assertIn(path, skill)

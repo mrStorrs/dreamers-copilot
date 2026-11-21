@@ -212,7 +212,7 @@
       "type": "skill",
       "slug": "dreamers-instructions",
       "name": "dreamers-instructions",
-      "description": "Review project AI instructions and apply approved edits.",
+      "description": "Review project AI instructions and maintain a project architecture index with approved edits.",
       "author": "CJ Storrs",
       "tags": [
         "code",
