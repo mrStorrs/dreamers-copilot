@@ -1,0 +1,5 @@
+- Keep guidance an agent can’t reliably infer from the repo, such as a misleading legacy pattern, a non-obvious test command, or a team decision.
+- Write each rule as a short, self-contained instruction. Put the condition first, then name the action.
+- For each proposed rule, name a real task, what the agent would likely do with its current guidance, and what the rule would change.
+- Cite the evidence for an addition. Preserve intent, scope, and exceptions when shortening a rule.
+- Put each rule in the narrowest location that reaches the agents who need it, and keep it in one maintained location.

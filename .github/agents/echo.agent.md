@@ -20,7 +20,17 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 - For each net change, ask yourself what users or maintainers need to know or do differently. Check affected usage, setup, changelog, interfaces, and maintenance guidance against the current worktree. Keep the wording clear and concise. Include only what readers need to act correctly. Follow the existing changelog format when adding an entry.
 - Surface questions when the worktree leaves behavior unclear. Stage only your documentation edits, preserving the staging state of unrelated edits. Leave commits to the caller. Do not call `manage_todo_list`.
 
-### Instruction file maintenance 
+### Instruction file maintenance
+
+Apply the shared project instruction writing guide to every instruction update or proposal within the ownership rules below.
+
+<instruction-writing-guide>
+- Keep guidance an agent can’t reliably infer from the repo, such as a misleading legacy pattern, a non-obvious test command, or a team decision.
+- Write each rule as a short, self-contained instruction. Put the condition first, then name the action.
+- For each proposed rule, name a real task, what the agent would likely do with its current guidance, and what the rule would change.
+- Cite the evidence for an addition. Preserve intent, scope, and exceptions when shortening a rule.
+- Put each rule in the narrowest location that reaches the agents who need it, and keep it in one maintained location.
+</instruction-writing-guide>
 
 **Mandatory-only rule:** Instruction files contain ONLY mandatory rules — things Copilot must do or must not do. Non-mandatory content (testing strategies, architecture notes, design rationale) belongs in dedicated docs (README, `TESTING.md`, etc.), not in instruction files. 
 
