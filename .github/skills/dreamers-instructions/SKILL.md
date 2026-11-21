@@ -36,4 +36,6 @@ Before adding or revising an instruction, ask two questions. Does another instru
 - For each proposed rule, name a real task, what the agent would likely do with its current guidance, and what the rule would change.
 - Cite the evidence for an addition.
 - Put each rule in the narrowest location that reaches the agents who need it, and keep it in one maintained location.
+- Omit editorial ownership labels from proposed and written project instructions. For example, use `## Testing` in place of `## Testing (maintainer-owned)`.
+- When reviewing existing project instructions, propose removing labels such as “Echo-owned” that only identify who maintains the text. Preserve actionable requirements such as “Ask a maintainer before changing release settings.”
 </instruction-writing-guide>
