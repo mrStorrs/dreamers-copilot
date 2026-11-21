@@ -56,7 +56,7 @@
       "type": "agent",
       "slug": "vigil",
       "name": "vigil",
-      "description": "Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used for lite `/dreamers` plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and normal `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers findings with a required architecture audit section in a review artifact and final reply; never applies fixes.",
+      "description": "Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used for lite `/dreamers` plans, skill-internal reviews outside `/dreamers` and `/dreamers-review`, and normal `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers a concise review handoff; never applies fixes.",
       "author": "CJ Storrs",
       "tags": [
         "code",

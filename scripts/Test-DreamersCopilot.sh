@@ -290,7 +290,7 @@ assert_patterns(
     agent_root / "vigil.agent.md",
     [
         ("planless Vigil review basis", r"If no plan is bound.*inferred-intent summary.*evidence"),
-        ("planless Vigil requirements", r"plan AC or inferred requirement"),
+        ("Vigil acceptance criteria and agreed requirements", r"Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible"),
     ],
 )
 assert_patterns(

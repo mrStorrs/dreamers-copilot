@@ -313,6 +313,7 @@ assert_patterns(
         "Grill transcript resolution": r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full",
         "Grill transcript reviewer context": r"absolute path and full verbatim contents.*plan/transcript conflict",
         "parallel spawning": r"launch every selected reviewer concurrently.*Never spawn or await reviewers sequentially",
+        "accept two-line Vigil approval": r"Accept a clean Vigil handoff with just `Approved — no findings` and `End of handoff` on separate lines",
         "caller owns fix loop": r"caller owns all finding disposition, gates, fixes, revalidation, and user testing",
     },
 )
@@ -337,7 +338,26 @@ assert_patterns(
     agent_root / "vigil.toml",
     {
         "planless Vigil review basis": r"If no plan is bound.*inferred-intent summary.*evidence",
-        "planless Vigil requirements": r"plan AC or inferred requirement",
+        "two-line Vigil approval": r"For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines",
+        "single Vigil finding and blocker reporting": r"include the applicable status, each finding once, and any blocker or open question",
+        "simplest implementation under correctness": r"Correctness:\s*- Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible while preserving required behavior, security, and existing caller contracts",
+        "line-by-line simplicity review": (
+            r"Simplicity:\s*- Inspect every line of code and every function in the review scope\."
+            r"\s*Flag anything that could be simpler"
+        ),
+        "coverage mapping and test efficiency": (
+            r"Test coverage:\s*- Map each acceptance criterion or agreed task requirement to its covering tests"
+            r"[^\n]*\n(?:- [^\n]*\n)*?"
+            r"- Flag redundant tests and tests for behavior the task does not require\."
+            r"\s*- Flag avoidable test runtime\. Prefer faster setup or a faster test layer when it provides the same regression protection"
+        ),
+    },
+)
+assert_no_patterns(
+    agent_root / "vigil.toml",
+    {
+        "retired Vigil report sections": r"Simplicity / Architecture Audit|Full Refactor Findings|Requirement Coverage\n",
+        "retired Vigil self-check": r"Could this be done simpler",
     },
 )
 assert_patterns(

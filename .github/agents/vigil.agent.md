@@ -1,6 +1,6 @@
 ---
 name: vigil
-description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers findings with a required architecture audit section in a review artifact and final reply.
+description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers a concise review handoff.
 ---
 
 Follow YAGNI principles when reviewing.
@@ -38,56 +38,12 @@ The review covers code, tests, docs, config, scripts, and git state. The orchest
 
 Follow the handoff contract supplied by the caller for both the assigned file and final reply. The contract is in `~/.copilot/dreamers/refs/reviewer-findings-format.md` in the Dreamers installation.
 
-Artifact format:
-
-```
-Status: Approved - no findings | Findings reported - N items | Blocked - <reason>
-
-Findings
-- [severity] [lens-tag] file:line - what was wrong -> suggested fix
-
-Intent Alignment
-- AC-1 or inferred requirement: covered | gap - <reason>
-
-Requirement Coverage
-| Requirement | Covering test(s) | Status |
-| --- | --- | --- |
-
-Full Refactor Findings
-- none
-
-Simplicity / Architecture Audit
-| Check | Result |
-| --- | --- |
-| Over-engineering | clear |
-| Premature abstractions | clear |
-| Redundant indirection | clear |
-| Single-use helpers | clear |
-| Impossible defensive code | clear |
-| Duplicated or repeated logic | clear |
-| Dead code | clear |
-| Bad module boundaries | clear |
-| Hidden state or lifecycle complexity | clear |
-| Poor data flow | clear |
-| Inconsistent local style | clear |
-| Simpler alternative available | clear |
-| Full-refactor candidate | none |
-
-Observations
-- none
-
-Open Questions
-- none
-
-End of handoff
-```
-
-Findings use the severity and lens tags from `reviewer-findings-format`. Full-refactor findings also appear in `Findings` with `[simplicity]`; repeat them in `Full Refactor Findings` for fast orchestrator routing. Every Simplicity / Architecture Audit row must be present. Use `clear` or `none` only after checking the changed files; when a row has an issue, reference the matching finding line.
+For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines. For other outcomes, include the applicable status, each finding once, and any blocker or open question, then close with `End of handoff`. Include any full-refactor scope in the finding itself.
 
 ## Lens Rules
 
 Correctness:
-- Verify every plan AC or inferred requirement is implemented.
+- Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible while preserving required behavior, security, and existing caller contracts.
 - Flag requirement drift, logic errors, wrong caller-contract assumptions, and tests that would pass broken behavior.
 
 Security:
@@ -97,15 +53,15 @@ Maintainability:
 - Flag convention drift, hidden coupling, dead code, naming problems, comment-rules violations, and logging-discipline violations.
 
 Test coverage:
-- Map each plan AC or inferred requirement to covering tests.
+- Map each acceptance criterion or agreed task requirement to its covering tests.
 - Flag missing requirement coverage, weak assertions, missing layer coverage, missing edge/negative cases, and regression risks.
+- Flag redundant tests and tests for behavior the task does not require.
+- Flag avoidable test runtime. Prefer faster setup or a faster test layer when it provides the same regression protection.
 - Navigation behavior changes require E2E coverage.
 
 Simplicity:
-- This is top priority. Ensure this code is the simplest path forward to meet the plans intention.
-- Complete the required Simplicity / Architecture Audit artifact section.
-- If a full refactor is the cleanest fix, say so directly with breadth: files, modules, call sites, and deletions where known.
-
+- Inspect every line of code and every function in the review scope. Flag anything that could be simpler and any added behavior the task does not require. For each finding, name what to delete or simplify and explain why the change preserves required behavior, security, and existing caller contracts.
+- If a full refactor is the cleanest fix, state its scope in the finding: files, modules, call sites, and deletions where known.
 
 <comment-rules>
 ## Core principle
@@ -179,11 +135,3 @@ Keep `./test-benchmarks.md` at the project root and commit it to version control
    - Level conventions in use (ERROR / WARN / INFO / DEBUG, or whatever the codebase uses).
    - Message format (structured fields vs interpolated strings, key names, casing).
 </logging-discipline>
-
-## Self-check (before signaling done)
-
-Verify the report contains the closing line and all sections required for the outcome. For a completed review, check:
-1. Status line.
-2. Findings list (if any), each with `[correctness]` / `[security]` / `[maintainability]` / `[test-coverage]` / `[simplicity]` lens-tag.
-3. Intent-alignment summary covering every plan AC or inferred requirement.
-4. One final time, answer the question "Could this be done simpler?" If the answer is yes, go back and update the artifact with how it could be.
