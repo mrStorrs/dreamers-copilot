@@ -115,6 +115,18 @@ class DistributionTests(unittest.TestCase):
                              '.github/copilot-instructions.md', '.github/instructions/'):
                     self.assertIn(path, skill)
 
+    def test_test_command_guide_ships_in_both_packages(self):
+        path = 'skills/dreamers-instructions/SKILL.md'
+        source = (ROOT / '.github' / path).read_text(encoding='utf-8')
+        heading = '## Test command guide\n'
+        for runtime, skill in (('Copilot', source), ('Codex', self.files[path])):
+            with self.subTest(runtime=runtime):
+                self.assertIn('test command guide', skill.split('---', 2)[1])
+                self.assertIn(heading, skill)
+                guide = skill.split(heading, 1)[1].split('## Apply', 1)[0]
+                self.assertIn('`.github/instructions/testing.instructions.md`', guide)
+                self.assertIn('`## Testing` section in root `AGENTS.md`', guide)
+
     def test_retro_ships_and_only_full_delivery_invokes_it(self):
         guide_path = 'dreamers/refs/instruction-writing-guide.md'
         copilot = ROOT / '.github'
