@@ -314,7 +314,6 @@ assert_patterns(
         "Grill transcript reviewer context": r"absolute path and full verbatim contents.*plan/transcript conflict",
         "parallel spawning": r"launch every selected reviewer concurrently.*Never spawn or await reviewers sequentially",
         "caller owns fix loop": r"caller owns all finding disposition, gates, fixes, revalidation, and user testing",
-        "artifact-only reviewer writes": r"sole write is exactly one.*artifact",
     },
 )
 assert_patterns(

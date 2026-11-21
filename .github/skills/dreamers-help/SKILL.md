@@ -9,7 +9,7 @@ This is read-only guidance. Do not inspect or change repository, git, mailbox, f
 
 ## Response
 
-Orient the user briefly: the Dreamers system combines planning, implementation and tests, artifact-backed review, targeted user gates, documentation, and PR delivery.
+Orient the user briefly: the Dreamers system combines planning, implementation and tests, structured review, targeted user gates, documentation, and PR delivery.
 
 Explain the primary entry point with concrete examples:
 
@@ -25,7 +25,7 @@ Explain adaptive review:
 - standard plans use Sentinel + Probe.
 - complex plans use Sentinel + Probe + Hone.
 
-Explicit plan or user direction overrides the default reviewer lane. Reviewers are read-only for project files and write their required `.dreamers/reviews/` artifacts; the caller applies accepted findings and owns revalidation.
+Explicit plan or user direction overrides the default reviewer lane. Reviewers deliver their findings by file and final reply. The caller accepts one complete copy, applies accepted findings, and owns revalidation.
 
 Offer specialized choices when they fit better:
 

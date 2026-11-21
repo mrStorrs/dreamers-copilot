@@ -89,7 +89,54 @@ class DistributionTests(unittest.TestCase):
         self.assertIn('concurrently through `spawn_agent`', self.files['skills/dreamers-review/SKILL.md'])
         self.assertIn('reference it from `AGENTS.md`', self.files['dreamers/refs/project-bootstrap.md'])
         self.assertIn('Implement and review loop', self.files['skills/dreamers/SKILL.md'])
-        self.assertIn('Do NOT call update_plan.', self.files['dreamers/refs/dreamers-kernel.md'])
+        self.assertNotIn('Do NOT call update_plan.', self.files['dreamers/refs/dreamers-kernel.md'])
+
+    def test_review_handoff_and_runtime_tool_inheritance_ship_in_both_packages(self):
+        source = ROOT / '.github'
+        ref = 'dreamers/refs/reviewer-findings-format.md'
+        callers = (
+            'dreamers-review', 'dreamers-test', 'dreamers-simplify', 'dreamers-find-refactors',
+            'dreamers-pr-resolve', 'dreamers-add-logging', 'dreamers-cleanup-comments',
+            'dreamers-cleanup-comments-branch',
+        )
+        for runtime, read in (
+            ('Copilot', lambda path: (source / path).read_text(encoding='utf-8')),
+            ('Codex', self.files.__getitem__),
+        ):
+            with self.subTest(runtime=runtime):
+                contract = read(ref).rstrip()
+                for behavior in (
+                    'unused absolute path', 'End of handoff', 'even if the write fails',
+                    'same complete report in the final reply',
+                    'Use the complete file if available, otherwise use the complete reply.',
+                    'Process one copy per invocation.',
+                    'If neither copy is complete, report the missing handoff',
+                    'Preserve blocked status, findings, and open questions',
+                ):
+                    self.assertIn(behavior, contract)
+
+                consumers = [read(f'skills/{caller}/SKILL.md') for caller in callers]
+                for role in ('echo', 'sentinel', 'probe', 'hone', 'vigil'):
+                    if runtime == 'Copilot':
+                        fields, prompt = builder.frontmatter(read(f'agents/{role}.agent.md'))
+                    else:
+                        fields = tomllib.loads(read(f'agents/{role}.toml'))
+                        prompt = fields['developer_instructions']
+                    self.assertNotIn('tools', fields)
+                    self.assertNotIn('sandbox_mode', fields)
+                    if role == 'echo':
+                        self.assertNotIn(contract, prompt)
+                        self.assertNotRegex(prompt, r'(?i)do not call')
+                    else:
+                        consumers.append(prompt)
+                    if role == 'sentinel':
+                        self.assertIn('deliver a blocked report with reason `review intent unavailable`', prompt)
+                        self.assertIn('missing or empty, deliver a blocked report with the reason', prompt)
+                refactors = read('skills/dreamers-find-refactors/SKILL.md')
+                self.assertIn('cite the section and findings in the summary for reply-only reports', refactors)
+                for consumer in consumers:
+                    self.assertIn(f'<reviewer-findings-format>\n{contract}\n</reviewer-findings-format>', consumer)
+                    self.assertNotRegex(consumer, r'(?i)do not call.*(?:manage_todo_list|update_plan)')
 
     def test_instruction_audit_and_shared_guide_ship_in_both_packages(self):
         guide_path = 'dreamers/refs/instruction-writing-guide.md'

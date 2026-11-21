@@ -1,14 +1,12 @@
 # Reviewer Findings Format
 
-## Artifact contract
+## Review handoff
 
-Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
+The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
 
-`.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md`
+The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
 
-Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
-
-The artifact is the durable handoff. Chat output is only a short status pointer with the artifact path. The caller must read the artifact before reporting, applying, or deferring findings.
+For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
 
 **Status line** (one of):
 - `Approved — no findings`
@@ -30,4 +28,4 @@ The artifact is the durable handoff. Chat output is only a short status pointer 
 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
-Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
+Reviewers deliver findings. The caller owns fix application and validation.

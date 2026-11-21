@@ -1,6 +1,6 @@
 # /dreamers-review — flow
 
-Visual map of the selected-lane review skill. Source of truth is `SKILL.md`. **Read-only** — does NOT apply fixes; the caller does.
+Visual map of the selected-lane review skill. Source of truth is `SKILL.md`. The caller applies fixes.
 
 ```mermaid
 flowchart TD
@@ -25,7 +25,7 @@ flowchart TD
     ModeCheck -->|--lens probe| LensP["Single-lens: Probe"]
     ModeCheck -->|--lens hone| LensH["Single-lens: Hone"]
 
-    Triad --> Spawn["mode: sync<br/>each prompt MUST include<br/>Do NOT call manage_todo_list"]
+    Triad --> Spawn["Assign a unique file path<br/>and start each reviewer"]
     Standard --> Spawn
     Vigil --> Spawn
     Selected --> Spawn
@@ -33,37 +33,28 @@ flowchart TD
     LensP --> Spawn
     LensH --> Spawn
 
-    Spawn --> WriteArtifact["Each reviewer writes exactly one<br/>.dreamers/reviews artifact"]
-    WriteArtifact --> Wait["Wait for all spawned<br/>reviewers to return"]
-    Wait --> Collect["Read returned artifacts"]
-    Collect --> Aggregate["Aggregate counts<br/>by severity + lens"]
-    Aggregate --> CheckStatus{"Reviewer<br/>statuses?"}
-
-    CheckStatus -->|Blocked| Surface1["Surface Blocked verbatim<br/>caller handles"]
-    CheckStatus -->|Open questions| Surface2["Surface open questions<br/>caller handles"]
-    CheckStatus -->|Approved + Findings| Report["Return artifact findings<br/>verbatim to caller"]
-
-    Surface1 --> End(["Exit with status"])
-    Surface2 --> End
-    Report --> End
+    Spawn --> Deliver["Reviewers attempt to save reports<br/>and return the same reports in replies"]
+    Deliver --> Collect["Use one complete copy per reviewer<br/>from the current invocation"]
+    Collect --> Report["Return accepted reports and counts<br/>Surface missing handoffs, blockers, and questions"]
+    Report --> End(["Exit with status"])
 
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
     classDef agent fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#fff
 
-    class Transcript,ModeCheck,CheckStatus gate
+    class Transcript,ModeCheck gate
     class Triad,Standard,Vigil,Selected,LensS,LensP,LensH agent
-    class BindTranscript,BlockTranscript,Spawn,WriteArtifact,Wait,Collect,Aggregate,Surface1,Surface2,Report phase
+    class BindTranscript,BlockTranscript,Spawn,Deliver,Collect,Report phase
 ```
 
-## Lens scope (read-only)
+## Lens scope
 
 | Lens | Reviewer | Returns |
 |---|---|---|
-| Combined correctness, security, maintainability, coverage, and simplicity | Vigil | One artifact with findings, intent alignment, requirement coverage, and architecture audit |
-| Correctness / security / maintainability | Sentinel | Artifact with findings + intent-alignment summary |
-| Test coverage (requirement matrix, layer audit, gaps) | Probe | Artifact with findings + requirement coverage table |
-| Simplicity / over-engineering / architecture | Hone | Artifact with findings incl. full-refactor recommendations |
+| Combined correctness, security, maintainability, coverage, and simplicity | Vigil | Findings, intent alignment, requirement coverage, and architecture audit |
+| Correctness / security / maintainability | Sentinel | Findings and intent-alignment summary |
+| Test coverage (requirement matrix, layer audit, gaps) | Probe | Findings and requirement coverage table |
+| Simplicity / over-engineering / architecture | Hone | Findings including full-refactor recommendations |
 
 ## Lane policy
 
@@ -76,15 +67,13 @@ flowchart TD
 | standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
 | full | Sentinel + Probe + Hone | Complex plan, explicit full review, or standalone default. |
 
-Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. Without a plan, it infers the intended behavior from user context, branch/PR metadata, the selected diff, tests, changed code, and nearby conventions; an ambiguous basis gets one user question before review. Inferred-intent reviews use the full triad unless the user chose a lane. This skill owns selection and execution, then reports artifact-backed results.
+Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. Without a plan, it infers the intended behavior from user context, branch/PR metadata, the selected diff, tests, changed code, and nearby conventions; an ambiguous basis gets one user question before review. Inferred-intent reviews use the full triad unless the user chose a lane. This skill selects and runs the reviewers.
 
 ## Key invariants
 
-- **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers` Step 5, or whoever invoked it) decides what to do with the findings. Reviewers may write only their required `.dreamers/reviews/` artifacts.
 - **Grill context follows the plan.** Resolve the plan's `**Grilling transcript:**` link, falling back to a sibling `grilling-transcript.md`; when readable, pass its full verbatim contents to every reviewer for intent alignment. A referenced but unreadable transcript blocks review.
 - **`/dreamers` reruns.** Routine follow-up review reruns use `/dreamers-review --vigil`. A full or selected-lane rerun runs only when the major-change rerun gate asks the user and the user selects it.
 - **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
-- **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
-- **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
+- **One report per reviewer.** Each reviewer gets a unique path under `.dreamers/reviews/`. Use the complete report at that path or the same invocation’s complete final reply. Report any missing handoff, blocker, or open question.
 - **`--no-apply` doesn't exist** — this skill is always read-only by design.
 - **Todo ownership is contextual.** Standalone todos are optional; when invoked by a delivery skill, review completes the phase under its existing todo.

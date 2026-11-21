@@ -283,7 +283,6 @@ assert_patterns(
         ("Grill transcript reviewer context", r"absolute path and full verbatim contents.*plan/transcript conflict"),
         ("conditional todo ownership", r"when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"),
         ("project-file read-only boundary", r"read.only.*project (?:code|files)|project (?:code|files).*read.only"),
-        ("reviewer artifact-only writes", r"reviewer.*(?:only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"),
         ("caller owns fix loop", r"caller owns all finding disposition, gates, fixes, revalidation, and user testing"),
     ],
 )

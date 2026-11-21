@@ -32,10 +32,10 @@ flowchart TD
     TestResult -->|No| BlockedReplies["Step 7 — Reply-only mode<br/>blocked: reason for affected fixes<br/>no-action: reason for rejections<br/>leave threads open"]
     TestResult -->|Yes| S5
 
-    S5["Step 5 — Vigil review"] --> SpawnVigil["Spawn Vigil<br/>write review artifact"]
-    SpawnVigil --> ReadArtifacts["Read Vigil artifact"]
-    ReadArtifacts --> ReviewResult{"Reviewer<br/>statuses?"}
-    ReviewResult -->|Blocked| BlockedReplies
+    S5["Step 5 — Vigil review"] --> SpawnVigil["Spawn Vigil"]
+    SpawnVigil --> CollectReview["Accept a complete Vigil report<br/>from the file or final reply"]
+    CollectReview --> ReviewResult{"Reviewer<br/>statuses?"}
+    ReviewResult -->|Missing or blocked| BlockedReplies
     ReviewResult -->|Findings| ApplyReviewer["Apply or defer Vigil findings<br/>deferred → append root defered.md<br/>re-run tests after applied findings"]
     ReviewResult -->|Approved no findings| S6
     ApplyReviewer --> S6
@@ -68,7 +68,7 @@ flowchart TD
     class PRCheck,HasThreads,ScopeCheck,AskScope,AcceptedAny,TestResult,ReviewResult,NewCommit,PushGate,PushResult,PendingScope,ResumeScope gate
     class HaltA halt
     class SpawnVigil agent
-    class S1,S2,S3,S4,S5,S6,S7,S8,UseSpecified,PickPR,UseOne,Query,PerThread,ApplyFixes,ReadArtifacts,ApplyReviewer,Docs,CommitFixes,Push,ResolveGQL,BlockedReplies phase
+    class S1,S2,S3,S4,S5,S6,S7,S8,UseSpecified,PickPR,UseOne,Query,PerThread,ApplyFixes,CollectReview,ApplyReviewer,Docs,CommitFixes,Push,ResolveGQL,BlockedReplies phase
 ```
 
 ## Key invariants
@@ -80,7 +80,7 @@ flowchart TD
 - **Blocked covers declined scope expansions and fixes that could not be delivered.** For a declined request, reply `blocked: outside the scope of <plan or issue>` with a brief reason and leave the thread open. For an undelivered fix, state the obstacle before halting.
 - **No-action means decided not to act.** State why; do not use it for an accepted issue that could not be fixed.
 - **Only fully fixed threads resolve.** Every comment must be fixed and every reply successful. Blocked, no-action, and reply failures leave threads open.
-- **Vigil is required for accepted fixes.** Keep PR-feedback review to one artifact-backed Vigil pass. Pass coverage/regression or architecture/refactor risk notes into Vigil's prompt, then read the artifact before applying findings.
+- **Vigil is required for accepted fixes.** Use one Vigil pass with coverage, regression, or architectural risks in the prompt. Use one complete report, report a missing handoff or blocker, and raise open questions before applying findings.
 - **Deferred Vigil findings persist.** Append them to project-root `defered.md` without overwriting prior entries; do not create follow-up plans automatically.
 - **Push requires explicit approval.** Post-PR changes never auto-push.
 - **Hold is a valid exit** — the commit stays on the branch for the user to push manually later.

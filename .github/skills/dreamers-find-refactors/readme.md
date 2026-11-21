@@ -8,8 +8,8 @@ flowchart TD
     Lens --> Section["Map repo into sections"]
     Section --> Manifest["Write sections.md"]
     Manifest --> Hone["Spawn section-scoped Hone audits"]
-    Hone --> Artifacts["Read hone-refactor artifacts"]
-    Artifacts --> Synthesis["Deduplicate + group findings"]
+    Hone --> Reports["Accept one complete report per section<br/>from the file or final reply"]
+    Reports --> Synthesis["Deduplicate + group findings"]
     Synthesis --> Summary["Write summary.md"]
     Summary --> Plans["Write Dreamers plan files"]
     Plans --> Gate{"Review gate"}
@@ -22,7 +22,7 @@ flowchart TD
 ## Invariants
 
 - Read-only for project code.
-- Hone writes section-named `.dreamers/reviews/hone-refactor-*.md` artifacts.
+- Hone attempts to save each section report under `.dreamers/reviews/` and returns the same report in its final reply. The synthesis records any missing report, blocker, or open question.
 - The orchestrator groups findings into the smallest coherent shippable plans, with a manifest when there are multiple plans.
 - Generated plans use the shared Goal and Acceptance criteria format.
 - No branch, implementation, commit, push, or PR.

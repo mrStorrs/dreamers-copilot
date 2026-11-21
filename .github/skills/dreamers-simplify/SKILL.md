@@ -1,6 +1,6 @@
 ---
 name: dreamers-simplify
-description: "Standalone focused Vigil review (architectural quality). Read-only — reads Vigil's `.dreamers/reviews/` artifact for over-engineering, premature abstractions, redundancy, and bad architecture. May recommend full refactors. No auto-fix. Triggers: /dreamers-simplify, simplify this, audit for over-engineering, architectural review."
+description: "Standalone focused Vigil review (architectural quality). Read-only — reports Vigil's findings for over-engineering, premature abstractions, redundancy, and bad architecture. May recommend full refactors. No auto-fix. Triggers: /dreamers-simplify, simplify this, audit for over-engineering, architectural review."
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
@@ -60,6 +60,8 @@ Default scope (no flags): staged + unstaged changes.
 
 ## Spawn Vigil
 
+Assign Vigil a fresh handoff path using the review handoff contract below.
+
 Invoke via the runtime's subagent-spawn mechanism:
 
 ```
@@ -71,12 +73,45 @@ prompt:
   Branch: <current feature branch>
   Default branch: <detected default>
   Focus: simplicity / over-engineering / redundancy / bad architecture. Recommend full refactors when warranted, while still reporting critical correctness/security/maintainability/test-coverage findings if they appear.
-  Write: exactly one .dreamers/reviews/vigil-*.md artifact.
-  Return: status + counts + artifact path + blocked reason + open questions only.
+  Handoff: <assigned path>. Attempt to save the full report there and return the same full report in your final reply.
 ```
 
 ## Output
 
-Read the artifact path returned by Vigil and pass the artifact contents through to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+Collect Vigil's complete handoff using the contract below. Report a missing handoff if neither copy is complete. Pass the accepted report to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
 
 If Vigil recommends a large refactor, suggest: "Run `/dreamers-plan` to scope the refactor, then `/dreamers` to execute it."
+
+<reviewer-findings-format>
+# Reviewer Findings Format
+
+## Review handoff
+
+The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
+
+The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
+
+For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
+
+**Status line** (one of):
+- `Approved — no findings`
+- `Findings reported — N items`
+- `Blocked — <reason>`
+
+**Findings** (if any) — one bullet per finding, exact format:
+
+```
+[severity] [lens-tag] file:line — what was wrong → suggested fix
+```
+
+- `severity` ∈ `critical` / `high` / `medium` / `low`
+- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
+- `file:line` — absolute or repo-relative path + line number
+- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
+
+**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
+
+**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
+
+Reviewers deliver findings. The caller owns fix application and validation.
+</reviewer-findings-format>

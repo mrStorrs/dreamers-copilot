@@ -25,9 +25,9 @@ flowchart TD
     P4["Phase 4 — Optional Vigil review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip review| P5
-    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>writes review artifact"]
-    SpawnVigil --> ReadArtifact["Read Vigil artifact"]
-    ReadArtifact --> ApplyFindings["Apply findings inline"]
+    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files"]
+    SpawnVigil --> CollectReview["Accept a complete Vigil report<br/>from the file or final reply"]
+    CollectReview --> ApplyFindings["Apply findings inline"]
     ApplyFindings --> P5
 
     P5["Phase 5 — Commit"] --> Status["git status"]
@@ -42,7 +42,7 @@ flowchart TD
     class ApprovalGate,ReviewGate gate
     class HaltA halt
     class SpawnVigil agent
-    class P1,P2,P3,P4,P5,Walk,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,ReadArtifact,ApplyFindings,Status,Commit phase
+    class P1,P2,P3,P4,P5,Walk,Categorize,CountReport,Propose,Revise,Apply,TypeCheck,CollectReview,ApplyFindings,Status,Commit phase
 ```
 
 ## Key invariants
@@ -52,6 +52,6 @@ flowchart TD
 - **License headers and TODO/FIXME are preserved** by default; users can refine via `Other` (e.g., "preserve vendor headers").
 - **No logic edits.** Phase 3 touches comments only — no while-I'm-here code refactors.
 - **No push.** Exits at commit.
-- **Review artifacts are read before fixes.** Optional Vigil review writes `.dreamers/reviews/vigil-*.md`; Phase 4 applies findings from that artifact.
+- **Review comes before fixes.** If Vigil runs, use one complete report from the current run. Halt on a missing or blocked report and raise open questions before applying findings.
 
 For branch-scoped cleanup (only files in the current feature-branch diff), use `/dreamers-cleanup-comments-branch`.

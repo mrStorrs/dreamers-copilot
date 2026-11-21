@@ -292,7 +292,6 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
     "Grill transcript reviewer context" = "absolute path and full verbatim contents.*plan/transcript conflict"
     "conditional todo ownership" = "when standalone.*todo.*when invoked by an outer delivery skill.*existing todo"
     "project-file read-only boundary" = "read.only.*project (code|files)|project (code|files).*read.only"
-    "reviewer artifact-only writes" = "reviewer.*(only|sole).*write.*artifact|reviewer.*write.*exactly one.*artifact"
     "caller owns fix loop" = "caller owns all finding disposition, gates, fixes, revalidation, and user testing"
 }
 Assert-Patterns (Join-Path $agentRoot "vigil.agent.md") @{

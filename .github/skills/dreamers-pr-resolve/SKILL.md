@@ -1,6 +1,6 @@
 ---
 name: dreamers-pr-resolve
-description: 'Resolve unresolved PR review comments inline. Apply accepted fixes, run artifact-backed Vigil review, record deferred Vigil findings in project-root defered.md, reply to each comment with fixed / blocked / no-action, and resolve fixed threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
+description: 'Resolve unresolved PR review comments inline. Apply accepted fixes, run a Vigil review, record deferred Vigil findings in project-root defered.md, reply to each comment with fixed / blocked / no-action, and resolve fixed threads via `gh api`. Triggers: /dreamers-pr-resolve, resolve PR comments, address review comments, fix PR feedback.'
 argument-hint: '[<pr-number>] (auto-discovers from open PRs if omitted)'
 ---
 
@@ -124,29 +124,22 @@ Run Vigil for accepted PR-feedback fixes. Scope is restricted to ONLY the files 
 
 Use `agent_type: "vigil"`, `mode: "sync"` for the required review. Do not spawn Sentinel, Probe, or Hone from this skill; selected reviewer lanes belong to `/dreamers-review`.
 
-Common prompt context for Vigil (subagent prompt rule — include verbatim):
-- **Todo discipline:** "Do NOT call `manage_todo_list`. The orchestrator owns the todo." (per `dreamers-kernel.md` § "Single-owner todo")
+Assign Vigil a fresh path using the review handoff contract below. Include this context in the prompt:
 - Plan file: none (ad-hoc PR-feedback work, no plan binding) — mark plan-alignment summary as N/A
 - Scope: list of files changed by accepted threads from `git status`
 - Branch + default branch names
 - What the orchestrator has done: addressed N accepted PR review comments via inline edits; type-checked + tests green.
 - Risk notes: call out whether accepted fixes changed tests/test harnesses/AC-covered behavior/validation/regression-sensitive behavior, or introduced/reshaped abstractions/module boundaries/APIs/schemas/data models/persistence/dependencies/refactors.
 - Review lenses: correctness, security, maintainability, test coverage, and simplicity. Treat the risk notes as focus areas, not as permission to skip the other lenses.
-- Write exactly one `.dreamers/reviews/vigil-*.md` artifact.
-- Return only status, counts, artifact path, blocked reason, and open questions.
+- Handoff: <assigned path>. Attempt to save the full report there and return the same full report in your final reply.
 
-Read the returned artifact before applying findings. Apply findings from the artifact inline per the shared /dreamers apply-findings rules:
+Collect the review using the handoff contract below. Halt and report a missing handoff or the reason Vigil reported `Blocked`. Raise any open questions before proceeding. For an approval without findings, proceed to Step 6. Otherwise apply findings from the accepted report:
 
 1. Sort findings by severity.
 2. Resolve conflicts per the rule (correctness/security > test-coverage > simplicity).
-3. **Evaluate each finding against the Major-refactor finding gate** per `dreamers-review.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Vigil full-refactor scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — save to defered.md` / `Other`) and route per the user's answer. On `Defer`, do NOT apply the finding or create a follow-up plan. Append a Markdown entry to `defered.md` in the project root; create it with `# Deferred Suggestions` if absent, and never overwrite existing entries. Record the date, PR + branch, Vigil artifact path, severity / lens / location, finding, suggested fix, triggered criterion, and deferral rationale. Stage `defered.md` and surface its path.
+3. **Evaluate each finding against the Major-refactor finding gate** per `dreamers-review.md` § "Major-refactor finding gate." If ANY criterion fires for a finding (new module / schema change / cross-cutting refactor / new exported symbols / files outside the PR-feedback surface / Vigil full-refactor scope language), call `request_information` with the 3-choice template (`Apply now — refactor in this cycle` / `Defer — save to defered.md` / `Other`) and route per the user's answer. On `Defer`, do NOT apply the finding or create a follow-up plan. Append a Markdown entry to `defered.md` in the project root; create it with `# Deferred Suggestions` if absent, and never overwrite existing entries. Record the date, PR + branch, Vigil handoff source (include the path for a file), severity / lens / location, finding, suggested fix, triggered criterion, and deferral rationale. Stage `defered.md` and surface its path.
 4. Apply each (non-deferred) fix inline; stage with `git add`.
 5. Re-run type-check + tests; fix regressions inline (up to 3 attempts).
-
-Handle non-finding outputs:
-- The artifact reports `Blocked` → halt; surface the artifact path and reason; resolve; re-spawn Vigil.
-- Open questions in the artifact → present to user before proceeding.
-- The artifact reports `Approved — no findings` → proceed to Step 6 directly.
 
 ## Step 6 — Commit accepted fixes (if any)
 
@@ -199,6 +192,40 @@ Report to the user:
 - Deferred Vigil findings recorded in `defered.md` (one line each)
 - Threads resolved and remaining open, including blocked and no-action outcomes
 - Commit hash + push status
-- Vigil artifact path and result
+- Vigil handoff source and result
 
 This skill does NOT update the PR description, does NOT re-request review, does NOT close the PR. Those are user actions.
+
+<reviewer-findings-format>
+# Reviewer Findings Format
+
+## Review handoff
+
+The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
+
+The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
+
+For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
+
+**Status line** (one of):
+- `Approved — no findings`
+- `Findings reported — N items`
+- `Blocked — <reason>`
+
+**Findings** (if any) — one bullet per finding, exact format:
+
+```
+[severity] [lens-tag] file:line — what was wrong → suggested fix
+```
+
+- `severity` ∈ `critical` / `high` / `medium` / `low`
+- `lens-tag` ∈ `correctness` / `security` / `maintainability` (Sentinel) / `test-coverage` (Probe) / `simplicity` (Hone)
+- `file:line` — absolute or repo-relative path + line number
+- `what was wrong → suggested fix` — one-line description + targeted fix the caller can apply mechanically
+
+**Observations** (optional) — out-of-scope notes that aren't findings. The caller may or may not act on them.
+
+**Open questions** (optional) — items needing user judgment. Use "none" if no questions.
+
+Reviewers deliver findings. The caller owns fix application and validation.
+</reviewer-findings-format>
