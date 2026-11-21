@@ -81,6 +81,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to current feature-branch diff. |
 | `/dreamers-instructions` | Review project AI instructions for stale, duplicate, conflicting, or verbose rules. See exact proposals with reasons and approve the edits to apply. |
+| `/dreamers-retro` | Record task problems, impact, and evidence in `.dreamers/retros/`. Review applicable instructions and get approval before applying any proposed edits. |
 | `/dreamers-explain` | Thorough, read-only explanations of topics, code, documents, systems, and decisions, with authoritative sources when needed. |
 | `/dreamers-issue` | Investigate code and flag concerns with suggested acceptance criteria. Propose a short Goal/Acceptance criteria issue, then create it after approval (or an ADO story if specifically requested). |
 | `/dreamers-new-project` | Bootstrap a brand new project (discovery → optional existing-solutions research → stack → brief → shell plans). |
@@ -100,8 +101,8 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
   │               Apply findings + major-refactor gate (deferred → root defered.md)
   │               User-testing gate (when triggered; normal review reruns use Vigil)
   │               ↳ between cycles: drift check + INCREMENTAL pre-PR gate / ATOMIC continuation
-  └─ Phase 3   → close-out (/dreamers-docs + final commit
-                   → user approval gate → /dreamers-pr)
+  └─ Phase 3   → close-out (/dreamers-retro if an AI or workflow problem occurred
+                   → /dreamers-docs + final commit → user approval gate → /dreamers-pr)
 ```
 
 All plans use Goal and Acceptance criteria, matching GitHub issue proposals. Lite, standard, and complex label complexity for review routing. They select the initial review lane through `/dreamers-review`: Vigil; Sentinel + Probe; or Sentinel + Probe + Hone. Explicit plan or user direction overrides that mapping. The review skill and its reviewers are read-only for project files; reviewers write the required `.dreamers/reviews/` artifacts. `/dreamers` applies findings and owns revalidation, review-rerun gates, user testing, and fix loops.

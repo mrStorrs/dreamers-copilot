@@ -107,6 +107,7 @@ expected_skills = [
     "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
+    "dreamers-retro",
     "dreamers-review",
     "dreamers-simplify",
     "dreamers-test",

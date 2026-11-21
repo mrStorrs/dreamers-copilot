@@ -36,6 +36,7 @@ Offer specialized choices when they fit better:
 - /dreamers-issue, /dreamers-new-project, /dreamers-find-refactors, and /dreamers-explain for focused discovery or explanation.
 - /dreamers-docs, /dreamers-pr, and /dreamers-pr-resolve for documentation, PR creation, or PR feedback.
 - /dreamers-instructions to review project AI instructions and apply approved edits.
+- /dreamers-retro to record what went wrong during a task and propose instruction edits for approval.
 - /dreamers-add-logging, /dreamers-cleanup-comments, /dreamers-cleanup-comments-branch, /dreamers-clean-work, and /dreamers-plan-verify for maintenance and verification.
 - /dreamers-update for Dreamers system-file maintenance and the approved Copilot-to-Codex transfer.
 

@@ -111,6 +111,28 @@ class DistributionTests(unittest.TestCase):
                              '.github/copilot-instructions.md', '.github/instructions/'):
                     self.assertIn(path, skill)
 
+    def test_retro_ships_and_only_full_delivery_invokes_it(self):
+        guide_path = 'dreamers/refs/instruction-writing-guide.md'
+        copilot = ROOT / '.github'
+        packages = (
+            ('Copilot', lambda path: (copilot / path).read_text(encoding='utf-8')),
+            ('Codex', self.files.__getitem__),
+        )
+        for runtime, read in packages:
+            with self.subTest(runtime=runtime):
+                guide = read(guide_path).rstrip()
+                retro = read('skills/dreamers-retro/SKILL.md')
+                self.assertIn(f'<instruction-writing-guide>\n{guide}\n</instruction-writing-guide>', retro)
+                self.assertIn('`.dreamers/retros/`', retro)
+                self.assertIn('explicit user approval before editing instructions', retro)
+
+                full = read('skills/dreamers/SKILL.md')
+                closeout = full.split('## Phase 3 — Milestone close-out', 1)[1].split('<dreamers-kernel>', 1)[0]
+                self.assertRegex(closeout, r'AI or workflow problem[^\n]*invoke `/?dreamers-retro`')
+                lite = read('skills/dreamers-lite/SKILL.md')
+                self.assertNotIn('dreamers-retro', lite)
+                self.assertNotIn('instruction scaffolding', lite)
+
     def test_echo_handoff_uses_the_same_single_prompt_in_both_packages(self):
         skill = 'skills/dreamers-docs/SKILL.md'
         copilot = (ROOT / '.github' / skill).read_text(encoding='utf-8')

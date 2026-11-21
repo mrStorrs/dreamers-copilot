@@ -30,11 +30,10 @@ Related changes resume `Implement and review loop` at step 1 with the current co
 
 For revisions to an open PR, use the post-PR close-out in `Delivery continuation` instead of the initial close-out below.
 
-1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
-2. invoke `/dreamers-docs`
-3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
-4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 
-5. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
+1. invoke `/dreamers-docs`
+2. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
+3. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`.
+4. upon approval invoke `/dreamers-pr`; pass `--issue <#|url>` if input referenced an issue. Return the PR URL.
 
 ## Dreamers Kernel
 <dreamers-kernel>

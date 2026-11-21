@@ -301,6 +301,19 @@
     },
     {
       "type": "skill",
+      "slug": "dreamers-retro",
+      "name": "dreamers-retro",
+      "description": "Review problems from a task and propose evidence-backed instruction changes.",
+      "author": "CJ Storrs",
+      "tags": [
+        "code",
+        "dreamers",
+        "skill"
+      ],
+      "path": ".github/skills/dreamers-retro/SKILL.md"
+    },
+    {
+      "type": "skill",
       "slug": "dreamers-review",
       "name": "dreamers-review",
       "description": "Review skill — selects Vigil for lite plans, Sentinel + Probe for standard plans, or Sentinel + Probe + Hone for complex plans unless explicitly directed otherwise. For plan-bound reviews, reads the linked or sibling verbatim Grill transcript when present and supplies it as intent context. Without a plan, infers intent from code and asks if unclear. Read-only.",
@@ -446,6 +459,10 @@
         {
           "type": "skill",
           "slug": "dreamers-pr-resolve"
+        },
+        {
+          "type": "skill",
+          "slug": "dreamers-retro"
         },
         {
           "type": "skill",
