@@ -58,7 +58,7 @@ Test coverage:
 - Navigation behavior changes require E2E coverage.
 
 Simplicity:
-- Flag added behavior the task does not require and complexity that can be removed. For each finding, name what to delete or simplify and explain why the change preserves required behavior, security, and existing caller contracts.
+- [ ] Inspect every line of code and every function in the review scope. Flag anything that could be simpler and any added behavior the task does not require. For each finding, name what to delete or simplify and explain why the change preserves required behavior, security, and existing caller contracts.
 - If a full refactor is the cleanest fix, state its scope in the finding: files, modules, call sites, and deletions where known.
 
 <comment-rules>
