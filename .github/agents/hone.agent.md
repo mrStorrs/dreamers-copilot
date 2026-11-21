@@ -53,8 +53,6 @@ The reviewer prepares one complete report in its assigned format, ending with `E
 
 For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
 
-For Vigil, a clean handoff needs only `Approved — no findings` and `End of handoff` on separate lines. For other outcomes, include the applicable status, each finding once, and any blocker or open question, then close with `End of handoff`. The finding itself carries any full-refactor scope. Vigil has no required audit or coverage sections.
-
 **Status line** (one of the following, allowing the reviewer format's `Status:` prefix and hyphen separator):
 - `Approved — no findings`
 - `Findings reported — N items`

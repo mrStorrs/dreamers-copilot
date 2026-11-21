@@ -65,7 +65,7 @@ flowchart TD
 | Test coverage (requirement matrix, layer audit, gaps) | Probe | Report with findings + requirement coverage table |
 | Simplicity / over-engineering / architecture | Hone | Report with findings incl. full-refactor recommendations |
 
-A clean Vigil handoff contains `Approved — no findings` and `End of handoff` on separate lines. Each finding appears once, with the scope of any proposed full refactor in the finding itself. For simplicity findings, Vigil names what to remove or replace and explains how the change preserves required behavior, security, and existing caller contracts. See the [review handoff contract](../../dreamers/refs/reviewer-findings-format.md).
+A clean Vigil handoff contains `Approved — no findings` and `End of handoff` on separate lines. Each finding appears once, with the scope of any proposed full refactor in the finding itself. For simplicity findings, Vigil names what to remove or replace and explains how the change preserves required behavior, security, and existing caller contracts. See [Vigil’s artifact instructions](../../agents/vigil.agent.md#artifact) for its report format and the [shared handoff contract](../../dreamers/refs/reviewer-findings-format.md) for report delivery and collection.
 
 ## Lane policy
 

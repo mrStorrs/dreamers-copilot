@@ -313,6 +313,7 @@ assert_patterns(
         "Grill transcript resolution": r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full",
         "Grill transcript reviewer context": r"absolute path and full verbatim contents.*plan/transcript conflict",
         "parallel spawning": r"launch every selected reviewer concurrently.*Never spawn or await reviewers sequentially",
+        "accept two-line Vigil approval": r"Accept a clean Vigil handoff with just `Approved — no findings` and `End of handoff` on separate lines",
         "caller owns fix loop": r"caller owns all finding disposition, gates, fixes, revalidation, and user testing",
     },
 )
@@ -337,6 +338,8 @@ assert_patterns(
     agent_root / "vigil.toml",
     {
         "planless Vigil review basis": r"If no plan is bound.*inferred-intent summary.*evidence",
+        "two-line Vigil approval": r"For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines",
+        "single Vigil finding and blocker reporting": r"include the applicable status, each finding once, and any blocker or open question",
         "acceptance criteria and removable complexity": re.escape(
             "Verify every acceptance criterion against the code and tests. "
             "Flag added behavior the task doesn’t require and complexity that can be removed. "
@@ -351,13 +354,6 @@ assert_no_patterns(
     {
         "retired Vigil report sections": r"Simplicity / Architecture Audit|Full Refactor Findings|Requirement Coverage\n",
         "retired Vigil self-check": r"Could this be done simpler",
-    },
-)
-assert_patterns(
-    dreamers_root / "refs/reviewer-findings-format.md",
-    {
-        "two-line Vigil approval": r"For Vigil, a clean handoff needs only `Approved — no findings` and `End of handoff` on separate lines",
-        "single Vigil finding and blocker reporting": r"include the applicable status, each finding once, and any blocker or open question",
     },
 )
 assert_patterns(

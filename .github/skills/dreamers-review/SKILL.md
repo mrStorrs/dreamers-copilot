@@ -40,13 +40,14 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Every reviewer prompt MUST include the review basis: either the absolute plan path or the inferred-intent summary with its evidence and confidence. For a plan-bound review with a resolved Grill transcript, include its absolute path and full verbatim contents; require the reviewer to use it when checking intent alignment and to report any plan/transcript conflict rather than silently choosing one. Explicitly say `no plan binding` for inferred-intent reviews.
 - Give each reviewer its assigned path and request the complete report in both copies.
 - Per-lens prompt context:
-  - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review against each acceptance criterion or agreed task requirement. Use the concise Vigil report defined in the review handoff contract.
+  - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review against each acceptance criterion or agreed task requirement. Use the report format in Vigil’s instructions.
   - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Artifact contains findings + intent-alignment summary.
   - **Probe** — test coverage (requirement matrix, layer audit, edge cases, gaps). Artifact contains findings + requirement coverage table.
   - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
 - Wait for all spawned reviewers to return.
 
 ## Step 3 — Report
+- Accept a clean Vigil handoff with just `Approved — no findings` and `End of handoff` on separate lines.
 - Collect one complete report per selected reviewer using the review handoff contract. For each missing handoff, report `Blocked — missing handoff for <reviewer>`. Report the results that did arrive.
 - Return each accepted report verbatim to the caller. Include its source and path when using a file.
 - Aggregate counts by severity and lens from the accepted reports. Surface all blocked statuses and open questions.
@@ -116,8 +117,6 @@ The caller assigns an unused absolute path under the target worktree's `.dreamer
 The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
 
 For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
-
-For Vigil, a clean handoff needs only `Approved — no findings` and `End of handoff` on separate lines. For other outcomes, include the applicable status, each finding once, and any blocker or open question, then close with `End of handoff`. The finding itself carries any full-refactor scope. Vigil has no required audit or coverage sections.
 
 **Status line** (one of the following, allowing the reviewer format's `Status:` prefix and hyphen separator):
 - `Approved — no findings`

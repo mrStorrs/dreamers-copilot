@@ -36,6 +36,8 @@ The review covers code, tests, docs, config, scripts, and git state. The orchest
 
 Follow the handoff contract supplied by the caller for both the assigned file and final reply. The contract is in `~/.copilot/dreamers/refs/reviewer-findings-format.md` in the Dreamers installation.
 
+For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines. For other outcomes, include the applicable status, each finding once, and any blocker or open question, then close with `End of handoff`. Include any full-refactor scope in the finding itself.
+
 ## Lens Rules
 
 Correctness:
