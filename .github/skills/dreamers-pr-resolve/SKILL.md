@@ -87,14 +87,20 @@ Read the full discussion. Handle every reviewer comment, including follow-ups; p
 - ❌ `agent_type: "forge"` / `"nova"` / `"bolt"` → FORBIDDEN (these are not subagents in this system — see `dreamers-kernel.md` § "Subagent allowlist").
 - Spawn only Vigil for review in Step 5. Use `/dreamers-docs` for the Echo handoff in Step 6.
 
-For each reviewer comment in an unresolved thread, judge whether to accept or reject it. You are the implementation expert and have full authority. **Do not feel obligated to accept every comment** — if a suggestion conflicts with the plan, the architecture, or is simply wrong, reject it and say why.
+Check each requested change against the governing plan or linked issue when available. Fixes needed to meet an acceptance criterion or correct a regression introduced by the PR are in scope even if the affected file was never named.
+
+For each out-of-scope request, show the user the comment and explain why it is outside scope. Ask **Include in this PR** or **Decline**. Wait for the decision before applying that change or replying on GitHub. Continue independent in-scope feedback while waiting.
+
+- **Include in this PR** → use the accepted-fix workflow below.
+- **Decline** → leave the change unapplied, reply in the original thread with `blocked: outside the scope of <plan or issue>` and a brief reason, and leave the thread unresolved.
+
+Judge in-scope requests on their merits. Reject incorrect or architecturally unsuitable suggestions with a reason.
 
 For each comment, record:
 - Thread ID + comment ID / URL
 - Path + comment body (one-line summary)
-- Decision: **accept** or **reject**
-- Rationale: one sentence
-- Final outcome: **fixed**, **blocked**, or **no-action**; fixing commit SHA or concrete reason (finalize after the checks below)
+- Decision and rationale per request: **accept**, **reject**, **pending scope decision**, or **declined scope expansion**
+- Final outcome per comment: **fixed**, **blocked**, or **no-action**, with the fixing commit SHA or reason. Wait for all of its scope decisions before finalizing. Use the decline reply if any request was declined. Mark a comment **fixed** only if all its requests were fixed.
 
 If **accept** → apply the fix inline (Edit the file). Stage with `git add`. Follow the comment + implementation discipline from `dreamers-kernel.md` and `comment-rules.md`.
 
@@ -161,10 +167,10 @@ Only push after explicit `Push to PR` approval: `git push`. On `Hold` → use St
 
 ## Step 7 — Reply to each comment, then resolve fixed threads
 
-Post a reply in the original GitHub review thread for every handled reviewer comment, including when all comments are rejected or blocked. Use exactly one of these outcome lines:
+Post a reply in the original GitHub review thread for each reviewer comment whose outcome is decided. Skip comments awaiting a scope decision, including in reply-only mode. Use exactly one of these outcome lines:
 
 - `fixed: in commit <SHA>` — the fix passed validation and required Vigil review, and the referenced commit is available on the remote PR branch. Use the actual fixing commit SHA, never a placeholder or an unpushed local commit.
-- `blocked: <reason>` — the issue should be fixed, but we were unable to complete it. State the concrete obstacle and any remaining work.
+- `blocked: <reason>` — state the obstacle and remaining work, or use the Step 3 reply for a declined scope expansion.
 - `no-action: <reason>` — we decided not to take action. Explain that decision; do not use this for an accepted issue we could not fix.
 
 Use GraphQL variables for the reply body so quotes and newlines remain data:
@@ -175,7 +181,7 @@ gh api graphql -f query='mutation($thread: ID!, $body: String!) { addPullRequest
 
 When a thread contains multiple reviewer comments, post a separate outcome reply for each and append its source comment URL on a separate line. Confirm each reply succeeded and record its URL before resolving anything. On API failure, leave the affected thread open and report the failure.
 
-Resolve a thread only when every handled reviewer comment in it is **fixed** and every required reply succeeded. In reply-only mode, do not resolve any threads.
+Resolve a thread only when every reviewer comment in it is **fixed** and every required reply succeeded. In reply-only mode, do not resolve any threads.
 
 ```bash
 gh api graphql -f query='mutation { resolveReviewThread(input: { threadId: "THREAD_ID" }) { thread { isResolved } } }'
@@ -184,6 +190,8 @@ gh api graphql -f query='mutation { resolveReviewThread(input: { threadId: "THRE
 Leave threads with **blocked** or **no-action** outcomes open so the reviewer can see the remaining issue or decision.
 
 ## Step 8 — Report
+
+If scope decisions remain, wait for the user after processing independent feedback. Resume those requests at Step 3.
 
 Report to the user:
 - Counts of **fixed**, **blocked**, and **no-action** comments, with path + fixing SHA or reason per comment
