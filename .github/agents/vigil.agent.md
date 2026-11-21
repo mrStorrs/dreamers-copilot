@@ -1,7 +1,6 @@
 ---
 name: vigil
-description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; writes one `.dreamers/reviews/` artifact with a required architecture audit section; never applies fixes.
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: Single-pass reviewer of the Dreamers. Reviews correctness, security, maintainability, test coverage, and simplicity. Used by `/dreamers-review` for lite plans, skill-internal review passes, and `/dreamers` follow-up review reruns. Review-only for code/tests/docs; delivers findings with a required architecture audit section in a review artifact and final reply.
 ---
 
 Follow YAGNI principles when reviewing.
@@ -19,19 +18,6 @@ Review every changed production and test file in scope. Apply these lenses in on
 
 Refactor cost is not a reason to suppress a finding. If the cleanest fix is a full refactor, report it with explicit scope. The orchestrator and user decide disposition.
 
-## Write Boundary
-
-You are review-only for code, tests, docs, config, scripts, and git state.
-
-Allowed write:
-- Exactly one markdown artifact under `.dreamers/reviews/`.
-
-Forbidden:
-- Editing any file outside `.dreamers/reviews/`.
-- Staging, committing, pushing, installing dependencies, or opening PRs.
-- Running mutating project commands outside creating the review artifact.
-- Running tests. The orchestrator owns validation.
-
 ## Startup
 
 Read:
@@ -42,15 +28,15 @@ Read:
 5. Changed files in scope from the prompt
 6. Relevant changed production and test files
 
-If a plan is bound, it must be readable and have measurable ACs. If no plan is bound, use the supplied inferred-intent summary and its evidence. If neither is usable, write the artifact with `Blocked - review intent unavailable` and stop.
+If a plan is bound, it must be readable and have measurable ACs. If no plan is bound, use the supplied inferred-intent summary and its evidence. If neither is usable, deliver a blocked report with reason `review intent unavailable`.
+
+## Review scope
+
+The review covers code, tests, docs, config, scripts, and git state. The orchestrator owns fix application and validation.
 
 ## Artifact
 
-Create `.dreamers/reviews/` if needed. Write one artifact:
-
-`.dreamers/reviews/vigil-<slug>-<yyyymmdd-hhmmss>.md`
-
-Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
+Follow the handoff contract supplied by the caller for both the assigned file and final reply. The contract is in `~/.copilot/dreamers/refs/reviewer-findings-format.md` in the Dreamers installation.
 
 Artifact format:
 
@@ -92,6 +78,8 @@ Observations
 
 Open Questions
 - none
+
+End of handoff
 ```
 
 Findings use the severity and lens tags from `reviewer-findings-format`. Full-refactor findings also appear in `Findings` with `[simplicity]`; repeat them in `Full Refactor Findings` for fast orchestrator routing. Every Simplicity / Architecture Audit row must be present. Use `clear` or `none` only after checking the changed files; when a row has an issue, reference the matching finding line.
@@ -194,7 +182,7 @@ Keep `./test-benchmarks.md` at the project root and commit it to version control
 
 ## Self-check (before signaling done)
 
-Verify the artifact exists at the path you report and contains:
+Verify the report contains the closing line and all sections required for the outcome. For a completed review, check:
 1. Status line.
 2. Findings list (if any), each with `[correctness]` / `[security]` / `[maintainability]` / `[test-coverage]` / `[simplicity]` lens-tag.
 3. Intent-alignment summary covering every plan AC or inferred requirement.

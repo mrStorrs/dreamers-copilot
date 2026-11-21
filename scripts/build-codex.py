@@ -113,7 +113,7 @@ def package(root=ROOT):
                 rel = f'agents/{fields["name"]}.toml'
                 text = agent_toml({
                     'name': fields['name'], 'description': translate(fields['description']).strip(),
-                    'sandbox_mode': 'workspace-write', 'developer_instructions': translate(body),
+                    'developer_instructions': translate(body),
                 })
             else:
                 text = translate(text)

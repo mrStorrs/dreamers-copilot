@@ -1,6 +1,6 @@
 ---
 name: dreamers-test
-description: "Standalone focused Vigil review (test coverage audit). Read-only — reads Vigil's `.dreamers/reviews/` artifact for AC coverage, layer audit, edge cases, and regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps."
+description: "Standalone focused Vigil review (test coverage audit). Read-only — reports Vigil's findings for AC coverage, layer audit, edge cases, and regression risks. No auto-fix. Triggers: /dreamers-test, test coverage audit, audit tests, check test gaps."
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
@@ -98,6 +98,8 @@ Default scope (no flags): staged + unstaged changes.
 
 ## Spawn Vigil
 
+Assign Vigil a fresh handoff path using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`.
+
 Invoke via the runtime's subagent-spawn mechanism:
 
 ```
@@ -109,12 +111,11 @@ prompt:
   Branch: <current feature branch>
   Default branch: <detected default>
   Focus: test coverage (AC matrix is N/A here — no plan binding; prioritize layer audit + edge cases + regression risks for the scope, while still reporting critical correctness/security/maintainability/simplicity findings if they appear).
-  Write: exactly one .dreamers/reviews/vigil-*.md artifact.
-  Return: status + counts + artifact path + blocked reason + open questions only.
+  Handoff: <assigned path>. Attempt to save the full report there and return the same full report in your final reply.
 ```
 
 ## Output
 
-Read the artifact path returned by Vigil and pass the artifact contents through to the user verbatim. Do NOT write any tests — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+Collect Vigil's complete handoff using the same contract. Report a missing handoff if neither copy is complete. Pass the accepted report to the user verbatim. Do NOT write any tests — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
 
 If the user wants missing tests written from the findings, suggest: "Run `/dreamers-implement` with a plan that addresses these coverage gaps."

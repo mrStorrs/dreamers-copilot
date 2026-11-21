@@ -112,7 +112,7 @@ Phases 1–5 are identical to `/dreamers-cleanup-comments`, scoped to the branch
 1. **Audit** the branch-diff scope; categorize comment-rules violations.
 2. **Propose** changes; `request_information` for approval.
 3. **Apply** changes inline; stage with `git add`.
-4. **Optional Vigil review** of changed files. Require one `.dreamers/reviews/vigil-*.md` artifact and read it before applying findings.
+4. **Optional Vigil review** of changed files. Assign Vigil a fresh path and collect its handoff using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`. Halt on a missing handoff or blocked status and raise open questions before applying findings.
 5. **Commit** with message `chore: comment cleanup on feature branch`. Do NOT push.
 
 ## When this skill is the right tool

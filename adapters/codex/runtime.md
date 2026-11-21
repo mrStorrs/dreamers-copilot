@@ -29,7 +29,6 @@ Project instructions may live in `AGENTS.md`, `CODEX.md`, `.github/copilot-instr
 ## Planning And Progress
 - The outermost Dreamers skill owns progress tracking with `update_plan` when available; otherwise keep a concise progress record in the conversation. Helper skills may make standalone todos optional.
 - Delivery skills keep the goal, owning skill, branch/PR, next phase, and review count across follow-ups per `Delivery continuation` in `dreamers/instructions/dreamers.instructions.md`. Questions and detours do not reset the workflow or review cap.
-- Spawned reviewer or documentarian roles must not call `update_plan`; their output is the handoff.
 
 ## Delegation
 - Use the available Codex `spawn_agent` and `wait_agent` tools. References to `multi_agent_v1` also apply to the equivalent `collaboration` namespace when that is the runtime's tool surface.
@@ -42,7 +41,7 @@ Project instructions may live in `AGENTS.md`, `CODEX.md`, `.github/copilot-instr
 - Former `request_information`: ask the user in the conversation and wait.
 - Former `task()`: `multi_agent_v1.spawn_agent` with `agent_type`, followed by `wait_agent` when the result is needed.
 - Former `view`: read the local file with available file tools.
-- Former `manage_todo_list`: `update_plan` in the parent conversation only.
+- Former `manage_todo_list`: `update_plan`.
 - Former Copilot global home `~/.copilot`: `$CODEX_HOME` when set, otherwise `~/.codex`.
 
 ## Git And Shell Safety

@@ -33,8 +33,8 @@ flowchart TD
     P4["Phase 4 — Optional Vigil review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip| P5
-    ReviewGate -->|Yes — review| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>writes review artifact"]
-    SpawnVigil --> ReadArtifact["Read Vigil artifact"]
+    ReviewGate -->|Yes — review| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>returns full report"]
+    SpawnVigil --> ReadArtifact["Use complete Vigil report<br/>from the file or final reply"]
     ReadArtifact --> ApplyFindings["Apply findings inline"]
     ApplyFindings --> P5
 
@@ -58,5 +58,5 @@ flowchart TD
 - **Refuses to run on the default branch.** Halt with a redirect to `/dreamers-cleanup-comments` for project-wide sweeps.
 - **Fetch before diff.** Stale `origin/$DEFAULT` produces wrong scope — always fetch first.
 - **Same phases as the project-wide variant** — only the scope source differs.
-- **Review artifacts are read before fixes.** Optional Vigil review writes `.dreamers/reviews/vigil-*.md`; Phase 4 applies findings from that artifact.
+- **Review reports are read before fixes.** If Vigil runs, Phase 4 uses one complete copy from the current file or final reply and raises any missing handoff, blocker, or open question.
 - **Pre-PR positioning.** Designed to run before opening a PR; commit stays on branch for `/dreamers-pr` to push.

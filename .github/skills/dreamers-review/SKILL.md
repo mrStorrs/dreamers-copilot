@@ -1,6 +1,6 @@
 ---
 name: dreamers-review
-description: 'Review skill — selects reviewers from plan complexity or explicit direction, includes a linked verbatim Grill transcript when present, or infers intent without a plan. Reports artifact-backed findings; read-only for project files and git state. Triggers: /dreamers-review, review my code, audit.'
+description: 'Review skill — selects reviewers from plan complexity or explicit direction, includes a linked verbatim Grill transcript when present, or infers intent without a plan. Reports structured findings; read-only for project files and git state. Triggers: /dreamers-review, review my code, audit.'
 argument-hint: '[plan-path] [--vigil | --full | --lens sentinel|probe|hone | --lenses sentinel,probe[,hone]] [--paths <glob>] [--branch]'
 ---
 
@@ -34,12 +34,11 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
   2. Honor an explicit reviewer requirement written in the plan.
   3. Otherwise read `**Plan-type:**`: `lite` = Vigil; `standard` = Sentinel + Probe; `complex` = Sentinel + Probe + Hone.
   4. If no plan or Plan-type is available, use Sentinel + Probe + Hone.
-- Before spawning, record existing matching artifacts under `.dreamers/reviews/{vigil,sentinel,probe,hone}-*.md` so stale files are never mistaken for this run.
+- Before spawning, assign a fresh handoff path to each selected reviewer using the review handoff contract below.
 - For multiple selected reviewers, launch every reviewer in parallel through the runtime's batched-spawn mechanism, each with `mode: "sync"`. Never spawn or await reviewers sequentially.
 - Vigil and single-lens modes spawn only the chosen reviewer.
-- Every reviewer prompt MUST include `Do NOT call manage_todo_list.`
 - Every reviewer prompt MUST include the review basis: either the absolute plan path or the inferred-intent summary with its evidence and confidence. For a plan-bound review with a resolved Grill transcript, include its absolute path and full verbatim contents; require the reviewer to use it when checking intent alignment and to report any plan/transcript conflict rather than silently choosing one. Explicitly say `no plan binding` for inferred-intent reviews.
-- Every reviewer prompt MUST require exactly one artifact under `.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md` and short chat output containing only status, counts, artifact path, blocked reason, and open questions.
+- Give each reviewer its assigned path and request the complete report in both copies.
 - Per-lens prompt context:
   - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review with the required architecture audit. Artifact contains findings, intent alignment, requirement coverage, and architecture audit sections.
   - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Artifact contains findings + intent-alignment summary.
@@ -48,18 +47,16 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Wait for all spawned reviewers to return.
 
 ## Step 3 — Report
-- For each selected reviewer, read the artifact path returned in chat. If the path is missing or unreadable, inspect only new matching artifacts created for this review; if exactly one exists for that reviewer, read it. Otherwise surface `Blocked — review artifact missing for <reviewer>` and stop.
-- Return per-reviewer artifact contents verbatim to the caller, including artifact paths.
-- Aggregate counts by severity + lens from the artifacts for a one-line summary.
-- Surface any `Blocked` status from any artifact (caller handles).
-- Surface any open questions raised by any artifact (caller handles).
+- Collect one complete report per selected reviewer using the review handoff contract. For each missing handoff, report `Blocked — missing handoff for <reviewer>`. Report the results that did arrive.
+- Return each accepted report verbatim to the caller. Include its source and path when using a file.
+- Aggregate counts by severity and lens from the accepted reports. Surface all blocked statuses and open questions.
 
 ## Exit
-- Artifact-backed structured findings per `reviewer-findings-format` (Kernel). The caller applies (or defers) findings on its own terms.
+- Structured findings per `reviewer-findings-format` (Kernel). The caller applies (or defers) findings on its own terms.
 
 ## Lane policy
 
-This skill owns reviewer selection and execution. The caller owns all finding disposition, gates, fixes, revalidation, and user testing. This skill does not modify project code, tests, docs, config, dependencies, or git state. Each spawned reviewer is read-only for those same project files; its sole write is exactly one `.dreamers/reviews/` artifact.
+This skill owns reviewer selection and execution. The caller owns all finding disposition, gates, fixes, revalidation, and user testing. This skill does not modify project code, tests, docs, config, dependencies, or git state. The reviewers deliver findings for the caller.
 
 Lane choices:
 
@@ -112,17 +109,15 @@ Co-authored-by: The Dreamers System
 <reviewer-findings-format>
 # Reviewer Findings Format
 
-## Artifact contract
+## Review handoff
 
-Each reviewer writes exactly one markdown artifact under `.dreamers/reviews/`:
+The caller assigns an unused absolute path under the target worktree's `.dreamers/reviews/` for each invocation. Use `<reviewer>-<scope>-<unique-id>.md` with the section in the scope for section audits. Pass the exact path and this handoff requirement in the agent prompt.
 
-`.dreamers/reviews/<reviewer>-<slug>-<yyyymmdd-hhmmss>.md`
+The reviewer prepares one complete report in its assigned format, ending with `End of handoff` on its own line. Create the parent directory if needed, attempt to write the report at the assigned path, and return the same complete report in the final reply, even if the write fails.
 
-Use the branch, plan slug, or task slug for `<slug>`. If unavailable, use `review`.
+For each expected reviewer invocation, check the assigned file and the final reply from that invocation. A complete report has a valid status, the required sections for the reported outcome, the stated number of findings, and the closing line. A blocked report needs the blocker and any open questions in addition to the closing line. Use the complete file if available, otherwise use the complete reply. Process one copy per invocation. If neither copy is complete, report the missing handoff for that reviewer and scope. Preserve blocked status, findings, and open questions from the accepted report and apply the caller's existing gates.
 
-The artifact is the durable handoff. Chat output is only a short status pointer with the artifact path. The caller must read the artifact before reporting, applying, or deferring findings.
-
-**Status line** (one of):
+**Status line** (one of the following, allowing the reviewer format's `Status:` prefix and hyphen separator):
 - `Approved — no findings`
 - `Findings reported — N items`
 - `Blocked — <reason>`
@@ -142,7 +137,7 @@ The artifact is the durable handoff. Chat output is only a short status pointer 
 
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
-Reviewers are read-only / report-only for code, tests, docs, config, scripts, and git state. The only allowed write is the single review artifact. The caller applies fixes per its own orchestrator-as-fixer behavior.
+Reviewers are report-only for code, tests, docs, config, scripts, and git state. The caller applies fixes per its own orchestrator-as-fixer behavior.
 </reviewer-findings-format>
 
 <logging-discipline>
@@ -157,7 +152,7 @@ Reviewers are read-only / report-only for code, tests, docs, config, scripts, an
 # Agent Failure Recovery (mandatory)
 
 When a spawned agent hits a rate limit, crashes, or times out mid-run:
-1. Read whatever workspace files the agent managed to write before failing.
+1. Check for a complete reviewer handoff using the review handoff contract. Read whatever workspace files the agent managed to write before failing.
 2. Determine which steps completed and which remain (check workspace outputs, git log, test results).
 3. Complete remaining steps directly (you have Read, Write, Edit, Glob, Grep, Bash in the main conversation) or re-spawn the agent scoped to only the remaining work.
 4. Do not re-run steps that already completed — build on partial progress.

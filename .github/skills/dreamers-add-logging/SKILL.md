@@ -98,8 +98,8 @@ Run the project's type-check command after edits. Fix any type errors.
 
 Call `request_information` with `["Yes — review before commit", "No — skip review", "Other"]`.
 
-- Yes → invoke `agent_type: "vigil"` with the changed-files scope. Prompt Vigil to focus on logging-standards plus correctness/security/maintainability risks, while still reporting coverage or simplicity findings if they appear. Apply findings inline.
-- Require Vigil to write one `.dreamers/reviews/vigil-*.md` artifact and return only status, counts, artifact path, blocked reason, and open questions. Read the artifact before applying findings.
+- Yes → invoke `agent_type: "vigil"` with the changed-files scope. Prompt Vigil to focus on logging-standards plus correctness/security/maintainability risks, while still reporting coverage or simplicity findings if they appear.
+- Assign Vigil a fresh path and collect its handoff using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`. Halt on a missing handoff or blocked status and raise open questions before applying findings inline.
 - No → proceed to commit.
 
 ## Phase 5 — Commit

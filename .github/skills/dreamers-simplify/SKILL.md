@@ -1,6 +1,6 @@
 ---
 name: dreamers-simplify
-description: "Standalone focused Vigil review (architectural quality). Read-only — reads Vigil's `.dreamers/reviews/` artifact for over-engineering, premature abstractions, redundancy, and bad architecture. May recommend full refactors. No auto-fix. Triggers: /dreamers-simplify, simplify this, audit for over-engineering, architectural review."
+description: "Standalone focused Vigil review (architectural quality). Read-only — reports Vigil's findings for over-engineering, premature abstractions, redundancy, and bad architecture. May recommend full refactors. No auto-fix. Triggers: /dreamers-simplify, simplify this, audit for over-engineering, architectural review."
 argument-hint: '[--branch] [--paths <glob>] [--all]'
 ---
 
@@ -60,6 +60,8 @@ Default scope (no flags): staged + unstaged changes.
 
 ## Spawn Vigil
 
+Assign Vigil a fresh handoff path using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`.
+
 Invoke via the runtime's subagent-spawn mechanism:
 
 ```
@@ -71,12 +73,11 @@ prompt:
   Branch: <current feature branch>
   Default branch: <detected default>
   Focus: simplicity / over-engineering / redundancy / bad architecture. Recommend full refactors when warranted, while still reporting critical correctness/security/maintainability/test-coverage findings if they appear.
-  Write: exactly one .dreamers/reviews/vigil-*.md artifact.
-  Return: status + counts + artifact path + blocked reason + open questions only.
+  Handoff: <assigned path>. Attempt to save the full report there and return the same full report in your final reply.
 ```
 
 ## Output
 
-Read the artifact path returned by Vigil and pass the artifact contents through to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
+Collect Vigil's complete handoff using the same contract. Report a missing handoff if neither copy is complete. Pass the accepted report to the user verbatim. Do NOT apply any of the suggested fixes / refactors — this is a read-only audit. Surface any `Blocked` status or open questions for user follow-up.
 
 If Vigil recommends a large refactor, suggest: "Run `/dreamers-plan` to scope the refactor, then `/dreamers` to execute it."

@@ -25,8 +25,8 @@ flowchart TD
     P4["Phase 4 — Optional Vigil review"] --> ReviewGate{"request_information"}
     ReviewGate -->|Other| ReviewGate
     ReviewGate -->|No — skip review| P5
-    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>writes review artifact"]
-    SpawnVigil --> ReadArtifact["Read Vigil artifact"]
+    ReviewGate -->|Yes — review before commit| SpawnVigil["Spawn Vigil<br/>scope = changed files<br/>returns full report"]
+    SpawnVigil --> ReadArtifact["Use complete Vigil report<br/>from the file or final reply"]
     ReadArtifact --> ApplyFindings["Apply findings inline<br/>comment-rules + logging-standards"]
     ApplyFindings --> P5
 
@@ -52,4 +52,4 @@ flowchart TD
 - **NEVER-LOG violations are high priority.** Secrets, PII, and full request bodies in INFO logs surface first.
 - **Logger conventions are detected, not invented.** Phase 2 surfaces the existing library/format so additions stay consistent.
 - **No push.** This skill exits at the commit. Push is the user's call or `/dreamers-pr`'s job.
-- **Review artifacts are read before fixes.** Optional Vigil review writes `.dreamers/reviews/vigil-*.md`; Phase 4 applies findings from that artifact.
+- **Review reports are read before fixes.** If Vigil runs, Phase 4 uses one complete copy from the current file or final reply and raises any missing handoff, blocker, or open question.

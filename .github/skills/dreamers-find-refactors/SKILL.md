@@ -130,7 +130,7 @@ Use a short slug from the user's task or repo name. If no clear slug exists, use
 
 ## Phase 3 - Section Hone audits
 
-Record existing `.dreamers/reviews/hone-refactor-*.md` files before spawning so stale artifacts are never mistaken for this run.
+Assign each section audit a fresh handoff path using the review handoff contract in `~/.copilot/dreamers/refs/reviewer-findings-format.md`.
 
 Spawn Hone once per section. Batch parallel calls with a sane concurrency limit, normally 4-6 at a time. If the runtime cannot batch, run sections sequentially.
 
@@ -138,27 +138,23 @@ Each Hone prompt MUST include all required Dreamers delegated-agent fields and:
 
 ```
 Context: Section-scoped refactor discovery via /dreamers-find-refactors. This is read-only discovery for future plans, not implementation review.
-Prior work: Section manifest written to <absolute path to sections.md>. Existing review artifacts before this run: <list or none>.
-What is needed: Audit only this section for the selected refactor lenses. Write exactly one artifact at .dreamers/reviews/hone-refactor-<section-slug>-<yyyymmdd-hhmmss>.md. Return status, counts, artifact path, blocked reason, and open questions only.
+Prior work: Section manifest written to <absolute path to sections.md>.
+What is needed: Audit only this section for the selected refactor lenses. Attempt to save the full report to <assigned path> and return the same full report in your final reply.
 Selected lenses: <selected lenses + custom directive if any>
 Section: <section slug + purpose>
 Scope: <section file list>
 Constraints:
-- Read-only for project code, tests, docs, config, scripts, and git state.
-- Allowed write: exactly one markdown artifact under .dreamers/reviews/.
-- Do not stage, commit, push, install dependencies, open PRs, or run mutating project commands.
 - Refactor cost is not a moderating factor. Surface full refactors with explicit breadth.
 - Do not turn each smell into a plan; report findings precisely so the parent can group them.
 Definition of Done:
-- Artifact exists at the requested path.
+- Complete report follows the review handoff contract.
 - Findings use reviewer format with [simplicity] and explicit file:line or scoped path.
 - Full-refactor findings include breadth: files, modules, call sites, deletions where known.
 - Observations and Open Questions are present.
 Plan file path: none
-Do NOT call manage_todo_list. The skill that invoked you owns its todo.
 ```
 
-Hone artifact format should be the normal artifact contract plus:
+For a completed section audit, add these fields to the normal report format:
 
 ```
 Section: <section-slug>
@@ -171,10 +167,7 @@ Plan Candidates
 
 ## Phase 4 - Synthesis
 
-Read every returned Hone artifact path. If a path is missing or unreadable:
-1. Inspect only new `.dreamers/reviews/hone-refactor-*.md` artifacts created after Phase 3 started.
-2. If exactly one new artifact matches the section, read it.
-3. Otherwise mark that section as blocked in the summary and continue with other sections.
+Collect one complete report per section using the same handoff contract. Check that the section in a completed report matches the assigned section. Record a missing handoff or a reported blocker under Blocked sections and continue with the other sections. Carry forward open questions from all accepted reports.
 
 Deduplicate overlapping findings across sections. Group findings into coherent refactor candidates by implementation boundary, not by raw finding count:
 - one module-level refactor can absorb many findings in one section
@@ -194,13 +187,13 @@ Format:
 Selected lenses
 - <lens>
 
-Artifacts
-- <section>: <artifact path> - <status>
+Section reports
+- <section>: <file path or final reply> - <status>
 
 Candidates
 1. <candidate title>
    - Severity: critical/high/medium/low
-   - Source findings: <artifact path + finding bullets>
+   - Source findings: <section report source + finding bullets>
    - Affected files: <paths>
    - Suggested plan: <plan slug>
    - Rationale: <one sentence>
@@ -221,7 +214,7 @@ If open questions affect whether a plan should exist, ask the user once before P
 
 Write `plan-NN-<name>.md` under `.dreamers/plans/feature-refactor-<slug>/` using `plan-format`. For multiple plans, add `manifest.md` using `manifest-format`. Fill the outlines without their outer sync tags.
 
-Group findings into the smallest coherent shippable plans. Link the source Hone artifacts and synthesis summary from the Goal; include verified affected paths in acceptance criteria when needed to define the outcome. Include code only when a minimal interface/type signature is an agreed contract.
+Group findings into the smallest coherent shippable plans. Link the synthesis summary from the Goal. Link source reports when files are available and cite the section and findings in the summary for reply-only reports. Include verified affected paths in acceptance criteria when needed to define the outcome. Include code only when a minimal interface/type signature is an agreed contract.
 
 <plan-format>
 Use the Goal and Acceptance criteria body from the approved proposal.
@@ -269,7 +262,7 @@ Keep plans in execution order. Manifest ACs cover outcomes requiring the whole s
 Present:
 - section manifest path
 - summary path
-- Hone artifact paths
+- Section report sources
 - generated plan paths
 - manifest path when created
 - skipped/deferred findings

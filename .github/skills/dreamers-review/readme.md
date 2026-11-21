@@ -25,7 +25,7 @@ flowchart TD
     ModeCheck -->|--lens probe| LensP["Single-lens: Probe"]
     ModeCheck -->|--lens hone| LensH["Single-lens: Hone"]
 
-    Triad --> Spawn["mode: sync<br/>each prompt MUST include<br/>Do NOT call manage_todo_list"]
+    Triad --> Spawn["mode: sync<br/>assign a unique file path per reviewer"]
     Standard --> Spawn
     Vigil --> Spawn
     Selected --> Spawn
@@ -33,15 +33,15 @@ flowchart TD
     LensP --> Spawn
     LensH --> Spawn
 
-    Spawn --> WriteArtifact["Each reviewer writes exactly one<br/>.dreamers/reviews artifact"]
+    Spawn --> WriteArtifact["Reviewers attempt to save full reports<br/>and return the same reports in final replies"]
     WriteArtifact --> Wait["Wait for all spawned<br/>reviewers to return"]
-    Wait --> Collect["Read returned artifacts"]
+    Wait --> Collect["Use one complete copy per reviewer<br/>from the current file or final reply"]
     Collect --> Aggregate["Aggregate counts<br/>by severity + lens"]
     Aggregate --> CheckStatus{"Reviewer<br/>statuses?"}
 
-    CheckStatus -->|Blocked| Surface1["Surface Blocked verbatim<br/>caller handles"]
+    CheckStatus -->|Blocked or missing handoff| Surface1["Surface blocked status or missing handoff<br/>caller handles"]
     CheckStatus -->|Open questions| Surface2["Surface open questions<br/>caller handles"]
-    CheckStatus -->|Approved + Findings| Report["Return artifact findings<br/>verbatim to caller"]
+    CheckStatus -->|Approved + Findings| Report["Return accepted reports<br/>verbatim to caller"]
 
     Surface1 --> End(["Exit with status"])
     Surface2 --> End
@@ -60,10 +60,10 @@ flowchart TD
 
 | Lens | Reviewer | Returns |
 |---|---|---|
-| Combined correctness, security, maintainability, coverage, and simplicity | Vigil | One artifact with findings, intent alignment, requirement coverage, and architecture audit |
-| Correctness / security / maintainability | Sentinel | Artifact with findings + intent-alignment summary |
-| Test coverage (requirement matrix, layer audit, gaps) | Probe | Artifact with findings + requirement coverage table |
-| Simplicity / over-engineering / architecture | Hone | Artifact with findings incl. full-refactor recommendations |
+| Combined correctness, security, maintainability, coverage, and simplicity | Vigil | Report with findings, intent alignment, requirement coverage, and architecture audit |
+| Correctness / security / maintainability | Sentinel | Report with findings + intent-alignment summary |
+| Test coverage (requirement matrix, layer audit, gaps) | Probe | Report with findings + requirement coverage table |
+| Simplicity / over-engineering / architecture | Hone | Report with findings incl. full-refactor recommendations |
 
 ## Lane policy
 
@@ -76,15 +76,14 @@ flowchart TD
 | standard | Sentinel + Probe | Standard plan or explicit combined correctness and coverage audit. |
 | full | Sentinel + Probe + Hone | Complex plan, explicit full review, or standalone default. |
 
-Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. Without a plan, it infers the intended behavior from user context, branch/PR metadata, the selected diff, tests, changed code, and nearby conventions; an ambiguous basis gets one user question before review. Inferred-intent reviews use the full triad unless the user chose a lane. This skill owns selection and execution, then reports artifact-backed results.
+Selection precedence is explicit user direction or lane flag, then an explicit reviewer requirement in the plan, then `Plan-type`: lite → Vigil; standard → Sentinel + Probe; complex → Sentinel + Probe + Hone. Without a plan, it infers the intended behavior from user context, branch/PR metadata, the selected diff, tests, changed code, and nearby conventions; an ambiguous basis gets one user question before review. Inferred-intent reviews use the full triad unless the user chose a lane. This skill owns selection and execution, then reports structured results.
 
 ## Key invariants
 
-- **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers` Step 5, or whoever invoked it) decides what to do with the findings. Reviewers may write only their required `.dreamers/reviews/` artifacts.
+- **Read-only.** This skill does NOT apply fixes. The caller (`/dreamers` Step 5, or whoever invoked it) decides what to do with the findings. Reviewers are report-only for project files.
 - **Grill context follows the plan.** Resolve the plan's `**Grilling transcript:**` link, falling back to a sibling `grilling-transcript.md`; when readable, pass its full verbatim contents to every reviewer for intent alignment. A referenced but unreadable transcript blocks review.
 - **`/dreamers` reruns.** Routine follow-up review reruns use `/dreamers-review --vigil`. A full or selected-lane rerun runs only when the major-change rerun gate asks the user and the user selects it.
 - **No major-refactor gate here.** That logic lives in the caller. This skill just reports.
-- **Artifacts are the handoff.** Each selected reviewer writes one `.dreamers/reviews/<reviewer>-*.md` artifact; this skill reads those files before reporting.
-- **All reviewer prompts MUST include** `Do NOT call manage_todo_list.`
+- **One handoff per reviewer.** Use the complete report at the assigned `.dreamers/reviews/<reviewer>-*.md` path or the complete final reply from the same invocation. Report any missing handoff, blocker, or open question.
 - **`--no-apply` doesn't exist** — this skill is always read-only by design.
 - **Todo ownership is contextual.** Standalone todos are optional; when invoked by a delivery skill, review completes the phase under its existing todo.

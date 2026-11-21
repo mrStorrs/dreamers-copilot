@@ -6,7 +6,7 @@
     },
     {
       "from": "All `task()` calls use `mode: \"sync\"` — the call blocks until the agent returns.",
-      "to": "- **Mandatory line:** `Do NOT call update_plan. The parent Dreamers skill owns the plan.`\n\nAfter spawning a required Dreamers role, wait for its result before continuing. Launch all selected reviewers before waiting in a parallel review lane."
+      "to": "After spawning a required Dreamers role, wait for its result before continuing. Launch all selected reviewers before waiting in a parallel review lane."
     }
   ],
   "dreamers/refs/user-testing-gate.md": [
