@@ -67,6 +67,8 @@ flowchart TD
 
 A clean Vigil handoff contains `Approved — no findings` and `End of handoff` on separate lines. Each finding appears once, with the scope of any proposed full refactor in the finding itself. For simplicity findings, Vigil names what to remove or replace and explains how the change preserves required behavior, security, and existing caller contracts. See [Vigil’s artifact instructions](../../agents/vigil.agent.md#artifact) for its report format and the [shared handoff contract](../../dreamers/refs/reviewer-findings-format.md) for report delivery and collection.
 
+Vigil checks that the implementation meets each requirement with the simplest code that preserves required behavior, security, and existing caller contracts. It maps requirements to their covering tests and flags redundant tests, tests for unrequested behavior, and avoidable test runtime. It prefers a faster setup or test layer when it offers the same regression protection.
+
 ## Lane policy
 
 | Lane | Reviewers | Normal use |

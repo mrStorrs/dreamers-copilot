@@ -296,7 +296,7 @@ Assert-Patterns (Join-Path $skillRoot "dreamers-review/SKILL.md") @{
 }
 Assert-Patterns (Join-Path $agentRoot "vigil.agent.md") @{
     "planless Vigil review basis" = "If no plan is bound.*inferred-intent summary.*evidence"
-    "Vigil acceptance criteria and agreed requirements" = "Verify every acceptance criterion against the code and tests.*use the agreed task requirements"
+    "Vigil acceptance criteria and agreed requirements" = "Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible"
 }
 Assert-Patterns (Join-Path $agentRoot "probe.agent.md") @{
     "planless Probe review basis" = "no plan is bound.*inferred requirements"

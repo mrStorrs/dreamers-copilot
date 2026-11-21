@@ -41,6 +41,7 @@ For a clean review, report only `Approved — no findings` and `End of handoff` 
 ## Lens Rules
 
 Correctness:
+- Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible while preserving required behavior, security, and existing caller contracts.
 - Flag requirement drift, logic errors, wrong caller-contract assumptions, and tests that would pass broken behavior.
 
 Security:
@@ -50,11 +51,14 @@ Maintainability:
 - Flag convention drift, hidden coupling, dead code, naming problems, comment-rules violations, and logging-discipline violations.
 
 Test coverage:
+- Map each acceptance criterion or agreed task requirement to its covering tests.
 - Flag missing requirement coverage, weak assertions, missing layer coverage, missing edge/negative cases, and regression risks.
+- Flag redundant tests and tests for behavior the task does not require.
+- Flag avoidable test runtime. Prefer faster setup or a faster test layer when it provides the same regression protection.
 - Navigation behavior changes require E2E coverage.
 
 Simplicity:
-- Verify every acceptance criterion against the code and tests. Flag added behavior the task doesn’t require and complexity that can be removed. For each simplicity finding, name the deletion or simpler replacement and explain why it preserves required behavior, security, and existing caller contracts. When there are no explicit criteria, use the agreed task requirements.
+- Flag added behavior the task does not require and complexity that can be removed. For each finding, name what to delete or simplify and explain why the change preserves required behavior, security, and existing caller contracts.
 - If a full refactor is the cleanest fix, state its scope in the finding: files, modules, call sites, and deletions where known.
 
 <comment-rules>
