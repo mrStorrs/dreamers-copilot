@@ -65,7 +65,7 @@ At either pre-PR gate, Halt means emit a resume command and stop; Other follows 
 
 ## Phase 3 — Milestone close-out
 
-1. If there were any issues involving the ai or workflow suggest any edits to repository ai instruction scaffolding. 
+1. If an AI or workflow problem occurred during this task, invoke `/dreamers-retro` with the task context and evidence. Let the retro skill resolve any proposed instruction edits with the user before continuing close-out.
 2. invoke `/dreamers-docs`
 3. stage explicit paths (`git add <paths>`, no `-A`) and commit remaining changes with a conventional subject
 4. present the milestone summary through `request_information`: `Approved` / `Halt` / `Other`. 

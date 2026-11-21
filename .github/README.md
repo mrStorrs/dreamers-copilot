@@ -56,6 +56,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to the current feature-branch diff. |
 | `/dreamers-instructions` | Review project AI instructions for stale, duplicate, conflicting, or verbose rules. See exact proposals with reasons and approve the edits to apply. |
+| `/dreamers-retro` | Record task problems, impact, and evidence in `.dreamers/retros/`. Review applicable instructions and get approval before applying any proposed edits. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-clean-work` | Between-milestone maintenance: audit improvements, inspect legacy workspace files, scan for drift. |
 | `/dreamers-plan-verify <plan>` | Inline drift check: cited paths / signatures / data shapes still hold? |
@@ -133,7 +134,10 @@ flowchart TD
     IncrPR --> Merge["Wait for user to confirm merge"]
     Merge --> Branch
 
-    MorePlans -->|No| Docs["Invoke /dreamers-docs<br/>suggest relevant workflow improvements"]
+    MorePlans -->|No| RetroNeeded{"AI or workflow problem?"}
+    RetroNeeded -->|Yes| Retro["Invoke /dreamers-retro<br/>resolve proposed edits with the user"]
+    RetroNeeded -->|No| Docs["Invoke /dreamers-docs"]
+    Retro --> Docs
     Docs --> Commit["Stage explicit paths<br/>commit remaining changes"]
     Commit --> PRGate{"Final PR approved?"}
     PRGate -->|Halt| Halt
@@ -145,8 +149,8 @@ flowchart TD
     classDef gate fill:#92400e,stroke:#78350f,stroke-width:2px,color:#fff
     classDef halt fill:#7f1d1d,stroke:#991b1b,stroke-width:2px,color:#fff
     classDef phase fill:#166534,stroke:#14532d,stroke-width:2px,color:#fff
-    class Help,InvokePlan,Implement,Review,Vigil,IncrPR,Docs,PR skill
-    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,FixTests,UserTesting,TestGate,BugTests,MorePlans,Strategy,IncrGate,PRGate gate
+    class Help,InvokePlan,Implement,Review,Vigil,IncrPR,Retro,Docs,PR skill
+    class ModeCheck,PlanResult,PlanGate,Tests,Result,Major,Choice,Cap,Remaining,FixTests,UserTesting,TestGate,BugTests,MorePlans,Strategy,IncrGate,RetroNeeded,PRGate gate
     class Halt halt
     class Plans,Manifest,Revise,Branch,Deferred,Direction,Fix,BugFix,Drift,Atomic,Incremental,Merge,Commit phase
 ```
