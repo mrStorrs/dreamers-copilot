@@ -55,7 +55,7 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-new-project` | Bootstrap a new project: discovery → optional existing-solutions research → stack → brief → shell plans. |
 | `/dreamers-cleanup-comments` | Project-wide comment cleanup per `comment-rules.md`. Audit → approve → apply. |
 | `/dreamers-cleanup-comments-branch` | Same cleanup, scoped to the current feature-branch diff. |
-| `/dreamers-instructions` | Review project AI instructions and maintain a Copilot or Codex architecture index. Approve proposed edits and decide separately whether to prune index entries. |
+| `/dreamers-instructions` | Review project AI instructions and maintain a Copilot or Codex architecture index or test command guide. Approve proposed edits and decide separately whether to prune entries. |
 | `/dreamers-retro` | Record task problems, impact, and evidence in `.dreamers/retros/`. Review applicable instructions and get approval before applying any proposed edits. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-clean-work` | Between-milestone maintenance: audit improvements, inspect legacy workspace files, scan for drift. |
