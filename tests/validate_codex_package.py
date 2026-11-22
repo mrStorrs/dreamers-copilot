@@ -71,13 +71,10 @@ expected_skills = [
     "dreamers-lite",
     "dreamers-new-project",
     "dreamers-plan",
-    "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
     "dreamers-retro",
     "dreamers-review",
-    "dreamers-simplify",
-    "dreamers-test",
     "dreamers-update"
 ]
 expected_refs = [
@@ -483,7 +480,7 @@ for path in scan_files:
         if re.search(pattern, content):
             add_error(f"Stale Copilot/legacy token '{pattern}' remains in {rel}")
 
-legacy_pattern = re.compile(r"dreamers-full|dreamers-research|\b(?:forge|nova|sage)\b|plan-quality|plan-selection|plan-guide-(?:selector|lite|standard|complex)|hone-architecture-rubric", re.IGNORECASE)
+legacy_pattern = re.compile(r"dreamers-full|dreamers-research|dreamers-(?:plan-verify|simplify|test)\b|\b(?:forge|nova|sage)\b|plan-quality|plan-selection|plan-guide-(?:selector|lite|standard|complex)|hone-architecture-rubric", re.IGNORECASE)
 migration_pattern = re.compile(
     r"retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer",
     re.IGNORECASE,

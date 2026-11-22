@@ -42,8 +42,8 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 
 | Skill | Purpose |
 |---|---|
-| `/dreamers-test` | Focused Vigil audit — test coverage findings on the current diff. |
-| `/dreamers-simplify` | Focused Vigil audit — over-engineering and architectural findings. |
+| `/dreamers-review --lens probe` | Test coverage, edge cases, and regression risk. |
+| `/dreamers-review --lens hone` | Simplicity, architecture, and over-engineering. |
 
 ### Utility
 
@@ -59,7 +59,6 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-retro` | Record task problems, impact, and evidence in `.dreamers/retros/`. Review applicable instructions and get approval before applying any proposed edits. |
 | `/dreamers-add-logging` | Phased pass to add/improve logging per `logging-standards.md`. |
 | `/dreamers-clean-work` | Between-milestone maintenance: audit improvements, inspect legacy workspace files, scan for drift. |
-| `/dreamers-plan-verify <plan>` | Inline drift check: cited paths / signatures / data shapes still hold? |
 
 ## Delivery
 

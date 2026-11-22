@@ -49,6 +49,9 @@ python3 "$source_root/scripts/codex_global_instructions.py" check --codex-home "
 legacy_agent_names=(echo forge hone nova probe sage sentinel)
 legacy_agent_toml_names=(bolt forge nova sage)
 obsolete_managed_files=(
+  "skills/dreamers-plan-verify/SKILL.md"
+  "skills/dreamers-simplify/SKILL.md"
+  "skills/dreamers-test/SKILL.md"
   dreamers/instructions/comment-rules.instructions.md
   dreamers/instructions/git.instructions.md
   dreamers/templates/plan-writing-guide.md
@@ -146,8 +149,8 @@ remove_obsolete_managed_files() {
 
   for rel in "${obsolete_managed_files[@]}"; do
     local target="$codex_home/$rel"
-    [[ -e "$target" ]] || continue
-    rm -f "$target"
+    [[ -f "$target" ]] || continue
+    rm -f -- "$target" || return
     printf '  REMOVED obsolete managed file: %s\n' "$rel" >&2
     count=$((count + 1))
   done

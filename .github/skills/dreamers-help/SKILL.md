@@ -31,16 +31,18 @@ Offer specialized choices when they fit better:
 
 - /dreamers-plan for planning only.
 - /dreamers-implement for a task or approved plan without end-to-end close-out.
-- /dreamers-review, /dreamers-test, or /dreamers-simplify for read-only audits.
+- /dreamers-review for read-only audits. Use `/dreamers-review --lens probe` for test coverage and `/dreamers-review --lens hone` for simplicity.
 - /dreamers-lite for task delivery without planning, with up to 2 Vigil fix cycles, docs, commit, and PR approval.
 - /dreamers-issue, /dreamers-new-project, /dreamers-find-refactors, and /dreamers-explain for focused discovery or explanation.
 - /dreamers-docs, /dreamers-pr, and /dreamers-pr-resolve for documentation, PR creation, or PR feedback.
 - /dreamers-instructions to review project AI instructions and maintain a project architecture index or test command guide with approved edits.
 - /dreamers-retro to record what went wrong during a task and propose instruction edits for approval.
-- /dreamers-add-logging, /dreamers-cleanup-comments, /dreamers-cleanup-comments-branch, /dreamers-clean-work, and /dreamers-plan-verify for maintenance and verification.
+- /dreamers-add-logging, /dreamers-cleanup-comments, /dreamers-cleanup-comments-branch, and /dreamers-clean-work for maintenance.
 - /dreamers-update for Dreamers system-file maintenance and the approved Copilot-to-Codex transfer.
 
 State the `/dreamers` gates: plan approval for task input, major scope expansion, triggered user testing, and final pre-PR approval.
+
+For multi-plan deliveries, `/dreamers` checks cited paths, signatures, and acceptance criteria for drift before starting the next plan.
 
 Explain that `/dreamers` delivers plans and `/dreamers-lite` delivers tasks without planning and that all plans use Goal and Acceptance criteria, matching GitHub issue proposals; lite, standard, and complex label complexity for review routing. The retired `/dreamers-full` command has no forwarding alias.
 

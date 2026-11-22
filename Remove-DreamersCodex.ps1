@@ -23,6 +23,9 @@ try {
 $legacyAgentNames = @("echo", "forge", "hone", "nova", "probe", "sage", "sentinel")
 $legacyAgentTomlNames = @("bolt", "forge", "nova", "sage")
 $obsoleteManagedFiles = @(
+    "skills/dreamers-plan-verify/SKILL.md",
+    "skills/dreamers-simplify/SKILL.md",
+    "skills/dreamers-test/SKILL.md",
     "dreamers/instructions/comment-rules.instructions.md"
     "dreamers/instructions/git.instructions.md"
     "dreamers/templates/plan-writing-guide.md"
@@ -121,7 +124,7 @@ function Remove-ObsoleteManagedFiles {
     $count = 0
     foreach ($rel in $obsoleteManagedFiles) {
         $target = Join-Path $CodexHome ($rel -replace '/', [System.IO.Path]::DirectorySeparatorChar)
-        if (-not (Test-Path $target)) { continue }
+        if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { continue }
         if ($DryRun) {
             Write-Host "  WOULD REMOVE: $rel -> $target" -ForegroundColor Yellow
         } else {
