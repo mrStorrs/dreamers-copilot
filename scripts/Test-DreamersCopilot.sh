@@ -104,13 +104,10 @@ expected_skills = [
     "dreamers-issue",
     "dreamers-new-project",
     "dreamers-plan",
-    "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
     "dreamers-retro",
     "dreamers-review",
-    "dreamers-simplify",
-    "dreamers-test",
     "dreamers-update",
 ]
 expected_refs = [
@@ -356,7 +353,7 @@ scan_roots = [
     root / ".github/README.md",
     catalog_path,
 ]
-legacy_pattern = re.compile(r"dreamers-full|dreamers-research|\bsage\b|plan-quality|plan-selection|plan-guide-selector", re.IGNORECASE)
+legacy_pattern = re.compile(r"dreamers-full|dreamers-research|dreamers-(?:plan-verify|simplify|test)\b|\bsage\b|plan-quality|plan-selection|plan-guide-selector", re.IGNORECASE)
 migration_pattern = re.compile(
     r"retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer",
     re.IGNORECASE,

@@ -57,9 +57,9 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-lite` | Task delivery without planning: implement + test, Vigil review (up to 2 fix cycles), docs from branch and worktree changes, commit, then PR approval. Halt on blocked review or unresolved findings at the cap. |
 | `/dreamers-find-refactors` | Refactor discovery pipeline. Selects refactor lenses, sections the repo, runs section-scoped Hone audits, synthesizes findings, writes Dreamers plan files, and stops. No implementation, branch, commit, push, or PR. |
 
-### Focused Vigil audit wrappers
+### Focused audits
 
-`/dreamers-test` and `/dreamers-simplify` call Vigil with a focused prompt for test coverage or simplicity. Use `/dreamers-review --lens <name>` only when the user explicitly asks for a selected Sentinel/Probe/Hone lane.
+Use `/dreamers-review --lens probe` for test coverage and `/dreamers-review --lens hone` for simplicity.
 
 ### Review lanes
 
@@ -85,7 +85,6 @@ Across Dreamers skills, an explicit user choice to defer a suggested change appe
 | `/dreamers-explain` | Thorough, read-only explanations of topics, code, documents, systems, and decisions, with authoritative sources when needed. |
 | `/dreamers-issue` | Investigate code and flag concerns with suggested acceptance criteria. Propose a short Goal/Acceptance criteria issue, then create it after approval (or an ADO story if specifically requested). |
 | `/dreamers-new-project` | Bootstrap a brand new project (discovery → optional existing-solutions research → stack → brief → shell plans). |
-| `/dreamers-plan-verify` | Inline drift check on a plan vs current code. |
 | `/dreamers-clean-work` | Between-milestone maintenance (improvements audit, archive, drift scan). |
 
 ## Pipeline shape
@@ -113,6 +112,8 @@ Both delivery skills resume after conversational detours and keep one todo align
 
 The retired `/dreamers-full` command has no forwarding alias. The install and removal scripts prune its known managed files while preserving unrelated user files.
 
+The install and removal scripts delete the managed `SKILL.md` files for the retired `dreamers-plan-verify`, `dreamers-test`, and `dreamers-simplify` skills and preserve other files in those directories. In multi-plan deliveries, `/dreamers` checks the next plan’s cited paths, signatures, and acceptance criteria for drift before proceeding.
+
 ## Maintaining Dreamers
 
 Use `/dreamers-update` for changes to Dreamers system files. Maintain shared behavior in `.github/` and Codex runtime adaptations in `adapters/codex/`. One branch and PR cover both targets; validate both before close-out. The existing `.github/catalog.json` paths, collections, and folder targets remain the Copilot catalog interface.
@@ -125,7 +126,7 @@ python3 scripts/build-codex.py --output .dreamers/build/codex
 
 PowerShell equivalent: `./scripts/Build-DreamersCodex.ps1 -OutputDirectory .dreamers/build/codex`. Choose a fresh or empty directory for each build; the generator refuses populated destinations. Builds translate runtime wiring and regenerate inlined refs from the shared sources, rejecting adapter drift and unsupported runtime tokens.
 
-Validate with the scripts for your shell. Recorded Bash validation times and recommended timeouts are in [test-benchmarks.md](test-benchmarks.md).
+Validate with the scripts for your shell. Recorded Bash and PowerShell validation times and recommended timeouts are in [test-benchmarks.md](test-benchmarks.md).
 
 ```bash
 bash scripts/Test-DreamersCopilot.sh

@@ -262,19 +262,6 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-plan-verify",
-      "name": "dreamers-plan-verify",
-      "description": "Inline drift check on a plan against current codebase reality. Reads the plan, verifies cited paths/signatures/data shapes still hold, reports drift items. No subagent.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-plan-verify/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-pr",
       "name": "dreamers-pr",
       "description": "PR creation skill — pushes the current branch, drafts the PR body from the pr-description template, opens the PR via gh, optionally posts an issue resolution comment.",
@@ -324,32 +311,6 @@
         "skill"
       ],
       "path": ".github/skills/dreamers-review/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-simplify",
-      "name": "dreamers-simplify",
-      "description": "Standalone focused Vigil review for architectural quality / over-engineering / redundancy. Read-only — may recommend full refactors. Args: --branch, --paths, --all.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-simplify/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-test",
-      "name": "dreamers-test",
-      "description": "Standalone focused Vigil review for test coverage. Read-only — reports structured findings on AC coverage, layer audit, edge cases, regression risks. Args: --branch, --paths, --all.",
-      "author": "CJ Storrs",
-      "tags": [
-        "code",
-        "dreamers",
-        "skill"
-      ],
-      "path": ".github/skills/dreamers-test/SKILL.md"
     }
   ],
   "collections": [
@@ -450,10 +411,6 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-plan-verify"
-        },
-        {
-          "type": "skill",
           "slug": "dreamers-pr"
         },
         {
@@ -467,14 +424,6 @@
         {
           "type": "skill",
           "slug": "dreamers-review"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-simplify"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-test"
         },
         {
           "type": "folder",

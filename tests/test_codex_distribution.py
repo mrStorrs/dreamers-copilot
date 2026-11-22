@@ -19,7 +19,13 @@ spec = importlib.util.spec_from_file_location('build_codex', ROOT / 'scripts/bui
 builder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(builder)
 
+RETIRED_SKILLS = [
+    'skills/dreamers-plan-verify/SKILL.md',
+    'skills/dreamers-simplify/SKILL.md',
+    'skills/dreamers-test/SKILL.md',
+]
 LEGACY = [
+    *RETIRED_SKILLS,
     'agents/bolt.toml', 'agents/forge.toml', 'agents/nova.toml', 'agents/sage.toml',
     *[f'dreamers/agents/{name}.md' for name in ('echo', 'forge', 'hone', 'nova', 'probe', 'sage', 'sentinel')],
     *[f'skills/{skill}/{file}' for skill in ('dreamers-full', 'dreamers-research') for file in ('SKILL.md', 'readme.md')],
@@ -30,6 +36,7 @@ LEGACY = [
 ]
 USER_FILES = ['config.toml', 'skills/personal/SKILL.md', 'agents/personal.toml',
               'skills/dreamers-lite/user.md', 'skills/dreamers-research/.user.md',
+              'skills/dreamers-test/readme.md',
               'dreamers/refs/user.md', 'dreamers/agents/user.md', 'dreamers/instructions/user.md']
 
 
@@ -95,7 +102,7 @@ class DistributionTests(unittest.TestCase):
         source = ROOT / '.github'
         ref = 'dreamers/refs/reviewer-findings-format.md'
         callers = (
-            'dreamers-review', 'dreamers-test', 'dreamers-simplify', 'dreamers-find-refactors',
+            'dreamers-review', 'dreamers-find-refactors',
             'dreamers-pr-resolve', 'dreamers-add-logging', 'dreamers-cleanup-comments',
             'dreamers-cleanup-comments-branch',
         )
@@ -411,18 +418,33 @@ class DistributionTests(unittest.TestCase):
                     self.assertFalse((home / rel).exists(), rel)
                 for rel in USER_FILES:
                     self.assertEqual(b'fixture\n', (home / rel).read_bytes(), rel)
+
+            directory_path, *retired_files = RETIRED_SKILLS
+            user_file = home / directory_path / 'user-owned.md'
+            user_file.parent.mkdir(parents=True)
+            user_file.write_bytes(b'preserve\n')
+            run(*command, force)
+            self.assertEqual(b'preserve\n', user_file.read_bytes())
+
             if shell == 'pwsh':
                 command = ['pwsh', '-NoProfile', '-File', str(ROOT / 'Remove-DreamersCodex.ps1'), '-CodexHome', str(home)]
+                for rel in retired_files:
+                    (home / rel).write_bytes(b'fixture\n')
                 run(*command, '-DryRun')
                 self.assertTrue(existing.exists())
+                for rel in retired_files:
+                    self.assertEqual(b'fixture\n', (home / rel).read_bytes(), rel)
                 self.assertEqual(personal + self.files['AGENTS.md'].encode(), (home / 'AGENTS.md').read_bytes())
                 run(*command)
                 self.assertEqual(personal, (home / 'AGENTS.md').read_bytes())
                 for rel in self.files:
                     if rel.startswith(('agents/', 'skills/', 'dreamers/')):
                         self.assertFalse((home / rel).exists(), rel)
+                for rel in retired_files:
+                    self.assertFalse((home / rel).exists(), rel)
                 for rel in USER_FILES:
                     self.assertEqual(b'fixture\n', (home / rel).read_bytes(), rel)
+                self.assertEqual(b'preserve\n', user_file.read_bytes())
 
     @unittest.skipUnless(os.name != 'nt' and shutil.which('bash'), 'Bash test requires a Unix shell')
     def test_bash_installer(self):

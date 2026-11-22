@@ -118,13 +118,10 @@ $expectedSkills = @(
     "dreamers-issue",
     "dreamers-new-project",
     "dreamers-plan",
-    "dreamers-plan-verify",
     "dreamers-pr",
     "dreamers-pr-resolve",
     "dreamers-retro",
     "dreamers-review",
-    "dreamers-simplify",
-    "dreamers-test",
     "dreamers-update"
 )
 $expectedRefs = @(
@@ -339,7 +336,7 @@ foreach ($path in @(
 
 Assert-SynchronizedRefs
 
-$legacyPattern = "dreamers-full|dreamers-research|\bsage\b|plan-quality|plan-selection|plan-guide-selector"
+$legacyPattern = "dreamers-full|dreamers-research|dreamers-(?:plan-verify|simplify|test)\b|\bsage\b|plan-quality|plan-selection|plan-guide-selector"
 $migrationPattern = "retir|remov|legacy|migrat|cleanup|clean up|previous|old command|no longer"
 $scanRoots = @(
     $agentRoot,
@@ -376,6 +373,9 @@ if (-not $SkipInstallSmoke) {
         $staleCommentRules = Join-Path $tmpHome "instructions\comment-rules.instructions.md"
         $staleGitInstructions = Join-Path $tmpHome "instructions\git.instructions.md"
         $obsoleteManaged = @(
+            (Join-Path $tmpHome "skills/dreamers-plan-verify/SKILL.md"),
+            (Join-Path $tmpHome "skills/dreamers-simplify/SKILL.md"),
+            (Join-Path $tmpHome "skills/dreamers-test/SKILL.md"),
             $staleCommentRules,
             $staleGitInstructions,
             (Join-Path $tmpHome "agents/forge.agent.md"),
@@ -403,6 +403,7 @@ if (-not $SkipInstallSmoke) {
             Set-Content -Path (Join-Path $directory "readme.md") -Value "managed" -Encoding utf8NoBOM
         }
         $userSkillFiles = @($activeLite, $legacyResearch) | ForEach-Object { Join-Path $_ "user-owned.md" }
+        $userSkillFiles += Join-Path $tmpHome "skills/dreamers-test/readme.md"
         foreach ($path in $userSkillFiles) {
             Set-Content -Path $path -Value "preserve" -Encoding utf8NoBOM
         }
@@ -487,6 +488,17 @@ if (-not $SkipInstallSmoke) {
         }
         if (Test-Path $legacyFull) {
             Add-Error "Remove smoke did not prune empty legacy directory: $legacyFull"
+        }
+
+        $userDirectory = Join-Path $tmpHome "skills/dreamers-plan-verify/SKILL.md"
+        New-Item -ItemType Directory -Path $userDirectory | Out-Null
+        $userFile = Join-Path $userDirectory "user-owned.md"
+        Set-Content -LiteralPath $userFile -Value "preserve" -Encoding utf8NoBOM
+        foreach ($script in @("Install-Dreamers.ps1", "Remove-Dreamers.ps1")) {
+            & (Join-Path $Root $script) -CopilotHome $tmpHome | Out-Null
+            if ((Get-Content -Raw -LiteralPath $userFile).Trim() -ne "preserve") {
+                Add-Error "$script changed user content in the retired skill directory: $userFile"
+            }
         }
     }
     finally {

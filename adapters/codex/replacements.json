@@ -53,26 +53,6 @@
       "to": "launch every selected reviewer concurrently through `spawn_agent`, then wait for all of them."
     }
   ],
-  "skills/dreamers-test/SKILL.md": [
-    {
-      "from": "Invoke via the runtime's subagent-spawn mechanism:",
-      "to": "Invoke `spawn_agent` with the following context and wait for the result:"
-    },
-    {
-      "from": "mode: \"sync\"\nprompt:",
-      "to": "message:"
-    }
-  ],
-  "skills/dreamers-simplify/SKILL.md": [
-    {
-      "from": "Invoke via the runtime's subagent-spawn mechanism:",
-      "to": "Invoke `spawn_agent` with the following context and wait for the result:"
-    },
-    {
-      "from": "mode: \"sync\"\nprompt:",
-      "to": "message:"
-    }
-  ],
   "skills/dreamers-clean-work/SKILL.md": [
     {
       "from": "rm -rf .dreamers/{forge,probe,hone,sentinel,echo}",

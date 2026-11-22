@@ -30,6 +30,9 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $Source = Join-Path $RepoRoot ".github"
 $ObsoleteManagedFiles = @(
+    "skills/dreamers-plan-verify/SKILL.md",
+    "skills/dreamers-simplify/SKILL.md",
+    "skills/dreamers-test/SKILL.md",
     "agents/forge.agent.md",
     "agents/nova.agent.md",
     "agents/sage.agent.md",
@@ -101,7 +104,7 @@ function Remove-LegacySkillFiles {
 function Remove-ObsoleteManagedFiles {
     foreach ($relativePath in $ObsoleteManagedFiles) {
         $target = Join-Path $CopilotHome ($relativePath -replace '/', [System.IO.Path]::DirectorySeparatorChar)
-        if (-not (Test-Path $target)) { continue }
+        if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { continue }
         Remove-Item -LiteralPath $target -Force
         Write-Host "  REMOVED obsolete managed file: $relativePath" -ForegroundColor DarkGray
     }

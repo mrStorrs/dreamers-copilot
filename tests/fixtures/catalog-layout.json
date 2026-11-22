@@ -102,11 +102,6 @@
     },
     {
       "type": "skill",
-      "slug": "dreamers-plan-verify",
-      "path": ".github/skills/dreamers-plan-verify/SKILL.md"
-    },
-    {
-      "type": "skill",
       "slug": "dreamers-pr",
       "path": ".github/skills/dreamers-pr/SKILL.md"
     },
@@ -124,16 +119,6 @@
       "type": "skill",
       "slug": "dreamers-review",
       "path": ".github/skills/dreamers-review/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-simplify",
-      "path": ".github/skills/dreamers-simplify/SKILL.md"
-    },
-    {
-      "type": "skill",
-      "slug": "dreamers-test",
-      "path": ".github/skills/dreamers-test/SKILL.md"
     }
   ],
   "collections": [
@@ -224,10 +209,6 @@
         },
         {
           "type": "skill",
-          "slug": "dreamers-plan-verify"
-        },
-        {
-          "type": "skill",
           "slug": "dreamers-pr"
         },
         {
@@ -241,14 +222,6 @@
         {
           "type": "skill",
           "slug": "dreamers-review"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-simplify"
-        },
-        {
-          "type": "skill",
-          "slug": "dreamers-test"
         },
         {
           "type": "folder",
