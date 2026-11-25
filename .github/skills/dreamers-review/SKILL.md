@@ -25,6 +25,7 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - If a readable plan is supplied, use it as the review basis. A user-supplied path that cannot be read remains a blocking error; do not silently replace it with an inferred basis.
 - For a supplied plan, resolve `**Grilling transcript:**` relative to the plan. If the metadata is absent, check for sibling `grilling-transcript.md` for compatibility. When a readable transcript exists, read it in full and bind its absolute path + verbatim contents alongside the plan as authoritative user-intent context. If the plan references a transcript that is missing or unreadable, block instead of silently dropping it. If no transcript exists or is referenced, continue with the plan alone.
 - If no plan is supplied or no plan is available, infer the intended behavior from, in order: explicit user direction; PR title/body and branch name; commits and diff in the selected scope; changed tests; changed code and its callers; then nearby conventions and public interfaces.
+- Distinguish agreed requirements from behavior inferred from the implementation. Changed code and tests are evidence of implemented behavior, not authorization for additional scope. Surface uncertain scope explicitly and pass that distinction to reviewers.
 - Write a concise inferred-intent summary with the observable behavior, invariants, likely regression risks, evidence paths, and confidence. Treat that summary as the review basis, not as a replacement plan.
 - If the evidence does not support one reliable interpretation of the change, ask the user one concise question before spawning reviewers. Do not guess or use the full triad to decide the requirement.
 
@@ -43,11 +44,11 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
   - **Vigil** — combined correctness, security, maintainability, test coverage, and simplicity review against each acceptance criterion or agreed task requirement. Use the report format in Vigil’s instructions.
   - **Sentinel** — correctness / security / maintainability. Apply `logging-discipline` (Kernel) when assessing log calls: flag deviations from `.github/instructions/logging.instructions.md` if present, otherwise from surrounding-code conventions; never-log violations are `security` severity. Artifact contains findings + intent-alignment summary.
   - **Probe** — test coverage (requirement matrix, layer audit, edge cases, gaps). Artifact contains findings + requirement coverage table.
-  - **Hone** — simplicity / over-engineering / redundancy / architecture. Mandate verbatim: "Aggressively flag bad architecture, over-engineering, redundancy, and simpler alternatives. Refactor cost is NOT a moderating factor. When the suggested fix has architectural scope, state it explicitly so the caller can route it through their major-refactor gate."
+  - **Hone** — simplicity / over-engineering / redundancy / architecture. Check scope necessity before architectural quality using the shared MVP assessment; require concrete evidence for retained complexity and explicit scope for necessary refactors.
 - Wait for all spawned reviewers to return.
 
 ## Step 3 — Report
-- Accept a clean Vigil handoff with just `Approved — no findings` and `End of handoff` on separate lines.
+- Require the shared MVP assessment in completed Hone and Vigil reports, including clean approvals. A completed report missing that assessment is an incomplete handoff.
 - Collect one complete report per selected reviewer using the review handoff contract. For each missing handoff, report `Blocked — missing handoff for <reviewer>`. Report the results that did arrive.
 - Return each accepted report verbatim to the caller. Include its source and path when using a file.
 - Aggregate counts by severity and lens from the accepted reports. Surface all blocked statuses and open questions.
@@ -139,6 +140,14 @@ For each expected reviewer invocation, check the assigned file and the final rep
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
 Reviewers are report-only for code, tests, docs, config, scripts, and git state. The caller applies fixes per its own orchestrator-as-fixer behavior.
+
+## MVP assessment (Hone and Vigil)
+
+For change reviews, establish the minimum implementation that satisfies the agreed acceptance criteria while preserving required security, data integrity, performance constraints, and existing contracts. For each distinct addition, identify the requirement or evidenced constraint it serves. Ask what would fail if it were removed or replaced with the simplest existing mechanism. If nothing required would fail, report the addition as unnecessary and name what to delete. Apply this check to behavior, abstractions, configuration, dependencies, tests, and supporting changes. Future usefulness and tests added by the change do not establish necessity.
+
+Prefer deletion, reuse, or a local simplification. Recommend a broader refactor only with a concrete explanation of why it is needed to correct the changed implementation; separate unrelated architectural improvements from required fixes. Refactor cost alone does not justify suppressing a necessary finding. State the affected files, modules, call sites, and deletions where known.
+
+Every completed Hone or Vigil change review, including approval, must include a brief **MVP assessment** identifying the minimum approach and any non-obvious additions retained, with their requirement or constraint justification. Cite concrete paths or symbols; a claim that the code is minimal is insufficient. Report removable additions as findings, not optional observations. If scope is uncertain, surface the uncertainty instead of treating implemented behavior as an agreed requirement. For an audit without a proposed change, use its stated audit objective rather than inventing feature ACs.
 </reviewer-findings-format>
 
 <logging-discipline>

@@ -16,7 +16,7 @@ Review every changed production and test file in scope. Apply these lenses in on
 - test coverage against plan AC layers or inferred requirements
 - simplicity, architecture, over-engineering
 
-Refactor cost is not a reason to suppress a finding. If the cleanest fix is a full refactor, report it with explicit scope. The orchestrator and user decide disposition.
+Review scope necessity before architectural quality using the shared MVP assessment. Prefer deletion, reuse, or local simplification; broader refactors need a concrete reason tied to the changed implementation. The orchestrator and user decide disposition.
 
 ## Startup
 
@@ -38,7 +38,7 @@ The review covers code, tests, docs, config, scripts, and git state. The orchest
 
 Follow the handoff contract supplied by the caller for both the assigned file and final reply. The contract is in `~/.copilot/dreamers/refs/reviewer-findings-format.md` in the Dreamers installation.
 
-For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines. For other outcomes, include the applicable status, each finding once, and any blocker or open question, then close with `End of handoff`. Include any full-refactor scope in the finding itself.
+Include the applicable status, the shared MVP assessment for completed reviews, each finding once, and any blocker or open question, then close with `End of handoff`. Clean approvals also require the MVP assessment. Include any full-refactor scope in the finding itself.
 
 ## Lens Rules
 
@@ -60,8 +60,7 @@ Test coverage:
 - Navigation behavior changes require E2E coverage.
 
 Simplicity:
-- Inspect every line of code and every function in the review scope. Flag anything that could be simpler and any added behavior the task does not require. For each finding, name what to delete or simplify and explain why the change preserves required behavior, security, and existing caller contracts.
-- If a full refactor is the cleanest fix, state its scope in the finding: files, modules, call sites, and deletions where known.
+- Apply the shared MVP assessment to every distinct addition in scope. For each finding, name what to delete or simplify and explain why required behavior and evidenced constraints remain satisfied.
 
 <comment-rules>
 ## Core principle

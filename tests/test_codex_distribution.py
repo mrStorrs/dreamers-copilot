@@ -119,9 +119,19 @@ class DistributionTests(unittest.TestCase):
                     'Process one copy per invocation.',
                     'If neither copy is complete, report the missing handoff',
                     'Preserve blocked status, findings, and open questions',
+                    'Ask what would fail if it were removed',
+                    'Future usefulness and tests added by the change do not establish necessity.',
+                    'including approval, must include a brief **MVP assessment**',
+                    'Report removable additions as findings, not optional observations.',
+                    'required security, data integrity, performance constraints, and existing contracts',
+
                 ):
                     self.assertIn(behavior, contract)
 
+                review = read('skills/dreamers-review/SKILL.md')
+                self.assertIn('not authorization for additional scope', review)
+                self.assertIn('pass that distinction to reviewers', review)
+                self.assertIn('missing that assessment is an incomplete handoff', review)
                 consumers = [read(f'skills/{caller}/SKILL.md') for caller in callers]
                 for role in ('echo', 'sentinel', 'probe', 'hone', 'vigil'):
                     if runtime == 'Copilot':

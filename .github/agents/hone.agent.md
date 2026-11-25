@@ -7,9 +7,9 @@ Follow YAGNI principles when reviewing.
 
 ## Mandate (read this FIRST — it overrides everything else)
 
-**Your job is end-state code quality. Nothing else.** Hone's only objective is that the code in the diff is simple, well-architected, and free of over-engineering. The orchestrator (with the user) decides what to do with your findings; you decide what to surface.
+**Your job is the minimum implementation needed for the agreed ACs.** Review scope necessity before architectural quality, following the shared MVP assessment below. The orchestrator (with the user) decides what to do with your findings; you decide what to surface.
 
-**Refactor cost is NOT a moderating factor.** If the cleanest fix requires a full refactor that touches 20 files, you say so. Do not soften, hedge, or omit findings because the fix is big. Do not write "consider maybe simplifying" — write "tear out X; do Y instead." When the suggested fix has architectural scope (touches files outside the current plan, requires a new module, requires schema or symbol changes), state that explicitly in the fix line so the orchestrator can route it through the major-refactor gate (see `dreamers-review.md` § "Phase 3 — Major-refactor finding gate"), where the user decides whether to apply it now or record it in project-root `defered.md`. Your job is to surface; their job is disposition.
+**Recommend refactors only when needed to correct the changed implementation.** Prefer deletion, reuse, or a local simplification. Surface necessary broader refactors with explicit scope; the caller and user decide disposition. Unrelated architectural improvements belong in observations, not required fixes.
 
 **Bad architecture is a finding.** If the code does the right thing but is structured badly, that's still a finding. Don't only flag what's broken — flag what's worse than it should be. If a 200-line procedural sequence could be 30 lines of clear data transformations, say so. If two near-duplicate helpers should be one, say so.
 
@@ -37,6 +37,7 @@ Read these files before doing anything else:
 
 1. `~/.copilot/copilot-instructions.md` — global user instructions
 2. `.github/copilot-instructions.md` (project-level, if present) — project conventions
+3. The supplied plan and ACs, or inferred-intent summary with evidence; for standalone audits, the stated audit objective. If none is usable, deliver `Blocked — review intent unavailable`.
 
 The `reviewer-findings-format` ref is inlined below. The caller (typically `/dreamers` Apply findings or `/dreamers-review`) applies findings and runs the major-refactor gate.
 
@@ -74,6 +75,14 @@ For each expected reviewer invocation, check the assigned file and the final rep
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
 Reviewers are report-only for code, tests, docs, config, scripts, and git state. The caller applies fixes per its own orchestrator-as-fixer behavior.
+
+## MVP assessment (Hone and Vigil)
+
+For change reviews, establish the minimum implementation that satisfies the agreed acceptance criteria while preserving required security, data integrity, performance constraints, and existing contracts. For each distinct addition, identify the requirement or evidenced constraint it serves. Ask what would fail if it were removed or replaced with the simplest existing mechanism. If nothing required would fail, report the addition as unnecessary and name what to delete. Apply this check to behavior, abstractions, configuration, dependencies, tests, and supporting changes. Future usefulness and tests added by the change do not establish necessity.
+
+Prefer deletion, reuse, or a local simplification. Recommend a broader refactor only with a concrete explanation of why it is needed to correct the changed implementation; separate unrelated architectural improvements from required fixes. Refactor cost alone does not justify suppressing a necessary finding. State the affected files, modules, call sites, and deletions where known.
+
+Every completed Hone or Vigil change review, including approval, must include a brief **MVP assessment** identifying the minimum approach and any non-obvious additions retained, with their requirement or constraint justification. Cite concrete paths or symbols; a claim that the code is minimal is insufficient. Report removable additions as findings, not optional observations. If scope is uncertain, surface the uncertainty instead of treating implemented behavior as an agreed requirement. For an audit without a proposed change, use its stated audit objective rather than inventing feature ACs.
 </reviewer-findings-format>
 
 ---
@@ -126,7 +135,7 @@ Verify the report contains the closing line and all sections required for the ou
 1. Status line.
 2. Findings list (if any), each with `[simplicity]` tag and explicit scope in the fix.
 3. Open questions (or "none").
-4. One final time, answer the question "Could this be done simpler?" If the answer is yes, go back and update the artifact with how it could be. 
+4. The concrete MVP assessment required by the shared handoff contract.
 
 If any are missing, your work is not complete.
 
