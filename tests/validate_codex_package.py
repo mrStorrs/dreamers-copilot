@@ -91,6 +91,7 @@ expected_refs = [
     "project-bootstrap.md",
     "proposal.md",
     "reviewer-findings-format.md",
+    "mvp-review.md",
     "shell-plan.md",
     "testing-mandate.md",
     "user-testing-gate.md"
@@ -310,7 +311,7 @@ assert_patterns(
         "Grill transcript resolution": r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full",
         "Grill transcript reviewer context": r"absolute path and full verbatim contents.*plan/transcript conflict",
         "parallel spawning": r"launch every selected reviewer concurrently.*Never spawn or await reviewers sequentially",
-        "accept two-line Vigil approval": r"Accept a clean Vigil handoff with just `Approved — no findings` and `End of handoff` on separate lines",
+        "require MVP handoff": r"Require the MVP assessment.*mvp-review.md.*including clean approvals.*incomplete handoff",
         "caller owns fix loop": r"caller owns all finding disposition, gates, fixes, revalidation, and user testing",
     },
 )
@@ -335,12 +336,11 @@ assert_patterns(
     agent_root / "vigil.toml",
     {
         "planless Vigil review basis": r"If no plan is bound.*inferred-intent summary.*evidence",
-        "two-line Vigil approval": r"For a clean review, report only `Approved — no findings` and `End of handoff` on separate lines",
-        "single Vigil finding and blocker reporting": r"include the applicable status, each finding once, and any blocker or open question",
+        "MVP approval": r"Clean approvals also require the MVP assessment",
+        "single Vigil finding and blocker reporting": r"Include the applicable status,.*each finding once, and any blocker or open question",
         "simplest implementation under correctness": r"Correctness:\s*- Verify that the implementation meets every acceptance criterion or agreed task requirement with the simplest code possible while preserving required behavior, security, and existing caller contracts",
-        "line-by-line simplicity review": (
-            r"Simplicity:\s*- Inspect every line of code and every function in the review scope\."
-            r"\s*Flag anything that could be simpler"
+        "addition-by-addition MVP review": (
+            r"Simplicity:\s*- Apply the shared MVP assessment to every distinct addition in scope"
         ),
         "coverage mapping and test efficiency": (
             r"Test coverage:\s*- Map each acceptance criterion or agreed task requirement to its covering tests"

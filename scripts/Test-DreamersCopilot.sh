@@ -123,6 +123,7 @@ expected_refs = [
     "project-bootstrap.md",
     "proposal.md",
     "reviewer-findings-format.md",
+    "mvp-review.md",
     "shell-plan.md",
     "testing-mandate.md",
     "user-testing-gate.md",

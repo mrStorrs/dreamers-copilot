@@ -119,9 +119,23 @@ class DistributionTests(unittest.TestCase):
                     'Process one copy per invocation.',
                     'If neither copy is complete, report the missing handoff',
                     'Preserve blocked status, findings, and open questions',
+
                 ):
                     self.assertIn(behavior, contract)
 
+                mvp = read('dreamers/refs/mvp-review.md').rstrip()
+                for behavior in (
+                    'Ask what would fail if it were removed',
+                    'Future usefulness and tests added by the change do not establish necessity.',
+                    'including approval, must include a brief **MVP assessment**',
+                    'Report removable additions as findings, not optional observations.',
+                    'required security, data integrity, performance constraints, and existing contracts',
+                ):
+                    self.assertIn(behavior, mvp)
+                review = read('skills/dreamers-review/SKILL.md')
+                self.assertIn('not authorization for additional scope', review)
+                self.assertIn('pass that distinction to reviewers', review)
+                self.assertIn('missing that assessment is an incomplete handoff', review)
                 consumers = [read(f'skills/{caller}/SKILL.md') for caller in callers]
                 for role in ('echo', 'sentinel', 'probe', 'hone', 'vigil'):
                     if runtime == 'Copilot':
@@ -131,6 +145,12 @@ class DistributionTests(unittest.TestCase):
                         prompt = fields['developer_instructions']
                     self.assertNotIn('tools', fields)
                     self.assertNotIn('sandbox_mode', fields)
+                    if role in ('hone', 'vigil'):
+                        self.assertIn(f'<mvp-review>\n{mvp}\n</mvp-review>', prompt)
+                    else:
+                        self.assertNotIn(mvp, prompt)
+                        self.assertNotIn('Ask what would fail if it were removed', prompt)
+                        self.assertNotIn('<mvp-review>', prompt)
                     if role == 'echo':
                         self.assertNotIn(contract, prompt)
                         self.assertNotRegex(prompt, r'(?i)do not call')
@@ -139,6 +159,8 @@ class DistributionTests(unittest.TestCase):
                     if role == 'sentinel':
                         self.assertIn('deliver a blocked report with reason `review intent unavailable`', prompt)
                         self.assertIn('missing or empty, deliver a blocked report with the reason', prompt)
+                self.assertNotIn(mvp, contract)
+                self.assertNotIn('Ask what would fail if it were removed', contract)
                 refactors = read('skills/dreamers-find-refactors/SKILL.md')
                 self.assertIn('cite the section and findings in the summary for reply-only reports', refactors)
                 embedded = f'<reviewer-findings-format>\n{contract}\n</reviewer-findings-format>'
