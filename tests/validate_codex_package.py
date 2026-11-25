@@ -91,6 +91,7 @@ expected_refs = [
     "project-bootstrap.md",
     "proposal.md",
     "reviewer-findings-format.md",
+    "mvp-review.md",
     "shell-plan.md",
     "testing-mandate.md",
     "user-testing-gate.md"
@@ -310,7 +311,7 @@ assert_patterns(
         "Grill transcript resolution": r"Grilling transcript:.*sibling `grilling-transcript\.md`.*read it in full",
         "Grill transcript reviewer context": r"absolute path and full verbatim contents.*plan/transcript conflict",
         "parallel spawning": r"launch every selected reviewer concurrently.*Never spawn or await reviewers sequentially",
-        "require MVP handoff": r"Require the shared MVP assessment.*including clean approvals.*incomplete handoff",
+        "require MVP handoff": r"Require the MVP assessment.*mvp-review.md.*including clean approvals.*incomplete handoff",
         "caller owns fix loop": r"caller owns all finding disposition, gates, fixes, revalidation, and user testing",
     },
 )

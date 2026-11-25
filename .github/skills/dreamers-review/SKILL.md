@@ -48,7 +48,7 @@ Scope flags: `--paths <glob>` (specific files), `--branch` (feature-branch diff 
 - Wait for all spawned reviewers to return.
 
 ## Step 3 — Report
-- Require the shared MVP assessment in completed Hone and Vigil reports, including clean approvals. A completed report missing that assessment is an incomplete handoff.
+- Require the MVP assessment defined in `~/.copilot/dreamers/refs/mvp-review.md` in completed Hone and Vigil reports, including clean approvals. A completed report missing that assessment is an incomplete handoff.
 - Collect one complete report per selected reviewer using the review handoff contract. For each missing handoff, report `Blocked — missing handoff for <reviewer>`. Report the results that did arrive.
 - Return each accepted report verbatim to the caller. Include its source and path when using a file.
 - Aggregate counts by severity and lens from the accepted reports. Surface all blocked statuses and open questions.
@@ -140,14 +140,6 @@ For each expected reviewer invocation, check the assigned file and the final rep
 **Open questions** (optional) — items needing user judgment. Use "none" if no questions.
 
 Reviewers are report-only for code, tests, docs, config, scripts, and git state. The caller applies fixes per its own orchestrator-as-fixer behavior.
-
-## MVP assessment (Hone and Vigil)
-
-For change reviews, establish the minimum implementation that satisfies the agreed acceptance criteria while preserving required security, data integrity, performance constraints, and existing contracts. For each distinct addition, identify the requirement or evidenced constraint it serves. Ask what would fail if it were removed or replaced with the simplest existing mechanism. If nothing required would fail, report the addition as unnecessary and name what to delete. Apply this check to behavior, abstractions, configuration, dependencies, tests, and supporting changes. Future usefulness and tests added by the change do not establish necessity.
-
-Prefer deletion, reuse, or a local simplification. Recommend a broader refactor only with a concrete explanation of why it is needed to correct the changed implementation; separate unrelated architectural improvements from required fixes. Refactor cost alone does not justify suppressing a necessary finding. State the affected files, modules, call sites, and deletions where known.
-
-Every completed Hone or Vigil change review, including approval, must include a brief **MVP assessment** identifying the minimum approach and any non-obvious additions retained, with their requirement or constraint justification. Cite concrete paths or symbols; a claim that the code is minimal is insufficient. Report removable additions as findings, not optional observations. If scope is uncertain, surface the uncertainty instead of treating implemented behavior as an agreed requirement. For an audit without a proposed change, use its stated audit objective rather than inventing feature ACs.
 </reviewer-findings-format>
 
 <logging-discipline>
